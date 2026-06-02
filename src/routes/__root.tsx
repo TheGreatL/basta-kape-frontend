@@ -52,21 +52,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </head>
             <body>
                 <TanstackQueryProvider>{children}</TanstackQueryProvider>
-                <Toaster position="top-right" richColors closeButton />
-                {import.meta.env.DEV && (
-                    <TanStackDevtools
-                        config={{
-                            position: 'bottom-right'
-                        }}
-                        plugins={[
-                            {
-                                name: 'Tanstack Router',
-                                render: <TanStackRouterDevtoolsPanel />
-                            },
-                            TanStackQueryDevtools
-                        ]}
-                    />
-                )}
+                <Toaster position="top-right" richColors={true} closeButton={true} />
+                <TanStackDevtools
+                    config={{
+                        position: 'bottom-right'
+                    }}
+                    plugins={[
+                        {
+                            name: 'Tanstack Router',
+                            render: <TanStackRouterDevtoolsPanel />
+                        },
+                        TanStackQueryDevtools
+                    ]}
+                />
                 <Scripts />
             </body>
         </html>
