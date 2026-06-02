@@ -20,6 +20,7 @@ import {
     SidebarFooter
 } from '#/components/ui/sidebar.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx';
+import { ScrollArea, ScrollBar } from '#/components/ui/scroll-area.tsx';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,11 +38,12 @@ const sidebarGroups: Array<{
         path: string;
         icon: IconName;
         public?: boolean;
+        exact?: boolean;
     }>;
 }> = [
     {
         label: 'Overview',
-        items: [{ title: 'Dashboard', path: '/', icon: 'layout-dashboard', public: true }]
+        items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', public: true, exact: true }]
     },
     {
         label: 'Sales & Orders',
@@ -82,13 +84,18 @@ const sidebarGroups: Array<{
     }
 ];
 
-function SidebarLinkItem({ item }: { item: { title: string; path: string; icon: IconName } }) {
+function SidebarLinkItem({ item }: { item: { title: string; path: string; icon: IconName; exact?: boolean } }) {
     const matchRoute = useMatchRoute();
-    const isActive = matchRoute({ to: item.path as any, fuzzy: true }) !== false;
+    const isActive = matchRoute({ to: item.path as any, fuzzy: !item.exact }) !== false;
 
     return (
         <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+            <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                isActive={isActive}
+                className="data-[active=true]:bg-sidebar-foreground data-[active=true]:text-sidebar-accent"
+            >
                 <Link to={item.path}>
                     <DynamicIcon name={item.icon} />
                     <span>{item.title}</span>
@@ -125,18 +132,21 @@ export default function AppSidebar() {
             </SidebarHeader>
             <SidebarSeparator />
             <SidebarContent>
-                {authorizedGroups.map((group) => (
-                    <SidebarGroup key={group.label}>
-                        <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {group.items.map((item) => (
-                                    <SidebarLinkItem key={item.title} item={item} />
-                                ))}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                ))}
+                <ScrollArea className="flex-1 w-full">
+                    {authorizedGroups.map((group) => (
+                        <SidebarGroup key={group.label}>
+                            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {group.items.map((item) => (
+                                        <SidebarLinkItem key={item.title} item={item} />
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    ))}
+                    <ScrollBar orientation="vertical" />
+                </ScrollArea>
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
