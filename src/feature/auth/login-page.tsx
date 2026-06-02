@@ -29,8 +29,15 @@ export default function LoginPage() {
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
-            setAuth(data.user, data.accessToken, data.refreshToken);
-            router.navigate({ to: '/' });
+            setAuth(data.user, data.accessToken);
+
+            const isCustomer = data.user.roles?.some((role: any) => role.name?.toLowerCase() === 'customer');
+
+            if (isCustomer) {
+                router.navigate({ to: '/' });
+            } else {
+                router.navigate({ to: '/admin' });
+            }
         },
         onError: (error) => {
             // Handle error, potentially show a toast

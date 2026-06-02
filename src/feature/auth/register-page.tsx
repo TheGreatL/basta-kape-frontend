@@ -34,7 +34,7 @@ export default function RegisterPage() {
     const registerMutation = useMutation({
         mutationFn: register,
         onSuccess: (data) => {
-            setAuth(data.user, data.accessToken, data.refreshToken);
+            setAuth(data.user, data.accessToken);
             router.navigate({ to: '/' });
         },
         onError: (error) => {

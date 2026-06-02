@@ -10,8 +10,11 @@ import type { QueryClient } from '@tanstack/react-query';
 import ErrorPage from '../components/errors/error-page';
 import NotFoundPage from '../components/errors/not-found-page';
 
+import type { getAuthStore } from '../store/auth-store';
+
 interface MyRouterContext {
     queryClient: QueryClient;
+    auth: typeof getAuthStore;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({

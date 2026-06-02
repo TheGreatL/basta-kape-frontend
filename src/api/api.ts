@@ -55,7 +55,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
 
     const config: RequestInit = {
         ...options,
-        headers
+        headers,
+        credentials: 'include'
     };
 
     let response = await fetch(url, config);
@@ -63,7 +64,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
     // -------------------------------------------------------------------------
     // Handle 401 Unauthorized - Attempt Token Refresh
     // -------------------------------------------------------------------------
-    if (response.status === 401) {
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh');
+    if (response.status === 401 && !isAuthEndpoint) {
         if (!isRefreshing) {
             isRefreshing = true;
 
@@ -73,7 +75,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ refreshToken: getAuthStore().refreshToken })
+                    credentials: 'include'
                 });
 
                 if (!refreshResponse.ok) {

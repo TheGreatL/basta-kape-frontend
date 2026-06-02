@@ -22,13 +22,10 @@ export const register = async (data: TRegisterSchema) => {
 };
 
 export const logout = async () => {
-    const { refreshToken } = getAuthStore();
-    if (refreshToken) {
-        try {
-            await api.post('/auth/logout', { refreshToken });
-        } catch (err) {
-            // Ignore logout errors, just clear the store locally
-        }
+    try {
+        await api.post('/auth/logout', {});
+    } catch (err) {
+        // Ignore logout errors, just clear the store locally
     }
     getAuthStore().logout();
 };
