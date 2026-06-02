@@ -1,16 +1,17 @@
 import { env } from '../env';
 
+import { getAuthStore } from '../store/auth-store';
+
 // -----------------------------------------------------------------------------
 // Token Storage Placeholders
-// Replace these with your actual storage mechanism (Zustand, localStorage, etc.)
 // -----------------------------------------------------------------------------
-let accessToken: string | null = null;
-
 export const setAccessToken = (token: string | null) => {
-    accessToken = token;
+    getAuthStore().setAccessToken(token);
 };
 
-export const getAccessToken = () => accessToken;
+export const getAccessToken = () => {
+    return getAuthStore().accessToken;
+};
 
 // -----------------------------------------------------------------------------
 // Refresh Logic State
@@ -67,17 +68,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
             isRefreshing = true;
 
             try {
-                // TODO: Update this to match your actual refresh endpoint and payload
                 const refreshResponse = await fetch(`${env.VITE_API_URL}/auth/refresh`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
-                    // If using HttpOnly cookies for refresh token, uncomment the line below:
-                    // credentials: 'include',
-
-                    // If sending refresh token in body, add it here:
-                    // body: JSON.stringify({ refreshToken: getRefreshToken() })
+                    },
+                    body: JSON.stringify({ refreshToken: getAuthStore().refreshToken })
                 });
 
                 if (!refreshResponse.ok) {
@@ -86,7 +82,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
 
                 const data = await refreshResponse.json();
 
-                // TODO: Adjust based on your API's response structure
                 const newAccessToken = data.accessToken;
                 setAccessToken(newAccessToken);
 
@@ -97,8 +92,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
                 response = await fetch(url, { ...config, headers });
             } catch (refreshError) {
                 processQueue(refreshError as Error, null);
-                // Handle logout logic here (e.g. clear state, redirect to login)
-                setAccessToken(null);
+                getAuthStore().logout();
                 throw refreshError;
             } finally {
                 isRefreshing = false;
