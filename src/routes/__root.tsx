@@ -11,6 +11,7 @@ import ErrorPage from '../components/errors/error-page';
 import NotFoundPage from '../components/errors/not-found-page';
 
 import type { getAuthStore } from '../store/auth-store';
+import { Toaster } from '#/components/ui/sonner';
 
 interface MyRouterContext {
     queryClient: QueryClient;
@@ -51,6 +52,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </head>
             <body>
                 <TanstackQueryProvider>{children}</TanstackQueryProvider>
+                <Toaster position="top-right" richColors closeButton />
                 {import.meta.env.DEV && (
                     <TanStackDevtools
                         config={{
