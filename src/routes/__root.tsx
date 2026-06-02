@@ -7,6 +7,8 @@ import { TanStackQueryDevtools, TanstackQueryProvider } from '../lib/query-clien
 import appCss from '../styles.css?url';
 
 import type { QueryClient } from '@tanstack/react-query';
+import ErrorPage from '../components/errors/error-page';
+import NotFoundPage from '../components/errors/not-found-page';
 
 interface MyRouterContext {
     queryClient: QueryClient;
@@ -33,6 +35,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
             }
         ]
     }),
+    errorComponent: ErrorPage,
+    notFoundComponent: NotFoundPage,
     shellComponent: RootDocument
 });
 
