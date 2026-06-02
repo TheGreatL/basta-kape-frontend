@@ -1,0 +1,125 @@
+{
+    "version": 1,
+    "skills": {
+        "api-design": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/api-design/SKILL.md",
+            "computedHash": "cd8dad9f9cf4eae8632a3969cd12f4e9ad1f9d58a9ed607c2d9ce51876d6dd13"
+        },
+        "architecture-decision-records": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/architecture-decision-records/SKILL.md",
+            "computedHash": "8d9e40da770364616b711bc2958429fc56bf08878cd98e1931be5501f3d6bc66"
+        },
+        "benchmark": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/benchmark/SKILL.md",
+            "computedHash": "8225f25b605503eae429a3d2032af1427ef61574dff5efe4f4d967f7db8a505d"
+        },
+        "browser-qa": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/browser-qa/SKILL.md",
+            "computedHash": "7d224e090831649cb2c9fec1c95cdaa4d12eac9de51943dda3c97e768ea08c28"
+        },
+        "coding-standards": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/coding-standards/SKILL.md",
+            "computedHash": "ebb4d173fb97f0189986097bcf0c4c4bfa64f0dd713ec094947ccf7b549efbe4"
+        },
+        "dashboard-builder": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/dashboard-builder/SKILL.md",
+            "computedHash": "f3013462171015dfd91195faafc8395bf1a9f790bd28506ef0992f9c8543ba78"
+        },
+        "design-system": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/design-system/SKILL.md",
+            "computedHash": "efa25e1d86526877ffaa7e7b7797ac430b4af66d87994dc4e046e52b909fbc4e"
+        },
+        "error-handling": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/error-handling/SKILL.md",
+            "computedHash": "f821365c5433a2cfc48acd7ea1ef7ae9718cf29ffb00e95bc7cfada713f144a0"
+        },
+        "frontend-patterns": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/frontend-patterns/SKILL.md",
+            "computedHash": "4c2920da9aef340538f2d579f465fd99c5b679d4afa0daba775215c0e506d0b1"
+        },
+        "frontend-slides": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/frontend-slides/SKILL.md",
+            "computedHash": "d5a347b0515281cb76e07f9e5ec0082b4cfae46358c556819c0b9caf5136268c"
+        },
+        "knowledge-ops": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/knowledge-ops/SKILL.md",
+            "computedHash": "51857b97ab7542309d5fa585e1ea2127f371289984c12ebdccb1ec5b983cbacf"
+        },
+        "motion-foundations": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/motion-foundations/SKILL.md",
+            "computedHash": "6ab9f6a04c4f6efb8969ee2eb64451b86ca3d922135ee85d524e740a21682351"
+        },
+        "motion-patterns": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/motion-patterns/SKILL.md",
+            "computedHash": "b1d3bf308c2191f18ccd98e2249fe4906a6452ccc16cd340bc4bc838dbf05dc7"
+        },
+        "motion-ui": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/motion-ui/SKILL.md",
+            "computedHash": "147121345905d7a81a57ecf240491c52151346c4eb9107f4f1b89acc373fade6"
+        },
+        "plan-orchestrate": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/plan-orchestrate/SKILL.md",
+            "computedHash": "3a2a0d82504842b16d7a2f75f52773064a37e2f861fc7276fa9b833128a95d33"
+        },
+        "react-patterns": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/react-patterns/SKILL.md",
+            "computedHash": "7d671683c6b76657e718d78b0f5c545c7a345420c3fa88d4cefb64572c6f0ff4"
+        },
+        "react-performance": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/react-performance/SKILL.md",
+            "computedHash": "a1c67a2b59d7cdf298535f3bb70471f6a14b0f10f9e9b9c9b0f4997b7ff12405"
+        },
+        "react-testing": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/react-testing/SKILL.md",
+            "computedHash": "a42d9d27ef7c44610b377af1bfd88a52902bdb4ccc787e3411e64336ec1b480d"
+        },
+        "ui-demo": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/ui-demo/SKILL.md",
+            "computedHash": "c76e71afaf194fe147f3f9b3298c8d38105a44ef42295a8ff3a7bc99ea836517"
+        },
+        "vite-patterns": {
+            "source": "affaan-m/ECC",
+            "sourceType": "github",
+            "skillPath": "skills/vite-patterns/SKILL.md",
+            "computedHash": "bdffebece745e85a0a733d7c624c01c0a21b9f4d94f8251b8ee920483e8e2456"
+        }
+    }
+}
