@@ -10,7 +10,7 @@ export default function ErrorPage({ error }: { error?: unknown }) {
                     <AlertCircle className="h-12 w-12 text-destructive" />
                 </div>
                 <div className="space-y-2">
-                    <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Something went wrong!</h1>
+                    <h1 className="text-3xl font-bold  sm:text-4xl">Something went wrong!</h1>
                     <p className="text-muted-foreground">
                         {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.'}
                     </p>

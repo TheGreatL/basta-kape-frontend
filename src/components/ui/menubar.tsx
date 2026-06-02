@@ -155,7 +155,7 @@ function MenubarSeparator({ className, ...props }: React.ComponentProps<typeof M
 }
 
 function MenubarShortcut({ className, ...props }: React.ComponentProps<'span'>) {
-    return <span data-slot="menubar-shortcut" className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)} {...props} />;
+    return <span data-slot="menubar-shortcut" className={cn('ml-auto text-xs  text-muted-foreground', className)} {...props} />;
 }
 
 function MenubarSub({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Sub>) {
