@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { Coffee, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { register } from '@/api/auth.api';
 import { useAuthStore } from '@/store/auth-store';
@@ -12,6 +12,8 @@ import { getErrorMessage } from '@/utils/error-handler';
 import { registerSchema } from './auth.schema';
 import type { TRegisterSchema } from './auth.schema';
 import QUERY_KEY from '@/constants/query-keys';
+import { BUSINESS_DETAIL } from '@/constants/business-details';
+import logo from '@/assets/logo.png';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,10 +68,10 @@ export default function RegisterPage() {
             {/* Left side styling - branding area */}
             <div className="hidden lg:flex flex-col justify-center items-center w-[45%] bg-primary/5 border-r p-12">
                 <div className="max-w-md space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 mb-8 shadow-sm">
-                        <Coffee className="size-12 text-primary" />
+                    <div className="mx-auto mb-8 flex justify-center">
+                        <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight">Join Basta Kape</h1>
+                    <h1 className="text-4xl font-bold tracking-tight">Join {BUSINESS_DETAIL.NAME}</h1>
                     <p className="text-lg text-muted-foreground">
                         Create an account to manage your store, track inventory, and serve the best coffee experiences to your customers.
                     </p>
@@ -80,10 +82,12 @@ export default function RegisterPage() {
             <div className="flex flex-1 items-center justify-center p-4 lg:p-8 animate-in fade-in zoom-in-95 duration-500 py-12 overflow-y-auto">
                 <Card className="w-full max-w-xl shadow-lg border-primary/10">
                     <CardHeader className="space-y-2 text-center">
-                        <div className="flex justify-center mb-2 lg:hidden">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                                <Coffee className="size-6 text-primary" />
-                            </div>
+                        <div className="flex justify-center mb-4 lg:hidden">
+                            <img
+                                src={logo}
+                                alt={BUSINESS_DETAIL.NAME}
+                                className="size-16 rounded-full object-cover border border-border/50 shadow-sm"
+                            />
                         </div>
                         <CardTitle className="text-3xl font-bold">Create an Account</CardTitle>
                         <CardDescription>Fill out the form below to register a new account</CardDescription>

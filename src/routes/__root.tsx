@@ -12,6 +12,7 @@ import NotFoundPage from '../components/errors/not-found-page';
 
 import type { getAuthStore } from '../store/auth-store';
 import { Toaster } from '#/components/ui/sonner';
+import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
 
 interface MyRouterContext {
     queryClient: QueryClient;
@@ -29,13 +30,39 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
                 content: 'width=device-width, initial-scale=1'
             },
             {
-                title: 'TanStack Start Starter'
+                title: BUSINESS_DETAIL.NAME
             }
         ],
         links: [
             {
                 rel: 'stylesheet',
                 href: appCss
+            },
+            {
+                rel: 'icon',
+                type: 'image/x-icon',
+                href: '/favicons/favicon.ico'
+            },
+            {
+                rel: 'icon',
+                type: 'image/png',
+                sizes: '16x16',
+                href: '/favicons/favicon-16x16.png'
+            },
+            {
+                rel: 'icon',
+                type: 'image/png',
+                sizes: '32x32',
+                href: '/favicons/favicon-32x32.png'
+            },
+            {
+                rel: 'apple-touch-icon',
+                sizes: '180x180',
+                href: '/favicons/apple-touch-icon.png'
+            },
+            {
+                rel: 'manifest',
+                href: '/manifest.json'
             }
         ]
     }),

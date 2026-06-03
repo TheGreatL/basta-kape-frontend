@@ -3,8 +3,11 @@ import { Link, useMatchRoute } from '@tanstack/react-router';
 import type { IconName } from 'lucide-react/dynamic';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
+import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
+
+import logo from '#/assets/logo.png';
 
 import {
     Sidebar as SidebarComponent,
@@ -94,7 +97,7 @@ function SidebarLinkItem({ item }: { item: { title: string; path: string; icon: 
                 asChild
                 tooltip={item.title}
                 isActive={isActive}
-                className="data-[active=true]:bg-sidebar-foreground data-[active=true]:text-sidebar-accent"
+                className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground hover:bg-sidebar-accent"
             >
                 <Link to={item.path}>
                     <DynamicIcon name={item.icon} />
@@ -128,7 +131,10 @@ export default function AppSidebar() {
     return (
         <SidebarComponent collapsible="icon">
             <SidebarHeader>
-                <div className="flex h-12 items-center px-4 font-bold text-lg">Basta Kape</div>
+                <div className="flex h-12 items-center gap-2 px-4">
+                    <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-8 rounded-md object-contain" />
+                    <span className="font-bold text-lg truncate group-data-[collapsible=icon]:hidden">{BUSINESS_DETAIL.NAME}</span>
+                </div>
             </SidebarHeader>
             <SidebarSeparator />
             <SidebarContent>

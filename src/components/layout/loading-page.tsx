@@ -1,8 +1,9 @@
 import { Coffee } from 'lucide-react';
+import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
 
 export default function LoadingPage() {
     return (
-        <div className="flex min-h-[100dvh] w-full items-center justify-center bg-background">
+        <div className="flex min-h-dvh w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-8">
                 <div className="relative flex items-center justify-center">
                     {/* Ping animation behind */}
@@ -16,7 +17,7 @@ export default function LoadingPage() {
                 </div>
 
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Basta Kape</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{BUSINESS_DETAIL.NAME}</h2>
                     <div className="flex items-center text-sm font-medium text-muted-foreground animate-pulse">Brewing your experience...</div>
                 </div>
             </div>
