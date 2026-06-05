@@ -23,6 +23,7 @@ import UserCreateDialog from './components/user-create-dialog.tsx';
 import UserEditDialog from './components/user-edit-dialog.tsx';
 import UserViewDialog from './components/user-view-dialog.tsx';
 import UserDeleteDialog from './components/user-delete-dialog.tsx';
+import { getFileUrl } from '#/utils/helper.ts';
 
 export default function UsersPage() {
     const navigate = useNavigate({ from: '/admin/users' });
@@ -98,7 +99,7 @@ export default function UsersPage() {
                     return (
                         <div className="flex items-center gap-3">
                             <Avatar className="size-9 border border-border/80 shadow-xs">
-                                <AvatarImage src={row.original.profilePhoto || undefined} className="object-cover" />
+                                <AvatarImage src={getFileUrl(row.original.profilePhoto || undefined)} className="object-cover" />
                                 <AvatarFallback className="font-semibold text-xs bg-primary/10 text-primary">{initials || 'US'}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
