@@ -85,7 +85,7 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground/90">{row.getValue('name')}</span>
                         {row.original.isSystem && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                                 <Lock className="size-2.5" />
                                 System
                             </span>
@@ -164,7 +164,7 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
         <div className="space-y-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-lg font-bold tracking-tight text-foreground/90">Configured Roles</h2>
+                    <h2 className="text-lg font-bold text-foreground/90">Configured Roles</h2>
                     <p className="text-xs text-muted-foreground">
                         Configure functional user roles, custom permissions, and nested access scope boundaries.
                     </p>

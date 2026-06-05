@@ -57,8 +57,8 @@ export default function UserEditDialog({ open, onOpenChange, user }: UserEditDia
 
     // Fetch active roles list
     const { data: rolesData, isLoading: isRolesLoading } = useQuery({
-        queryKey: [QUERY_KEY.RBAC.ROLES_LIST, { limit: 100, page: 1, status: 'active' }],
-        queryFn: () => getRolesList({ limit: 100, page: 1, status: 'active' }),
+        queryKey: [QUERY_KEY.RBAC.ROLES_LIST, { limit: 50, page: 1, status: 'active' }],
+        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' }),
         enabled: open
     });
 
@@ -250,13 +250,11 @@ export default function UserEditDialog({ open, onOpenChange, user }: UserEditDia
                                     {/* Roles Selector */}
                                     <div className="space-y-3 pt-2">
                                         <div className="flex items-center justify-between border-b pb-2">
-                                            <h3 className="text-sm font-bold tracking-tight text-foreground/80 flex items-center gap-1.5">
+                                            <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
                                                 <Shield className="size-4 text-primary" />
                                                 Security Role Assignment
                                             </h3>
-                                            <span className="text-[10px] text-muted-foreground font-medium">
-                                                Select active permissions boundaries.
-                                            </span>
+                                            <span className="text-xs text-muted-foreground font-medium">Select active permissions boundaries.</span>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {rolesData?.data.map((role: IRoleListItem) => (
@@ -275,7 +273,7 @@ export default function UserEditDialog({ open, onOpenChange, user }: UserEditDia
                                                     >
                                                         {role.name}
                                                         {role.isSystem && (
-                                                            <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
+                                                            <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
                                                                 System
                                                             </span>
                                                         )}

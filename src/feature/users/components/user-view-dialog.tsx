@@ -113,7 +113,7 @@ export default function UserViewDialog({ open, onOpenChange, user }: UserViewDia
                                 {/* Roles Assigned */}
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center justify-between border-b pb-2">
-                                        <h3 className="text-sm font-bold tracking-tight text-foreground/80 flex items-center gap-1.5">
+                                        <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
                                             <Shield className="size-4 text-primary" />
                                             Active Roles & Authorization
                                         </h3>
@@ -138,7 +138,7 @@ export default function UserViewDialog({ open, onOpenChange, user }: UserViewDia
                                 {/* Audit Card */}
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center justify-between border-b pb-2">
-                                        <h3 className="text-sm font-bold tracking-tight text-foreground/80 flex items-center gap-1.5">
+                                        <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
                                             <Calendar className="size-4 text-primary" />
                                             Audit Logs & Timestamps
                                         </h3>

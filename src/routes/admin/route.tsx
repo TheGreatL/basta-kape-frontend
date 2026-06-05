@@ -12,13 +12,14 @@ export const Route = createFileRoute('/admin')({
 
 function AdminLayout() {
     const user = useAuthStore((state) => state.user);
+    const _hasHydrated = useAuthStore((state) => state._hasHydrated);
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    if (!isMounted) {
+    if (!isMounted || !_hasHydrated) {
         return <LoadingPage />;
     }
 

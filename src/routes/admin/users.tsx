@@ -2,6 +2,7 @@ import UsersPage from '#/feature/users/users-page';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import { requirePermission } from '#/utils/rbac.ts';
+import { waitForAuthHydration } from '#/store/auth-store.ts';
 
 const searchParamsSchema = z.object({
     page: z.number().catch(1),
@@ -12,7 +13,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/users')({
-    beforeLoad: () => {
+    beforeLoad: async () => {
+        await waitForAuthHydration();
         requirePermission(null, 'Users Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

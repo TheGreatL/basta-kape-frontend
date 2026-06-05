@@ -63,7 +63,7 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
     return (
         <div className="space-y-4">
             <div>
-                <h2 className="text-lg font-bold tracking-tight text-foreground/90">System Modules</h2>
+                <h2 className="text-lg font-bold text-foreground/90">System Modules</h2>
                 <p className="text-xs text-muted-foreground">
                     Directory of registered operational system modules available for custom security role configuration.
                 </p>

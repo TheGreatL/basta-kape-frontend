@@ -17,6 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '#/components/ui/avatar.tsx'
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 import UserCreateDialog from './components/user-create-dialog.tsx';
 import UserEditDialog from './components/user-edit-dialog.tsx';
@@ -66,12 +67,6 @@ export default function UsersPage() {
             })
     });
 
-    // 2. Fetch Roles List for Filter Dropdown
-    const { data: rolesData, isLoading: isRolesLoading } = useQuery({
-        queryKey: [QUERY_KEY.RBAC.ROLES_LIST, { limit: 50, page: 1, status: 'active' }],
-        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' })
-    });
-
     const handleOpenCreate = () => {
         setSelectedUser(null);
         setActionType('create');
@@ -110,7 +105,7 @@ export default function UsersPage() {
                                 <span className="font-semibold text-foreground/90 leading-tight">
                                     {row.original.firstName} {row.original.lastName}
                                 </span>
-                                <span className="text-[10px] text-muted-foreground font-medium">
+                                <span className="text-xs text-muted-foreground font-medium">
                                     @{row.original.username} • {row.original.email}
                                 </span>
                             </div>
@@ -126,14 +121,12 @@ export default function UsersPage() {
                         {row.original.userRoles.map((ur: any) => (
                             <span
                                 key={ur.role.id}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
                             >
                                 {ur.role.name}
                             </span>
                         ))}
-                        {row.original.userRoles.length === 0 && (
-                            <span className="text-[10px] text-muted-foreground font-normal italic">No Roles</span>
-                        )}
+                        {row.original.userRoles.length === 0 && <span className="text-xs text-muted-foreground font-normal italic">No Roles</span>}
                     </div>
                 )
             },
@@ -196,7 +189,7 @@ export default function UsersPage() {
         <div className="space-y-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-lg font-bold tracking-tight text-foreground/90 flex items-center gap-2">Users & Staff Directory</h2>
+                    <h2 className="text-lg font-bold text-foreground/90 flex items-center gap-2">Users & Staff Directory</h2>
                     <p className="text-xs text-muted-foreground">
                         Manage employee profiles, credentials, role assignments, and check active system staff accounts.
                     </p>
@@ -241,29 +234,21 @@ export default function UsersPage() {
                                 <SelectItem value="archive">Archived</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Select value={role || 'all'} onValueChange={(val) => setSearchParams({ role: val === 'all' ? '' : val, page: 1 })}>
-                            <SelectTrigger className="h-9 min-w-[150px] bg-background/50 hover:bg-background/80 capitalize">
-                                <SelectValue placeholder="All Roles" />
-                            </SelectTrigger>
-                            <SelectContent position="popper" align="start">
-                                <SelectItem value="all">All Roles</SelectItem>
-                                {isRolesLoading ? (
-                                    <SelectItem value="loading" disabled>
-                                        Loading roles...
-                                    </SelectItem>
-                                ) : rolesData?.data.length === 0 ? (
-                                    <SelectItem value="empty" disabled>
-                                        No roles found
-                                    </SelectItem>
-                                ) : (
-                                    rolesData?.data.map((r: any) => (
-                                        <SelectItem key={r.id} value={r.name}>
-                                            {r.name}
-                                        </SelectItem>
-                                    ))
-                                )}
-                            </SelectContent>
-                        </Select>
+                        <InfiniteSelect<any, string>
+                            queryKey={[QUERY_KEY.RBAC.ROLES_LIST]}
+                            fetchFn={({ pageParam = 1, query }) => getRolesList({ page: pageParam, limit: 10, search: query, status: 'active' })}
+                            getItems={(res) => res.data}
+                            getNextPageParam={(lastPage) => (lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined)}
+                            initialPageParam={1}
+                            value={role || undefined}
+                            onChange={(val) => setSearchParams({ role: val || '', page: 1 })}
+                            getOptionValue={(item) => item.name}
+                            getOptionLabel={(item) => item.name}
+                            selectedItem={role ? { id: role, name: role } : undefined}
+                            placeholder="All Roles"
+                            searchPlaceholder="Search roles..."
+                            className="h-9 w-full sm:w-[150px] bg-background/50 hover:bg-background/80 capitalize"
+                        />
                     </>
                 }
             />

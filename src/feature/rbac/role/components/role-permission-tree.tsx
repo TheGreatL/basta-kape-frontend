@@ -109,7 +109,7 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                                 {module.moduleName}
                             </label>
                         </div>
-                        <CardDescription className="text-[10px] hidden sm:block">Operational modules mapped to security boundaries.</CardDescription>
+                        <CardDescription className="text-xs hidden sm:block">Operational modules mapped to security boundaries.</CardDescription>
                     </CardHeader>
                     <CardContent className="px-4 pt-3 pb-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -147,16 +147,12 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                                                 onValueChange={(val: string) => handleScopeChange(val as Scope, mpOptions)}
                                                 disabled={readOnly}
                                             >
-                                                <SelectTrigger className="h-7 w-[100px] text-[11px] font-semibold border-dashed py-0">
+                                                <SelectTrigger className="h-7 w-[100px] text-xs font-semibold border-dashed py-0">
                                                     <SelectValue placeholder="Scope" />
                                                 </SelectTrigger>
                                                 <SelectContent position="popper" align="end">
                                                     {mpOptions.map((opt: any) => (
-                                                        <SelectItem
-                                                            key={opt.modulePermissionId}
-                                                            value={opt.scope}
-                                                            className="text-[11px] font-semibold"
-                                                        >
+                                                        <SelectItem key={opt.modulePermissionId} value={opt.scope} className="text-xs font-semibold">
                                                             Scope: {opt.scope}
                                                         </SelectItem>
                                                     ))}

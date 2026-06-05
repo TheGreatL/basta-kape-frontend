@@ -17,7 +17,7 @@ export default function LoadingPage() {
                 </div>
 
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{BUSINESS_DETAIL.NAME}</h2>
+                    <h2 className="text-2xl font-bold text-foreground">{BUSINESS_DETAIL.NAME}</h2>
                     <div className="flex items-center text-sm font-medium text-muted-foreground animate-pulse">Brewing your experience...</div>
                 </div>
             </div>

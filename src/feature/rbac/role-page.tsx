@@ -26,7 +26,7 @@ export default function RolePage() {
                         <Shield className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">Roles & Permissions</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
                         <p className="text-xs text-muted-foreground">
                             Configure role-based access control (RBAC) — manage roles, action permissions, and system modules.
                         </p>

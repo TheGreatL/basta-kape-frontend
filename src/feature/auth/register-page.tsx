@@ -71,7 +71,7 @@ export default function RegisterPage() {
                     <div className="mx-auto mb-8 flex justify-center">
                         <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight">Join {BUSINESS_DETAIL.NAME}</h1>
+                    <h1 className="text-4xl font-bold">Join {BUSINESS_DETAIL.NAME}</h1>
                     <p className="text-lg text-muted-foreground">
                         Create an account to manage your store, track inventory, and serve the best coffee experiences to your customers.
                     </p>

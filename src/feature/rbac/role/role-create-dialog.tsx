@@ -141,8 +141,8 @@ export default function RoleCreateDialog({ open, onOpenChange }: RoleCreateDialo
                                     </div>
                                     <div className="space-y-3 pt-2">
                                         <div className="flex items-center justify-between border-b pb-2">
-                                            <h3 className="text-sm font-bold tracking-tight text-foreground/80">Access Control Selection Tree</h3>
-                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                            <h3 className="text-sm font-bold text-foreground/80">Access Control Selection Tree</h3>
+                                            <span className="text-xs text-muted-foreground font-medium">
                                                 Toggle permissions and adjust access scope limits.
                                             </span>
                                         </div>

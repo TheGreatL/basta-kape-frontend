@@ -70,7 +70,7 @@ export default function LoginPage() {
                     <div className="mx-auto mb-8 flex justify-center">
                         <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight">Welcome to {BUSINESS_DETAIL.NAME}</h1>
+                    <h1 className="text-4xl font-bold">Welcome to {BUSINESS_DETAIL.NAME}</h1>
                     <p className="text-lg text-muted-foreground">
                         Your premium coffee management experience starts here. Sign in to access your dashboard, manage orders, and grow your
                         business.

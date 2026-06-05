@@ -93,7 +93,7 @@ export function UserAvatarUpload({ userId, currentPhotoUrl, firstName, lastName,
                 {!readOnly && !uploadMutation.isPending && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                         <Camera className="size-5" />
-                        <span className="text-[9px] font-bold mt-1 uppercase tracking-wider">Change</span>
+                        <span className="text-xs font-bold mt-1 uppercase">Change</span>
                     </div>
                 )}
 
@@ -114,7 +114,7 @@ export function UserAvatarUpload({ userId, currentPhotoUrl, firstName, lastName,
                 disabled={readOnly || uploadMutation.isPending}
             />
 
-            {!readOnly && <span className="text-[10px] text-muted-foreground font-medium">PNG, JPG, JPEG (Max 5MB)</span>}
+            {!readOnly && <span className="text-xs text-muted-foreground font-medium">PNG, JPG, JPEG (Max 5MB)</span>}
         </div>
     );
 }
