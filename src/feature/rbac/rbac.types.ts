@@ -1,4 +1,4 @@
-import type { IPaginationParams } from '#/types/base.types';
+import type { IPaginationParams, UserAuditSelect } from '#/types/base.types';
 
 export interface ModulePermissionNode {
     modulePermissionId: string;
@@ -29,6 +29,8 @@ export interface IRoleListItem {
     isSystem: boolean;
     createdAt: string;
     updatedAt: string;
+    createdBy?: UserAuditSelect;
+    updatedBy?: UserAuditSelect;
 }
 
 export interface ISystemPermission {

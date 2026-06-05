@@ -13,3 +13,8 @@ export interface IPaginatedResult<T> {
         hasMore: boolean;
     };
 }
+export type UserAuditSelect = {
+    firstName: true;
+    lastName: true;
+    email: true;
+};
