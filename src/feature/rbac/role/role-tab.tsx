@@ -9,6 +9,7 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import type { RoleTabProps, IRoleListItem } from '../rbac.types';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -114,35 +115,41 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
 
                     return (
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                onClick={() => handleOpenView(row.original)}
-                            >
-                                <Eye className="size-4" />
-                                <span className="sr-only">View Role</span>
-                            </Button>
+                            <RequirePermission module="Roles and Permissions" action="read">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                    onClick={() => handleOpenView(row.original)}
+                                >
+                                    <Eye className="size-4" />
+                                    <span className="sr-only">View Role</span>
+                                </Button>
+                            </RequirePermission>
                             {!isCustomer && (
                                 <>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                        onClick={() => handleOpenEdit(row.original)}
-                                    >
-                                        <Edit className="size-4" />
-                                        <span className="sr-only">Edit Role</span>
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                        onClick={() => handleOpenDelete(row.original)}
-                                    >
-                                        <Trash2 className="size-4" />
-                                        <span className="sr-only">Delete Role</span>
-                                    </Button>
+                                    <RequirePermission module="Roles and Permissions" action="update">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                            onClick={() => handleOpenEdit(row.original)}
+                                        >
+                                            <Edit className="size-4" />
+                                            <span className="sr-only">Edit Role</span>
+                                        </Button>
+                                    </RequirePermission>
+                                    <RequirePermission module="Roles and Permissions" action="delete">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                            onClick={() => handleOpenDelete(row.original)}
+                                        >
+                                            <Trash2 className="size-4" />
+                                            <span className="sr-only">Delete Role</span>
+                                        </Button>
+                                    </RequirePermission>
                                 </>
                             )}
                         </div>
@@ -165,10 +172,12 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
 
                 <div className="flex items-center gap-2">
                     {status === 'active' && (
-                        <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
-                            <Plus className="size-4" />
-                            Create Role
-                        </Button>
+                        <RequirePermission module="Roles and Permissions" action="create">
+                            <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
+                                <Plus className="size-4" />
+                                Create Role
+                            </Button>
+                        </RequirePermission>
                     )}
                 </div>
             </div>
@@ -206,17 +215,21 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
                 }
             />
 
-            {/* CREATE DIALOG */}
-            <RoleCreateDialog open={actionType === 'create'} onOpenChange={(val) => !val && setActionType(null)} />
+            {isRolesLoading ? null : (
+                <>
+                    {/* CREATE DIALOG */}
+                    <RoleCreateDialog open={actionType === 'create'} onOpenChange={(val) => !val && setActionType(null)} />
 
-            {/* EDIT DIALOG */}
-            <RoleEditDialog open={actionType === 'edit'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
+                    {/* EDIT DIALOG */}
+                    <RoleEditDialog open={actionType === 'edit'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
 
-            {/* VIEW DIALOG */}
-            <RoleViewDialog open={actionType === 'view'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
+                    {/* VIEW DIALOG */}
+                    <RoleViewDialog open={actionType === 'view'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
 
-            {/* DELETE CONFIRMATION DIALOG */}
-            <RoleDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} role={roleToDelete} />
+                    {/* DELETE CONFIRMATION DIALOG */}
+                    <RoleDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} role={roleToDelete} />
+                </>
+            )}
         </div>
     );
 }

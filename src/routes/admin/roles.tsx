@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import RolePage from '#/feature/rbac/role-page';
+import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
     tab: z.enum(['roles', 'permissions', 'modules']).catch('roles'),
@@ -23,6 +24,9 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/roles')({
+    beforeLoad: () => {
+        requirePermission(null, 'Roles and Permissions', 'read');
+    },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: RolePage
 });

@@ -9,6 +9,10 @@ const QUERY_KEY = {
         MODULES_PERMISSIONS: 'rbac:modules_permissions',
         PERMISSIONS_LIST: 'rbac:permissions_list',
         MODULES_LIST: 'rbac:modules_list'
+    },
+    USERS: {
+        USERS_LIST: 'users:users_list',
+        USER_DETAILS: 'users:user_details'
     }
 };
 export default QUERY_KEY;

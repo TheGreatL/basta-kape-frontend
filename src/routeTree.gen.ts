@@ -8,346 +8,363 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as customerIndexRouteImport } from './routes/(customer)/index'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminRolesRouteImport } from './routes/admin/roles'
-import { Route as AdminProfileRouteImport } from './routes/admin/profile'
-import { Route as customerProfileRouteImport } from './routes/(customer)/profile'
-import { Route as customerCartRouteImport } from './routes/(customer)/cart'
-import { Route as authRegisterRouteImport } from './routes/(auth)/register'
-import { Route as authLoginRouteImport } from './routes/(auth)/login'
-import { Route as customerProductIndexRouteImport } from './routes/(customer)/product/index'
-import { Route as customerOrderIndexRouteImport } from './routes/(customer)/order/index'
-import { Route as customerProductIdRouteImport } from './routes/(customer)/product/$id'
-import { Route as customerOrderIdRouteImport } from './routes/(customer)/order/$id'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as NotFoundRouteImport } from './routes/not-found';
+import { Route as AdminRouteRouteImport } from './routes/admin/route';
+import { Route as AdminIndexRouteImport } from './routes/admin/index';
+import { Route as customerIndexRouteImport } from './routes/(customer)/index';
+import { Route as AdminUsersRouteImport } from './routes/admin/users';
+import { Route as AdminRolesRouteImport } from './routes/admin/roles';
+import { Route as AdminProfileRouteImport } from './routes/admin/profile';
+import { Route as customerProfileRouteImport } from './routes/(customer)/profile';
+import { Route as customerCartRouteImport } from './routes/(customer)/cart';
+import { Route as authRegisterRouteImport } from './routes/(auth)/register';
+import { Route as authLoginRouteImport } from './routes/(auth)/login';
+import { Route as customerProductIndexRouteImport } from './routes/(customer)/product/index';
+import { Route as customerOrderIndexRouteImport } from './routes/(customer)/order/index';
+import { Route as customerProductIdRouteImport } from './routes/(customer)/product/$id';
+import { Route as customerOrderIdRouteImport } from './routes/(customer)/order/$id';
 
+const NotFoundRoute = NotFoundRouteImport.update({
+    id: '/not-found',
+    path: '/not-found',
+    getParentRoute: () => rootRouteImport
+} as any);
 const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/admin',
+    path: '/admin',
+    getParentRoute: () => rootRouteImport
+} as any);
 const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const customerIndexRoute = customerIndexRouteImport.update({
-  id: '/(customer)/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/',
+    path: '/',
+    getParentRoute: () => rootRouteImport
+} as any);
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const AdminRolesRoute = AdminRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const AdminProfileRoute = AdminProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const customerProfileRoute = customerProfileRouteImport.update({
-  id: '/(customer)/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/profile',
+    path: '/profile',
+    getParentRoute: () => rootRouteImport
+} as any);
 const customerCartRoute = customerCartRouteImport.update({
-  id: '/(customer)/cart',
-  path: '/cart',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/cart',
+    path: '/cart',
+    getParentRoute: () => rootRouteImport
+} as any);
 const authRegisterRoute = authRegisterRouteImport.update({
-  id: '/(auth)/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(auth)/register',
+    path: '/register',
+    getParentRoute: () => rootRouteImport
+} as any);
 const authLoginRoute = authLoginRouteImport.update({
-  id: '/(auth)/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(auth)/login',
+    path: '/login',
+    getParentRoute: () => rootRouteImport
+} as any);
 const customerProductIndexRoute = customerProductIndexRouteImport.update({
-  id: '/(customer)/product/',
-  path: '/product/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/product/',
+    path: '/product/',
+    getParentRoute: () => rootRouteImport
+} as any);
 const customerOrderIndexRoute = customerOrderIndexRouteImport.update({
-  id: '/(customer)/order/',
-  path: '/order/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/order/',
+    path: '/order/',
+    getParentRoute: () => rootRouteImport
+} as any);
 const customerProductIdRoute = customerProductIdRouteImport.update({
-  id: '/(customer)/product/$id',
-  path: '/product/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/product/$id',
+    path: '/product/$id',
+    getParentRoute: () => rootRouteImport
+} as any);
 const customerOrderIdRoute = customerOrderIdRouteImport.update({
-  id: '/(customer)/order/$id',
-  path: '/order/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: '/(customer)/order/$id',
+    path: '/order/$id',
+    getParentRoute: () => rootRouteImport
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/login': typeof authLoginRoute
-  '/register': typeof authRegisterRoute
-  '/cart': typeof customerCartRoute
-  '/profile': typeof customerProfileRoute
-  '/admin/profile': typeof AdminProfileRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/': typeof customerIndexRoute
-  '/admin/': typeof AdminIndexRoute
-  '/order/$id': typeof customerOrderIdRoute
-  '/product/$id': typeof customerProductIdRoute
-  '/order/': typeof customerOrderIndexRoute
-  '/product/': typeof customerProductIndexRoute
+    '/admin': typeof AdminRouteRouteWithChildren;
+    '/not-found': typeof NotFoundRoute;
+    '/login': typeof authLoginRoute;
+    '/register': typeof authRegisterRoute;
+    '/cart': typeof customerCartRoute;
+    '/profile': typeof customerProfileRoute;
+    '/admin/profile': typeof AdminProfileRoute;
+    '/admin/roles': typeof AdminRolesRoute;
+    '/admin/users': typeof AdminUsersRoute;
+    '/': typeof customerIndexRoute;
+    '/admin/': typeof AdminIndexRoute;
+    '/order/$id': typeof customerOrderIdRoute;
+    '/product/$id': typeof customerProductIdRoute;
+    '/order/': typeof customerOrderIndexRoute;
+    '/product/': typeof customerProductIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/login': typeof authLoginRoute
-  '/register': typeof authRegisterRoute
-  '/cart': typeof customerCartRoute
-  '/profile': typeof customerProfileRoute
-  '/admin/profile': typeof AdminProfileRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/': typeof customerIndexRoute
-  '/admin': typeof AdminIndexRoute
-  '/order/$id': typeof customerOrderIdRoute
-  '/product/$id': typeof customerProductIdRoute
-  '/order': typeof customerOrderIndexRoute
-  '/product': typeof customerProductIndexRoute
+    '/not-found': typeof NotFoundRoute;
+    '/login': typeof authLoginRoute;
+    '/register': typeof authRegisterRoute;
+    '/cart': typeof customerCartRoute;
+    '/profile': typeof customerProfileRoute;
+    '/admin/profile': typeof AdminProfileRoute;
+    '/admin/roles': typeof AdminRolesRoute;
+    '/admin/users': typeof AdminUsersRoute;
+    '/': typeof customerIndexRoute;
+    '/admin': typeof AdminIndexRoute;
+    '/order/$id': typeof customerOrderIdRoute;
+    '/product/$id': typeof customerProductIdRoute;
+    '/order': typeof customerOrderIndexRoute;
+    '/product': typeof customerProductIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/(auth)/login': typeof authLoginRoute
-  '/(auth)/register': typeof authRegisterRoute
-  '/(customer)/cart': typeof customerCartRoute
-  '/(customer)/profile': typeof customerProfileRoute
-  '/admin/profile': typeof AdminProfileRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/(customer)/': typeof customerIndexRoute
-  '/admin/': typeof AdminIndexRoute
-  '/(customer)/order/$id': typeof customerOrderIdRoute
-  '/(customer)/product/$id': typeof customerProductIdRoute
-  '/(customer)/order/': typeof customerOrderIndexRoute
-  '/(customer)/product/': typeof customerProductIndexRoute
+    __root__: typeof rootRouteImport;
+    '/admin': typeof AdminRouteRouteWithChildren;
+    '/not-found': typeof NotFoundRoute;
+    '/(auth)/login': typeof authLoginRoute;
+    '/(auth)/register': typeof authRegisterRoute;
+    '/(customer)/cart': typeof customerCartRoute;
+    '/(customer)/profile': typeof customerProfileRoute;
+    '/admin/profile': typeof AdminProfileRoute;
+    '/admin/roles': typeof AdminRolesRoute;
+    '/admin/users': typeof AdminUsersRoute;
+    '/(customer)/': typeof customerIndexRoute;
+    '/admin/': typeof AdminIndexRoute;
+    '/(customer)/order/$id': typeof customerOrderIdRoute;
+    '/(customer)/product/$id': typeof customerProductIdRoute;
+    '/(customer)/order/': typeof customerOrderIndexRoute;
+    '/(customer)/product/': typeof customerProductIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/admin'
-    | '/login'
-    | '/register'
-    | '/cart'
-    | '/profile'
-    | '/admin/profile'
-    | '/admin/roles'
-    | '/admin/users'
-    | '/'
-    | '/admin/'
-    | '/order/$id'
-    | '/product/$id'
-    | '/order/'
-    | '/product/'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/register'
-    | '/cart'
-    | '/profile'
-    | '/admin/profile'
-    | '/admin/roles'
-    | '/admin/users'
-    | '/'
-    | '/admin'
-    | '/order/$id'
-    | '/product/$id'
-    | '/order'
-    | '/product'
-  id:
-    | '__root__'
-    | '/admin'
-    | '/(auth)/login'
-    | '/(auth)/register'
-    | '/(customer)/cart'
-    | '/(customer)/profile'
-    | '/admin/profile'
-    | '/admin/roles'
-    | '/admin/users'
-    | '/(customer)/'
-    | '/admin/'
-    | '/(customer)/order/$id'
-    | '/(customer)/product/$id'
-    | '/(customer)/order/'
-    | '/(customer)/product/'
-  fileRoutesById: FileRoutesById
+    fileRoutesByFullPath: FileRoutesByFullPath;
+    fullPaths:
+        | '/admin'
+        | '/not-found'
+        | '/login'
+        | '/register'
+        | '/cart'
+        | '/profile'
+        | '/admin/profile'
+        | '/admin/roles'
+        | '/admin/users'
+        | '/'
+        | '/admin/'
+        | '/order/$id'
+        | '/product/$id'
+        | '/order/'
+        | '/product/';
+    fileRoutesByTo: FileRoutesByTo;
+    to:
+        | '/not-found'
+        | '/login'
+        | '/register'
+        | '/cart'
+        | '/profile'
+        | '/admin/profile'
+        | '/admin/roles'
+        | '/admin/users'
+        | '/'
+        | '/admin'
+        | '/order/$id'
+        | '/product/$id'
+        | '/order'
+        | '/product';
+    id:
+        | '__root__'
+        | '/admin'
+        | '/not-found'
+        | '/(auth)/login'
+        | '/(auth)/register'
+        | '/(customer)/cart'
+        | '/(customer)/profile'
+        | '/admin/profile'
+        | '/admin/roles'
+        | '/admin/users'
+        | '/(customer)/'
+        | '/admin/'
+        | '/(customer)/order/$id'
+        | '/(customer)/product/$id'
+        | '/(customer)/order/'
+        | '/(customer)/product/';
+    fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  AdminRouteRoute: typeof AdminRouteRouteWithChildren
-  authLoginRoute: typeof authLoginRoute
-  authRegisterRoute: typeof authRegisterRoute
-  customerCartRoute: typeof customerCartRoute
-  customerProfileRoute: typeof customerProfileRoute
-  customerIndexRoute: typeof customerIndexRoute
-  customerOrderIdRoute: typeof customerOrderIdRoute
-  customerProductIdRoute: typeof customerProductIdRoute
-  customerOrderIndexRoute: typeof customerOrderIndexRoute
-  customerProductIndexRoute: typeof customerProductIndexRoute
+    AdminRouteRoute: typeof AdminRouteRouteWithChildren;
+    NotFoundRoute: typeof NotFoundRoute;
+    authLoginRoute: typeof authLoginRoute;
+    authRegisterRoute: typeof authRegisterRoute;
+    customerCartRoute: typeof customerCartRoute;
+    customerProfileRoute: typeof customerProfileRoute;
+    customerIndexRoute: typeof customerIndexRoute;
+    customerOrderIdRoute: typeof customerOrderIdRoute;
+    customerProductIdRoute: typeof customerProductIdRoute;
+    customerOrderIndexRoute: typeof customerOrderIndexRoute;
+    customerProductIndexRoute: typeof customerProductIndexRoute;
 }
 
 declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
+    interface FileRoutesByPath {
+        '/not-found': {
+            id: '/not-found';
+            path: '/not-found';
+            fullPath: '/not-found';
+            preLoaderRoute: typeof NotFoundRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/admin': {
+            id: '/admin';
+            path: '/admin';
+            fullPath: '/admin';
+            preLoaderRoute: typeof AdminRouteRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/admin/': {
+            id: '/admin/';
+            path: '/';
+            fullPath: '/admin/';
+            preLoaderRoute: typeof AdminIndexRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/(customer)/': {
+            id: '/(customer)/';
+            path: '/';
+            fullPath: '/';
+            preLoaderRoute: typeof customerIndexRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/admin/users': {
+            id: '/admin/users';
+            path: '/users';
+            fullPath: '/admin/users';
+            preLoaderRoute: typeof AdminUsersRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/admin/roles': {
+            id: '/admin/roles';
+            path: '/roles';
+            fullPath: '/admin/roles';
+            preLoaderRoute: typeof AdminRolesRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/admin/profile': {
+            id: '/admin/profile';
+            path: '/profile';
+            fullPath: '/admin/profile';
+            preLoaderRoute: typeof AdminProfileRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/(customer)/profile': {
+            id: '/(customer)/profile';
+            path: '/profile';
+            fullPath: '/profile';
+            preLoaderRoute: typeof customerProfileRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(customer)/cart': {
+            id: '/(customer)/cart';
+            path: '/cart';
+            fullPath: '/cart';
+            preLoaderRoute: typeof customerCartRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(auth)/register': {
+            id: '/(auth)/register';
+            path: '/register';
+            fullPath: '/register';
+            preLoaderRoute: typeof authRegisterRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(auth)/login': {
+            id: '/(auth)/login';
+            path: '/login';
+            fullPath: '/login';
+            preLoaderRoute: typeof authLoginRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(customer)/product/': {
+            id: '/(customer)/product/';
+            path: '/product';
+            fullPath: '/product/';
+            preLoaderRoute: typeof customerProductIndexRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(customer)/order/': {
+            id: '/(customer)/order/';
+            path: '/order';
+            fullPath: '/order/';
+            preLoaderRoute: typeof customerOrderIndexRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(customer)/product/$id': {
+            id: '/(customer)/product/$id';
+            path: '/product/$id';
+            fullPath: '/product/$id';
+            preLoaderRoute: typeof customerProductIdRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        '/(customer)/order/$id': {
+            id: '/(customer)/order/$id';
+            path: '/order/$id';
+            fullPath: '/order/$id';
+            preLoaderRoute: typeof customerOrderIdRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/(customer)/': {
-      id: '/(customer)/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof customerIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/roles': {
-      id: '/admin/roles'
-      path: '/roles'
-      fullPath: '/admin/roles'
-      preLoaderRoute: typeof AdminRolesRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/profile': {
-      id: '/admin/profile'
-      path: '/profile'
-      fullPath: '/admin/profile'
-      preLoaderRoute: typeof AdminProfileRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/(customer)/profile': {
-      id: '/(customer)/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof customerProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(customer)/cart': {
-      id: '/(customer)/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof customerCartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(auth)/register': {
-      id: '/(auth)/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof authRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(auth)/login': {
-      id: '/(auth)/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof authLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(customer)/product/': {
-      id: '/(customer)/product/'
-      path: '/product'
-      fullPath: '/product/'
-      preLoaderRoute: typeof customerProductIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(customer)/order/': {
-      id: '/(customer)/order/'
-      path: '/order'
-      fullPath: '/order/'
-      preLoaderRoute: typeof customerOrderIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(customer)/product/$id': {
-      id: '/(customer)/product/$id'
-      path: '/product/$id'
-      fullPath: '/product/$id'
-      preLoaderRoute: typeof customerProductIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(customer)/order/$id': {
-      id: '/(customer)/order/$id'
-      path: '/order/$id'
-      fullPath: '/order/$id'
-      preLoaderRoute: typeof customerOrderIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
 }
 
 interface AdminRouteRouteChildren {
-  AdminProfileRoute: typeof AdminProfileRoute
-  AdminRolesRoute: typeof AdminRolesRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-  AdminIndexRoute: typeof AdminIndexRoute
+    AdminProfileRoute: typeof AdminProfileRoute;
+    AdminRolesRoute: typeof AdminRolesRoute;
+    AdminUsersRoute: typeof AdminUsersRoute;
+    AdminIndexRoute: typeof AdminIndexRoute;
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
-  AdminProfileRoute: AdminProfileRoute,
-  AdminRolesRoute: AdminRolesRoute,
-  AdminUsersRoute: AdminUsersRoute,
-  AdminIndexRoute: AdminIndexRoute,
-}
+    AdminProfileRoute: AdminProfileRoute,
+    AdminRolesRoute: AdminRolesRoute,
+    AdminUsersRoute: AdminUsersRoute,
+    AdminIndexRoute: AdminIndexRoute
+};
 
-const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
-  AdminRouteRouteChildren,
-)
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(AdminRouteRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
-  AdminRouteRoute: AdminRouteRouteWithChildren,
-  authLoginRoute: authLoginRoute,
-  authRegisterRoute: authRegisterRoute,
-  customerCartRoute: customerCartRoute,
-  customerProfileRoute: customerProfileRoute,
-  customerIndexRoute: customerIndexRoute,
-  customerOrderIdRoute: customerOrderIdRoute,
-  customerProductIdRoute: customerProductIdRoute,
-  customerOrderIndexRoute: customerOrderIndexRoute,
-  customerProductIndexRoute: customerProductIndexRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+    AdminRouteRoute: AdminRouteRouteWithChildren,
+    NotFoundRoute: NotFoundRoute,
+    authLoginRoute: authLoginRoute,
+    authRegisterRoute: authRegisterRoute,
+    customerCartRoute: customerCartRoute,
+    customerProfileRoute: customerProfileRoute,
+    customerIndexRoute: customerIndexRoute,
+    customerOrderIdRoute: customerOrderIdRoute,
+    customerProductIdRoute: customerProductIdRoute,
+    customerOrderIndexRoute: customerOrderIndexRoute,
+    customerProductIndexRoute: customerProductIndexRoute
+};
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { getRouter } from './router.tsx';
+import type { createStart } from '@tanstack/react-start';
 declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
+    interface Register {
+        ssr: true;
+        router: Awaited<ReturnType<typeof getRouter>>;
+    }
 }

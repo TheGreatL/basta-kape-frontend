@@ -32,6 +32,6 @@ export function requirePermission(auth: { user: User | null } | null, module: TA
     }
 
     if (!hasPermission(currentPermissions, module, action, scope)) {
-        throw redirect({ to: '/403' as any });
+        throw redirect({ to: '/not-found' });
     }
 }
