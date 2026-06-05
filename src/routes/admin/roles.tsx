@@ -2,7 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import RolePage from '#/feature/rbac/role-page';
 import { requirePermission } from '#/utils/rbac.ts';
-import { waitForAuthHydration } from '#/store/auth-store.ts';
+import { useAuthStore, waitForAuthHydration } from '#/store/auth-store.ts';
+import { restoreSession } from '#/api/auth.api.ts';
 
 const searchParamsSchema = z.object({
     tab: z.enum(['roles', 'permissions', 'modules']).catch('roles'),
@@ -26,7 +27,16 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/roles')({
     beforeLoad: async () => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
         await waitForAuthHydration();
+
+        if (!useAuthStore.getState().user) {
+            await restoreSession().catch(() => null);
+        }
+
         requirePermission(null, 'Roles and Permissions', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

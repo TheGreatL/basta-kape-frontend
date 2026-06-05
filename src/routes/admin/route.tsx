@@ -2,9 +2,10 @@ import { createFileRoute, Outlet, Navigate } from '@tanstack/react-router';
 import AppSidebar from '#/components/layout/Sidebar';
 import { SidebarProvider, SidebarInset } from '#/components/ui/sidebar';
 import AdminHeader from '#/components/layout/admin-header';
-import { useAuthStore } from '#/store/auth-store';
+import { useAuthStore, waitForAuthHydration } from '#/store/auth-store';
 import { useEffect, useState } from 'react';
 import LoadingPage from '#/components/layout/loading-page';
+import { restoreSession } from '#/api/auth.api';
 
 export const Route = createFileRoute('/admin')({
     component: AdminLayout
@@ -14,12 +15,36 @@ function AdminLayout() {
     const user = useAuthStore((state) => state.user);
     const _hasHydrated = useAuthStore((state) => state._hasHydrated);
     const [isMounted, setIsMounted] = useState(false);
+    const [isCheckingSession, setIsCheckingSession] = useState(true);
 
     useEffect(() => {
-        setIsMounted(true);
+        let isActive = true;
+
+        const initializeSession = async () => {
+            setIsMounted(true);
+            await waitForAuthHydration();
+
+            if (!useAuthStore.getState().user) {
+                try {
+                    await restoreSession();
+                } catch (error) {
+                    console.error('Failed to restore session on admin route:', error);
+                }
+            }
+
+            if (isActive) {
+                setIsCheckingSession(false);
+            }
+        };
+
+        initializeSession();
+
+        return () => {
+            isActive = false;
+        };
     }, []);
 
-    if (!isMounted || !_hasHydrated) {
+    if (!isMounted || !_hasHydrated || isCheckingSession) {
         return <LoadingPage />;
     }
 

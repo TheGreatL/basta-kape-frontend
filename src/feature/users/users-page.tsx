@@ -44,8 +44,10 @@ export default function UsersPage() {
     }, [search]);
 
     React.useEffect(() => {
-        setSearchParams({ search: debouncedSearch, page: 1 });
-    }, [debouncedSearch]);
+        if (debouncedSearch !== (search || '')) {
+            setSearchParams({ search: debouncedSearch, page: 1 });
+        }
+    }, [debouncedSearch, search]);
 
     // Dialog States
     const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);

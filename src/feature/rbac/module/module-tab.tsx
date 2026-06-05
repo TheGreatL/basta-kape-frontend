@@ -22,8 +22,10 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
     }, [search]);
 
     React.useEffect(() => {
-        onSearchChange(debouncedSearch);
-    }, [debouncedSearch, onSearchChange]);
+        if (debouncedSearch !== (search || '')) {
+            onSearchChange(debouncedSearch);
+        }
+    }, [debouncedSearch, search, onSearchChange]);
 
     const { data, isLoading } = useQuery({
         queryKey: [QUERY_KEY.RBAC.MODULES_LIST, { page, pageSize, search }],

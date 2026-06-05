@@ -27,11 +27,20 @@ export function requirePermission(auth: { user: User | null } | null, module: TA
     const currentUser = auth?.user || useAuthStore.getState().user;
     const currentPermissions = getUserPermissions(currentUser);
 
+    console.log('[DEBUG] requirePermission checked.', {
+        user: currentUser ? currentUser.username : null,
+        permissionsCount: currentPermissions.length,
+        module,
+        action
+    });
+
     if (!currentUser) {
+        console.log('[DEBUG] requirePermission redirecting to /login because currentUser is null!');
         throw redirect({ to: '/login' });
     }
 
     if (!hasPermission(currentPermissions, module, action, scope)) {
+        console.log('[DEBUG] requirePermission redirecting to /not-found because permission check failed!');
         throw redirect({ to: '/not-found' });
     }
 }

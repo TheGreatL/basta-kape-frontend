@@ -56,16 +56,59 @@ export const getAuthStore = () => useAuthStore.getState();
 export const waitForAuthHydration = () => {
     return new Promise<void>((resolve) => {
         const state = useAuthStore.getState();
-        if (state._hasHydrated) {
+        console.log('[DEBUG] waitForAuthHydration started. state:', {
+            _hasHydrated: state._hasHydrated,
+            hasHydratedInternal: (useAuthStore as any).persist?.hasHydrated?.(),
+            user: state.user ? state.user.username : null
+        });
+
+        if (state._hasHydrated || (useAuthStore as any).persist?.hasHydrated?.()) {
+            if (!state._hasHydrated) {
+                useAuthStore.getState().setHasHydrated(true);
+            }
+            console.log('[DEBUG] waitForAuthHydration resolved immediately. user:', useAuthStore.getState().user?.username);
             resolve();
             return;
         }
 
+        let resolved = false;
+        const doResolve = (source: string) => {
+            if (resolved) return;
+            resolved = true;
+            console.log('[DEBUG] waitForAuthHydration resolved via:', source, 'user:', useAuthStore.getState().user?.username);
+            resolve();
+        };
+
         const unsubscribe = useAuthStore.subscribe((currState) => {
-            if (currState._hasHydrated) {
+            console.log('[DEBUG] subscription fired. state:', {
+                _hasHydrated: currState._hasHydrated,
+                hasHydratedInternal: (useAuthStore as any).persist?.hasHydrated?.(),
+                user: currState.user ? currState.user.username : null
+            });
+            if (currState._hasHydrated || (useAuthStore as any).persist?.hasHydrated?.()) {
+                if (!currState._hasHydrated) {
+                    useAuthStore.getState().setHasHydrated(true);
+                }
                 unsubscribe();
-                resolve();
+                clearTimeout(timeoutId);
+                doResolve('subscribe');
             }
         });
+
+        const unsubFinish = (useAuthStore as any).persist.onFinishHydration(() => {
+            console.log('[DEBUG] onFinishHydration fired. user:', useAuthStore.getState().user?.username);
+            useAuthStore.getState().setHasHydrated(true);
+            unsubscribe();
+            if (unsubFinish) unsubFinish();
+            clearTimeout(timeoutId);
+            doResolve('onFinishHydration');
+        });
+
+        const timeoutId = setTimeout(() => {
+            console.warn('[DEBUG] setTimeout fallback fired! user:', useAuthStore.getState().user?.username);
+            unsubscribe();
+            if (unsubFinish) unsubFinish();
+            doResolve('timeout');
+        }, 1000);
     });
 };

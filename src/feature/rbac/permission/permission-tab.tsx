@@ -22,8 +22,10 @@ export default function PermissionTab({ page, pageSize, search, onPaginationChan
     }, [search]);
 
     React.useEffect(() => {
-        onSearchChange(debouncedSearch);
-    }, [debouncedSearch, onSearchChange]);
+        if (debouncedSearch !== (search || '')) {
+            onSearchChange(debouncedSearch);
+        }
+    }, [debouncedSearch, search, onSearchChange]);
 
     const { data, isLoading } = useQuery({
         queryKey: [QUERY_KEY.RBAC.PERMISSIONS_LIST, { page, pageSize, search }],

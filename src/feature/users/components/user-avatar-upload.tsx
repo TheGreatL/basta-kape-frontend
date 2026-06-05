@@ -5,6 +5,7 @@ import { Camera, Loader2 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '#/components/ui/avatar.tsx';
 import { uploadProfilePicture } from '#/api/users.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
+import { getFileUrl } from '#/utils/helper.ts';
 
 interface UserAvatarUploadProps {
     userId: string;
@@ -74,7 +75,7 @@ export function UserAvatarUpload({ userId, currentPhotoUrl, firstName, lastName,
     };
 
     const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
-    const displayUrl = previewUrl || currentPhotoUrl || undefined;
+    const displayUrl = previewUrl || getFileUrl(currentPhotoUrl) || undefined;
 
     return (
         <div className="flex flex-col items-center justify-center gap-3">
