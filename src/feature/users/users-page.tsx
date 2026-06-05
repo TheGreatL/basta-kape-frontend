@@ -118,7 +118,7 @@ export default function UsersPage() {
                 header: 'Role Assignments',
                 cell: ({ row }) => (
                     <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {row.original.userRoles.map((ur: any) => (
+                        {row.original.userRoles.map((ur) => (
                             <span
                                 key={ur.role.id}
                                 className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
@@ -156,17 +156,19 @@ export default function UsersPage() {
                                 <span className="sr-only">View User</span>
                             </Button>
                         </RequirePermission>
-                        <RequirePermission module="Users Management" action="update">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                onClick={() => handleOpenEdit(row.original)}
-                            >
-                                <Edit className="size-4" />
-                                <span className="sr-only">Edit User</span>
-                            </Button>
-                        </RequirePermission>
+                        {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
+                            <RequirePermission module="Users Management" action="update">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                    onClick={() => handleOpenEdit(row.original)}
+                                >
+                                    <Edit className="size-4" />
+                                    <span className="sr-only">Edit User</span>
+                                </Button>
+                            </RequirePermission>
+                        )}
                         <RequirePermission module="Users Management" action="delete">
                             <Button
                                 variant="ghost"
