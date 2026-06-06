@@ -31,6 +31,12 @@ const QUERY_KEY = {
         PRODUCTS_LIST: 'products:products_list',
         PRODUCT_DETAILS: 'products:product_details',
         VARIANT_DETAILS: 'products:variant_details'
+    },
+    MENU: {
+        CATALOG: 'menu:catalog',
+        PRODUCT_DETAILS: 'menu:product_details',
+        CATEGORIES_LIST: 'menu:categories_list',
+        TYPES_LIST: 'menu:types_list'
     }
 };
 export default QUERY_KEY;

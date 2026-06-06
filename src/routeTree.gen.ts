@@ -19,6 +19,7 @@ import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminProductSettingsRouteImport } from './routes/admin/product-settings'
+import { Route as AdminMenuRouteImport } from './routes/admin/menu'
 import { Route as customerProfileRouteImport } from './routes/(customer)/profile'
 import { Route as customerCartRouteImport } from './routes/(customer)/cart'
 import { Route as authRegisterRouteImport } from './routes/(auth)/register'
@@ -78,6 +79,11 @@ const AdminProductSettingsRoute = AdminProductSettingsRouteImport.update({
   path: '/product-settings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminMenuRoute = AdminMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const customerProfileRoute = customerProfileRouteImport.update({
   id: '/(customer)/profile',
   path: '/profile',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof authRegisterRoute
   '/cart': typeof customerCartRoute
   '/profile': typeof customerProfileRoute
+  '/admin/menu': typeof AdminMenuRoute
   '/admin/product-settings': typeof AdminProductSettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/register': typeof authRegisterRoute
   '/cart': typeof customerCartRoute
   '/profile': typeof customerProfileRoute
+  '/admin/menu': typeof AdminMenuRoute
   '/admin/product-settings': typeof AdminProductSettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/(auth)/register': typeof authRegisterRoute
   '/(customer)/cart': typeof customerCartRoute
   '/(customer)/profile': typeof customerProfileRoute
+  '/admin/menu': typeof AdminMenuRoute
   '/admin/product-settings': typeof AdminProductSettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/cart'
     | '/profile'
+    | '/admin/menu'
     | '/admin/product-settings'
     | '/admin/products'
     | '/admin/profile'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/cart'
     | '/profile'
+    | '/admin/menu'
     | '/admin/product-settings'
     | '/admin/products'
     | '/admin/profile'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/(auth)/register'
     | '/(customer)/cart'
     | '/(customer)/profile'
+    | '/admin/menu'
     | '/admin/product-settings'
     | '/admin/products'
     | '/admin/profile'
@@ -327,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductSettingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/menu': {
+      id: '/admin/menu'
+      path: '/menu'
+      fullPath: '/admin/menu'
+      preLoaderRoute: typeof AdminMenuRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/(customer)/profile': {
       id: '/(customer)/profile'
       path: '/profile'
@@ -387,6 +406,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminMenuRoute: typeof AdminMenuRoute
   AdminProductSettingsRoute: typeof AdminProductSettingsRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminProfileRoute: typeof AdminProfileRoute
@@ -397,6 +417,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminMenuRoute: AdminMenuRoute,
   AdminProductSettingsRoute: AdminProductSettingsRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminProfileRoute: AdminProfileRoute,
