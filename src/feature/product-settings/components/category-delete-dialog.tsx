@@ -1,0 +1,87 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { FolderX, Info } from 'lucide-react';
+
+import { deleteCategory } from '#/api/product-settings.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
+import type { ICategory } from '../product-settings-types';
+
+import { Button } from '#/components/ui/button.tsx';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
+import { Spinner } from '#/components/ui/spinner.tsx';
+
+interface CategoryDeleteDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    category: ICategory | null;
+}
+
+export default function CategoryDeleteDialog({ open, onOpenChange, category }: CategoryDeleteDialogProps) {
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteCategory,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST] });
+            toast.success('Category Archived', {
+                description: 'The product category has been successfully archived/soft-deleted.'
+            });
+            onOpenChange(false);
+        },
+        onError: (error) => {
+            toast.error('Failed to archive category', {
+                description: getErrorMessage(error)
+            });
+            onOpenChange(false);
+        }
+    });
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md bg-background p-6">
+                <DialogHeader className="space-y-2">
+                    <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
+                        <FolderX className="size-5" />
+                        Archive Product Category
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                        Are you absolutely sure you want to archive <strong className="text-foreground">"{category?.name}"</strong>? This will
+                        soft-delete the category, moving it to the Archived categories list.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="my-3 flex items-start gap-2.5 p-3 rounded-lg border border-warning/20 bg-warning/5 text-xs text-warning-foreground font-medium">
+                    <Info className="size-4 shrink-0 text-warning mt-0.5" />
+                    <span>
+                        Archived categories remain in logs for audit purposes, but products assigned to this category may require reconfiguration to
+                        another category.
+                    </span>
+                </div>
+
+                <DialogFooter className="mt-4 gap-2">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="h-9" disabled={deleteMutation.isPending}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={() => {
+                            if (category) deleteMutation.mutate(category.id);
+                        }}
+                        className="h-9"
+                        disabled={deleteMutation.isPending}
+                    >
+                        {deleteMutation.isPending ? (
+                            <div className="flex items-center gap-1">
+                                <Spinner className="h-4 w-4" />
+                                Archiving...
+                            </div>
+                        ) : (
+                            'Confirm Archive'
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

@@ -17,6 +17,15 @@ const QUERY_KEY = {
     SUPPLIERS: {
         SUPPLIERS_LIST: 'suppliers:suppliers_list',
         SUPPLIER_DETAILS: 'suppliers:supplier_details'
+    },
+    PRODUCT_SETTINGS: {
+        CATEGORIES_LIST: 'product_settings:categories_list',
+        CATEGORY_DETAILS: 'product_settings:category_details',
+        TYPES_LIST: 'product_settings:types_list',
+        TYPE_DETAILS: 'product_settings:type_details',
+        ATTRIBUTES_LIST: 'product_settings:attributes_list',
+        ATTRIBUTE_DETAILS: 'product_settings:attribute_details',
+        ATTRIBUTE_VALUES_LIST: 'product_settings:attribute_values_list'
     }
 };
 export default QUERY_KEY;
