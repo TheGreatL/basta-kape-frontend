@@ -37,6 +37,17 @@ const QUERY_KEY = {
         PRODUCT_DETAILS: 'menu:product_details',
         CATEGORIES_LIST: 'menu:categories_list',
         TYPES_LIST: 'menu:types_list'
+    },
+    INVENTORY: {
+        UNITS_LIST: 'inventory:units_list',
+        UNIT_DETAILS: 'inventory:unit_details',
+        INGREDIENTS_LIST: 'inventory:ingredients_list',
+        INGREDIENT_DETAILS: 'inventory:ingredient_details',
+        LEVELS_LIST: 'inventory:levels_list',
+        LEVEL_DETAILS: 'inventory:level_details',
+        DELIVERIES_LIST: 'inventory:deliveries_list',
+        ADJUSTMENTS_LIST: 'inventory:adjustments_list',
+        FORECAST: 'inventory:forecast'
     }
 };
 export default QUERY_KEY;
