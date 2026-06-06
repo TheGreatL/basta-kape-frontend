@@ -13,6 +13,10 @@ const QUERY_KEY = {
     USERS: {
         USERS_LIST: 'users:users_list',
         USER_DETAILS: 'users:user_details'
+    },
+    SUPPLIERS: {
+        SUPPLIERS_LIST: 'suppliers:suppliers_list',
+        SUPPLIER_DETAILS: 'suppliers:supplier_details'
     }
 };
 export default QUERY_KEY;
