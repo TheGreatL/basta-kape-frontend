@@ -26,6 +26,11 @@ const QUERY_KEY = {
         ATTRIBUTES_LIST: 'product_settings:attributes_list',
         ATTRIBUTE_DETAILS: 'product_settings:attribute_details',
         ATTRIBUTE_VALUES_LIST: 'product_settings:attribute_values_list'
+    },
+    PRODUCTS: {
+        PRODUCTS_LIST: 'products:products_list',
+        PRODUCT_DETAILS: 'products:product_details',
+        VARIANT_DETAILS: 'products:variant_details'
     }
 };
 export default QUERY_KEY;

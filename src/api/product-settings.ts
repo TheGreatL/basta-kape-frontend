@@ -209,6 +209,15 @@ export const updateAttributeValue = async (id: string, payload: IUpdateAttribute
     return response.json();
 };
 
+export const getAttributeValueById = async (id: string): Promise<IAttributeValue> => {
+    const response = await api.get(`/product-settings/attribute-values/${id}`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch attribute value details', response.status, errorData);
+    }
+    return response.json();
+};
+
 export const deleteAttributeValue = async (id: string): Promise<{ message: string }> => {
     const response = await api.delete(`/product-settings/attribute-values/${id}`);
     if (!response.ok) {
