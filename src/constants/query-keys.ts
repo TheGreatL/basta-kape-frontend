@@ -55,6 +55,9 @@ const QUERY_KEY = {
         CUSTOMER_DETAILS: 'customers:customer_details',
         CURRENT_CUSTOMER: 'customers:current_customer',
         CART: 'customers:cart'
+    },
+    ACTIVITY_LOGS: {
+        LOGS_LIST: 'activity_logs:logs_list'
     }
 };
 export default QUERY_KEY;
