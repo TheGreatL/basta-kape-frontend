@@ -95,7 +95,7 @@ export const waitForAuthHydration = () => {
             }
         });
 
-        const unsubFinish = (useAuthStore as any).persist.onFinishHydration(() => {
+        const unsubFinish = (useAuthStore as any).persist?.onFinishHydration?.(() => {
             console.log('[DEBUG] onFinishHydration fired. user:', useAuthStore.getState().user?.username);
             useAuthStore.getState().setHasHydrated(true);
             unsubscribe();
