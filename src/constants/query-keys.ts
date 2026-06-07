@@ -30,7 +30,8 @@ const QUERY_KEY = {
     PRODUCTS: {
         PRODUCTS_LIST: 'products:products_list',
         PRODUCT_DETAILS: 'products:product_details',
-        VARIANT_DETAILS: 'products:variant_details'
+        VARIANT_DETAILS: 'products:variant_details',
+        VARIANT_RECIPE: 'products:variant_recipe'
     },
     MENU: {
         CATALOG: 'menu:catalog',

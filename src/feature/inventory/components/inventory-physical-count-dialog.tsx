@@ -52,7 +52,7 @@ export default function PhysicalCountDialog({ open, onOpenChange, inventory }: P
     React.useEffect(() => {
         if (open && inventory) {
             form.reset({
-                currentQuantity: inventory.quantity
+                currentQuantity: inventory.currentQuantity
             });
         }
     }, [open, inventory, form]);

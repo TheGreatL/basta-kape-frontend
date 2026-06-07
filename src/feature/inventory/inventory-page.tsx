@@ -198,8 +198,8 @@ export default function InventoryPage() {
     // Query: Stock Levels
     // =========================================================================
     const { data: levelsData, isLoading: isLevelsLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST, { lPage, lPageSize, lSearch, lStatus }],
-        queryFn: () => getInventoryLevels({ page: lPage, limit: lPageSize, search: lSearch, status: lStatus }),
+        queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST, { lPage, lPageSize, lSearch, lStatus, recordStatus: 'active' }],
+        queryFn: () => getInventoryLevels({ page: lPage, limit: lPageSize, search: lSearch, status: lStatus, recordStatus: 'active' }),
         enabled: tab === 'levels'
     });
 
@@ -297,11 +297,11 @@ export default function InventoryPage() {
                 )
             },
             {
-                accessorKey: 'quantity',
+                accessorKey: 'currentQuantity',
                 header: 'Current Stock',
                 cell: ({ row }) => (
                     <span className="text-sm font-bold text-foreground/90">
-                        {row.original.quantity} {row.original.ingredient.defaultUnit.abbreviation}
+                        {row.original.currentQuantity} {row.original.ingredient.defaultUnit.abbreviation}
                     </span>
                 )
             },

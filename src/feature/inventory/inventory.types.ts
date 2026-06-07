@@ -69,7 +69,7 @@ export type TInventoryStatus = 'SAFE' | 'CRITICAL' | 'OUT_OF_STOCK';
 export interface IIngredientInventory {
     id: string;
     ingredientId: string;
-    quantity: number;
+    currentQuantity: number;
     status: TInventoryStatus;
     lastPhysicalCount: string | null;
     createdAt: string;
@@ -82,6 +82,7 @@ export interface IIngredientInventory {
 export interface IGetInventoryLevelsParams extends IPaginationParams {
     search?: string;
     status?: TInventoryStatus | '';
+    recordStatus?: 'active' | 'archive';
 }
 
 // =============================================================================

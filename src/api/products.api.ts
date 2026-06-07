@@ -8,7 +8,10 @@ import type {
     IUpdateProductPayload,
     IProductVariant,
     ICreateVariantPayload,
-    IUpdateVariantPayload
+    IUpdateVariantPayload,
+    IRecipe,
+    ICreateRecipePayload,
+    IUpdateRecipePayload
 } from '../feature/products/products.types';
 
 // ==========================================
@@ -117,6 +120,45 @@ export const uploadProductPhoto = async (file: File): Promise<{ url: string }> =
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to upload product photo', response.status, errorData);
+    }
+    return response.json();
+};
+
+// ==========================================
+// 4. RECIPES API
+// ==========================================
+export const getVariantRecipe = async (variantId: string): Promise<IRecipe> => {
+    const response = await api.get(`/products/variants/${variantId}/recipe`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch recipe details', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const createVariantRecipe = async (variantId: string, payload: ICreateRecipePayload): Promise<IRecipe> => {
+    const response = await api.post(`/products/variants/${variantId}/recipe`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to create recipe', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const updateVariantRecipe = async (variantId: string, payload: IUpdateRecipePayload): Promise<IRecipe> => {
+    const response = await api.put(`/products/variants/${variantId}/recipe`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to update recipe details', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const deleteVariantRecipe = async (variantId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/products/variants/${variantId}/recipe`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to delete recipe', response.status, errorData);
     }
     return response.json();
 };

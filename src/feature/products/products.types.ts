@@ -83,3 +83,57 @@ export interface IUpdateVariantPayload {
     price?: number;
     attributeValueIds?: string[];
 }
+
+// ==========================================
+// 3. RECIPES (BILL OF MATERIALS)
+// ==========================================
+export interface IRecipeIngredient {
+    id: string;
+    recipeId: string;
+    ingredientId: string;
+    quantity: number;
+    ingredientUnitId: string;
+    ingredient: {
+        id: string;
+        name: string;
+    };
+    unit: {
+        id: string;
+        name: string;
+        abbreviation: string | null;
+    };
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+}
+
+export interface IRecipe {
+    id: string;
+    name: string;
+    description: string | null;
+    productVariantId: string;
+    ingredients: IRecipeIngredient[];
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+}
+
+export interface ICreateRecipePayload {
+    name: string;
+    description?: string | null;
+    ingredients: {
+        ingredientId: string;
+        quantity: number;
+        ingredientUnitId: string;
+    }[];
+}
+
+export interface IUpdateRecipePayload {
+    name?: string;
+    description?: string | null;
+    ingredients?: {
+        ingredientId: string;
+        quantity: number;
+        ingredientUnitId: string;
+    }[];
+}

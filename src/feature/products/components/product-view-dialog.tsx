@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, Calendar, Plus, Trash2, Edit2, ShieldAlert } from 'lucide-react';
+import { Package, Calendar, Plus, Trash2, Edit2, ShieldAlert, ChefHat } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ import { getErrorMessage } from '#/utils/error-handler.ts';
 import { getFileUrl } from '#/utils/helper.ts';
 import type { IProduct, IProductVariant, IVariantAttribute } from '../products.types';
 import { VariantForm } from './variant-form.tsx';
+import RecipeDialog from './recipe-dialog.tsx';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -30,6 +31,8 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
     // Variant action states
     const [isAddingVariant, setIsAddingVariant] = React.useState(false);
     const [editingVariantId, setEditingVariantId] = React.useState<string | null>(null);
+    const [selectedVariantForRecipe, setSelectedVariantForRecipe] = React.useState<IProductVariant | null>(null);
+    const [recipeOpen, setRecipeOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (open) {
@@ -39,6 +42,8 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
             setIsRendering(false);
             setIsAddingVariant(false);
             setEditingVariantId(null);
+            setSelectedVariantForRecipe(null);
+            setRecipeOpen(false);
         }
     }, [open]);
 
@@ -242,6 +247,21 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
                                                             </div>
 
                                                             <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                                                                <RequirePermission module="Products Management" action="read">
+                                                                    <Button
+                                                                        size="icon"
+                                                                        variant="ghost"
+                                                                        className="size-7 text-muted-foreground hover:text-primary transition-colors"
+                                                                        title="Configure Recipe"
+                                                                        onClick={() => {
+                                                                            setSelectedVariantForRecipe(v);
+                                                                            setRecipeOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <ChefHat className="size-3.5" />
+                                                                        <span className="sr-only">Configure Recipe</span>
+                                                                    </Button>
+                                                                </RequirePermission>
                                                                 <RequirePermission module="Products Management" action="update">
                                                                     <Button
                                                                         size="icon"
@@ -310,6 +330,13 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            <RecipeDialog
+                open={recipeOpen}
+                onOpenChange={setRecipeOpen}
+                variant={selectedVariantForRecipe}
+                productName={productDetails?.name || ''}
+            />
         </Dialog>
     );
 }
