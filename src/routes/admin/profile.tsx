@@ -88,7 +88,7 @@ function AdminProfilePage() {
 
                     {/* Permissions list */}
                     <Card className="border-border/40 shadow-sm">
-                        <CardHeader className="pb-3">
+                        <CardHeader>
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
                                 <Briefcase className="size-4 text-primary" />
                                 Access Permissions
