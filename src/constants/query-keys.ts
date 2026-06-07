@@ -48,6 +48,12 @@ const QUERY_KEY = {
         DELIVERIES_LIST: 'inventory:deliveries_list',
         ADJUSTMENTS_LIST: 'inventory:adjustments_list',
         FORECAST: 'inventory:forecast'
+    },
+    CUSTOMERS: {
+        CUSTOMERS_LIST: 'customers:customers_list',
+        CUSTOMER_DETAILS: 'customers:customer_details',
+        CURRENT_CUSTOMER: 'customers:current_customer',
+        CART: 'customers:cart'
     }
 };
 export default QUERY_KEY;
