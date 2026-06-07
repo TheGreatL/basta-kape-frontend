@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, User as UserIcon, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 export default function CustomerHeader() {
     const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
-    const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Fetch current customer ID
     const { data: customer } = useCurrentCustomer();
@@ -36,15 +36,13 @@ export default function CustomerHeader() {
             await authLogout();
             toast.success('Logged out successfully');
             navigate({ to: '/login' });
-        } catch (error) {
-            console.error('Logout failed:', error);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to log out. Please try again.';
+            toast.error(message);
         }
     };
 
-    const hasAdminAccess = React.useMemo(() => {
-        if (!user) return false;
-        return user.roles.some((role) => role.name !== 'Customer');
-    }, [user]);
+    const hasAdminAccess = user ? user.roles.some((role) => role.name !== 'Customer') : false;
 
     const navLinks = [
         { label: 'Home', to: '/' },
@@ -59,7 +57,7 @@ export default function CustomerHeader() {
                     <div className="flex size-9 items-center justify-center rounded-lg bg-background group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                         <img src={logo} alt="Logo" className="h-7 w-auto object-contain" />
                     </div>
-                    <span className="text-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors duration-300">
+                    <span className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
                         {BUSINESS_DETAIL.NAME || 'Basta Kape'}
                     </span>
                 </Link>
@@ -91,7 +89,7 @@ export default function CustomerHeader() {
                             >
                                 <ShoppingCart className="size-5" />
                                 {cartCount > 0 && (
-                                    <Badge className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-rose-600 text-rose-50 p-0 text-[10px] border border-background">
+                                    <Badge className="absolute -top-1.5 -right-1.5 size-5 flex items-center justify-center rounded-full bg-rose-600 text-rose-50 p-0 text-xs border border-background">
                                         {cartCount}
                                     </Badge>
                                 )}
@@ -145,7 +143,7 @@ export default function CustomerHeader() {
 
                 {/* Mobile Menu Button */}
                 <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    onClick={() => setMobileMenuOpen((open) => !open)}
                     className="md:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
                 >
                     {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}

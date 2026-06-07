@@ -1,14 +1,16 @@
-import * as React from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Phone, Calendar, Save, Loader2 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useCurrentCustomer } from './use-current-customer.ts';
 import { updateCustomer } from '#/api/customer.api.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
-import { Input } from '#/components/ui/input.tsx';
 import { toast } from 'sonner';
+import ChangePasswordForm from '#/feature/auth/components/change-password-form.tsx';
+import ProfileCard from './components/profile-card.tsx';
+import EditProfileForm from './components/edit-profile-form.tsx';
 
 export default function ProfilePage() {
     const queryClient = useQueryClient();
@@ -16,15 +18,15 @@ export default function ProfilePage() {
     const { data: customer, isLoading } = useCurrentCustomer();
 
     // Form states
-    const [firstName, setFirstName] = React.useState('');
-    const [lastName, setLastName] = React.useState('');
-    const [middleName, setMiddleName] = React.useState('');
-    const [phoneNumber, setPhoneNumber] = React.useState('');
-    const [email, setEmail] = React.useState('');
-    const [username, setUsername] = React.useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [middleName, setMiddleName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
 
     // Prepopulate form on load
-    React.useEffect(() => {
+    useEffect(() => {
         if (customer?.user) {
             setFirstName(customer.user.firstName || '');
             setLastName(customer.user.lastName || '');
@@ -54,12 +56,12 @@ export default function ProfilePage() {
             });
             toast.success('Profile updated successfully');
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
             toast.error(err.message || 'Failed to update profile');
         }
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         if (!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim()) {
@@ -67,14 +69,18 @@ export default function ProfilePage() {
             return;
         }
 
-        await updateMutation.mutateAsync({
-            firstName,
-            lastName,
-            middleName: middleName.trim() || null,
-            phoneNumber: phoneNumber.trim() || null,
-            email,
-            username
-        });
+        try {
+            await updateMutation.mutateAsync({
+                firstName,
+                lastName,
+                middleName: middleName.trim() || null,
+                phoneNumber: phoneNumber.trim() || null,
+                email,
+                username
+            });
+        } catch {
+            // Error already handled by mutation onError callback with toast
+        }
     };
 
     if (!user) {
@@ -110,146 +116,46 @@ export default function ProfilePage() {
         );
     }
 
-    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
-
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-8">My Profile</h1>
+            <h1 className="text-3xl font-extrabold text-foreground mb-8">My Profile</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Profile Detail Card */}
                 <div className="space-y-6">
-                    <div className="rounded-2xl border border-border/40 bg-card p-6 text-center flex flex-col items-center">
-                        <div className="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-black mb-4">
-                            {initials}
-                        </div>
-                        <h2 className="text-lg font-bold text-foreground leading-tight">
-                            {firstName} {lastName}
-                        </h2>
-                        <span className="text-xs text-muted-foreground mt-1">@{username}</span>
-
-                        <div className="w-full border-t border-border/40 mt-6 pt-6 text-left space-y-4">
-                            <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                                <Mail className="size-4 text-primary shrink-0" />
-                                <span className="truncate">{email}</span>
-                            </div>
-                            {phoneNumber && (
-                                <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                                    <Phone className="size-4 text-primary shrink-0" />
-                                    <span>{phoneNumber}</span>
-                                </div>
-                            )}
-                            <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                                <Calendar className="size-4 text-primary shrink-0" />
-                                <span>Member since {new Date(customer.createdAt).toLocaleDateString()}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <ProfileCard
+                        firstName={firstName}
+                        lastName={lastName}
+                        username={username}
+                        email={email}
+                        phoneNumber={phoneNumber}
+                        createdAt={customer.createdAt}
+                    />
                 </div>
 
                 {/* Edit Profile Form */}
                 <div className="md:col-span-2">
-                    <form onSubmit={handleSubmit} className="rounded-2xl border border-border/40 bg-card p-6 space-y-6">
-                        <h3 className="text-base font-bold text-foreground">Edit Personal Information</h3>
+                    <EditProfileForm
+                        firstName={firstName}
+                        setFirstName={setFirstName}
+                        lastName={lastName}
+                        setLastName={setLastName}
+                        middleName={middleName}
+                        setMiddleName={setMiddleName}
+                        phoneNumber={phoneNumber}
+                        setPhoneNumber={setPhoneNumber}
+                        username={username}
+                        setUsername={setUsername}
+                        email={email}
+                        setEmail={setEmail}
+                        onSubmit={handleSubmit}
+                        isPending={updateMutation.isPending}
+                    />
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="firstName">
-                                    First Name *
-                                </label>
-                                <Input
-                                    id="firstName"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="lastName">
-                                    Last Name *
-                                </label>
-                                <Input
-                                    id="lastName"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="middleName">
-                                    Middle Name (Optional)
-                                </label>
-                                <Input
-                                    id="middleName"
-                                    value={middleName}
-                                    onChange={(e) => setMiddleName(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="phoneNumber">
-                                    Phone Number (Optional)
-                                </label>
-                                <Input
-                                    id="phoneNumber"
-                                    value={phoneNumber}
-                                    placeholder="+639..."
-                                    onChange={(e) => setPhoneNumber(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <h3 className="text-base font-bold text-foreground border-t border-border/30 pt-6 mt-6">Account Settings</h3>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="username">
-                                    Username *
-                                </label>
-                                <Input
-                                    id="username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground" htmlFor="email">
-                                    Email Address *
-                                </label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end pt-4">
-                            <Button type="submit" disabled={updateMutation.isPending} className="rounded-xl h-10 px-6 gap-2 font-semibold shadow-xs">
-                                {updateMutation.isPending ? (
-                                    <>
-                                        <Loader2 className="size-4 animate-spin" />
-                                        Saving Profile...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="size-4" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </form>
+                    <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-6 mt-6">
+                        <h3 className="text-base font-bold text-foreground">Change Password</h3>
+                        <ChangePasswordForm />
+                    </div>
                 </div>
             </div>
         </div>

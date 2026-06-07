@@ -1,7 +1,7 @@
 import { api } from './api';
 import { getAuthStore } from '../store/auth-store';
 import { ApiError } from '../utils/error-handler';
-import type { TLoginSchema, TRegisterSchema } from '../feature/auth/auth.schema';
+import type { TLoginSchema, TRegisterSchema, TResetPasswordSchema, TChangePasswordSchema } from '../feature/auth/auth.schema';
 
 export const login = async (data: TLoginSchema) => {
     const response = await api.post('/auth/login', data);
@@ -46,4 +46,37 @@ export const logout = async () => {
         // Ignore logout errors, just clear the store locally
     }
     getAuthStore().logout();
+};
+
+export const forgotPassword = async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Forgot password request failed', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const resetPassword = async (data: TResetPasswordSchema) => {
+    const response = await api.post('/auth/reset-password', {
+        token: data.token,
+        newPassword: data.newPassword
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Reset password failed', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const changePassword = async (data: TChangePasswordSchema) => {
+    const response = await api.post('/auth/change-password', {
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Change password failed', response.status, errorData);
+    }
+    return response.json();
 };

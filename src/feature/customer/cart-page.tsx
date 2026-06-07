@@ -1,35 +1,101 @@
+import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ShoppingCart, Trash2, Plus, Minus, Coffee, CreditCard } from 'lucide-react';
+import { ShoppingCart, Trash2 } from 'lucide-react';
 import { useCart } from './use-cart.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import { Button } from '#/components/ui/button.tsx';
+import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { toast } from 'sonner';
 import type { ICartItemResponse } from './customer.types.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '#/components/ui/alert-dialog.tsx';
+import CartItemRow from './components/cart-item-row.tsx';
+import CartSummary from './components/cart-summary.tsx';
 
 export default function CartPage() {
     const user = useAuthStore((state) => state.user);
-    const { cart, isLoading, updateItem, removeItem, clearCart, isClearing } = useCart();
+    const { cart, isLoading, updateItem, removeItem, clearCart, isClearing, isUpdating, isRemoving } = useCart();
+    const [itemToDelete, setItemToDelete] = useState<ICartItemResponse | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Record<string, boolean | undefined>>({});
+    const [isClearCartDialogOpen, setIsClearCartDialogOpen] = useState(false);
 
     const items = cart?.items || [];
-    const totalAmount = cart?.totalAmount || 0;
+
+    // Sync selection state when items change
+    useEffect(() => {
+        if (cart?.items) {
+            setSelectedIds((prev) => {
+                const currentItemIds = new Set(cart.items.map((item: ICartItemResponse) => item.id));
+                const prevKeys = Object.keys(prev);
+
+                // Check if any new items need to be added or stale keys removed
+                const hasNewItems = cart.items.some((item: ICartItemResponse) => prev[item.id] === undefined);
+                const hasStaleKeys = prevKeys.some((id) => !currentItemIds.has(id));
+
+                if (!hasNewItems && !hasStaleKeys) return prev;
+
+                const next: Record<string, boolean | undefined> = {};
+                cart.items.forEach((item: ICartItemResponse) => {
+                    next[item.id] = prev[item.id] === undefined ? true : prev[item.id];
+                });
+                return next;
+            });
+        }
+    }, [cart?.items]);
+
+    const isSelected = (id: string) => selectedIds[id] !== false;
+
+    const handleToggleSelect = (id: string) => {
+        setSelectedIds((prev) => ({
+            ...prev,
+            [id]: !isSelected(id)
+        }));
+    };
+
+    const handleToggleSelectAll = () => {
+        const allSelected = items.length > 0 && items.every((item: ICartItemResponse) => isSelected(item.id));
+        setSelectedIds((prev) => {
+            const next = { ...prev };
+            items.forEach((item: ICartItemResponse) => {
+                next[item.id] = !allSelected;
+            });
+            return next;
+        });
+    };
+
+    const selectedItems = items.filter((item: ICartItemResponse) => isSelected(item.id));
+    const selectedTotalAmount = selectedItems.reduce((sum: number, item: ICartItemResponse) => sum + item.unitPrice * item.quantity, 0);
 
     const handleQuantityChange = async (item: ICartItemResponse, newQuantity: number) => {
         if (newQuantity <= 0) {
-            await removeItem(item.id);
+            setItemToDelete(item);
         } else {
             await updateItem({ cartItemId: item.id, quantity: newQuantity });
         }
     };
 
     const handleCheckout = () => {
-        toast.info('Checkout functionality is coming soon!', {
+        if (selectedItems.length === 0) {
+            toast.error('Please select at least one item to checkout.');
+            return;
+        }
+        toast.info(`Checkout functionality is coming soon for ${selectedItems.length} selected items!`, {
             description: 'Orders and payments module will be integrated in the next phase.',
             duration: 5000
         });
     };
 
     // Helper: format variant attribute values (e.g. Size: Large)
-    const getVariantLabel = (item: ICartItemResponse) => {
+    const getVariantLabel = (item: ICartItemResponse | null | undefined) => {
+        if (!item) return '';
         const attributes = item.productVariant.attributes;
         if (attributes.length === 0) {
             return 'Regular';
@@ -86,20 +152,32 @@ export default function CartPage() {
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl min-h-screen">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Shopping Cart</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        You have {items.reduce((acc, item) => acc + item.quantity, 0)} items in your cart.
-                    </p>
+            <div className="mb-8">
+                <h1 className="text-3xl font-extrabold text-foreground">Shopping Cart</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                    You have {items.reduce((acc, item) => acc + item.quantity, 0)} items in your cart.
+                </p>
+            </div>
+
+            {/* Selection actions bar */}
+            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-muted/20 mb-6 gap-4">
+                <div className="flex items-center gap-3">
+                    <Checkbox
+                        checked={items.length > 0 && selectedItems.length === items.length}
+                        onCheckedChange={handleToggleSelectAll}
+                        aria-label="Select all items"
+                    />
+                    <span className="text-sm font-semibold text-foreground select-none">
+                        Select All ({selectedItems.length} of {items.length} items)
+                    </span>
                 </div>
 
                 <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => clearCart()}
-                    disabled={isClearing}
-                    className="text-muted-foreground hover:text-destructive gap-1.5 text-xs h-9"
+                    onClick={() => setIsClearCartDialogOpen(true)}
+                    disabled={isClearing || isUpdating || isRemoving}
+                    className="text-muted-foreground hover:text-destructive gap-1.5 text-xs h-9 disabled:opacity-50 disabled:pointer-events-none shrink-0"
                 >
                     <Trash2 className="size-4" />
                     Clear Cart
@@ -108,110 +186,77 @@ export default function CartPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Cart Items List */}
-                <div className="lg:col-span-2 space-y-4">
-                    {items.map((item: ICartItemResponse) => {
-                        const product = item.productVariant.product;
-                        return (
-                            <div
-                                key={item.id}
-                                className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-card hover:shadow-xs transition-shadow"
-                            >
-                                {/* Photo */}
-                                <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center shrink-0">
-                                    {product.photo ? (
-                                        <img src={product.photo} alt={product.name} className="h-full w-full object-cover" />
-                                    ) : (
-                                        <Coffee className="size-8 text-muted-foreground/40" />
-                                    )}
-                                </div>
-
-                                {/* Product details */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                                        {product.category?.name || 'Beverage'}
-                                    </div>
-                                    <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5">
-                                        {product.name || 'Unknown Item'}
-                                    </h3>
-                                    <p className="text-xs text-muted-foreground mt-0.5">{getVariantLabel(item)}</p>
-                                    <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">₱{item.unitPrice.toFixed(2)}</div>
-                                </div>
-
-                                {/* Right action area / Prices */}
-                                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 shrink-0">
-                                    {/* Price per unit (desktop only) */}
-                                    <div className="hidden sm:block text-sm font-medium text-muted-foreground">₱{item.unitPrice.toFixed(2)}</div>
-
-                                    {/* Quantity controls */}
-                                    <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5 bg-card">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleQuantityChange(item, item.quantity - 1)}
-                                            className="h-7 w-7 rounded-md p-0"
-                                        >
-                                            <Minus className="size-3" />
-                                        </Button>
-                                        <span className="w-6 text-center text-xs font-bold text-foreground">{item.quantity}</span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleQuantityChange(item, item.quantity + 1)}
-                                            className="h-7 w-7 rounded-md p-0"
-                                        >
-                                            <Plus className="size-3" />
-                                        </Button>
-                                    </div>
-
-                                    {/* Total item price */}
-                                    <div className="text-sm sm:text-base font-extrabold text-foreground w-16 text-right">
-                                        ₱{(item.unitPrice * item.quantity).toFixed(2)}
-                                    </div>
-
-                                    {/* Delete item button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeItem(item.id)}
-                                        className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div
+                    className={`lg:col-span-2 space-y-4 transition-opacity duration-200 ${isUpdating || isRemoving || isClearing ? 'opacity-60 pointer-events-none' : ''}`}
+                >
+                    {items.map((item: ICartItemResponse) => (
+                        <CartItemRow
+                            key={item.id}
+                            item={item}
+                            isSelected={isSelected(item.id)}
+                            onToggleSelect={() => handleToggleSelect(item.id)}
+                            onQuantityChange={handleQuantityChange}
+                            onRemoveClick={setItemToDelete}
+                        />
+                    ))}
                 </div>
 
                 {/* Summary Panel */}
-                <div className="h-fit rounded-2xl border border-border/40 bg-card p-6 shadow-xs space-y-6">
-                    <h2 className="text-lg font-bold text-foreground">Order Summary</h2>
-
-                    <div className="space-y-3 pt-2">
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Subtotal</span>
-                            <span className="font-semibold text-foreground">₱{totalAmount.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Shipping / Delivery</span>
-                            <span className="font-semibold text-foreground">Free</span>
-                        </div>
-                        <div className="border-t border-border/40 pt-3 flex justify-between">
-                            <span className="text-base font-bold text-foreground">Total</span>
-                            <span className="text-lg font-black text-foreground">₱{totalAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <Button
-                        size="lg"
-                        onClick={handleCheckout}
-                        className="w-full h-12 rounded-xl gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
-                    >
-                        <CreditCard className="size-4.5" />
-                        Proceed to Checkout
-                    </Button>
-                </div>
+                <CartSummary totalAmount={selectedTotalAmount} onCheckout={handleCheckout} disabled={isUpdating || isRemoving || isClearing} />
             </div>
+
+            {/* Premium Confirm Deletion Dialog */}
+            <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+                <AlertDialogContent size="sm" className="border-border/60">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-foreground font-black">Remove Item?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed mt-1">
+                            Are you sure you want to remove <strong>{itemToDelete?.productVariant.product.name}</strong>{' '}
+                            {itemToDelete && `(${getVariantLabel(itemToDelete)})`} from your shopping cart?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-4">
+                        <AlertDialogCancel className="rounded-xl font-semibold">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={async () => {
+                                if (itemToDelete) {
+                                    await removeItem(itemToDelete.id);
+                                    setItemToDelete(null);
+                                }
+                            }}
+                            className="rounded-xl font-bold"
+                        >
+                            Remove
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Premium Confirm Clear Cart Dialog */}
+            <AlertDialog open={isClearCartDialogOpen} onOpenChange={setIsClearCartDialogOpen}>
+                <AlertDialogContent size="sm" className="border-border/60">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-foreground font-black">Clear Shopping Cart?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed mt-1">
+                            Are you sure you want to remove all items from your shopping cart? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-4">
+                        <AlertDialogCancel className="rounded-xl font-semibold">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={async () => {
+                                await clearCart();
+                                setIsClearCartDialogOpen(false);
+                            }}
+                            className="rounded-xl font-bold"
+                        >
+                            Clear Cart
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

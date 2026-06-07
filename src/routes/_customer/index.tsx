@@ -23,7 +23,7 @@ function LandingPage() {
                         <span>Freshly brewed daily</span>
                     </div>
 
-                    <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl max-w-3xl leading-none">
+                    <h1 className="text-4xl font-extrabold sm:text-5xl md:text-6xl max-w-3xl leading-none">
                         Crafting Moments, <br />
                         <span className="bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">One Cup at a Time</span>
                     </h1>
@@ -60,7 +60,7 @@ function LandingPage() {
             <section className="py-20 bg-background">
                 <div className="container mx-auto px-4">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">The {BUSINESS_DETAIL.NAME} Standards</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-foreground">The {BUSINESS_DETAIL.NAME} Standards</h2>
                         <p className="mt-3 text-sm md:text-base text-muted-foreground">
                             We take pride in every single detail of your coffee experience.
                         </p>
@@ -112,7 +112,7 @@ function LandingPage() {
                     <blockquote className="text-xl md:text-2xl font-medium text-foreground italic leading-relaxed">
                         "Coffee is not just a drink; it's a moment of clarity, a fuel for connection, and a craft we celebrate daily."
                     </blockquote>
-                    <cite className="block mt-4 text-sm font-semibold text-muted-foreground not-italic uppercase tracking-wider">
+                    <cite className="block mt-4 text-sm font-semibold text-muted-foreground not-italic uppercase">
                         — {BUSINESS_DETAIL.NAME} Roastery
                     </cite>
                 </div>

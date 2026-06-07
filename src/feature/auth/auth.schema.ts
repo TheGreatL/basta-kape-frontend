@@ -27,3 +27,41 @@ export const registerSchema = z
     });
 
 export type TRegisterSchema = z.infer<typeof registerSchema>;
+
+export const forgotPasswordSchema = z.object({
+    email: z.string().email('Please enter a valid email address')
+});
+
+export type TForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+    .object({
+        token: z.string().min(1, 'Reset token is required'),
+        newPassword: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/^(?=.*[A-Z])(?=.*\d).+$/, 'Password must contain at least one uppercase letter and one number'),
+        confirmNewPassword: z.string().min(1, 'Please confirm your password')
+    })
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+        message: "Passwords don't match",
+        path: ['confirmNewPassword']
+    });
+
+export type TResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+
+export const changePasswordSchema = z
+    .object({
+        oldPassword: z.string().min(1, 'Old password is required'),
+        newPassword: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/^(?=.*[A-Z])(?=.*\d).+$/, 'Password must contain at least one uppercase letter and one number'),
+        confirmNewPassword: z.string().min(1, 'Please confirm your password')
+    })
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+        message: "Passwords don't match",
+        path: ['confirmNewPassword']
+    });
+
+export type TChangePasswordSchema = z.infer<typeof changePasswordSchema>;

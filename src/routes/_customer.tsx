@@ -29,7 +29,7 @@ function CustomerLayout() {
                                 <div className="flex size-8 items-center justify-center rounded-lg bg-background overflow-hidden">
                                     <img src={logo} alt="Logo" className="h-6 w-auto object-contain" />
                                 </div>
-                                <span className="text-base font-bold tracking-tight">{BUSINESS_DETAIL.NAME}</span>
+                                <span className="text-base font-bold">{BUSINESS_DETAIL.NAME}</span>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed">
                                 Experience premium craft coffee brewed with passion and quality ingredients. Your daily cup of happiness, just a click
@@ -39,7 +39,7 @@ function CustomerLayout() {
 
                         {/* Quick Links */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Quick Links</h3>
+                            <h3 className="text-sm font-semibold text-foreground uppercase">Quick Links</h3>
                             <ul className="space-y-2">
                                 <li>
                                     <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -66,7 +66,7 @@ function CustomerLayout() {
 
                         {/* Contact Info */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Get in Touch</h3>
+                            <h3 className="text-sm font-semibold text-foreground uppercase">Get in Touch</h3>
                             <ul className="space-y-3">
                                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Mail className="size-4 text-primary" />
@@ -85,7 +85,7 @@ function CustomerLayout() {
 
                         {/* Business Hours */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Opening Hours</h3>
+                            <h3 className="text-sm font-semibold text-foreground uppercase">Opening Hours</h3>
                             <ul className="space-y-2 text-sm text-muted-foreground">
                                 <li className="flex justify-between">
                                     <span>Monday - Friday</span>
