@@ -306,10 +306,20 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
                                         <div>
                                             <span className="font-semibold text-foreground/75 block">Date Configured</span>
                                             {format(new Date(productDetails.createdAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {productDetails.createdBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {productDetails.createdBy.firstName} {productDetails.createdBy.lastName}
+                                                </span>
+                                            )}
                                         </div>
                                         <div>
                                             <span className="font-semibold text-foreground/75 block">Last Updated</span>
                                             {format(new Date(productDetails.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {productDetails.updatedBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {productDetails.updatedBy.firstName} {productDetails.updatedBy.lastName}
+                                                </span>
+                                            )}
                                         </div>
                                         {productDetails.deletedAt && (
                                             <div className="sm:col-span-2 text-destructive font-semibold border-t pt-2 mt-1">

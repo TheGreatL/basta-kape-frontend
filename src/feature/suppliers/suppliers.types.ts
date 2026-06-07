@@ -1,4 +1,4 @@
-import type { IPaginationParams } from '#/types/base.types';
+import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 
 export interface IGetSuppliersListParams extends IPaginationParams {
     search?: string;
@@ -15,6 +15,8 @@ export interface ISupplierListItem {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateSupplierPayload {

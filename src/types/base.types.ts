@@ -18,3 +18,9 @@ export type UserAuditSelect = {
     lastName: true;
     email: true;
 };
+
+export interface IUserAudit {
+    firstName: string;
+    lastName: string;
+    email: string;
+}

@@ -1,4 +1,4 @@
-import type { IPaginationParams } from '#/types/base.types';
+import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 
 // =============================================================================
 // Measurement Units Configuration
@@ -10,6 +10,8 @@ export interface IIngredientUnit {
     status: 'active' | 'archive';
     createdAt: string;
     updatedAt: string;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IGetIngredientUnitsParams extends IPaginationParams {
@@ -40,6 +42,8 @@ export interface IIngredient {
     createdAt: string;
     updatedAt: string;
     defaultUnit?: IIngredientUnit;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IGetIngredientsParams extends IPaginationParams {
@@ -77,6 +81,8 @@ export interface IIngredientInventory {
     ingredient: IIngredient & {
         defaultUnit: IIngredientUnit;
     };
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IGetInventoryLevelsParams extends IPaginationParams {
@@ -103,6 +109,8 @@ export interface IDelivery {
         id: string;
         name: string;
     } | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IGetDeliveriesParams extends IPaginationParams {
@@ -131,6 +139,8 @@ export interface IAdjustment {
     reason: string | null;
     createdAt: string;
     ingredient?: IIngredient;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IGetAdjustmentsParams extends IPaginationParams {

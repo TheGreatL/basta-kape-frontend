@@ -1,4 +1,4 @@
-import type { IPaginationParams } from '#/types/base.types';
+import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 
 export interface IGetProductSettingsListParams extends IPaginationParams {
     search?: string;
@@ -13,6 +13,8 @@ export interface ICategory {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateCategoryPayload {
@@ -43,6 +45,8 @@ export interface IProductType {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateProductTypePayload {
@@ -73,6 +77,8 @@ export interface IAttribute {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateAttributePayload {
@@ -103,6 +109,8 @@ export interface IAttributeValue {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateAttributeValuePayload {

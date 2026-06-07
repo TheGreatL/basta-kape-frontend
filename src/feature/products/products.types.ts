@@ -1,4 +1,4 @@
-import type { IPaginationParams } from '#/types/base.types';
+import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 
 export interface IGetProductsParams extends IPaginationParams {
     search?: string;
@@ -26,6 +26,8 @@ export interface IProduct {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IProductVariant {
@@ -37,6 +39,8 @@ export interface IProductVariant {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface IVariantAttribute {
@@ -116,6 +120,8 @@ export interface IRecipe {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    createdBy?: IUserAudit;
+    updatedBy?: IUserAudit;
 }
 
 export interface ICreateRecipePayload {

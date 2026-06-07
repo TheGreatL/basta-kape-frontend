@@ -107,17 +107,27 @@ export default function SupplierViewDialog({ open, onOpenChange, supplier }: Sup
                                     <div className="flex items-center justify-between border-b pb-1">
                                         <h3 className="text-xs font-bold text-foreground/80 flex items-center gap-1.5">
                                             <Calendar className="size-3.5 text-primary" />
-                                            System Timestamps
+                                            System Audit Logs
                                         </h3>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border/40">
                                         <div>
                                             <span className="font-medium text-foreground/75 block">Created Date</span>
                                             {format(new Date(supplierDetails.createdAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {supplierDetails.createdBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {supplierDetails.createdBy.firstName} {supplierDetails.createdBy.lastName}
+                                                </span>
+                                            )}
                                         </div>
                                         <div>
                                             <span className="font-medium text-foreground/75 block">Last Updated</span>
                                             {format(new Date(supplierDetails.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {supplierDetails.updatedBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {supplierDetails.updatedBy.firstName} {supplierDetails.updatedBy.lastName}
+                                                </span>
+                                            )}
                                         </div>
                                         {supplierDetails.deletedAt && (
                                             <div className="sm:col-span-2 text-destructive font-medium border-t pt-2 mt-1">

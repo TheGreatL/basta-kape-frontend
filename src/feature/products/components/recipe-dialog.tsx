@@ -4,7 +4,8 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar } from 'lucide-react';
 
 import { getVariantRecipe, createVariantRecipe, updateVariantRecipe, deleteVariantRecipe } from '#/api/products.api.ts';
 import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
@@ -459,6 +460,36 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
                                                     ))}
                                                 </div>
                                             )}
+                                        </div>
+                                    </div>
+
+                                    {/* Audit Card */}
+                                    <div className="space-y-2.5 pt-1">
+                                        <div className="flex items-center border-b pb-1">
+                                            <h4 className="text-xs font-bold text-foreground/75 flex items-center gap-1.5">
+                                                <Calendar className="size-3.5 text-primary" />
+                                                System Audit Logs
+                                            </h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
+                                            <div>
+                                                <span className="font-semibold text-foreground/75 block">Created Date</span>
+                                                {format(new Date(recipe.createdAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                {recipe.createdBy && (
+                                                    <span className="block mt-0.5 text-muted-foreground/80">
+                                                        by {recipe.createdBy.firstName} {recipe.createdBy.lastName}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span className="font-semibold text-foreground/75 block">Last Updated</span>
+                                                {format(new Date(recipe.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                {recipe.updatedBy && (
+                                                    <span className="block mt-0.5 text-muted-foreground/80">
+                                                        by {recipe.updatedBy.firstName} {recipe.updatedBy.lastName}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </>
