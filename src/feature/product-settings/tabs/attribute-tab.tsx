@@ -1,10 +1,24 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Sparkles, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Sparkles, Calendar, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
-import { getAttributesList } from '#/api/product-settings.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+
+import { getAttributesList, restoreAttribute } from '#/api/product-settings.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { AttributeTabProps, IAttribute } from '../product-settings-types';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -20,7 +34,21 @@ import AttributeViewDialog from '../components/attribute-view-dialog.tsx';
 import AttributeDeleteDialog from '../components/attribute-delete-dialog.tsx';
 
 export default function AttributeTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: AttributeTabProps) {
+    const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreAttribute,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST] });
+            toast.success('Attribute successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore attribute', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
 
@@ -117,7 +145,45 @@ export default function AttributeTab({ page, pageSize, search, status, onPaginat
                                 <span className="sr-only">View Details / Values</span>
                             </Button>
                         </RequirePermission>
-                        {status !== 'archive' && (
+                        {status === 'archive' ? (
+                            <RequirePermission module="Product Settings Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                            title="Restore Attribute"
+                                            disabled={restoreMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                            <span className="sr-only">Restore Attribute</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Product Attribute
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the product attribute option <strong>"{row.original.name}"</strong>?
+                                                This will restore it to the active product configuration options.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
+                        ) : (
                             <>
                                 <RequirePermission module="Product Settings Management" action="update">
                                     <Button
@@ -147,7 +213,7 @@ export default function AttributeTab({ page, pageSize, search, status, onPaginat
                 )
             }
         ],
-        [status]
+        [status, restoreMutation]
     );
 
     return (

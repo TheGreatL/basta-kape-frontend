@@ -1,10 +1,22 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, Calendar, Plus, Trash2, Edit2, ShieldAlert, ChefHat } from 'lucide-react';
+import { Package, Calendar, Plus, Trash2, Edit2, ShieldAlert, ChefHat, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-import { getProductById, createProductVariant, updateProductVariant, deleteProductVariant } from '#/api/products.api.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+
+import { getProductById, createProductVariant, updateProductVariant, deleteProductVariant, restoreProductVariant } from '#/api/products.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { getFileUrl } from '#/utils/helper.ts';
@@ -91,6 +103,18 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
         },
         onError: (error) => {
             toast.error('Failed to delete variant', { description: getErrorMessage(error) });
+        }
+    });
+
+    const restoreVariantMutation = useMutation({
+        mutationFn: restoreProductVariant,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCT_DETAILS, product?.id] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST] });
+            toast.success('Product Variant Restored');
+        },
+        onError: (error) => {
+            toast.error('Failed to restore variant', { description: getErrorMessage(error) });
         }
     });
 
@@ -263,27 +287,67 @@ export default function ProductViewDialog({ open, onOpenChange, product }: Produ
                                                                     </Button>
                                                                 </RequirePermission>
                                                                 <RequirePermission module="Products Management" action="update">
-                                                                    <Button
-                                                                        size="icon"
-                                                                        variant="ghost"
-                                                                        className="size-7 text-muted-foreground hover:text-primary transition-colors"
-                                                                        onClick={() => setEditingVariantId(v.id)}
-                                                                    >
-                                                                        <Edit2 className="size-3.5" />
-                                                                        <span className="sr-only">Edit Variant</span>
-                                                                    </Button>
+                                                                    {!v.deletedAt && (
+                                                                        <Button
+                                                                            size="icon"
+                                                                            variant="ghost"
+                                                                            className="size-7 text-muted-foreground hover:text-primary transition-colors"
+                                                                            onClick={() => setEditingVariantId(v.id)}
+                                                                        >
+                                                                            <Edit2 className="size-3.5" />
+                                                                            <span className="sr-only">Edit Variant</span>
+                                                                        </Button>
+                                                                    )}
                                                                 </RequirePermission>
                                                                 <RequirePermission module="Products Management" action="delete">
-                                                                    <Button
-                                                                        size="icon"
-                                                                        variant="ghost"
-                                                                        className="size-7 text-muted-foreground hover:text-destructive transition-colors"
-                                                                        onClick={() => deleteVariantMutation.mutate(v.id)}
-                                                                        disabled={deleteVariantMutation.isPending}
-                                                                    >
-                                                                        <Trash2 className="size-3.5" />
-                                                                        <span className="sr-only">Delete Variant</span>
-                                                                    </Button>
+                                                                    {v.deletedAt ? (
+                                                                        <AlertDialog>
+                                                                            <AlertDialogTrigger asChild>
+                                                                                <Button
+                                                                                    size="icon"
+                                                                                    variant="ghost"
+                                                                                    className="size-7 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                                                                    title="Restore Variant"
+                                                                                    disabled={restoreVariantMutation.isPending}
+                                                                                >
+                                                                                    <RotateCcw className="size-3.5" />
+                                                                                </Button>
+                                                                            </AlertDialogTrigger>
+                                                                            <AlertDialogContent>
+                                                                                <AlertDialogHeader>
+                                                                                    <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                                                        <RotateCcw className="size-5 text-emerald-600" />
+                                                                                        Restore Product Variant
+                                                                                    </AlertDialogTitle>
+                                                                                    <AlertDialogDescription>
+                                                                                        Are you sure you want to restore the product variant{' '}
+                                                                                        {v.sku ? <strong>(SKU: "{v.sku}")</strong> : ''} priced at{' '}
+                                                                                        <strong>₱{v.price.toFixed(2)}</strong>?
+                                                                                    </AlertDialogDescription>
+                                                                                </AlertDialogHeader>
+                                                                                <AlertDialogFooter>
+                                                                                    <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                                                    <AlertDialogAction
+                                                                                        onClick={() => restoreVariantMutation.mutate(v.id)}
+                                                                                        className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                                                                    >
+                                                                                        Confirm Restore
+                                                                                    </AlertDialogAction>
+                                                                                </AlertDialogFooter>
+                                                                            </AlertDialogContent>
+                                                                        </AlertDialog>
+                                                                    ) : (
+                                                                        <Button
+                                                                            size="icon"
+                                                                            variant="ghost"
+                                                                            className="size-7 text-muted-foreground hover:text-destructive transition-colors"
+                                                                            onClick={() => deleteVariantMutation.mutate(v.id)}
+                                                                            disabled={deleteVariantMutation.isPending}
+                                                                        >
+                                                                            <Trash2 className="size-3.5" />
+                                                                            <span className="sr-only">Delete Variant</span>
+                                                                        </Button>
+                                                                    )}
                                                                 </RequirePermission>
                                                             </div>
                                                         </div>

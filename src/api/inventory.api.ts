@@ -76,6 +76,15 @@ export const deleteIngredientUnit = async (id: string): Promise<{ message: strin
     return response.json();
 };
 
+export const restoreIngredientUnit = async (id: string): Promise<IIngredientUnit> => {
+    const response = await api.patch(`/inventory/units/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore measurement unit', response.status, errorData);
+    }
+    return response.json();
+};
+
 // =============================================================================
 // Raw Ingredients API
 // =============================================================================
@@ -127,6 +136,15 @@ export const deleteIngredient = async (id: string): Promise<{ message: string }>
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to delete raw ingredient', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const restoreIngredient = async (id: string): Promise<IIngredient> => {
+    const response = await api.patch(`/inventory/ingredients/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore raw ingredient', response.status, errorData);
     }
     return response.json();
 };

@@ -1,13 +1,27 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Package, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Calendar, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
 
 import { Route } from '#/routes/admin/products.tsx';
-import { getProductsList } from '#/api/products.api.ts';
+import { getProductsList, restoreProduct } from '#/api/products.api.ts';
 import { getCategoriesList, getProductTypesList, getCategoryById, getProductTypeById } from '#/api/product-settings.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IProduct } from './products.types';
 import type { ICategory, IProductType } from '#/feature/product-settings/product-settings-types.ts';
@@ -28,7 +42,21 @@ import ProductDeleteDialog from './components/product-delete-dialog.tsx';
 
 export default function ProductsPage() {
     const navigate = useNavigate({ from: '/admin/products' });
+    const queryClient = useQueryClient();
     const { page, pageSize, search, status, productCategoryId, productTypeId } = Route.useSearch();
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreProduct,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST] });
+            toast.success('Product successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore product', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -207,7 +235,45 @@ export default function ProductsPage() {
                                 <span className="sr-only">View Details / Variants</span>
                             </Button>
                         </RequirePermission>
-                        {status !== 'archive' && (
+                        {status === 'archive' ? (
+                            <RequirePermission module="Products Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                            title="Restore Product"
+                                            disabled={restoreMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                            <span className="sr-only">Restore Product</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Menu Product
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the product <strong>"{row.original.name}"</strong>? This will restore
+                                                it to the active product catalog and POS listing.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
+                        ) : (
                             <>
                                 <RequirePermission module="Products Management" action="update">
                                     <Button
@@ -237,7 +303,7 @@ export default function ProductsPage() {
                 )
             }
         ],
-        [status]
+        [status, restoreMutation]
     );
 
     return (

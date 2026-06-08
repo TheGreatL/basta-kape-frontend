@@ -71,6 +71,15 @@ export const deleteCategory = async (id: string): Promise<{ message: string }> =
     return response.json();
 };
 
+export const restoreCategory = async (id: string): Promise<ICategory> => {
+    const response = await api.patch(`/product-settings/categories/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore category', response.status, errorData);
+    }
+    return response.json();
+};
+
 // ==========================================
 // 2. PRODUCT TYPES API
 // ==========================================
@@ -121,6 +130,15 @@ export const deleteProductType = async (id: string): Promise<{ message: string }
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to delete product type', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const restoreProductType = async (id: string): Promise<IProductType> => {
+    const response = await api.patch(`/product-settings/types/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore product type', response.status, errorData);
     }
     return response.json();
 };
@@ -179,6 +197,15 @@ export const deleteAttribute = async (id: string): Promise<{ message: string }> 
     return response.json();
 };
 
+export const restoreAttribute = async (id: string): Promise<IAttribute> => {
+    const response = await api.patch(`/product-settings/attributes/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore attribute', response.status, errorData);
+    }
+    return response.json();
+};
+
 // ==========================================
 // 4. PRODUCT ATTRIBUTE VALUES API
 // ==========================================
@@ -223,6 +250,15 @@ export const deleteAttributeValue = async (id: string): Promise<{ message: strin
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to delete attribute value', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const restoreAttributeValue = async (id: string): Promise<IAttributeValue> => {
+    const response = await api.patch(`/product-settings/attribute-values/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore attribute value', response.status, errorData);
     }
     return response.json();
 };

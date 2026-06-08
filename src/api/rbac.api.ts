@@ -73,6 +73,15 @@ export const deleteRole = async (id: string) => {
     return response.json();
 };
 
+export const restoreRole = async (id: string): Promise<IRoleListItem> => {
+    const response = await api.patch(`/rbac/roles/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore role', response.status, errorData);
+    }
+    return response.json();
+};
+
 // 2. Action Permissions Directory
 export const getPermissionsList = async (params: IGetPermissionsListParams): Promise<IPaginatedResult<ISystemPermission>> => {
     const query = new URLSearchParams();

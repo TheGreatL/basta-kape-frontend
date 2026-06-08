@@ -66,3 +66,12 @@ export const uploadProfilePicture = async (id: string, file: File): Promise<{ ur
     }
     return response.json();
 };
+
+export const restoreUser = async (id: string): Promise<IUserListItem> => {
+    const response = await api.patch(`/users/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore user profile', response.status, errorData);
+    }
+    return response.json();
+};

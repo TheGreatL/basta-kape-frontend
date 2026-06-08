@@ -1,10 +1,24 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, LayoutGrid, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, LayoutGrid, Calendar, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
-import { getProductTypesList } from '#/api/product-settings.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+
+import { getProductTypesList, restoreProductType } from '#/api/product-settings.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ProductTypeTabProps, IProductType } from '../product-settings-types';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -20,7 +34,21 @@ import TypeViewDialog from '../components/type-view-dialog.tsx';
 import TypeDeleteDialog from '../components/type-delete-dialog.tsx';
 
 export default function TypeTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: ProductTypeTabProps) {
+    const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreProductType,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST] });
+            toast.success('Product Type successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore product type', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
 
@@ -117,7 +145,45 @@ export default function TypeTab({ page, pageSize, search, status, onPaginationCh
                                 <span className="sr-only">View Details</span>
                             </Button>
                         </RequirePermission>
-                        {status !== 'archive' && (
+                        {status === 'archive' ? (
+                            <RequirePermission module="Product Settings Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                            title="Restore Product Type"
+                                            disabled={restoreMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                            <span className="sr-only">Restore Product Type</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Product Type
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the product type <strong>"{row.original.name}"</strong>? This will
+                                                restore it to the active product type listings.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
+                        ) : (
                             <>
                                 <RequirePermission module="Product Settings Management" action="update">
                                     <Button
@@ -147,7 +213,7 @@ export default function TypeTab({ page, pageSize, search, status, onPaginationCh
                 )
             }
         ],
-        [status]
+        [status, restoreMutation]
     );
 
     return (

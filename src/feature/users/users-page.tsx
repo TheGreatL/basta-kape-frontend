@@ -1,12 +1,26 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
 
 import { Route } from '#/routes/admin/users.tsx';
-import { getUsersList } from '#/api/users.api.ts';
+import { getUsersList, restoreUser } from '#/api/users.api.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import { getRolesList } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IUserListItem } from './users.types';
@@ -27,7 +41,21 @@ import { getFileUrl } from '#/utils/helper.ts';
 
 export default function UsersPage() {
     const navigate = useNavigate({ from: '/admin/users' });
+    const queryClient = useQueryClient();
     const { page, pageSize, search, status, role } = Route.useSearch();
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
+            toast.success('User profile successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore user profile', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -159,30 +187,75 @@ export default function UsersPage() {
                                 <span className="sr-only">View User</span>
                             </Button>
                         </RequirePermission>
-                        {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
-                            <RequirePermission module="Users Management" action="update">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                    onClick={() => handleOpenEdit(row.original)}
-                                >
-                                    <Edit className="size-4" />
-                                    <span className="sr-only">Edit User</span>
-                                </Button>
+                        {row.original.deletedAt ? (
+                            <RequirePermission module="Users Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                            title="Restore User"
+                                            disabled={restoreMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                            <span className="sr-only">Restore User</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Staff Account
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the staff account for{' '}
+                                                <strong>
+                                                    "{row.original.firstName} {row.original.lastName}" (@{row.original.username})
+                                                </strong>
+                                                ? This will restore their system permissions and allow them to log in again.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </RequirePermission>
+                        ) : (
+                            <>
+                                {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
+                                    <RequirePermission module="Users Management" action="update">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                            onClick={() => handleOpenEdit(row.original)}
+                                        >
+                                            <Edit className="size-4" />
+                                            <span className="sr-only">Edit User</span>
+                                        </Button>
+                                    </RequirePermission>
+                                )}
+                                <RequirePermission module="Users Management" action="delete">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                        onClick={() => handleOpenDelete(row.original)}
+                                    >
+                                        <Trash2 className="size-4" />
+                                        <span className="sr-only">Delete User</span>
+                                    </Button>
+                                </RequirePermission>
+                            </>
                         )}
-                        <RequirePermission module="Users Management" action="delete">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                onClick={() => handleOpenDelete(row.original)}
-                            >
-                                <Trash2 className="size-4" />
-                                <span className="sr-only">Delete User</span>
-                            </Button>
-                        </RequirePermission>
                     </div>
                 )
             }

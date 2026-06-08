@@ -127,3 +127,12 @@ export const getMyCustomerProfile = async (username: string): Promise<ICustomerR
     }
     return found;
 };
+
+export const restoreCustomer = async (id: string): Promise<ICustomerResponse> => {
+    const response = await api.patch(`/customers/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore customer profile', response.status, errorData);
+    }
+    return response.json();
+};

@@ -58,3 +58,12 @@ export const deleteSupplier = async (id: string): Promise<{ message: string }> =
     }
     return response.json();
 };
+
+export const restoreSupplier = async (id: string): Promise<ISupplierListItem> => {
+    const response = await api.patch(`/suppliers/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore supplier profile', response.status, errorData);
+    }
+    return response.json();
+};

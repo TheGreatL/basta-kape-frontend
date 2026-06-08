@@ -4,10 +4,22 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar } from 'lucide-react';
 
-import { getVariantRecipe, createVariantRecipe, updateVariantRecipe, deleteVariantRecipe } from '#/api/products.api.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+import { format } from 'date-fns';
+import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar, RotateCcw } from 'lucide-react';
+
+import { getVariantRecipe, createVariantRecipe, updateVariantRecipe, deleteVariantRecipe, restoreVariantRecipe } from '#/api/products.api.ts';
 import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
@@ -159,6 +171,18 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
         },
         onError: (err) => {
             toast.error('Failed to delete recipe', { description: getErrorMessage(err) });
+        }
+    });
+
+    const restoreRecipeMutation = useMutation({
+        mutationFn: () => restoreVariantRecipe(variant!.id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
+            toast.success('Recipe Restored Successfully');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore recipe', { description: getErrorMessage(err) });
         }
     });
 
@@ -425,105 +449,149 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
                         </Form>
                     ) : (
                         // View Details Mode
-                        <div className="space-y-5">
-                            {recipe && (
-                                <>
-                                    <div className="bg-muted/20 p-4 rounded-xl border border-border/40 space-y-1">
-                                        <h3 className="text-base font-bold text-foreground leading-tight">{recipe.name}</h3>
-                                        <p className="text-xs text-muted-foreground">
-                                            {recipe.description || 'No notes or special preparation instructions entered.'}
-                                        </p>
+                        recipe && (
+                            <div className="space-y-5">
+                                {recipe.deletedAt && (
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
+                                        <AlertTriangle className="size-4 shrink-0 animate-bounce" />
+                                        <span>This recipe is archived / soft-deleted. Restore it to reactivate it.</span>
                                     </div>
+                                )}
 
-                                    <div className="space-y-3">
-                                        <h4 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5 border-b pb-1">
-                                            <BookOpen className="size-4 text-primary" />
-                                            Recipe Ingredients Build List
+                                <div className="bg-muted/20 p-4 rounded-xl border border-border/40 space-y-1">
+                                    <h3 className="text-base font-bold text-foreground leading-tight">{recipe.name}</h3>
+                                    <p className="text-xs text-muted-foreground">
+                                        {recipe.description || 'No notes or special preparation instructions entered.'}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5 border-b pb-1">
+                                        <BookOpen className="size-4 text-primary" />
+                                        Recipe Ingredients Build List
+                                    </h4>
+                                    <div className="border border-border/40 rounded-xl overflow-hidden bg-background/30 max-h-[35vh] overflow-y-auto">
+                                        {recipe.ingredients.length === 0 ? (
+                                            <div className="text-center py-8 text-xs text-muted-foreground font-medium italic">
+                                                No ingredients mapped to this recipe.
+                                            </div>
+                                        ) : (
+                                            <div className="divide-y divide-border/30">
+                                                {recipe.ingredients.map((ing: IRecipeIngredient) => (
+                                                    <div key={ing.id} className="flex justify-between items-center p-3 text-xs">
+                                                        <div className="font-semibold text-foreground/80">{ing.ingredient.name}</div>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="font-bold text-foreground/90 bg-background/50 border-border/40 py-0.5 px-2"
+                                                        >
+                                                            {ing.quantity} {ing.unit.abbreviation || ing.unit.name}
+                                                        </Badge>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Audit Card */}
+                                <div className="space-y-2.5 pt-1">
+                                    <div className="flex items-center border-b pb-1">
+                                        <h4 className="text-xs font-bold text-foreground/75 flex items-center gap-1.5">
+                                            <Calendar className="size-3.5 text-primary" />
+                                            System Audit Logs
                                         </h4>
-                                        <div className="border border-border/40 rounded-xl overflow-hidden bg-background/30 max-h-[35vh] overflow-y-auto">
-                                            {recipe.ingredients.length === 0 ? (
-                                                <div className="text-center py-8 text-xs text-muted-foreground font-medium italic">
-                                                    No ingredients mapped to this recipe.
-                                                </div>
-                                            ) : (
-                                                <div className="divide-y divide-border/30">
-                                                    {recipe.ingredients.map((ing: IRecipeIngredient) => (
-                                                        <div key={ing.id} className="flex justify-between items-center p-3 text-xs">
-                                                            <div className="font-semibold text-foreground/80">{ing.ingredient.name}</div>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="font-bold text-foreground/90 bg-background/50 border-border/40 py-0.5 px-2"
-                                                            >
-                                                                {ing.quantity} {ing.unit.abbreviation || ing.unit.name}
-                                                            </Badge>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
+                                        <div>
+                                            <span className="font-semibold text-foreground/75 block">Created Date</span>
+                                            {format(new Date(recipe.createdAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {recipe.createdBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {recipe.createdBy.firstName} {recipe.createdBy.lastName}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold text-foreground/75 block">Last Updated</span>
+                                            {format(new Date(recipe.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            {recipe.updatedBy && (
+                                                <span className="block mt-0.5 text-muted-foreground/80">
+                                                    by {recipe.updatedBy.firstName} {recipe.updatedBy.lastName}
+                                                </span>
                                             )}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Audit Card */}
-                                    <div className="space-y-2.5 pt-1">
-                                        <div className="flex items-center border-b pb-1">
-                                            <h4 className="text-xs font-bold text-foreground/75 flex items-center gap-1.5">
-                                                <Calendar className="size-3.5 text-primary" />
-                                                System Audit Logs
-                                            </h4>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
-                                            <div>
-                                                <span className="font-semibold text-foreground/75 block">Created Date</span>
-                                                {format(new Date(recipe.createdAt), 'MMMM dd, yyyy - hh:mm a')}
-                                                {recipe.createdBy && (
-                                                    <span className="block mt-0.5 text-muted-foreground/80">
-                                                        by {recipe.createdBy.firstName} {recipe.createdBy.lastName}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <span className="font-semibold text-foreground/75 block">Last Updated</span>
-                                                {format(new Date(recipe.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
-                                                {recipe.updatedBy && (
-                                                    <span className="block mt-0.5 text-muted-foreground/80">
-                                                        by {recipe.updatedBy.firstName} {recipe.updatedBy.lastName}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                                <DialogFooter className="border-t bg-muted/30 pt-4 mt-6">
+                                    {recipe.deletedAt ? (
+                                        <RequirePermission module="Products Management" action="delete">
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        type="button"
+                                                        disabled={restoreRecipeMutation.isPending}
+                                                        className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                                    >
+                                                        <RotateCcw className="size-4" /> Restore Recipe
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                            <RotateCcw className="size-5 text-emerald-600" />
+                                                            Restore Recipe
+                                                        </AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Are you sure you want to restore this recipe build <strong>"{recipe.name}"</strong>? This
+                                                            will make it active and link it back to the product variant.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => restoreRecipeMutation.mutate()}
+                                                            className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                                        >
+                                                            Confirm Restore
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </RequirePermission>
+                                    ) : (
+                                        <>
+                                            <RequirePermission module="Products Management" action="delete">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        if (confirm('Are you sure you want to delete this recipe? This cannot be undone.')) {
+                                                            deleteRecipeMutation.mutate();
+                                                        }
+                                                    }}
+                                                    disabled={deleteRecipeMutation.isPending}
+                                                    className="h-9 border-destructive text-destructive hover:bg-destructive/10"
+                                                >
+                                                    <Trash2 className="size-4 mr-1.5" /> Delete Recipe
+                                                </Button>
+                                            </RequirePermission>
 
-                            <DialogFooter className="border-t bg-muted/30 pt-4 mt-6">
-                                <RequirePermission module="Products Management" action="delete">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            if (confirm('Are you sure you want to delete this recipe? This cannot be undone.')) {
-                                                deleteRecipeMutation.mutate();
-                                            }
-                                        }}
-                                        disabled={deleteRecipeMutation.isPending}
-                                        className="h-9 border-destructive text-destructive hover:bg-destructive/10"
-                                    >
-                                        <Trash2 className="size-4 mr-1.5" /> Delete Recipe
+                                            <div className="flex-1" />
+
+                                            <RequirePermission module="Products Management" action="update">
+                                                <Button type="button" onClick={() => setIsEditing(true)} className="h-9">
+                                                    <Edit2 className="size-4 mr-1.5" /> Edit Recipe
+                                                </Button>
+                                            </RequirePermission>
+                                        </>
+                                    )}
+                                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
+                                        Close
                                     </Button>
-                                </RequirePermission>
-
-                                <div className="flex-1" />
-
-                                <RequirePermission module="Products Management" action="update">
-                                    <Button type="button" onClick={() => setIsEditing(true)} className="h-9">
-                                        <Edit2 className="size-4 mr-1.5" /> Edit Recipe
-                                    </Button>
-                                </RequirePermission>
-                                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
-                                    Close
-                                </Button>
-                            </DialogFooter>
-                        </div>
+                                </DialogFooter>
+                            </div>
+                        )
                     )}
                 </div>
             </DialogContent>

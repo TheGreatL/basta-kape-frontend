@@ -15,7 +15,8 @@ import {
     AlertTriangle,
     BarChart3,
     Calendar,
-    ArrowDownCircle
+    ArrowDownCircle,
+    RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -29,7 +30,9 @@ import {
     getAdjustments,
     getProductionForecast,
     deleteIngredientUnit,
-    deleteIngredient
+    deleteIngredient,
+    restoreIngredientUnit,
+    restoreIngredient
 } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -53,6 +56,18 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
 
 import { UnitCreateDialog, UnitEditDialog } from './components/inventory-units-dialogs.tsx';
 import { IngredientCreateDialog, IngredientEditDialog } from './components/inventory-ingredients-dialogs.tsx';
@@ -256,7 +271,7 @@ export default function InventoryPage() {
     });
 
     // =========================================================================
-    // Delete Mutations
+    // Delete & Restore Mutations
     // =========================================================================
     const deleteUnitMutation = useMutation({
         mutationFn: deleteIngredientUnit,
@@ -267,6 +282,15 @@ export default function InventoryPage() {
         onError: (err) => toast.error('Failed to archive unit', { description: getErrorMessage(err) })
     });
 
+    const restoreUnitMutation = useMutation({
+        mutationFn: restoreIngredientUnit,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST] });
+            toast.success('Measurement Unit Restored');
+        },
+        onError: (err) => toast.error('Failed to restore unit', { description: getErrorMessage(err) })
+    });
+
     const deleteIngredientMutation = useMutation({
         mutationFn: deleteIngredient,
         onSuccess: () => {
@@ -275,6 +299,16 @@ export default function InventoryPage() {
             toast.success('Ingredient Archived');
         },
         onError: (err) => toast.error('Failed to archive ingredient', { description: getErrorMessage(err) })
+    });
+
+    const restoreIngredientMutation = useMutation({
+        mutationFn: restoreIngredient,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
+            toast.success('Ingredient Restored');
+        },
+        onError: (err) => toast.error('Failed to restore ingredient', { description: getErrorMessage(err) })
     });
 
     // =========================================================================
@@ -557,7 +591,7 @@ export default function InventoryPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-1">
-                        {iStatus !== 'archive' && (
+                        {iStatus !== 'archive' ? (
                             <>
                                 <RequirePermission module="Inventory Management" action="update">
                                     <Button
@@ -583,12 +617,48 @@ export default function InventoryPage() {
                                     </Button>
                                 </RequirePermission>
                             </>
+                        ) : (
+                            <RequirePermission module="Inventory Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                            disabled={restoreIngredientMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Raw Ingredient
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the raw ingredient <strong>"{row.original.name}"</strong>? This will
+                                                make it active, enabling stock tracking and recipe mapping.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreIngredientMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
                         )}
                     </div>
                 )
             }
         ],
-        [iStatus]
+        [iStatus, restoreIngredientMutation]
     );
 
     // --- Units Columns ---
@@ -623,7 +693,7 @@ export default function InventoryPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-1">
-                        {uStatus !== 'archive' && (
+                        {uStatus !== 'archive' ? (
                             <>
                                 <RequirePermission module="Inventory Management" action="update">
                                     <Button
@@ -649,12 +719,51 @@ export default function InventoryPage() {
                                     </Button>
                                 </RequirePermission>
                             </>
+                        ) : (
+                            <RequirePermission module="Inventory Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                            disabled={restoreUnitMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Measurement Unit
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the measurement unit{' '}
+                                                <strong>
+                                                    "{row.original.name}" ({row.original.abbreviation})
+                                                </strong>
+                                                ? This will restore it to the active measurement unit options.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreUnitMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
                         )}
                     </div>
                 )
             }
         ],
-        [uStatus]
+        [uStatus, restoreUnitMutation]
     );
 
     // =========================================================================

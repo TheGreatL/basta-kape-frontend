@@ -1,10 +1,24 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Lock, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Lock, Eye, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
-import { getRolesList } from '#/api/rbac.api.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+
+import { getRolesList, restoreRole } from '#/api/rbac.api.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { RoleTabProps, IRoleListItem } from '../rbac.types';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -20,7 +34,21 @@ import RoleViewDialog from './role-view-dialog.tsx';
 import RoleDeleteDialog from './role-delete-dialog.tsx';
 
 export default function RoleTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: RoleTabProps) {
+    const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreRole,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.RBAC.ROLES_LIST] });
+            toast.success('Role successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore role', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
 
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
@@ -128,38 +156,78 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
                                     <span className="sr-only">View Role</span>
                                 </Button>
                             </RequirePermission>
-                            {!isCustomer && (
-                                <>
-                                    <RequirePermission module="Roles and Permissions" action="update">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                            onClick={() => handleOpenEdit(row.original)}
-                                        >
-                                            <Edit className="size-4" />
-                                            <span className="sr-only">Edit Role</span>
-                                        </Button>
-                                    </RequirePermission>
-                                    <RequirePermission module="Roles and Permissions" action="delete">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                            onClick={() => handleOpenDelete(row.original)}
-                                        >
-                                            <Trash2 className="size-4" />
-                                            <span className="sr-only">Delete Role</span>
-                                        </Button>
-                                    </RequirePermission>
-                                </>
-                            )}
+                            {status === 'archive'
+                                ? !isCustomer && (
+                                      <RequirePermission module="Roles and Permissions" action="delete">
+                                          <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                  <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                                      title="Restore Role"
+                                                      disabled={restoreMutation.isPending}
+                                                  >
+                                                      <RotateCcw className="size-4" />
+                                                      <span className="sr-only">Restore Role</span>
+                                                  </Button>
+                                              </AlertDialogTrigger>
+                                              <AlertDialogContent>
+                                                  <AlertDialogHeader>
+                                                      <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                          <RotateCcw className="size-5 text-emerald-600" />
+                                                          Restore Role
+                                                      </AlertDialogTitle>
+                                                      <AlertDialogDescription>
+                                                          Are you sure you want to restore the role <strong>"{row.original.name}"</strong>? This will
+                                                          reactivate the role and restore its associated system access permissions.
+                                                      </AlertDialogDescription>
+                                                  </AlertDialogHeader>
+                                                  <AlertDialogFooter>
+                                                      <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                      <AlertDialogAction
+                                                          onClick={() => restoreMutation.mutate(row.original.id)}
+                                                          className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                                      >
+                                                          Confirm Restore
+                                                      </AlertDialogAction>
+                                                  </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                          </AlertDialog>
+                                      </RequirePermission>
+                                  )
+                                : !isCustomer && (
+                                      <>
+                                          <RequirePermission module="Roles and Permissions" action="update">
+                                              <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                                  onClick={() => handleOpenEdit(row.original)}
+                                              >
+                                                  <Edit className="size-4" />
+                                                  <span className="sr-only">Edit Role</span>
+                                              </Button>
+                                          </RequirePermission>
+                                          <RequirePermission module="Roles and Permissions" action="delete">
+                                              <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                                  onClick={() => handleOpenDelete(row.original)}
+                                              >
+                                                  <Trash2 className="size-4" />
+                                                  <span className="sr-only">Delete Role</span>
+                                              </Button>
+                                          </RequirePermission>
+                                      </>
+                                  )}
                         </div>
                     );
                 }
             }
         ],
-        []
+        [status, restoreMutation]
     );
 
     return (

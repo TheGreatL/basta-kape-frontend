@@ -70,6 +70,15 @@ export const deleteProduct = async (id: string): Promise<{ message: string }> =>
     return response.json();
 };
 
+export const restoreProduct = async (id: string): Promise<IProduct> => {
+    const response = await api.patch(`/products/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore product', response.status, errorData);
+    }
+    return response.json();
+};
+
 // ==========================================
 // 2. PRODUCT VARIANTS API
 // ==========================================
@@ -105,6 +114,15 @@ export const deleteProductVariant = async (id: string): Promise<{ message: strin
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to delete product variant', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const restoreProductVariant = async (id: string): Promise<IProductVariant> => {
+    const response = await api.patch(`/products/variants/${id}/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore product variant', response.status, errorData);
     }
     return response.json();
 };
@@ -159,6 +177,15 @@ export const deleteVariantRecipe = async (variantId: string): Promise<{ message:
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to delete recipe', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const restoreVariantRecipe = async (variantId: string): Promise<IRecipe> => {
+    const response = await api.patch(`/products/variants/${variantId}/recipe/restore`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to restore recipe', response.status, errorData);
     }
     return response.json();
 };

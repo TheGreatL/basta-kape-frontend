@@ -1,10 +1,24 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Folder, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Folder, Calendar, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
-import { getCategoriesList } from '#/api/product-settings.ts';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+
+import { getCategoriesList, restoreCategory } from '#/api/product-settings.ts';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { CategoryTabProps, ICategory } from '../product-settings-types';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -20,7 +34,21 @@ import CategoryViewDialog from '../components/category-view-dialog.tsx';
 import CategoryDeleteDialog from '../components/category-delete-dialog.tsx';
 
 export default function CategoryTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: CategoryTabProps) {
+    const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
+
+    const restoreMutation = useMutation({
+        mutationFn: restoreCategory,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST] });
+            toast.success('Category successfully restored');
+        },
+        onError: (err) => {
+            toast.error('Failed to restore category', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
 
@@ -117,7 +145,45 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
                                 <span className="sr-only">View Details</span>
                             </Button>
                         </RequirePermission>
-                        {status !== 'archive' && (
+                        {status === 'archive' ? (
+                            <RequirePermission module="Product Settings Management" action="delete">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+                                            title="Restore Category"
+                                            disabled={restoreMutation.isPending}
+                                        >
+                                            <RotateCcw className="size-4" />
+                                            <span className="sr-only">Restore Category</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                <RotateCcw className="size-5 text-emerald-600" />
+                                                Restore Product Category
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to restore the product category <strong>"{row.original.name}"</strong>? This
+                                                will restore it to the active product categorization listings.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => restoreMutation.mutate(row.original.id)}
+                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                            >
+                                                Confirm Restore
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </RequirePermission>
+                        ) : (
                             <>
                                 <RequirePermission module="Product Settings Management" action="update">
                                     <Button
@@ -147,7 +213,7 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
                 )
             }
         ],
-        [status]
+        [status, restoreMutation]
     );
 
     return (
