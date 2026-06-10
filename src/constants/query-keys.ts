@@ -58,6 +58,10 @@ const QUERY_KEY = {
     },
     ACTIVITY_LOGS: {
         LOGS_LIST: 'activity_logs:logs_list'
+    },
+    REPORTS: {
+        MODULES: 'reports:modules',
+        PREVIEW: 'reports:preview'
     }
 };
 export default QUERY_KEY;
