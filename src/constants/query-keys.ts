@@ -62,6 +62,9 @@ const QUERY_KEY = {
     REPORTS: {
         MODULES: 'reports:modules',
         PREVIEW: 'reports:preview'
+    },
+    STORE_SETTINGS: {
+        ACTIVE: 'store_settings:active'
     }
 };
 export default QUERY_KEY;
