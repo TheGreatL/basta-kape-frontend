@@ -12,7 +12,7 @@ import NotFoundPage from '../components/errors/not-found-page';
 
 import type { getAuthStore } from '../store/auth-store';
 import { Toaster } from '#/components/ui/sonner';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { getStoreSettings } from '#/api/store-settings.api.ts';
 
 interface MyRouterContext {
     queryClient: QueryClient;
@@ -20,6 +20,17 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+    beforeLoad: async ({ context }) => {
+        const user = context.auth().user;
+        if (user) {
+            await context.queryClient
+                .prefetchQuery({
+                    queryKey: ['store_settings:active'],
+                    queryFn: getStoreSettings
+                })
+                .catch(() => null);
+        }
+    },
     head: () => ({
         meta: [
             {
@@ -30,7 +41,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
                 content: 'width=device-width, initial-scale=1'
             },
             {
-                title: BUSINESS_DETAIL.NAME
+                title: 'Basta Kape'
             }
         ],
         links: [

@@ -10,7 +10,7 @@ import { logout as authLogout } from '#/api/auth.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import logo from '#/assets/logo.png';
 import { toast } from 'sonner';
 
@@ -18,6 +18,7 @@ export default function CustomerHeader() {
     const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { storeName } = useStoreSettings();
 
     // Fetch current customer ID
     const { data: customer } = useCurrentCustomer();
@@ -58,7 +59,7 @@ export default function CustomerHeader() {
                         <img src={logo} alt="Logo" className="h-7 w-auto object-contain" />
                     </div>
                     <span className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                        {BUSINESS_DETAIL.NAME || 'Basta Kape'}
+                        {storeName || 'Basta Kape'}
                     </span>
                 </Link>
 

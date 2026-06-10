@@ -12,7 +12,7 @@ import { getErrorMessage } from '@/utils/error-handler';
 import { registerSchema } from './auth.schema';
 import type { TRegisterSchema } from './auth.schema';
 import QUERY_KEY from '@/constants/query-keys';
-import { BUSINESS_DETAIL } from '@/constants/business-details';
+import { useStoreSettings } from '@/hooks/use-store-settings';
 import logo from '@/assets/logo.png';
 
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export default function RegisterPage() {
     const setAuth = useAuthStore((state) => state.setAuth);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { storeName } = useStoreSettings();
 
     const form = useForm<TRegisterSchema>({
         resolver: zodResolver(registerSchema),
@@ -69,9 +70,9 @@ export default function RegisterPage() {
             <div className="hidden lg:flex flex-col justify-center items-center w-[45%] bg-primary/5 border-r p-12">
                 <div className="max-w-md space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <div className="mx-auto mb-8 flex justify-center">
-                        <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
+                        <img src={logo} alt={storeName} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
                     </div>
-                    <h1 className="text-4xl font-bold">Join {BUSINESS_DETAIL.NAME}</h1>
+                    <h1 className="text-4xl font-bold">Join {storeName}</h1>
                     <p className="text-lg text-muted-foreground">
                         Create an account to manage your store, track inventory, and serve the best coffee experiences to your customers.
                     </p>
@@ -83,11 +84,7 @@ export default function RegisterPage() {
                 <Card className="w-full max-w-xl shadow-lg border-primary/10">
                     <CardHeader className="space-y-2 text-center">
                         <div className="flex justify-center mb-4 lg:hidden">
-                            <img
-                                src={logo}
-                                alt={BUSINESS_DETAIL.NAME}
-                                className="size-16 rounded-full object-cover border border-border/50 shadow-sm"
-                            />
+                            <img src={logo} alt={storeName} className="size-16 rounded-full object-cover border border-border/50 shadow-sm" />
                         </div>
                         <CardTitle className="text-3xl font-bold">Create an Account</CardTitle>
                         <CardDescription>Fill out the form below to register a new account</CardDescription>

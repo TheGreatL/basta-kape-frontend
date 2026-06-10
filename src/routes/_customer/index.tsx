@@ -1,13 +1,15 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { Coffee, ArrowRight, Star, Heart, ShieldCheck, Flame } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 
 export const Route = createFileRoute('/_customer/')({
     component: LandingPage
 });
 
 function LandingPage() {
+    const { storeName } = useStoreSettings();
+
     return (
         <div className="flex flex-col min-h-screen">
             {/* Hero Section */}
@@ -29,8 +31,8 @@ function LandingPage() {
                     </h1>
 
                     <p className="mt-6 text-base md:text-lg text-amber-100/80 max-w-2xl font-light leading-relaxed">
-                        Welcome to {BUSINESS_DETAIL.NAME}. We combine ethically sourced premium beans with precise artisanal roasting to elevate your
-                        daily coffee ritual.
+                        Welcome to {storeName}. We combine ethically sourced premium beans with precise artisanal roasting to elevate your daily
+                        coffee ritual.
                     </p>
 
                     <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto">
@@ -60,7 +62,7 @@ function LandingPage() {
             <section className="py-20 bg-background">
                 <div className="container mx-auto px-4">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <h2 className="text-2xl md:text-3xl font-bold text-foreground">The {BUSINESS_DETAIL.NAME} Standards</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-foreground">The {storeName} Standards</h2>
                         <p className="mt-3 text-sm md:text-base text-muted-foreground">
                             We take pride in every single detail of your coffee experience.
                         </p>
@@ -112,9 +114,7 @@ function LandingPage() {
                     <blockquote className="text-xl md:text-2xl font-medium text-foreground italic leading-relaxed">
                         "Coffee is not just a drink; it's a moment of clarity, a fuel for connection, and a craft we celebrate daily."
                     </blockquote>
-                    <cite className="block mt-4 text-sm font-semibold text-muted-foreground not-italic uppercase">
-                        — {BUSINESS_DETAIL.NAME} Roastery
-                    </cite>
+                    <cite className="block mt-4 text-sm font-semibold text-muted-foreground not-italic uppercase">— {storeName} Roastery</cite>
                 </div>
             </section>
         </div>

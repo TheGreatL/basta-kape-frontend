@@ -1,7 +1,9 @@
 import { Coffee } from 'lucide-react';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 
 export default function LoadingPage() {
+    const { storeName } = useStoreSettings();
+
     return (
         <div className="flex min-h-dvh w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-8">
@@ -17,7 +19,7 @@ export default function LoadingPage() {
                 </div>
 
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h2 className="text-2xl font-bold text-foreground">{BUSINESS_DETAIL.NAME}</h2>
+                    <h2 className="text-2xl font-bold text-foreground">{storeName}</h2>
                     <div className="flex items-center text-sm font-medium text-muted-foreground animate-pulse">Brewing your experience...</div>
                 </div>
             </div>

@@ -3,7 +3,7 @@ import { Link, useMatchRoute } from '@tanstack/react-router';
 import type { IconName } from 'lucide-react/dynamic';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 
@@ -112,6 +112,7 @@ export default function AppSidebar() {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
     const permissions = getUserPermissions(user);
+    const { storeName } = useStoreSettings();
 
     const authorizedGroups = sidebarGroups
         .map((group) => ({
@@ -132,8 +133,8 @@ export default function AppSidebar() {
         <SidebarComponent collapsible="icon">
             <SidebarHeader>
                 <div className="flex h-12 items-center gap-2 px-4">
-                    <img src={logo} alt={BUSINESS_DETAIL.NAME} className="size-8 rounded-md object-contain" />
-                    <span className="font-bold text-lg truncate group-data-[collapsible=icon]:hidden">{BUSINESS_DETAIL.NAME}</span>
+                    <img src={logo} alt={storeName} className="size-8 rounded-md object-contain" />
+                    <span className="font-bold text-lg truncate group-data-[collapsible=icon]:hidden">{storeName}</span>
                 </div>
             </SidebarHeader>
             <SidebarSeparator />

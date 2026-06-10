@@ -1,6 +1,6 @@
 import { Outlet, Link, createFileRoute } from '@tanstack/react-router';
 import CustomerHeader from '#/components/layout/customer-header.tsx';
-import { BUSINESS_DETAIL } from '#/constants/business-details.ts';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
 
@@ -9,6 +9,8 @@ export const Route = createFileRoute('/_customer')({
 });
 
 function CustomerLayout() {
+    const { storeName } = useStoreSettings();
+
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             {/* Nav Header */}
@@ -29,7 +31,7 @@ function CustomerLayout() {
                                 <div className="flex size-8 items-center justify-center rounded-lg bg-background overflow-hidden">
                                     <img src={logo} alt="Logo" className="h-6 w-auto object-contain" />
                                 </div>
-                                <span className="text-base font-bold">{BUSINESS_DETAIL.NAME}</span>
+                                <span className="text-base font-bold">{storeName}</span>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed">
                                 Experience premium craft coffee brewed with passion and quality ingredients. Your daily cup of happiness, just a click
@@ -101,7 +103,7 @@ function CustomerLayout() {
 
                     <div className="mt-12 border-t border-border/20 pt-6 text-center text-xs text-muted-foreground">
                         <p>
-                            © {new Date().getFullYear()} {BUSINESS_DETAIL.NAME}. All rights reserved.
+                            © {new Date().getFullYear()} {storeName}. All rights reserved.
                         </p>
                     </div>
                 </div>
