@@ -18,7 +18,7 @@ import {
     AlertDialogTrigger
 } from '#/components/ui/alert-dialog.tsx';
 
-import { Route } from '#/routes/admin/products.tsx';
+import { Route } from '#/routes/admin/products/index.tsx';
 import { getProductsList, restoreProduct } from '#/api/products.api.ts';
 import { getCategoriesList, getProductTypesList, getCategoryById, getProductTypeById } from '#/api/product-settings.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -41,7 +41,7 @@ import ProductViewDialog from './components/product-view-dialog.tsx';
 import ProductDeleteDialog from './components/product-delete-dialog.tsx';
 
 export default function ProductsPage() {
-    const navigate = useNavigate({ from: '/admin/products' });
+    const navigate = useNavigate({ from: '/admin/products/' });
     const queryClient = useQueryClient();
     const { page, pageSize, search, status, productCategoryId, productTypeId } = Route.useSearch();
 

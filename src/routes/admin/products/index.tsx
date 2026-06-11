@@ -14,7 +14,7 @@ const searchParamsSchema = z.object({
     productTypeId: z.string().catch('')
 });
 
-export const Route = createFileRoute('/admin/products')({
+export const Route = createFileRoute('/admin/products/')({
     beforeLoad: async () => {
         if (typeof window === 'undefined') {
             return;

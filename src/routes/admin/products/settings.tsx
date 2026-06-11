@@ -27,7 +27,7 @@ const searchParamsSchema = z.object({
     aStatus: z.enum(['active', 'archive']).catch('active')
 });
 
-export const Route = createFileRoute('/admin/product-settings')({
+export const Route = createFileRoute('/admin/products/settings')({
     beforeLoad: async () => {
         if (typeof window === 'undefined') {
             return;

@@ -1,6 +1,6 @@
 import { Settings, Folder, LayoutGrid, Sparkles } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
-import { Route } from '#/routes/admin/product-settings.tsx';
+import { Route } from '#/routes/admin/products/settings.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 
 import CategoryTab from './tabs/category-tab.tsx';
@@ -8,7 +8,7 @@ import TypeTab from './tabs/type-tab.tsx';
 import AttributeTab from './tabs/attribute-tab.tsx';
 
 export default function ProductSettingsPage() {
-    const navigate = useNavigate({ from: '/admin/product-settings' });
+    const navigate = useNavigate({ from: '/admin/products/settings' });
     const { tab, cPage, cPageSize, cSearch, cStatus, tPage, tPageSize, tSearch, tStatus, aPage, aPageSize, aSearch, aStatus } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {

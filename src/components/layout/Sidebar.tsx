@@ -3,6 +3,7 @@ import { Link, useMatchRoute } from '@tanstack/react-router';
 import type { IconName } from 'lucide-react/dynamic';
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
+import type { TAppModule } from '#/constants/rbac.ts';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
@@ -34,15 +35,18 @@ import {
 } from '#/components/ui/dropdown-menu.tsx';
 import { ChevronDown, LogOut, Users } from 'lucide-react';
 
+interface SidebarItem {
+    title: string;
+    path: string;
+    icon: IconName;
+    module?: TAppModule;
+    public?: boolean;
+    exact?: boolean;
+}
+
 const sidebarGroups: Array<{
     label: string;
-    items: Array<{
-        title: string;
-        path: string;
-        icon: IconName;
-        public?: boolean;
-        exact?: boolean;
-    }>;
+    items: SidebarItem[];
 }> = [
     {
         label: 'Overview',
@@ -51,43 +55,51 @@ const sidebarGroups: Array<{
     {
         label: 'Sales & Orders',
         items: [
-            { title: appModules.POINT_OF_SALE, path: '/admin/pos', icon: 'monitor-play' },
-            { title: appModules.ORDER_QUEUE, path: '/admin/order-queue', icon: 'list-ordered' },
-            { title: appModules.ORDERS_MANAGEMENT, path: '/admin/orders', icon: 'shopping-cart' },
-            { title: appModules.TRANSACTION_HISTORY, path: '/admin/transactions', icon: 'history' },
-            { title: appModules.SALES_MANAGEMENT, path: '/admin/sales', icon: 'trending-up' }
+            { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
+            { title: 'Register Shifts', path: '/admin/register-shifts', icon: 'timer', module: appModules.POINT_OF_SALE },
+            { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE },
+            { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
+            { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY },
+            { title: 'Sales', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT }
         ]
     },
     {
         label: 'Inventory & Products',
         items: [
-            { title: appModules.PRODUCTS_MANAGEMENT, path: '/admin/products', icon: 'package' },
-            { title: appModules.PRODUCT_SETTINGS_MANAGEMENT, path: '/admin/product-settings', icon: 'settings' },
-            { title: appModules.INVENTORY_MANAGEMENT, path: '/admin/inventory', icon: 'archive' },
-            { title: appModules.PURCHASE_ORDERS_MANAGEMENT, path: '/admin/purchase-orders', icon: 'receipt' },
-            { title: appModules.MENU, path: '/admin/menu', icon: 'menu' }
+            { title: 'Products', path: '/admin/products', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+            { title: 'Products Recipes', path: '/admin/products/recipes', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+            {
+                title: 'Products Settings',
+                path: '/admin/products/settings',
+                icon: 'settings',
+                module: appModules.PRODUCT_SETTINGS_MANAGEMENT,
+                exact: true
+            },
+            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT },
+            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
+            { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU }
         ]
     },
     {
         label: 'People',
         items: [
-            { title: appModules.CUSTOMERS_MANAGEMENT, path: '/admin/customers', icon: 'users-round' },
-            { title: appModules.SUPPLIERS_MANAGEMENT, path: '/admin/suppliers', icon: 'truck' },
-            { title: appModules.USERS_MANAGEMENT, path: '/admin/users', icon: 'users' },
-            { title: appModules.ROLES_AND_PERMISSIONS, path: '/admin/roles', icon: 'shield' }
+            { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
+            { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT },
+            { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
+            { title: 'Roles & Permissions', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS }
         ]
     },
     {
         label: 'System',
         items: [
-            { title: appModules.REPORTS_MANAGEMENT, path: '/admin/reports', icon: 'file-bar-chart' },
-            { title: appModules.ACTIVITY_LOGS, path: '/admin/activity-logs', icon: 'activity' },
-            { title: appModules.STORE_SETTINGS, path: '/admin/store-settings', icon: 'store' }
+            { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
+            { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
+            { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
         ]
     }
 ];
 
-function SidebarLinkItem({ item }: { item: { title: string; path: string; icon: IconName; exact?: boolean } }) {
+function SidebarLinkItem({ item }: { item: SidebarItem }) {
     const matchRoute = useMatchRoute();
     const isActive = matchRoute({ to: item.path as any, fuzzy: !item.exact }) !== false;
 
@@ -117,7 +129,11 @@ export default function AppSidebar() {
     const authorizedGroups = sidebarGroups
         .map((group) => ({
             ...group,
-            items: group.items.filter((item) => item.public || hasPermission(permissions, item.title, appPermissions.READ))
+            items: group.items.filter((item) => {
+                if (item.public) return true;
+                if (!item.module) return false;
+                return hasPermission(permissions, item.module, appPermissions.READ);
+            })
         }))
         .filter((group) => group.items.length > 0);
 

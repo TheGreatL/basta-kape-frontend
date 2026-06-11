@@ -14,7 +14,7 @@ export function getUserPermissions(user: User | null | undefined): Permission[] 
     return user.roles.flatMap((role) => role.permissions);
 }
 
-export function hasPermission(permissions: Permission[], module: string, action: string, scope?: TAccessScope): boolean {
+export function hasPermission(permissions: Permission[], module: TAppModule, action: TAppPermission, scope?: TAccessScope): boolean {
     return permissions.some(
         (p) =>
             p.module.toLowerCase() === module.toLowerCase() &&
