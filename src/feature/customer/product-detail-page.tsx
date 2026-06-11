@@ -91,7 +91,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
     const handleIncrement = () => {
         setQuantity((q) => {
             const stock = selectedVariant?.maxProduceable;
-            if (stock !== null && stock !== undefined) {
+            if (stock !== null && stock !== undefined && stock !== 'Unlimited') {
                 return Math.min(stock, q + 1);
             }
             return q + 1;
@@ -214,6 +214,11 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                     <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
                                     Out of Stock
                                 </span>
+                            ) : selectedVariant.maxProduceable === 'Unlimited' ? (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+                                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                                    In Stock (Unlimited)
+                                </span>
                             ) : selectedVariant.maxProduceable !== null &&
                               selectedVariant.maxProduceable !== undefined &&
                               selectedVariant.maxProduceable <= 10 ? (
@@ -261,8 +266,8 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                     onClick={handleIncrement}
                                     disabled={
                                         selectedVariant?.maxProduceable === 0 ||
-                                        (selectedVariant?.maxProduceable !== null &&
-                                            selectedVariant?.maxProduceable !== undefined &&
+                                        (selectedVariant &&
+                                            typeof selectedVariant.maxProduceable === 'number' &&
                                             quantity >= selectedVariant.maxProduceable)
                                     }
                                     className="h-8 w-8 rounded-lg p-0"

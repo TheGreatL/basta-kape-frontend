@@ -136,3 +136,21 @@ export const restoreCustomer = async (id: string): Promise<ICustomerResponse> =>
     }
     return response.json();
 };
+
+export const getCustomerOrders = async (
+    customerId: string,
+    params: { page?: number; limit?: number; search?: string; status?: string }
+): Promise<IPaginatedResult<any>> => {
+    const query = new URLSearchParams();
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    if (params.search) query.set('search', params.search);
+    if (params.status) query.set('status', params.status);
+
+    const response = await api.get(`/customers/${customerId}/orders?${query.toString()}`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch customer order history', response.status, errorData);
+    }
+    return response.json();
+};

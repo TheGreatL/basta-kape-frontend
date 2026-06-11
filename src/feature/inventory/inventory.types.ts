@@ -173,7 +173,7 @@ export interface IForecast {
     sku: string | null;
     price: number;
     hasRecipe: boolean;
-    maxProduceable: number;
+    maxProduceable: number | 'Unlimited';
     bottleneck: {
         ingredientId: string;
         name: string;

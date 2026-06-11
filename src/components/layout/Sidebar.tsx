@@ -67,6 +67,7 @@ const sidebarGroups: Array<{
         items: [
             { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU },
             { title: 'Products', path: '/admin/products', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+            { title: 'Modifiers', path: '/admin/products/modifiers', icon: 'list-plus', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
             { title: 'Recipes', path: '/admin/products/recipes', icon: 'chef-hat', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
             {
                 title: 'Product Settings',

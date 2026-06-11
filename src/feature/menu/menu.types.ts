@@ -37,7 +37,7 @@ export interface IMenuProductVariant {
     price: number;
     attributes: IMenuVariantAttribute[];
     recipe: IMenuRecipe | null;
-    maxProduceable?: number | null;
+    maxProduceable?: number | 'Unlimited' | null;
 }
 
 export interface IMenuVariantAttribute {
