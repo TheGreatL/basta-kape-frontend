@@ -131,7 +131,7 @@ export default function RecipesPage() {
                     const attrString = v.attributes.map((a) => a.attributeValue.value).join(', ');
                     return (
                         <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-lg overflow-hidden border border-border bg-muted shrink-0 flex items-center justify-center bg-background/50">
+                            <div className="size-10 rounded-lg overflow-hidden border border-border bg-muted/50 shrink-0 flex items-center justify-center">
                                 {v.product.photo ? (
                                     <img
                                         src={v.product.photo.startsWith('http') ? v.product.photo : getFileUrl(v.product.photo)}

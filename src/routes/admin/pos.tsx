@@ -1,9 +1,23 @@
+import PosPage from '#/feature/pos/pos-page';
 import { createFileRoute } from '@tanstack/react-router';
+import { requirePermission } from '#/utils/rbac.ts';
+import { useAuthStore, waitForAuthHydration } from '#/store/auth-store.ts';
+import { restoreSession } from '#/api/auth.api.ts';
+import { appModules } from '#/constants/rbac.ts';
 
 export const Route = createFileRoute('/admin/pos')({
-    component: RouteComponent
-});
+    beforeLoad: async () => {
+        if (typeof window === 'undefined') {
+            return;
+        }
 
-function RouteComponent() {
-    return <div>Hello "/admin/pos"!</div>;
-}
+        await waitForAuthHydration();
+
+        if (!useAuthStore.getState().user) {
+            await restoreSession().catch(() => null);
+        }
+
+        requirePermission(null, appModules.POINT_OF_SALE, 'read');
+    },
+    component: PosPage
+});

@@ -32,6 +32,16 @@ function AdminLayout() {
                 }
             }
 
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser) {
+                try {
+                    const { useRegisterShiftStore } = await import('#/store/register-shift-store.ts');
+                    await useRegisterShiftStore.getState().fetchActiveShift();
+                } catch (err) {
+                    console.error('Failed to fetch active shift drawer on startup:', err);
+                }
+            }
+
             if (isActive) {
                 setIsCheckingSession(false);
             }
