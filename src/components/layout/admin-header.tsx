@@ -55,7 +55,7 @@ export default function AdminHeader() {
     };
 
     return (
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur-md px-4 lg:h-16 lg:px-6 transition-all duration-200">
+        <header className="sticky top-0 z-10 flex py-4 items-center justify-between border-b bg-background/95 backdrop-blur-md px-4 lg:px-6 transition-all duration-200">
             {/* Left Side: Sidebar Trigger + Breadcrumbs */}
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="-ml-2 hover:bg-muted/60 transition-colors" />

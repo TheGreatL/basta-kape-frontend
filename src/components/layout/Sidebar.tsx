@@ -53,45 +53,50 @@ const sidebarGroups: Array<{
         items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', public: true, exact: true }]
     },
     {
-        label: 'Sales & Orders',
+        label: 'Operations',
         items: [
             { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
             { title: 'Register Shifts', path: '/admin/register-shifts', icon: 'timer', module: appModules.POINT_OF_SALE },
             { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
-            { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY },
-            { title: 'Sales', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT }
+            { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
         ]
     },
     {
-        label: 'Inventory & Products',
+        label: 'Catalog & Menu',
         items: [
+            { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU },
             { title: 'Products', path: '/admin/products', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-            { title: 'Products Recipes', path: '/admin/products/recipes', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+            { title: 'Recipes', path: '/admin/products/recipes', icon: 'chef-hat', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
             {
-                title: 'Products Settings',
+                title: 'Product Settings',
                 path: '/admin/products/settings',
                 icon: 'settings',
                 module: appModules.PRODUCT_SETTINGS_MANAGEMENT,
                 exact: true
-            },
-            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT },
-            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
-            { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU }
+            }
         ]
     },
     {
-        label: 'People',
+        label: 'Inventory & Purchasing',
+        items: [
+            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT },
+            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
+            { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
+        ]
+    },
+    {
+        label: 'People & Security',
         items: [
             { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
-            { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT },
             { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
             { title: 'Roles & Permissions', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS }
         ]
     },
     {
-        label: 'System',
+        label: 'System & Reports',
         items: [
+            { title: 'Sales Management', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
             { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
             { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
             { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }

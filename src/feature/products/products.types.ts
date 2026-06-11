@@ -36,6 +36,7 @@ export interface IProductVariant {
     sku: string | null;
     price: number;
     attributes: IVariantAttribute[];
+    recipe?: { id: string; name: string } | null;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
