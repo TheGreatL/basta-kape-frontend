@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Switch } from '#/components/ui/switch.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { ScrollArea } from '#/components/ui/scroll-area.tsx';
+import type { IProduct } from '#/feature/products/products.types';
 
 const groupFormSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must not exceed 100 characters'),
@@ -51,7 +52,7 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
     const filteredProducts = React.useMemo(() => {
         if (!productSearch) return products;
         const q = productSearch.toLowerCase();
-        return products.filter((p) => p.name.toLowerCase().includes(q));
+        return products.filter((p: IProduct) => p.name.toLowerCase().includes(q));
     }, [products, productSearch]);
 
     const form = useForm<GroupFormValues>({
@@ -256,7 +257,7 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {filteredProducts.map((p) => {
+                                                {filteredProducts.map((p: IProduct) => {
                                                     const isChecked = form.watch('productIds').includes(p.id);
                                                     return (
                                                         <label

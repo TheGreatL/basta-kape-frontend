@@ -1,7 +1,10 @@
 import { Trash2, Plus, Minus, Coffee } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { getFileUrl } from '#/utils/helper';
+import { getModifierGroups } from '#/api/modifiers.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ICartItemResponse } from '../customer.types.ts';
 
 interface CartItemRowProps {
@@ -10,10 +13,39 @@ interface CartItemRowProps {
     onToggleSelect: () => void;
     onQuantityChange: (item: ICartItemResponse, newQuantity: number) => Promise<void>;
     onRemoveClick: (item: ICartItemResponse) => void;
+    selectedModifierIds: string[];
+    onModifiersChange: (selectedIds: string[], groups: any[]) => void;
 }
 
-export default function CartItemRow({ item, isSelected, onToggleSelect, onQuantityChange, onRemoveClick }: CartItemRowProps) {
+export default function CartItemRow({
+    item,
+    isSelected,
+    onToggleSelect,
+    onQuantityChange,
+    onRemoveClick,
+    selectedModifierIds,
+    onModifiersChange
+}: CartItemRowProps) {
     const product = item.productVariant.product;
+
+    // Fetch product modifier groups
+    const { data: modifierGroupsResponse } = useQuery({
+        queryKey: [QUERY_KEY.PRODUCTS.MODIFIERS_FOR_CART_ITEM, product.id],
+        queryFn: () => getModifierGroups({ productId: product.id, limit: 50 }),
+        enabled: !!product.id
+    });
+
+    const modifierGroups = modifierGroupsResponse?.data || [];
+
+    // Calculate dynamic modifiers price addition
+    const modifiersPrice = modifierGroups.reduce((sum: number, group: any) => {
+        return (
+            sum +
+            group.options.reduce((optSum: number, opt: any) => {
+                return optSum + (selectedModifierIds.includes(opt.id) ? opt.price : 0);
+            }, 0)
+        );
+    }, 0);
 
     const variantLabel =
         item.productVariant.attributes.length === 0 ? 'Regular' : item.productVariant.attributes.map((attr) => attr.attributeValue.value).join(' / ');
@@ -43,13 +75,45 @@ export default function CartItemRow({ item, isSelected, onToggleSelect, onQuanti
                 <div className="text-xs font-bold text-primary uppercase">{product.category?.name || 'Beverage'}</div>
                 <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5">{product.name || 'Unknown Item'}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{variantLabel}</p>
-                <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">₱{item.unitPrice.toFixed(2)}</div>
+                <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">₱{(item.unitPrice + modifiersPrice).toFixed(2)}</div>
+
+                {/* Customize Section */}
+                {modifierGroups.length > 0 && (
+                    <div className="mt-2.5 pt-2 border-t border-border/20 space-y-2">
+                        {modifierGroups.map((group: any) => (
+                            <div key={group.id} className="space-y-1">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">{group.name}</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {group.options.map((opt: any) => {
+                                        const isChecked = selectedModifierIds.includes(opt.id);
+                                        return (
+                                            <Button
+                                                key={opt.id}
+                                                type="button"
+                                                variant={isChecked ? 'default' : 'outline'}
+                                                onClick={() => {
+                                                    const nextIds = isChecked
+                                                        ? selectedModifierIds.filter((id) => id !== opt.id)
+                                                        : [...selectedModifierIds, opt.id];
+                                                    onModifiersChange(nextIds, modifierGroups);
+                                                }}
+                                                className="h-6 text-[9px] font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"
+                                            >
+                                                {opt.name} (+₱{opt.price.toFixed(2)})
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Right action area / Prices */}
-            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 shrink-0">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 shrink-0 self-start sm:self-center">
                 {/* Price per unit (desktop only) */}
-                <div className="hidden sm:block text-sm font-medium text-muted-foreground">₱{item.unitPrice.toFixed(2)}</div>
+                <div className="hidden sm:block text-sm font-medium text-muted-foreground">₱{(item.unitPrice + modifiersPrice).toFixed(2)}</div>
 
                 {/* Quantity controls */}
                 <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5 bg-card">
@@ -64,7 +128,7 @@ export default function CartItemRow({ item, isSelected, onToggleSelect, onQuanti
 
                 {/* Total item price */}
                 <div className="text-sm sm:text-base font-extrabold text-foreground w-16 text-right">
-                    ₱{(item.unitPrice * item.quantity).toFixed(2)}
+                    ₱{((item.unitPrice + modifiersPrice) * item.quantity).toFixed(2)}
                 </div>
 
                 {/* Delete item button */}

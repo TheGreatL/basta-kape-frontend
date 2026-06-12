@@ -34,7 +34,10 @@ const QUERY_KEY = {
         VARIANT_RECIPE: 'products:variant_recipe',
         MODIFIER_GROUPS: 'products:modifier_groups',
         MODIFIER_GROUP_DETAILS: 'products:modifier_group_details',
-        MODIFIER_OPTION_RECIPE: 'products:modifier_option_recipe'
+        MODIFIER_OPTION_RECIPE: 'products:modifier_option_recipe',
+        SELECT_FOR_ORDER_CREATION: 'products:select_for_order_creation',
+        MODIFIERS_FOR_ORDER_CREATION: 'products:modifiers_for_order_creation',
+        MODIFIERS_FOR_CART_ITEM: 'products:modifiers_for_cart_item'
     },
     MENU: {
         CATALOG: 'menu:catalog',
@@ -58,7 +61,12 @@ const QUERY_KEY = {
         CUSTOMER_DETAILS: 'customers:customer_details',
         CURRENT_CUSTOMER: 'customers:current_customer',
         CART: 'customers:cart',
-        ORDERS: 'customers:orders'
+        ORDERS: 'customers:orders',
+        SELECT_FOR_ORDER_CREATION: 'customers:select_for_order_creation'
+    },
+    ORDERS: {
+        ORDERS_LIST: 'orders:orders_list',
+        ORDER_DETAILS: 'orders:order_details'
     },
     ACTIVITY_LOGS: {
         LOGS_LIST: 'activity_logs:logs_list'

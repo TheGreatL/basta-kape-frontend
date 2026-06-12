@@ -24,6 +24,7 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { getFileUrl } from '#/utils/helper.ts';
 import type { ICustomerResponse, ICartItemResponse } from '#/feature/customer/customer.types.ts';
+import type { IOrder, IOrderItem, IOrderItemModifier } from '#/feature/order/order.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -456,7 +457,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                         <div className="space-y-4">
                                             {/* Orders List Accordion */}
                                             <div className="space-y-3">
-                                                {ordersData.data.map((order: any) => {
+                                                {ordersData.data.map((order: IOrder) => {
                                                     const isExpanded = !!expandedOrders[order.id];
                                                     return (
                                                         <div
@@ -504,11 +505,11 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
 
                                                                     <div className="space-y-2">
                                                                         <span className="text-[9px] font-bold text-foreground/50 uppercase block tracking-wider">
-                                                                            Ordered Items ({order.items.length})
+                                                                            Ordered Items ({order.items?.length || 0})
                                                                         </span>
 
                                                                         <div className="divide-y divide-border/25 border border-border/25 rounded-lg overflow-hidden bg-background">
-                                                                            {order.items.map((item: any) => (
+                                                                            {order.items?.map((item: IOrderItem) => (
                                                                                 <div
                                                                                     key={item.id}
                                                                                     className="flex items-start justify-between p-2.5 gap-3"
@@ -523,9 +524,9 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                                                         {renderAttributeBadges(item.variant.attributes)}
 
                                                                                         {/* Item Customizations / Modifiers */}
-                                                                                        {item.modifiers && item.modifiers.length > 0 && (
+                                                                                        {item.modifiers.length > 0 && (
                                                                                             <div className="flex flex-wrap gap-1 mt-1">
-                                                                                                {item.modifiers.map((mod: any) => (
+                                                                                                {item.modifiers.map((mod: IOrderItemModifier) => (
                                                                                                     <Badge
                                                                                                         key={mod.id}
                                                                                                         variant="outline"

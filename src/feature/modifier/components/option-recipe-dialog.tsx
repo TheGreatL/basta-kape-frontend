@@ -95,8 +95,8 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
 
     // Query: Measurement Units
     const { data: unitsData } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { page: 1, limit: 100, status: 'active' }],
-        queryFn: () => getIngredientUnits({ page: 1, limit: 100, status: 'active' }),
+        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { page: 1, limit: 50, status: 'active' }],
+        queryFn: () => getIngredientUnits({ page: 1, limit: 50, status: 'active' }),
         enabled: open
     });
 

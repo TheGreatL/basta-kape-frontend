@@ -35,8 +35,8 @@ export function VariantForm({
 
     // Fetch active attributes
     const { data: attributesData, isLoading: isAttributesLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST, { limit: 100, status: 'active' }],
-        queryFn: () => getAttributesList({ page: 1, limit: 100, status: 'active' })
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST, { limit: 50, status: 'active' }],
+        queryFn: () => getAttributesList({ page: 1, limit: 50, status: 'active' })
     });
 
     const handleSubmit = (e: React.FormEvent) => {

@@ -63,6 +63,11 @@ function CustomerLayout() {
                                         My Profile
                                     </Link>
                                 </li>
+                                <li>
+                                    <Link to="/orders" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                                        My Orders
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
 

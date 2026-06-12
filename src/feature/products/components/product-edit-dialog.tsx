@@ -46,14 +46,14 @@ export default function ProductEditDialog({ open, onOpenChange, product }: Produ
 
     // Query categories and types
     const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST, { limit: 100, status: 'active' }],
-        queryFn: () => getCategoriesList({ page: 1, limit: 100, status: 'active' }),
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST, { limit: 50, status: 'active' }],
+        queryFn: () => getCategoriesList({ page: 1, limit: 50, status: 'active' }),
         enabled: open
     });
 
     const { data: typesData, isLoading: isTypesLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST, { limit: 100, status: 'active' }],
-        queryFn: () => getProductTypesList({ page: 1, limit: 100, status: 'active' }),
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST, { limit: 50, status: 'active' }],
+        queryFn: () => getProductTypesList({ page: 1, limit: 50, status: 'active' }),
         enabled: open
     });
 

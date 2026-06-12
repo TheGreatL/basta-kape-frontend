@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart, User as UserIcon, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
+import { ShoppingCart, User as UserIcon, LogOut, LayoutDashboard, Menu, X, ClipboardList } from 'lucide-react';
 
 import { useAuthStore } from '#/store/auth-store.ts';
 import { useCurrentCustomer } from '#/feature/customer/use-current-customer.ts';
@@ -13,6 +13,15 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import logo from '#/assets/logo.png';
 import { toast } from 'sonner';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '#/components/ui/dropdown-menu.tsx';
+import { Avatar, AvatarFallback } from '#/components/ui/avatar.tsx';
 
 export default function CustomerHeader() {
     const user = useAuthStore((state) => state.user);
@@ -30,7 +39,7 @@ export default function CustomerHeader() {
         enabled: !!customer?.id
     });
 
-    const cartCount = cartData?.items.reduce((total, item) => total + item.quantity, 0) || 0;
+    const cartCount = cartData?.items.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
 
     const handleLogout = async () => {
         try {
@@ -96,35 +105,78 @@ export default function CustomerHeader() {
                                 )}
                             </Link>
 
-                            {/* Profile Link */}
-                            <Link
-                                to="/profile"
-                                className="p-2 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all"
-                                title="View Profile"
-                            >
-                                <UserIcon className="size-5" />
-                            </Link>
-
-                            {/* Admin Dashboard Redirect (if authorized) */}
-                            {hasAdminAccess && (
-                                <Link to="/admin">
-                                    <Button variant="outline" size="sm" className="h-8 gap-1 text-xs">
-                                        <LayoutDashboard className="size-3.5" />
-                                        Dashboard
+                            {/* User Profile Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="relative flex items-center gap-2 px-2 h-9 rounded-full hover:bg-muted/80 select-none"
+                                    >
+                                        <Avatar className="size-8 border border-border/60">
+                                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs uppercase">
+                                                {user.firstName && user.lastName
+                                                    ? `${user.firstName[0]}${user.lastName[0]}`
+                                                    : user.username.slice(0, 2)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="hidden lg:inline text-sm font-semibold text-foreground max-w-[120px] truncate">
+                                            {user.firstName || user.username}
+                                        </span>
                                     </Button>
-                                </Link>
-                            )}
-
-                            {/* Logout Button */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleLogout}
-                                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/5"
-                            >
-                                <LogOut className="size-3.5" />
-                                Sign Out
-                            </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-56 mt-1 rounded-xl p-1.5 bg-background/90 backdrop-blur-md border border-border/40 shadow-xl"
+                                >
+                                    <DropdownMenuLabel className="px-2.5 py-2">
+                                        <div className="flex flex-col space-y-0.5">
+                                            <p className="text-sm font-bold text-foreground truncate">
+                                                {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground truncate font-normal">@{user.username}</p>
+                                            {user.email && <p className="text-[10px] text-muted-foreground/80 truncate font-normal">{user.email}</p>}
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator className="bg-border/40" />
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            to="/profile"
+                                            className="w-full flex items-center cursor-pointer px-2.5 py-2 text-sm rounded-lg hover:bg-muted/80 transition-colors"
+                                        >
+                                            <UserIcon className="mr-2.5 size-4 text-muted-foreground" />
+                                            <span>My Profile</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            to="/orders"
+                                            className="w-full flex items-center cursor-pointer px-2.5 py-2 text-sm rounded-lg hover:bg-muted/80 transition-colors"
+                                        >
+                                            <ClipboardList className="mr-2.5 size-4 text-muted-foreground" />
+                                            <span>My Orders</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    {hasAdminAccess && (
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                to="/admin"
+                                                className="w-full flex items-center cursor-pointer px-2.5 py-2 text-sm rounded-lg hover:bg-muted/80 transition-colors"
+                                            >
+                                                <LayoutDashboard className="mr-2.5 size-4 text-muted-foreground" />
+                                                <span>Admin Dashboard</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuSeparator className="bg-border/40" />
+                                    <DropdownMenuItem
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center cursor-pointer px-2.5 py-2 text-sm rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive transition-colors"
+                                    >
+                                        <LogOut className="mr-2.5 size-4" />
+                                        <span>Sign Out</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </>
                     ) : (
                         <div className="flex items-center gap-2">
@@ -173,12 +225,26 @@ export default function CustomerHeader() {
                     <div className="border-t border-border/30 pt-4 flex flex-col gap-3">
                         {user ? (
                             <>
+                                <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-border/30">
+                                    <Avatar className="size-10 border border-border/60">
+                                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm uppercase">
+                                            {user.firstName && user.lastName ? `${user.firstName[0]}${user.lastName[0]}` : user.username.slice(0, 2)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-bold text-foreground truncate">
+                                            {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground truncate">@{user.username}</span>
+                                    </div>
+                                </div>
+
                                 <Link
                                     to="/cart"
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted text-foreground"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted text-foreground font-medium"
                                 >
-                                    <span className="flex items-center gap-2 font-medium">
+                                    <span className="flex items-center gap-2">
                                         <ShoppingCart className="size-5 text-muted-foreground" />
                                         Your Cart
                                     </span>
@@ -194,6 +260,15 @@ export default function CustomerHeader() {
                                 >
                                     <UserIcon className="size-5 text-muted-foreground" />
                                     Your Profile
+                                </Link>
+
+                                <Link
+                                    to="/orders"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-foreground font-medium"
+                                >
+                                    <ClipboardList className="size-5 text-muted-foreground" />
+                                    Your Orders
                                 </Link>
 
                                 {hasAdminAccess && (

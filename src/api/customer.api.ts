@@ -11,6 +11,7 @@ import type {
     ICartItemResponse,
     ICartResponse
 } from '../feature/customer/customer.types';
+import type { IOrder } from '../feature/order/order.types';
 
 // ==========================================
 // CUSTOMER PROFILE ENDPOINTS
@@ -140,7 +141,7 @@ export const restoreCustomer = async (id: string): Promise<ICustomerResponse> =>
 export const getCustomerOrders = async (
     customerId: string,
     params: { page?: number; limit?: number; search?: string; status?: string }
-): Promise<IPaginatedResult<any>> => {
+): Promise<IPaginatedResult<IOrder>> => {
     const query = new URLSearchParams();
     if (params.page !== undefined) query.set('page', String(params.page));
     if (params.limit !== undefined) query.set('limit', String(params.limit));

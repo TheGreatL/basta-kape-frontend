@@ -13,6 +13,7 @@ import NotFoundPage from '../components/errors/not-found-page';
 import type { getAuthStore } from '../store/auth-store';
 import { Toaster } from '#/components/ui/sonner';
 import { getStoreSettings } from '#/api/store-settings.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 
 interface MyRouterContext {
     queryClient: QueryClient;
@@ -25,7 +26,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         if (user) {
             await context.queryClient
                 .prefetchQuery({
-                    queryKey: ['store_settings:active'],
+                    queryKey: [QUERY_KEY.STORE_SETTINGS.ACTIVE],
                     queryFn: getStoreSettings
                 })
                 .catch(() => null);
