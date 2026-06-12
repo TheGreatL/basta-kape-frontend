@@ -7,6 +7,7 @@ import { createOrder } from '#/api/orders.api.ts';
 import { getCustomers } from '#/api/customer.api.ts';
 import { getProductsList } from '#/api/products.api.ts';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
+import { getProductionForecast } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { TOrderType } from '../order.types';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import type { IModifierGroup } from '#/feature/modifier/modifier.types';
+import type { IForecast } from '#/feature/inventory/inventory.types';
 
 interface CreateOrderDialogProps {
     open: boolean;
@@ -84,6 +86,13 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         enabled: open && !!selectedProductId
     });
 
+    // Query: Fetch production forecast to get active stock levels and bottlenecks
+    const { data: forecastData } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.FORECAST],
+        queryFn: getProductionForecast,
+        enabled: open
+    });
+
     // Mutation: Create Order
     const createOrderMutation = useMutation({
         mutationFn: createOrder,
@@ -97,6 +106,34 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         }
     });
 
+    const handleToggleModifierOption = (groupId: string, optionId: string, maxSelect: number, isRequired: boolean, groupName: string) => {
+        const group = modifierGroupsResponse?.data.find((g: IModifierGroup) => g.id === groupId);
+        if (!group) return;
+        const groupOptionIds = group.options.map((opt: any) => opt.id);
+
+        setSelectedModifierIds((prev) => {
+            if (maxSelect === 1) {
+                const filtered = prev.filter((id) => !groupOptionIds.includes(id));
+                if (prev.includes(optionId)) {
+                    return isRequired ? prev : filtered;
+                } else {
+                    return [...filtered, optionId];
+                }
+            } else {
+                if (prev.includes(optionId)) {
+                    return prev.filter((id) => id !== optionId);
+                } else {
+                    const currentSelectedFromGroup = prev.filter((id) => groupOptionIds.includes(id));
+                    if (currentSelectedFromGroup.length >= maxSelect) {
+                        toast.warning(`You can select at most ${maxSelect} option(s) for ${groupName}.`);
+                        return prev;
+                    }
+                    return [...prev, optionId];
+                }
+            }
+        });
+    };
+
     const handleAddItem = () => {
         if (!selectedProductId || !selectedVariantId) {
             toast.error('Please select product and variant');
@@ -105,6 +142,47 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
         const variant = selectedProduct?.variants.find((v) => v.id === selectedVariantId);
         if (!selectedProduct || !variant) return;
+
+        // Check if selected variant is out of stock or exceeds stock capacity
+        const selectedVForecast = forecastData?.find((f: IForecast) => f.variantId === selectedVariantId);
+        if (selectedVForecast) {
+            if (selectedVForecast.maxProduceable === 0) {
+                toast.error(`${selectedProduct.name} variant is out of stock!`);
+                return;
+            }
+            if (typeof selectedVForecast.maxProduceable === 'number' && selectedQuantity > selectedVForecast.maxProduceable) {
+                toast.error(`Only ${selectedVForecast.maxProduceable} units of this variant are available.`);
+                return;
+            }
+        }
+
+        // Validate modifier groups constraints
+        let hasValidationError = false;
+        modifierGroupsResponse?.data.forEach((group: IModifierGroup) => {
+            const groupOptionIds = group.options.map((opt) => opt.id);
+            const selectedFromGroup = selectedModifierIds.filter((id) => groupOptionIds.includes(id));
+
+            if (group.isRequired && selectedFromGroup.length === 0) {
+                toast.error(`Please select at least one option for ${group.name}.`);
+                hasValidationError = true;
+            } else if (selectedFromGroup.length < group.minSelect) {
+                toast.error(`Please select at least ${group.minSelect} option(s) for ${group.name}.`);
+                hasValidationError = true;
+            } else if (selectedFromGroup.length > group.maxSelect) {
+                toast.error(`You can select at most ${group.maxSelect} option(s) for ${group.name}.`);
+                hasValidationError = true;
+            }
+        });
+
+        // Check if any selected modifier is out of stock
+        selectedModifierIds.forEach((modId) => {
+            const modForecast = forecastData?.find((f: IForecast) => f.variantId === modId);
+            if (modForecast && modForecast.maxProduceable === 0) {
+                const cleanName = modForecast.name.replace('[Modifier] ', '');
+                toast.error(`Add-on "${cleanName}" is out of stock!`);
+                hasValidationError = true;
+            }
+        });
 
         // Collect selected modifiers
         const selectedModifiers: any[] = [];
@@ -320,50 +398,151 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                                 <SelectContent className="rounded-xl">
                                                     {selectedProduct.variants.map((v) => {
                                                         const label = v.attributes.map((a) => a.attributeValue.value).join('/') || v.sku || 'Regular';
+                                                        const vForecast = forecastData?.find((f: IForecast) => f.variantId === v.id);
+
+                                                        let stockSuffix = '';
+                                                        if (vForecast) {
+                                                            if (vForecast.maxProduceable === 0) {
+                                                                stockSuffix = ' — Out of Stock';
+                                                            } else if (vForecast.maxProduceable === 'Unlimited') {
+                                                                stockSuffix = ' — In Stock';
+                                                            } else {
+                                                                stockSuffix = ` — ${vForecast.maxProduceable} left`;
+                                                            }
+                                                        }
+
                                                         return (
-                                                            <SelectItem key={v.id} value={v.id} className="text-xs">
+                                                            <SelectItem
+                                                                key={v.id}
+                                                                value={v.id}
+                                                                className="text-xs"
+                                                                disabled={vForecast?.maxProduceable === 0}
+                                                            >
                                                                 {label} — ₱{v.price.toFixed(2)}
+                                                                {stockSuffix}
                                                             </SelectItem>
                                                         );
                                                     })}
                                                 </SelectContent>
                                             </Select>
+
+                                            {/* Selected Variant Stock Status Badge */}
+                                            {(() => {
+                                                const selectedVForecast = forecastData?.find((f: IForecast) => f.variantId === selectedVariantId);
+                                                if (!selectedVariantId || !selectedVForecast) return null;
+                                                return (
+                                                    <div className="mt-1 flex items-center gap-1.5">
+                                                        {selectedVForecast.maxProduceable === 0 ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                                                                <span className="size-1 rounded-full bg-rose-500 animate-pulse" />
+                                                                Out of Stock
+                                                            </span>
+                                                        ) : selectedVForecast.maxProduceable === 'Unlimited' ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                                <span className="size-1 rounded-full bg-emerald-500" />
+                                                                In Stock (Unlimited)
+                                                            </span>
+                                                        ) : typeof selectedVForecast.maxProduceable === 'number' &&
+                                                          selectedVForecast.maxProduceable <= 10 ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse">
+                                                                <span className="size-1 rounded-full bg-amber-500" />
+                                                                Only {selectedVForecast.maxProduceable} left!
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                                <span className="size-1 rounded-full bg-emerald-500" />
+                                                                In Stock ({selectedVForecast.maxProduceable} available)
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
 
                                         {/* Modifiers checklist if available */}
                                         {modifierGroupsResponse?.data && modifierGroupsResponse.data.length > 0 && (
                                             <div className="space-y-2 pt-1">
                                                 <span className="font-bold text-foreground/70 block">Select Add-ons</span>
-                                                <div className="space-y-2 border border-border/40 p-2.5 rounded-lg bg-background/50 max-h-[140px] overflow-y-auto">
-                                                    {modifierGroupsResponse.data.map((group: IModifierGroup) => (
-                                                        <div key={group.id} className="space-y-1">
-                                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                                                {group.name}
+                                                <div className="space-y-2.5 border border-border/40 p-2.5 rounded-lg bg-background/50 max-h-[160px] overflow-y-auto">
+                                                    {modifierGroupsResponse.data.map((group: IModifierGroup) => {
+                                                        const groupOptionIds = group.options.map((opt) => opt.id);
+                                                        const currentSelectedCount = selectedModifierIds.filter((id) =>
+                                                            groupOptionIds.includes(id)
+                                                        ).length;
+                                                        return (
+                                                            <div
+                                                                key={group.id}
+                                                                className="space-y-1 pb-2 border-b border-border/10 last:border-0 last:pb-0"
+                                                            >
+                                                                <div className="flex justify-between items-center mb-1">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[11px] font-bold text-foreground">{group.name}</span>
+                                                                        {group.isRequired ? (
+                                                                            <span className="text-[9px] font-bold text-rose-500 bg-rose-500/10 px-1.5 py-0.2 rounded border border-rose-500/10">
+                                                                                Required
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-[9px] font-semibold text-muted-foreground bg-muted border border-border/40 px-1.5 py-0.2 rounded">
+                                                                                Optional
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-[9px] text-muted-foreground font-medium">
+                                                                        {group.maxSelect === 1 ? 'Choose 1' : `Choose up to ${group.maxSelect}`}
+                                                                        {currentSelectedCount > 0 && ` (${currentSelectedCount} selected)`}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1.5">
+                                                                    {group.options.map((opt) => {
+                                                                        const isChecked = selectedModifierIds.includes(opt.id);
+                                                                        const optForecast = forecastData?.find(
+                                                                            (f: IForecast) => f.variantId === opt.id
+                                                                        );
+                                                                        const isOutOfStock = optForecast?.maxProduceable === 0;
+                                                                        const isLowStock =
+                                                                            optForecast &&
+                                                                            typeof optForecast.maxProduceable === 'number' &&
+                                                                            optForecast.maxProduceable > 0 &&
+                                                                            optForecast.maxProduceable <= 10;
+
+                                                                        let stockLabel = '';
+                                                                        if (isOutOfStock) {
+                                                                            stockLabel = ' (OOS)';
+                                                                        } else if (isLowStock) {
+                                                                            stockLabel = ` (${optForecast.maxProduceable} left)`;
+                                                                        }
+
+                                                                        return (
+                                                                            <Button
+                                                                                key={opt.id}
+                                                                                type="button"
+                                                                                variant={isChecked ? 'default' : 'outline'}
+                                                                                disabled={isOutOfStock && !isChecked}
+                                                                                onClick={() => {
+                                                                                    handleToggleModifierOption(
+                                                                                        group.id,
+                                                                                        opt.id,
+                                                                                        group.maxSelect,
+                                                                                        group.isRequired,
+                                                                                        group.name
+                                                                                    );
+                                                                                }}
+                                                                                className={`h-7 text-3xs font-semibold py-0 px-2 rounded-md transition-all ${
+                                                                                    isOutOfStock
+                                                                                        ? 'opacity-40 border-dashed border-rose-300 bg-rose-500/5 hover:bg-rose-500/5 cursor-not-allowed text-rose-500'
+                                                                                        : isLowStock
+                                                                                          ? 'border-amber-400/80 hover:border-amber-500 text-amber-700'
+                                                                                          : ''
+                                                                                }`}
+                                                                            >
+                                                                                {opt.name} (+₱{opt.price.toFixed(2)}){stockLabel}
+                                                                            </Button>
+                                                                        );
+                                                                    })}
+                                                                </div>
                                                             </div>
-                                                            <div className="flex flex-wrap gap-1.5">
-                                                                {group.options.map((opt) => {
-                                                                    const isChecked = selectedModifierIds.includes(opt.id);
-                                                                    return (
-                                                                        <Button
-                                                                            key={opt.id}
-                                                                            type="button"
-                                                                            variant={isChecked ? 'default' : 'outline'}
-                                                                            onClick={() => {
-                                                                                setSelectedModifierIds((prev) =>
-                                                                                    prev.includes(opt.id)
-                                                                                        ? prev.filter((id) => id !== opt.id)
-                                                                                        : [...prev, opt.id]
-                                                                                );
-                                                                            }}
-                                                                            className="h-7 text-3xs font-semibold py-0 px-2 rounded-md"
-                                                                        >
-                                                                            {opt.name} (+₱{opt.price.toFixed(2)})
-                                                                        </Button>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}
@@ -393,7 +572,13 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                         <Button
                                             type="button"
                                             onClick={handleAddItem}
-                                            disabled={!selectedVariantId}
+                                            disabled={
+                                                !selectedVariantId ||
+                                                (() => {
+                                                    const selectedVForecast = forecastData?.find((f: IForecast) => f.variantId === selectedVariantId);
+                                                    return selectedVForecast?.maxProduceable === 0;
+                                                })()
+                                            }
                                             className="w-full h-8.5 font-bold text-xs rounded-lg mt-1"
                                         >
                                             Add Item to Receipt
