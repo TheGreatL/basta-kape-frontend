@@ -7,7 +7,7 @@ import { useAuthStore } from '#/store/auth-store.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { toast } from 'sonner';
-import type { ICartItemResponse } from './customer.types.ts';
+import type { ICartItemResponse, ICartModifierResponse } from './customer.types.ts';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -79,6 +79,21 @@ export default function CartPage() {
                     next[item.id] = prev[item.id] === undefined ? true : prev[item.id];
                 });
                 return next;
+            });
+
+            setSelectedModifiers((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                for (const item of cart.items) {
+                    if (prev[item.id] === undefined && item.cartModifiers) {
+                        const ids = item.cartModifiers.map((cm: ICartModifierResponse) => cm.modifierOptionId);
+                        const names = item.cartModifiers.map((cm: ICartModifierResponse) => cm.modifierOption.name);
+                        const price = item.cartModifiers.reduce((sum: number, cm: ICartModifierResponse) => sum + cm.modifierOption.price, 0);
+                        next[item.id] = { ids, price, names };
+                        changed = true;
+                    }
+                }
+                return changed ? next : prev;
             });
         }
     }, [cart?.items]);

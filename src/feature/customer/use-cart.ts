@@ -17,7 +17,7 @@ export function useCart() {
     });
 
     const addMutation = useMutation({
-        mutationFn: (payload: { productVariantId: string; quantity: number }) => {
+        mutationFn: (payload: { productVariantId: string; quantity: number; modifierOptionIds?: string[] }) => {
             if (!customerId) throw new Error('No customer ID');
             return addCartItem(customerId, payload);
         },

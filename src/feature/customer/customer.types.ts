@@ -58,6 +58,7 @@ export interface ICustomerResponse {
 export interface IAddCartItem {
     productVariantId: string;
     quantity: number;
+    modifierOptionIds?: string[];
 }
 
 export interface IUpdateCartItem {
@@ -107,6 +108,18 @@ export interface IProductVariantInfo {
     attributes: IProductVariantAttributeInfo[];
 }
 
+export interface ICartModifierResponse {
+    id: string;
+    customerCartId: string;
+    modifierOptionId: string;
+    modifierOption: {
+        id: string;
+        modifierGroupId: string;
+        name: string;
+        price: number;
+    };
+}
+
 export interface ICartItemResponse {
     id: string;
     customerId: string;
@@ -114,6 +127,7 @@ export interface ICartItemResponse {
     unitPrice: number;
     productVariantId: string;
     productVariant: IProductVariantInfo;
+    cartModifiers?: ICartModifierResponse[];
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
