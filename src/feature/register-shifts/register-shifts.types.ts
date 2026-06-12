@@ -24,3 +24,9 @@ export interface ICloseShift {
     actualBalance: number;
     notes?: string | null;
 }
+
+export interface IGetRegisterShiftsParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+}

@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Timer, Clock, Coins, FileText, CheckCircle2, AlertTriangle, User, ArrowRight } from 'lucide-react';
+import { Timer, Clock, Coins, FileText, CheckCircle2, AlertTriangle, User, ArrowRight, History } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
@@ -41,6 +42,8 @@ export default function RegisterShiftsPage() {
     const currentUser = useAuthStore((state) => state.user);
     const [closedSummary, setClosedSummary] = React.useState<IRegisterShift | null>(null);
 
+    const queryClient = useQueryClient();
+
     React.useEffect(() => {
         fetchActiveShift();
     }, [fetchActiveShift]);
@@ -69,6 +72,7 @@ export default function RegisterShiftsPage() {
             toast.success('Register Shift Drawer Opened', {
                 description: `Shift session successfully initialized with standard balance of ₱${shift.startBalance.toFixed(2)}.`
             });
+            queryClient.invalidateQueries({ queryKey: ['register-shifts:history'] });
             openForm.reset();
         },
         onError: (err) => {
@@ -84,6 +88,7 @@ export default function RegisterShiftsPage() {
             toast.success('Register Shift Drawer Closed', {
                 description: 'Operational shift session successfully ended and drawer settled.'
             });
+            queryClient.invalidateQueries({ queryKey: ['register-shifts:history'] });
             setClosedSummary(shift);
             closeForm.reset();
         },
@@ -116,7 +121,7 @@ export default function RegisterShiftsPage() {
     return (
         <div className="flex flex-col gap-6">
             {/* Page Header */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                         <Timer className="h-5 w-5 text-primary" />
@@ -125,6 +130,14 @@ export default function RegisterShiftsPage() {
                         <h1 className="text-2xl font-bold text-foreground">Shift Drawer Management</h1>
                         <p className="text-xs text-muted-foreground">Open or close register sessions and verify daily drawer balances.</p>
                     </div>
+                </div>
+                <div>
+                    <Link to="/admin/register-shifts/history">
+                        <Button variant="outline" size="sm" className="h-9 gap-1.5 w-full sm:w-auto">
+                            <History className="size-4" />
+                            View Shift History Logs
+                        </Button>
+                    </Link>
                 </div>
             </div>
 

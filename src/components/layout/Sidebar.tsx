@@ -56,7 +56,8 @@ const sidebarGroups: Array<{
         label: 'Operations',
         items: [
             { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
-            { title: 'Register Shifts', path: '/admin/register-shifts', icon: 'timer', module: appModules.POINT_OF_SALE },
+            { title: 'Register Shifts', path: '/admin/register-shifts', icon: 'timer', module: appModules.POINT_OF_SALE, exact: true },
+            { title: 'Shift History', path: '/admin/register-shifts/history', icon: 'history', module: appModules.POINT_OF_SALE },
             { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
             { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
