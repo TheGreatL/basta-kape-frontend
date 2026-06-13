@@ -132,7 +132,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md bg-background border-border/60 rounded-2xl overflow-hidden p-6 text-xs">
                 <DialogHeader className="space-y-1">
-                    <DialogTitle className="flex items-center gap-2 font-black text-foreground text-lg">
+                    <DialogTitle className="flex items-center gap-2 font-bold text-foreground text-lg">
                         <AlertTriangle className="size-5 text-destructive animate-pulse-slow" />
                         Void Order Override
                     </DialogTitle>

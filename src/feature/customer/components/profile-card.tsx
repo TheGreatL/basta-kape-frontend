@@ -14,9 +14,7 @@ export default function ProfileCard({ firstName, lastName, username, email, phon
 
     return (
         <div className="rounded-2xl border border-border/40 bg-card p-6 text-center flex flex-col items-center">
-            <div className="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-black mb-4">
-                {initials}
-            </div>
+            <div className="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold mb-4">{initials}</div>
             <h2 className="text-lg font-bold text-foreground leading-tight">
                 {firstName} {lastName}
             </h2>

@@ -222,7 +222,7 @@ export default function TransactionsPage() {
                 accessorKey: 'amount',
                 header: 'Amount Paid',
                 cell: ({ row }) => (
-                    <span className="font-black text-foreground">₱{row.original.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-foreground">₱{row.original.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 )
             },
             {
@@ -424,7 +424,7 @@ export default function TransactionsPage() {
                                 <div className="space-y-0.5">
                                     <span className="text-xs uppercase font-semibold text-muted-foreground">Order Queue Number</span>
                                     <div className="flex items-center gap-1.5">
-                                        <h4 className="font-mono font-black text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
+                                        <h4 className="font-mono font-bold text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
                                         {selectedTx.order.queueNumber && (
                                             <CopyButton
                                                 value={selectedTx.order.queueNumber}

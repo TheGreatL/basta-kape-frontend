@@ -36,7 +36,7 @@ function AdminProfilePage() {
                 <div className="space-y-6">
                     <Card className="border-border/40 shadow-sm">
                         <CardHeader className="text-center pb-2">
-                            <div className="mx-auto size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-black mb-4">
+                            <div className="mx-auto size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold mb-4">
                                 {initials}
                             </div>
                             <CardTitle className="text-lg font-bold">

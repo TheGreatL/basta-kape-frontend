@@ -130,7 +130,7 @@ export default function OrderDetailsPage() {
                     <div className="space-y-1">
                         <span className="text-xs font-semibold text-muted-foreground uppercase ">Queue Number</span>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-4xl font-black text-foreground ">{order.queueNumber}</span>
+                            <span className="text-4xl font-bold text-foreground ">{order.queueNumber}</span>
                             <Badge
                                 variant="outline"
                                 className="text-xs rounded-full font-bold px-3 py-0.5 bg-primary/5 text-primary border-primary/20"
@@ -325,7 +325,7 @@ export default function OrderDetailsPage() {
 
                         <div className="flex justify-between items-baseline pt-1">
                             <span className="font-bold text-base text-foreground">Total Paid</span>
-                            <span className="font-black text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="font-bold text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>

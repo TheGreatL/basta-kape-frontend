@@ -297,7 +297,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                             <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center mb-5 shrink-0">
                                 <div>
                                     <span className="text-xs text-muted-foreground font-semibold block uppercase">Amount Due</span>
-                                    <span className="text-xl font-black text-foreground">
+                                    <span className="text-xl font-bold text-foreground">
                                         ₱{netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>

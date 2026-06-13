@@ -194,7 +194,7 @@ export default function OrdersPage() {
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1">
                                             <span className="text-xs font-semibold text-muted-foreground">Queue Ticket</span>
-                                            <h3 className="text-2xl font-black text-foreground">{order.queueNumber}</h3>
+                                            <h3 className="text-2xl font-bold text-foreground">{order.queueNumber}</h3>
                                         </div>
                                         <Badge
                                             variant="outline"

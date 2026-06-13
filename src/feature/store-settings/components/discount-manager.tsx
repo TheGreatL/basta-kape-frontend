@@ -189,7 +189,7 @@ export default function DiscountManager({ canUpdate, canDelete }: DiscountManage
                                             )}
                                             <span className="font-medium">Discount Value</span>
                                         </div>
-                                        <span className="text-base font-black text-foreground">
+                                        <span className="text-base font-bold text-foreground">
                                             {discount.type === 'PERCENTAGE'
                                                 ? `${discount.value.toFixed(1)}%`
                                                 : `₱${discount.value.toLocaleString(undefined, {

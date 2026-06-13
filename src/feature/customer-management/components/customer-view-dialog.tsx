@@ -383,7 +383,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                             {/* Total Summary Amount Card */}
                                             <div className="flex justify-between items-center bg-muted/20 p-3.5 rounded-xl border border-border/40 shadow-3xs">
                                                 <span className="text-xs font-bold text-foreground/70 uppercase ">Computed Cart Subtotal</span>
-                                                <span className="text-base font-black text-primary">₱{cartData.totalAmount.toFixed(2)}</span>
+                                                <span className="text-base font-bold text-primary">₱{cartData.totalAmount.toFixed(2)}</span>
                                             </div>
                                         </div>
                                     )}

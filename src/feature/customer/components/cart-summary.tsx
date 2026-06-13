@@ -23,7 +23,7 @@ export default function CartSummary({ totalAmount, onCheckout, disabled }: CartS
                 </div>
                 <div className="border-t border-border/40 pt-3 flex justify-between">
                     <span className="text-base font-bold text-foreground">Total</span>
-                    <span className="text-lg font-black text-foreground">₱{totalAmount.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-foreground">₱{totalAmount.toFixed(2)}</span>
                 </div>
             </div>
 

@@ -519,7 +519,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                         <div className="flex items-center justify-between">
                             <div>
                                 <span className="text-xs text-muted-foreground font-medium uppercase">Total Price</span>
-                                <div className="text-2xl font-black text-foreground mt-0.5">₱{totalPrice.toFixed(2)}</div>
+                                <div className="text-2xl font-bold text-foreground mt-0.5">₱{totalPrice.toFixed(2)}</div>
                             </div>
 
                             {/* Quantity Controls */}

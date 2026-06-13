@@ -212,7 +212,11 @@ export default function ReportsPage() {
 
     const rawModules = React.useMemo<IReportModuleDefinition[]>(() => modulesData?.data ?? [], [modulesData]);
     const modules = React.useMemo<IReportModuleDefinition[]>(() => {
-        return rawModules.filter((module) => hasPermission(permissions, module.sourceModule as TAppModule, appPermissions.READ));
+        return rawModules.filter(
+            (module) =>
+                hasPermission(permissions, module.sourceModule as TAppModule, appPermissions.READ) ||
+                hasPermission(permissions, appModules.REPORTS_MANAGEMENT, appPermissions.READ)
+        );
     }, [rawModules, permissions]);
     const activeModule = (modules.find((module) => module.id === (selectedModuleId as ReportModule)) ?? modules[0]) as IReportModuleDefinition | null;
 
@@ -354,11 +358,9 @@ export default function ReportsPage() {
             <Tabs value={selectedModuleId || (modules[0]?.id ?? (canReadOrders ? 'void-logs-audit' : ''))} onValueChange={handleModuleChange}>
                 <TabsList className="h-auto flex-wrap justify-start gap-1 bg-muted/40 p-1">
                     {modules.map((module: IReportModuleDefinition) => (
-                        <RequirePermission key={module.id} module={module.sourceModule as TAppModule} action={appPermissions.READ}>
-                            <TabsTrigger value={module.id} className="text-xs sm:text-sm">
-                                {module.label}
-                            </TabsTrigger>
-                        </RequirePermission>
+                        <TabsTrigger key={module.id} value={module.id} className="text-xs sm:text-sm">
+                            {module.label}
+                        </TabsTrigger>
                     ))}
                     <RequirePermission module={appModules.ORDERS_MANAGEMENT} action={appPermissions.READ}>
                         <TabsTrigger value="void-logs-audit" className="text-xs sm:text-sm">
@@ -374,114 +376,112 @@ export default function ReportsPage() {
                 </RequirePermission>
 
                 {modules.map((module) => (
-                    <RequirePermission key={module.id} module={module.sourceModule as TAppModule} action={appPermissions.READ}>
-                        <TabsContent value={module.id} className="mt-4 space-y-4">
-                            <ReportFiltersBar
-                                moduleDefinition={module}
-                                searchParams={searchParams}
-                                onSearchParamsChange={setSearchParams}
-                                onPreview={handlePreview}
-                                isPreviewLoading={isPreviewLoading || isPreviewFetching}
-                            />
+                    <TabsContent key={module.id} value={module.id} className="mt-4 space-y-4">
+                        <ReportFiltersBar
+                            moduleDefinition={module}
+                            searchParams={searchParams}
+                            onSearchParamsChange={setSearchParams}
+                            onPreview={handlePreview}
+                            isPreviewLoading={isPreviewLoading || isPreviewFetching}
+                        />
 
-                            {filtersChangedSincePreview && (
-                                <Alert>
-                                    <AlertTriangle className="text-amber-500" />
-                                    <AlertTitle>Filters changed</AlertTitle>
-                                    <AlertDescription>
-                                        Your filters no longer match the last preview. Click Preview Report to refresh the table before exporting.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
+                        {filtersChangedSincePreview && (
+                            <Alert>
+                                <AlertTriangle className="text-amber-500" />
+                                <AlertTitle>Filters changed</AlertTitle>
+                                <AlertDescription>
+                                    Your filters no longer match the last preview. Click Preview Report to refresh the table before exporting.
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                            {showTruncationWarning && (
-                                <Alert>
-                                    <AlertTriangle className="text-amber-500" />
-                                    <AlertTitle>Export limit reached</AlertTitle>
-                                    <AlertDescription>
-                                        This report has {previewData?.meta.total.toLocaleString()} matching records. Exports include up to{' '}
-                                        {EXPORT_ROW_LIMIT.toLocaleString()} rows only.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
+                        {showTruncationWarning && (
+                            <Alert>
+                                <AlertTriangle className="text-amber-500" />
+                                <AlertTitle>Export limit reached</AlertTitle>
+                                <AlertDescription>
+                                    This report has {previewData?.meta.total.toLocaleString()} matching records. Exports include up to{' '}
+                                    {EXPORT_ROW_LIMIT.toLocaleString()} rows only.
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                            <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card/20 p-4">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <h2 className="text-lg font-semibold text-foreground">{previewData?.title ?? module.label}</h2>
-                                            <Badge variant="secondary" className="text-xs">
-                                                {module.sourceModule}
-                                            </Badge>
-                                        </div>
-                                        {previewData?.meta && (
-                                            <p className="text-xs text-muted-foreground">
-                                                {previewData.meta.total.toLocaleString()} record{previewData.meta.total === 1 ? '' : 's'}
-                                                {previewData.meta.generatedAt
-                                                    ? ` · Generated ${new Date(previewData.meta.generatedAt).toLocaleString('en-PH')}`
-                                                    : ''}
-                                            </p>
-                                        )}
+                        <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card/20 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h2 className="text-lg font-semibold text-foreground">{previewData?.title ?? module.label}</h2>
+                                        <Badge variant="secondary" className="text-xs">
+                                            {module.sourceModule}
+                                        </Badge>
                                     </div>
-
-                                    <RequirePermission module={appModules.REPORTS_MANAGEMENT} action={appPermissions.READ}>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-9"
-                                                disabled={!canExport || exportMutation.isPending}
-                                                onClick={() => exportMutation.mutate('excel')}
-                                            >
-                                                <FileSpreadsheet className="size-4 mr-2" />
-                                                Export Excel
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-9"
-                                                disabled={!canExport || exportMutation.isPending}
-                                                onClick={() => exportMutation.mutate('pdf')}
-                                            >
-                                                <FileText className="size-4 mr-2" />
-                                                Export PDF
-                                            </Button>
-                                        </div>
-                                    </RequirePermission>
+                                    {previewData?.meta && (
+                                        <p className="text-xs text-muted-foreground">
+                                            {previewData.meta.total.toLocaleString()} record{previewData.meta.total === 1 ? '' : 's'}
+                                            {previewData.meta.generatedAt
+                                                ? ` · Generated ${new Date(previewData.meta.generatedAt).toLocaleString('en-PH')}`
+                                                : ''}
+                                        </p>
+                                    )}
                                 </div>
 
-                                {previewError ? (
-                                    <Alert variant="destructive">
-                                        <AlertTitle>Preview failed</AlertTitle>
-                                        <AlertDescription>{getErrorMessage(previewError)}</AlertDescription>
-                                    </Alert>
-                                ) : previewToken === 0 ? (
-                                    <div className="flex min-h-[240px] items-center justify-center rounded-lg border border-dashed border-border/70 bg-muted/10">
-                                        <div className="max-w-md text-center space-y-2 px-4">
-                                            <FileBarChart className="mx-auto h-8 w-8 text-muted-foreground/70" />
-                                            <p className="text-sm font-medium text-foreground">No preview yet</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                Configure the filters above, then click Preview Report to load the table.
-                                            </p>
-                                        </div>
+                                <RequirePermission module={appModules.REPORTS_MANAGEMENT} action={appPermissions.READ}>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-9"
+                                            disabled={!canExport || exportMutation.isPending}
+                                            onClick={() => exportMutation.mutate('excel')}
+                                        >
+                                            <FileSpreadsheet className="size-4 mr-2" />
+                                            Export Excel
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-9"
+                                            disabled={!canExport || exportMutation.isPending}
+                                            onClick={() => exportMutation.mutate('pdf')}
+                                        >
+                                            <FileText className="size-4 mr-2" />
+                                            Export PDF
+                                        </Button>
                                     </div>
-                                ) : (
-                                    <DataTable
-                                        columns={columns}
-                                        data={previewData?.rows ?? []}
-                                        pageCount={previewData?.meta.pageCount || 1}
-                                        pageIndex={page - 1}
-                                        pageSize={pageSize}
-                                        onPaginationChange={(idx, size) => setSearchParams({ page: idx + 1, pageSize: size })}
-                                        sorting={sorting}
-                                        onSortingChange={setSorting}
-                                        showColumnVisibilityToggle={true}
-                                        isLoading={isPreviewLoading || isPreviewFetching}
-                                    />
-                                )}
+                                </RequirePermission>
                             </div>
-                        </TabsContent>
-                    </RequirePermission>
+
+                            {previewError ? (
+                                <Alert variant="destructive">
+                                    <AlertTitle>Preview failed</AlertTitle>
+                                    <AlertDescription>{getErrorMessage(previewError)}</AlertDescription>
+                                </Alert>
+                            ) : previewToken === 0 ? (
+                                <div className="flex min-h-[240px] items-center justify-center rounded-lg border border-dashed border-border/70 bg-muted/10">
+                                    <div className="max-w-md text-center space-y-2 px-4">
+                                        <FileBarChart className="mx-auto h-8 w-8 text-muted-foreground/70" />
+                                        <p className="text-sm font-medium text-foreground">No preview yet</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Configure the filters above, then click Preview Report to load the table.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <DataTable
+                                    columns={columns}
+                                    data={previewData?.rows ?? []}
+                                    pageCount={previewData?.meta.pageCount || 1}
+                                    pageIndex={page - 1}
+                                    pageSize={pageSize}
+                                    onPaginationChange={(idx, size) => setSearchParams({ page: idx + 1, pageSize: size })}
+                                    sorting={sorting}
+                                    onSortingChange={setSorting}
+                                    showColumnVisibilityToggle={true}
+                                    isLoading={isPreviewLoading || isPreviewFetching}
+                                />
+                            )}
+                        </div>
+                    </TabsContent>
                 ))}
             </Tabs>
         </div>

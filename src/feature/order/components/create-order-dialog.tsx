@@ -266,7 +266,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-background border-border/60 rounded-2xl">
                 <DialogHeader className="px-6 pt-6 pb-2">
-                    <DialogTitle className="flex items-center gap-2 text-xl font-black text-foreground">
+                    <DialogTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
                         <Plus className="size-5 text-primary" />
                         Create POS Order Session
                     </DialogTitle>
@@ -662,7 +662,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                 </div>
                                 <div className="flex justify-between font-bold text-sm text-foreground pt-1.5 border-t border-dashed border-border/40">
                                     <span>Net Due Total:</span>
-                                    <span className="text-primary font-black">
+                                    <span className="text-primary font-bold">
                                         ₱{orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
                                     </span>
                                 </div>

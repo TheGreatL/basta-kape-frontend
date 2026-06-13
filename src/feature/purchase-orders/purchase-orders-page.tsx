@@ -243,7 +243,7 @@ export default function PurchaseOrdersPage() {
                 accessorKey: 'totalAmount',
                 header: 'Total Amount',
                 cell: ({ row }) => (
-                    <span className="font-black text-foreground">
+                    <span className="font-bold text-foreground">
                         ₱{row.original.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
                 )
@@ -500,7 +500,7 @@ export default function PurchaseOrdersPage() {
                                             {/* Total */}
                                             <div className="w-[100px] text-right pb-2 space-y-0.5 shrink-0">
                                                 <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
-                                                <span className="text-xs font-black text-foreground block">
+                                                <span className="text-xs font-bold text-foreground block">
                                                     ₱
                                                     {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
                                                         minimumFractionDigits: 2
@@ -527,7 +527,7 @@ export default function PurchaseOrdersPage() {
                         {/* Grand Total */}
                         <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-2xl flex justify-between items-center mt-2 shrink-0">
                             <span className="text-xs font-extrabold text-primary">Estimated Purchase Order Total</span>
-                            <span className="text-lg font-black text-primary font-mono">
+                            <span className="text-lg font-bold text-primary font-mono">
                                 ₱{calculatePOTotal().toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
                         </div>
@@ -579,7 +579,7 @@ export default function PurchaseOrdersPage() {
                             <div className="p-4 bg-muted/30 border border-border/40 rounded-2xl grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
                                     <span className="text-xs uppercase font-bold text-muted-foreground">PO Number</span>
-                                    <h4 className="font-mono font-black text-sm text-foreground">{selectedPODetails.poNumber}</h4>
+                                    <h4 className="font-mono font-bold text-sm text-foreground">{selectedPODetails.poNumber}</h4>
                                 </div>
                                 <div className="space-y-0.5 flex flex-col items-end">
                                     <span className="text-xs uppercase font-bold text-muted-foreground">Status</span>
@@ -596,7 +596,7 @@ export default function PurchaseOrdersPage() {
                                 </div>
                                 <div className="space-y-0.5 flex flex-col items-end">
                                     <span className="text-xs uppercase font-bold text-muted-foreground">Total Amount</span>
-                                    <p className="text-sm font-black text-foreground">
+                                    <p className="text-sm font-bold text-foreground">
                                         ₱{selectedPODetails.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </p>
                                 </div>

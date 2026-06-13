@@ -182,7 +182,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-background border-border/60 rounded-2xl">
                 <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-                    <DialogTitle className="flex items-center gap-2 text-xl font-black text-foreground">Order inspection Details</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2 text-xl font-bold text-foreground">Order inspection Details</DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
                         View order line items, custom choice options, discounts, and cashier status audit logs.
                     </DialogDescription>
@@ -201,7 +201,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                 <div>
                                     <div className="text-xs uppercase font-bold text-muted-foreground">Queue Ticket</div>
                                     <div className="flex items-center gap-1.5">
-                                        <div className="text-base font-black text-foreground">{orderDetails.queueNumber}</div>
+                                        <div className="text-base font-bold text-foreground">{orderDetails.queueNumber}</div>
                                         <CopyButton
                                             value={orderDetails.queueNumber}
                                             description={`Queue number #${orderDetails.queueNumber} copied`}

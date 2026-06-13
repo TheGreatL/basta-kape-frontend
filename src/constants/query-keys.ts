@@ -84,6 +84,9 @@ const QUERY_KEY = {
     TRANSACTIONS: {
         TRANSACTIONS_LIST: 'transactions:transactions_list'
     },
+    DASHBOARD: {
+        SUMMARY: 'dashboard:summary'
+    },
     SALES: {
         SALES_ANALYTICS: 'sales:sales_analytics'
     },

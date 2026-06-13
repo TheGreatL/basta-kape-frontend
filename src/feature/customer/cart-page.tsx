@@ -264,7 +264,7 @@ export default function CartPage() {
             <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
                 <AlertDialogContent size="sm" className="border-border/60">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-foreground font-black">Remove Item?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-foreground font-bold">Remove Item?</AlertDialogTitle>
                         <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed mt-1">
                             Are you sure you want to remove <strong>{itemToDelete?.productVariant.product.name}</strong>{' '}
                             {itemToDelete && `(${getVariantLabel(itemToDelete)})`} from your shopping cart?
@@ -292,7 +292,7 @@ export default function CartPage() {
             <AlertDialog open={isClearCartDialogOpen} onOpenChange={setIsClearCartDialogOpen}>
                 <AlertDialogContent size="sm" className="border-border/60">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-foreground font-black">Clear Shopping Cart?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-foreground font-bold">Clear Shopping Cart?</AlertDialogTitle>
                         <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed mt-1">
                             Are you sure you want to remove all items from your shopping cart? This action cannot be undone.
                         </AlertDialogDescription>

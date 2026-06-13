@@ -233,7 +233,7 @@ export default function SalesPage() {
                         <DollarSign className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
-                        <h3 className="text-lg font-black text-foreground">
+                        <h3 className="text-lg font-bold text-foreground">
                             ₱{summary.grossSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                         <span className="text-xs text-muted-foreground font-semibold">Before discounts apply</span>
@@ -247,7 +247,7 @@ export default function SalesPage() {
                         <TrendingUp className="size-4 text-primary" />
                     </div>
                     <div className="space-y-0.5">
-                        <h3 className="text-lg font-black text-primary">
+                        <h3 className="text-lg font-bold text-primary">
                             ₱{summary.netSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                         <span className="text-xs text-primary/80 font-bold">Total earnings in register</span>
@@ -261,7 +261,7 @@ export default function SalesPage() {
                         <Percent className="size-4 text-amber-600/80" />
                     </div>
                     <div className="space-y-0.5">
-                        <h3 className="text-lg font-black text-amber-600">
+                        <h3 className="text-lg font-bold text-amber-600">
                             ₱{summary.discountTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                         <span className="text-xs text-muted-foreground font-semibold">Senior Citizen & PWD discounts</span>
@@ -275,7 +275,7 @@ export default function SalesPage() {
                         <ShoppingBag className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
-                        <h3 className="text-lg font-black text-foreground">{summary.orderCount}</h3>
+                        <h3 className="text-lg font-bold text-foreground">{summary.orderCount}</h3>
                         <span className="text-xs text-muted-foreground font-semibold">Completed customer purchases</span>
                     </div>
                 </div>
@@ -287,7 +287,7 @@ export default function SalesPage() {
                         <Coffee className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
-                        <h3 className="text-lg font-black text-foreground">
+                        <h3 className="text-lg font-bold text-foreground">
                             ₱{summary.averageOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </h3>
                         <span className="text-xs text-muted-foreground font-semibold">Average receipt ticket value</span>
@@ -361,7 +361,7 @@ export default function SalesPage() {
                                 topProducts.map((p: any, idx: number) => (
                                     <div key={p.name} className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary text-xs font-black">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary text-xs font-bold">
                                                 #{idx + 1}
                                             </div>
                                             <div className="flex flex-col">
@@ -369,7 +369,7 @@ export default function SalesPage() {
                                                 <span className="text-xs text-muted-foreground font-semibold">{p.quantity} cups sold</span>
                                             </div>
                                         </div>
-                                        <span className="text-xs font-black text-foreground">
+                                        <span className="text-xs font-bold text-foreground">
                                             ₱{p.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>

@@ -131,7 +131,7 @@ export default function OrderQueuePage() {
                 <div className="flex items-start justify-between gap-2 border-b border-border/40 pb-2.5">
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-1">
-                            <span className="font-mono text-base font-black text-foreground">{order.queueNumber}</span>
+                            <span className="font-mono text-base font-bold text-foreground">{order.queueNumber}</span>
                             <CopyButton value={order.queueNumber} description={`Queue number #${order.queueNumber} copied`} />
                         </div>
                         <div className="flex items-center gap-1">

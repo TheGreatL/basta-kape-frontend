@@ -7,7 +7,8 @@ export type ReportModule =
     | 'customers'
     | 'suppliers'
     | 'activity-logs'
-    | 'orders';
+    | 'orders'
+    | 'sales';
 
 export type ReportExportFormat = 'excel' | 'pdf';
 
