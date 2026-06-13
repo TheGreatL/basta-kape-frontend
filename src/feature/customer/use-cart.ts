@@ -58,13 +58,14 @@ export function useCart() {
     });
 
     const clearMutation = useMutation({
-        mutationFn: () => {
+        mutationFn: (cartItemIds: string[] | undefined) => {
             if (!customerId) throw new Error('No customer ID');
-            return clearCartApi(customerId);
+            return clearCartApi(customerId, cartItemIds);
         },
-        onSuccess: () => {
+        onSuccess: (_, cartItemIds) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CART, customerId] });
-            toast.success('Cart cleared');
+            const isPartial = cartItemIds && cartItemIds.length > 0;
+            toast.success(isPartial ? 'Purchased items removed from cart' : 'Cart cleared');
         },
         onError: (err: any) => {
             toast.error(err.message || 'Failed to clear cart');
@@ -82,7 +83,7 @@ export function useCart() {
         isUpdating: updateMutation.isPending,
         removeItem: removeMutation.mutateAsync,
         isRemoving: removeMutation.isPending,
-        clearCart: clearMutation.mutateAsync,
+        clearCart: (cartItemIds?: string[]) => clearMutation.mutateAsync(cartItemIds),
         isClearing: clearMutation.isPending
     };
 }

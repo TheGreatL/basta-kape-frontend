@@ -1,5 +1,6 @@
 import { Trash2, Plus, Minus, Coffee } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { getFileUrl } from '#/utils/helper';
@@ -92,9 +93,32 @@ export default function CartItemRow({
                                                 type="button"
                                                 variant={isChecked ? 'default' : 'outline'}
                                                 onClick={() => {
-                                                    const nextIds = isChecked
-                                                        ? selectedModifierIds.filter((id) => id !== opt.id)
-                                                        : [...selectedModifierIds, opt.id];
+                                                    const groupOptionIds = group.options.map((o: any) => o.id);
+                                                    const maxSelect = group.maxSelect || 1;
+                                                    const isRequired = group.isRequired || false;
+
+                                                    let nextIds: string[];
+                                                    if (maxSelect === 1) {
+                                                        const filtered = selectedModifierIds.filter((id) => !groupOptionIds.includes(id));
+                                                        if (isChecked) {
+                                                            nextIds = isRequired ? selectedModifierIds : filtered;
+                                                        } else {
+                                                            nextIds = [...filtered, opt.id];
+                                                        }
+                                                    } else {
+                                                        if (isChecked) {
+                                                            nextIds = selectedModifierIds.filter((id) => id !== opt.id);
+                                                        } else {
+                                                            const currentSelectedFromGroup = selectedModifierIds.filter((id) =>
+                                                                groupOptionIds.includes(id)
+                                                            );
+                                                            if (currentSelectedFromGroup.length >= maxSelect) {
+                                                                toast.warning(`You can select at most ${maxSelect} option(s) for ${group.name}.`);
+                                                                return;
+                                                            }
+                                                            nextIds = [...selectedModifierIds, opt.id];
+                                                        }
+                                                    }
                                                     onModifiersChange(nextIds, modifierGroups);
                                                 }}
                                                 className="h-6 text-xs font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"

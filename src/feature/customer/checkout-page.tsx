@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
-import { ShoppingBag, Coffee, Truck, Utensils, ChevronLeft, MapPin, Phone, User, Receipt, FileText } from 'lucide-react';
+import { ShoppingBag, Coffee, Truck, Utensils, ChevronLeft, MapPin, Phone, User, Receipt, FileText, Info, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useCart } from './use-cart.ts';
@@ -39,7 +39,7 @@ const diningOptions = [
 export default function CheckoutPage() {
     const navigate = useNavigate();
     const { customer, cart, isLoading, clearCart } = useCart();
-    const { checkoutItemIds, selectedModifiers, clearCheckoutState } = useCheckoutStore();
+    const { checkoutItemIds, selectedModifiers, clearCheckoutState, isDirectCheckout, directCheckoutItem } = useCheckoutStore();
 
     // Form states
     const [orderType, setOrderType] = useState<TOrderType>('DINE_IN');
@@ -60,17 +60,30 @@ export default function CheckoutPage() {
 
     // Compute checkout items
     const checkoutItems = useMemo<ICartItemResponse[]>(() => {
+        if (isDirectCheckout && directCheckoutItem) {
+            return [
+                {
+                    id: 'direct-checkout-item',
+                    quantity: directCheckoutItem.quantity,
+                    unitPrice: directCheckoutItem.unitPrice,
+                    productVariantId: directCheckoutItem.productVariantId,
+                    productVariant: directCheckoutItem.productVariant,
+                    cartModifiers: []
+                }
+            ] as unknown as ICartItemResponse[];
+        }
         if (!cart) return [];
         return cart.items.filter((item: ICartItemResponse) => checkoutItemIds.includes(item.id));
-    }, [cart, checkoutItemIds]);
+    }, [cart, checkoutItemIds, isDirectCheckout, directCheckoutItem]);
 
     // Compute checkout pricing
     const subtotal = useMemo(() => {
         return checkoutItems.reduce((sum: number, item: ICartItemResponse) => {
-            const modifierPrice = selectedModifiers[item.id]?.price || 0;
+            const modifierPrice =
+                isDirectCheckout && directCheckoutItem ? directCheckoutItem.selectedModifiersInfo.price : selectedModifiers[item.id]?.price || 0;
             return sum + (item.unitPrice + modifierPrice) * item.quantity;
         }, 0);
-    }, [checkoutItems, selectedModifiers]);
+    }, [checkoutItems, selectedModifiers, isDirectCheckout, directCheckoutItem]);
 
     // Format attributes label (e.g. Size: Large)
     const getVariantLabel = (item: ICartItemResponse) => {
@@ -109,12 +122,15 @@ export default function CheckoutPage() {
                     productVariantId: item.productVariantId,
                     quantity: item.quantity,
                     notes: undefined,
-                    modifierOptionIds: selectedModifiers[item.id]?.ids || []
+                    modifierOptionIds:
+                        isDirectCheckout && directCheckoutItem ? directCheckoutItem.modifierOptionIds : selectedModifiers[item.id]?.ids || []
                 }))
             });
 
             // Clear states
-            await clearCart();
+            if (!isDirectCheckout) {
+                await clearCart(checkoutItemIds);
+            }
             clearCheckoutState();
 
             toast.success('Order Placed Successfully!', {
@@ -269,6 +285,46 @@ export default function CheckoutPage() {
                             />
                         </div>
                     </div>
+
+                    {/* Card 3: Payment & Order Guidelines */}
+                    <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
+                        <h2 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                            <Info className="size-5 text-primary" />
+                            3. Payment & Order Guidelines
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div className="space-y-2.5 p-4 rounded-xl bg-muted/25 border border-border/40">
+                                <h3 className="font-bold text-foreground flex items-center gap-1.5">
+                                    <span className="size-2 rounded-full bg-primary" />
+                                    Payment Methods
+                                </h3>
+                                <p className="text-muted-foreground leading-relaxed">
+                                    We support <strong>Cash on Delivery (COD)</strong>, <strong>GCash</strong>, and <strong>Over-the-Counter</strong>{' '}
+                                    payments. Cash/GCash details are verified by baristas before preparation.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2.5 p-4 rounded-xl bg-muted/25 border border-border/40">
+                                <h3 className="font-bold text-foreground flex items-center gap-1.5">
+                                    <span className="size-2 rounded-full bg-primary" />
+                                    Preparation & Tracking
+                                </h3>
+                                <p className="text-muted-foreground leading-relaxed">
+                                    Your order goes directly to our Kitchen Display queue. You can track real-time prep progress on your personal{' '}
+                                    <strong>Orders</strong> tracking dashboard.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-3 bg-primary/5 rounded-xl border border-primary/20 text-xs text-muted-foreground leading-relaxed flex gap-2">
+                            <AlertCircle className="size-5 text-primary shrink-0 mt-0.5" />
+                            <span>
+                                <strong>Need to make changes?</strong> If you need to cancel or modify items, contact the branch immediately using
+                                your order queue ticket number before preparation starts.
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Right Side: Order Summary */}
@@ -282,8 +338,14 @@ export default function CheckoutPage() {
                         {/* List of checked out items */}
                         <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
                             {checkoutItems.map((item) => {
-                                const modifierPrice = selectedModifiers[item.id]?.price || 0;
-                                const modifierNames = selectedModifiers[item.id]?.names || [];
+                                const modifierPrice =
+                                    isDirectCheckout && directCheckoutItem
+                                        ? directCheckoutItem.selectedModifiersInfo.price
+                                        : selectedModifiers[item.id]?.price || 0;
+                                const modifierNames =
+                                    isDirectCheckout && directCheckoutItem
+                                        ? directCheckoutItem.selectedModifiersInfo.names
+                                        : selectedModifiers[item.id]?.names || [];
                                 const itemTotal = (item.unitPrice + modifierPrice) * item.quantity;
 
                                 return (

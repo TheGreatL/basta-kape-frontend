@@ -42,8 +42,8 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
 
     // Query: Fetch products list to link with
     const { data: productsData } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST, { page: 1, limit: 150, status: 'active' }],
-        queryFn: () => getProductsList({ page: 1, limit: 150, status: 'active' }),
+        queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST, { page: 1, limit: 50, status: 'active' }],
+        queryFn: () => getProductsList({ page: 1, limit: 50, status: 'active' }),
         enabled: open
     });
 

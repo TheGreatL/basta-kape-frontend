@@ -87,14 +87,14 @@ export default function PurchaseOrdersPage() {
     // Queries: Suppliers (for filters & create picker)
     const { data: suppliersData } = useQuery({
         queryKey: [QUERY_KEY.PURCHASE_ORDERS.ACTIVE_SUPPLIERS_LIST],
-        queryFn: () => getSuppliersList({ page: 1, limit: 100, status: 'active' })
+        queryFn: () => getSuppliersList({ page: 1, limit: 50, status: 'active' })
     });
     const suppliers = suppliersData?.data || [];
 
     // Queries: Ingredients (for create picker)
     const { data: ingredientsData } = useQuery({
         queryKey: [QUERY_KEY.PURCHASE_ORDERS.ACTIVE_INGREDIENTS_LIST],
-        queryFn: () => getIngredients({ page: 1, limit: 100, status: 'active' })
+        queryFn: () => getIngredients({ page: 1, limit: 50, status: 'active' })
     });
     const ingredients = ingredientsData?.data || [];
 

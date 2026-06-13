@@ -108,8 +108,10 @@ export const removeCartItem = async (customerId: string, cartItemId: string): Pr
     return response.json();
 };
 
-export const clearCart = async (customerId: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/customers/${customerId}/cart`);
+export const clearCart = async (customerId: string, cartItemIds?: string[]): Promise<{ message: string }> => {
+    const response = await api.delete(`/customers/${customerId}/cart`, {
+        body: cartItemIds ? JSON.stringify({ cartItemIds }) : undefined
+    });
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to clear cart', response.status, errorData);

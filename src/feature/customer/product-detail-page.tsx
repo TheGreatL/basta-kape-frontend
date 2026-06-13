@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
-import { Coffee, ArrowLeft, Plus, Minus, ShoppingBag, ShieldAlert } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Coffee, ArrowLeft, Plus, Minus, ShoppingBag, ShieldAlert, ArrowRight } from 'lucide-react';
+import { useCheckoutStore } from '#/store/checkout-store.ts';
 
 import { getMenuProductById } from '#/api/menu.api.ts';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
@@ -20,6 +21,7 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ productId }: ProductDetailPageProps) {
     const { addItem, isAdding } = useCart();
+    const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
@@ -41,7 +43,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
     // Fetch modifier groups for this product
     const { data: modifierGroupsRes, isLoading: isModifiersLoading } = useQuery({
         queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, productId],
-        queryFn: () => getModifierGroups({ productId, limit: 100 }),
+        queryFn: () => getModifierGroups({ productId, limit: 50 }),
         enabled: !!productId
     });
     const modifierGroups = modifierGroupsRes?.data || [];
@@ -165,6 +167,48 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
         } catch {
             toast.error('Failed to add item to cart. Please try again.');
         }
+    };
+
+    const handleDirectCheckout = () => {
+        if (!selectedVariantId || !selectedVariant) return;
+
+        let modifierPrice = 0;
+        const modifierNames: string[] = [];
+        modifierGroups.forEach((group: IModifierGroup) => {
+            group.options.forEach((opt: IModifierOption) => {
+                if (selectedModifierOptionIds.includes(opt.id)) {
+                    modifierPrice += opt.price;
+                    modifierNames.push(opt.name);
+                }
+            });
+        });
+
+        const checkoutItem = {
+            productVariantId: selectedVariantId,
+            quantity,
+            unitPrice: selectedVariant.price,
+            productVariant: {
+                product: {
+                    name: product.name,
+                    photo: product.photo,
+                    category: product.category
+                },
+                attributes: selectedVariant.attributes.map((attr: IMenuVariantAttribute) => ({
+                    attributeValue: {
+                        value: attr.attributeValue.value
+                    }
+                }))
+            },
+            modifierOptionIds: selectedModifierOptionIds,
+            selectedModifiersInfo: {
+                ids: selectedModifierOptionIds,
+                price: modifierPrice,
+                names: modifierNames
+            }
+        };
+
+        useCheckoutStore.getState().setDirectCheckoutState(checkoutItem, true);
+        navigate({ to: '/checkout' });
     };
 
     // Find all unique attributes (like "Milk Type", "Size") on the variants
@@ -520,15 +564,27 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                 </Button>
                             </Link>
                         ) : (
-                            <Button
-                                size="lg"
-                                onClick={handleAddToCart}
-                                disabled={isAdding || !selectedVariantId || selectedVariant?.maxProduceable === 0 || quantity === 0}
-                                className="w-full h-12 rounded-xl gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
-                            >
-                                <ShoppingBag className="size-5" />
-                                {selectedVariant?.maxProduceable === 0 ? 'Out of Stock' : isAdding ? 'Adding to Cart...' : 'Add to Shopping Cart'}
-                            </Button>
+                            <div className="grid grid-cols-2 gap-3.5">
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    onClick={handleAddToCart}
+                                    disabled={isAdding || !selectedVariantId || selectedVariant?.maxProduceable === 0 || quantity === 0}
+                                    className="w-full h-12 rounded-xl gap-2 font-bold shadow-3xs hover:bg-accent transition-all border-border/80"
+                                >
+                                    <ShoppingBag className="size-5" />
+                                    {isAdding ? 'Adding...' : 'Add to Cart'}
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    onClick={handleDirectCheckout}
+                                    disabled={isAdding || !selectedVariantId || selectedVariant?.maxProduceable === 0 || quantity === 0}
+                                    className="w-full h-12 rounded-xl gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
+                                >
+                                    <ArrowRight className="size-5" />
+                                    Buy Now
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>
