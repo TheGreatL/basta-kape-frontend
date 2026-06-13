@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
 import { ShoppingBag, Coffee, Truck, Utensils, ChevronLeft, MapPin, Phone, User, Receipt, FileText } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,6 +13,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { createOrder } from '#/api/orders.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import type { TOrderType } from '#/feature/order/order.types.ts';
+import type { ICartItemResponse } from '#/feature/customer/customer.types.ts';
 
 const diningOptions = [
     {
@@ -57,27 +59,27 @@ export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Compute checkout items
-    const checkoutItems = useMemo(() => {
-        if (!cart?.items) return [];
-        return cart.items.filter((item) => checkoutItemIds.includes(item.id));
-    }, [cart?.items, checkoutItemIds]);
+    const checkoutItems = useMemo<ICartItemResponse[]>(() => {
+        if (!cart) return [];
+        return cart.items.filter((item: ICartItemResponse) => checkoutItemIds.includes(item.id));
+    }, [cart, checkoutItemIds]);
 
     // Compute checkout pricing
     const subtotal = useMemo(() => {
-        return checkoutItems.reduce((sum, item) => {
+        return checkoutItems.reduce((sum: number, item: ICartItemResponse) => {
             const modifierPrice = selectedModifiers[item.id]?.price || 0;
             return sum + (item.unitPrice + modifierPrice) * item.quantity;
         }, 0);
     }, [checkoutItems, selectedModifiers]);
 
     // Format attributes label (e.g. Size: Large)
-    const getVariantLabel = (item: any) => {
-        const attributes = item.productVariant?.attributes || [];
+    const getVariantLabel = (item: ICartItemResponse) => {
+        const attributes = item.productVariant.attributes;
         if (attributes.length === 0) return 'Regular';
-        return attributes.map((attr: any) => attr.attributeValue?.value).join(' / ');
+        return attributes.map((attr) => attr.attributeValue.value).join(' / ');
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!customer) return;
 

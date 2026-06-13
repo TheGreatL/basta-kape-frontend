@@ -50,3 +50,17 @@ export const exportReport = async (params: IReportExportParams): Promise<void> =
 
     downloadBlob(blob, filename);
 };
+
+export const getSalesAnalytics = async (dateFrom?: string, dateTo?: string): Promise<any> => {
+    const query = new URLSearchParams();
+    if (dateFrom) query.append('dateFrom', dateFrom);
+    if (dateTo) query.append('dateTo', dateTo);
+
+    const response = await api.get(`/reports/sales-analytics?${query.toString()}`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch sales analytics', response.status, errorData);
+    }
+
+    return response.json();
+};
