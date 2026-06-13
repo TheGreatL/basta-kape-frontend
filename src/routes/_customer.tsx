@@ -1,8 +1,9 @@
-import { Outlet, Link, createFileRoute } from '@tanstack/react-router';
+import { Outlet, Link, createFileRoute, Navigate } from '@tanstack/react-router';
 import CustomerHeader from '#/components/layout/customer-header.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
+import { useAuthStore } from '#/store/auth-store';
 
 export const Route = createFileRoute('/_customer')({
     component: CustomerLayout
@@ -10,6 +11,10 @@ export const Route = createFileRoute('/_customer')({
 
 function CustomerLayout() {
     const { storeName } = useStoreSettings();
+    const user = useAuthStore.getState().user;
+    const isCustomer = user?.roles.find((role) => role.name.toLowerCase() === 'customer');
+
+    if (user && !isCustomer) return <Navigate to="/admin" />;
 
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">

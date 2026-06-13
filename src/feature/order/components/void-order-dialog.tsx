@@ -136,7 +136,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                         <AlertTriangle className="size-5 text-destructive animate-pulse-slow" />
                         Void Order Override
                     </DialogTitle>
-                    <DialogDescription className="text-2xs text-muted-foreground">
+                    <DialogDescription className="text-xs text-muted-foreground">
                         This is a high-privilege loss prevention operation. Order status will transition to CANCELLED and inventory changes will
                         revert.
                     </DialogDescription>
@@ -148,8 +148,8 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                         <div className="space-y-3">
                             <Alert variant="destructive" className="bg-destructive/5 border-destructive/20 text-destructive">
                                 <ShieldAlert className="size-4 text-destructive" />
-                                <AlertTitle className="font-bold text-2xs uppercase ">Manager Override Required</AlertTitle>
-                                <AlertDescription className="text-2xs leading-normal">
+                                <AlertTitle className="font-bold text-xs uppercase ">Manager Override Required</AlertTitle>
+                                <AlertDescription className="text-xs leading-normal">
                                     Current session account does not hold Point of Sale Delete scope. Please authenticate a supervisor or manager to
                                     override this void transaction.
                                 </AlertDescription>
@@ -185,8 +185,8 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                     ) : (
                         <Alert className="bg-emerald-500/5 border-emerald-500/10 text-emerald-700">
                             <CheckCircle2 className="size-4 text-emerald-600" />
-                            <AlertTitle className="font-bold text-2xs uppercase ">Privilege Approved</AlertTitle>
-                            <AlertDescription className="text-2xs leading-normal">
+                            <AlertTitle className="font-bold text-xs uppercase ">Privilege Approved</AlertTitle>
+                            <AlertDescription className="text-xs leading-normal">
                                 You hold the necessary authorization to perform this void override directly.
                             </AlertDescription>
                         </Alert>
@@ -196,7 +196,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                         <div className="flex justify-between items-center">
                             <label className="font-bold text-foreground/80">Stated Reason for Void</label>
                             <span
-                                className={`text-2xs font-semibold ${reason.length < 3 || reason.length > 1000 ? 'text-amber-500' : 'text-muted-foreground'}`}
+                                className={`text-xs font-semibold ${reason.length < 3 || reason.length > 1000 ? 'text-amber-500' : 'text-muted-foreground'}`}
                             >
                                 {reason.length}/1000
                             </span>

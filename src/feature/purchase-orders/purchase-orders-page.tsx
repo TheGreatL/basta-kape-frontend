@@ -13,6 +13,7 @@ import { getIngredients } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
@@ -65,7 +66,7 @@ export default function PurchaseOrdersPage() {
 
     // Queries: Purchase Orders List
     const { data: poData, isLoading: isPoLoading } = useQuery({
-        queryKey: ['purchase-orders', { page, pageSize, search, status, supplierId }],
+        queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST, { page, pageSize, search, status, supplierId }],
         queryFn: () =>
             getPurchaseOrders({
                 page,
@@ -78,21 +79,21 @@ export default function PurchaseOrdersPage() {
 
     // Fetch details for selected PO
     const { data: selectedPODetails, isLoading: isDetailsLoading } = useQuery({
-        queryKey: ['purchase-order-details', selectedPO?.id],
+        queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, selectedPO?.id],
         queryFn: () => getPurchaseOrderById(selectedPO!.id),
         enabled: !!selectedPO?.id
     });
 
     // Queries: Suppliers (for filters & create picker)
     const { data: suppliersData } = useQuery({
-        queryKey: ['active-suppliers-list'],
+        queryKey: [QUERY_KEY.PURCHASE_ORDERS.ACTIVE_SUPPLIERS_LIST],
         queryFn: () => getSuppliersList({ page: 1, limit: 100, status: 'active' })
     });
     const suppliers = suppliersData?.data || [];
 
     // Queries: Ingredients (for create picker)
     const { data: ingredientsData } = useQuery({
-        queryKey: ['active-ingredients-list'],
+        queryKey: [QUERY_KEY.PURCHASE_ORDERS.ACTIVE_INGREDIENTS_LIST],
         queryFn: () => getIngredients({ page: 1, limit: 100, status: 'active' })
     });
     const ingredients = ingredientsData?.data || [];
@@ -101,7 +102,7 @@ export default function PurchaseOrdersPage() {
     const createPOMutation = useMutation({
         mutationFn: createPurchaseOrder,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
             toast.success('Purchase order draft created successfully');
             setIsCreateOpen(false);
             resetCreateForm();
@@ -118,9 +119,9 @@ export default function PurchaseOrdersPage() {
         mutationFn: ({ id, status: poStatus }: { id: string; status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED' }) =>
             updatePurchaseOrderStatus(id, poStatus),
         onSuccess: (updatedPO) => {
-            queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-            queryClient.invalidateQueries({ queryKey: ['inventory'] }); // Invalidate inventory stock levels
-            queryClient.invalidateQueries({ queryKey: ['purchase-order-details', updatedPO.id] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] }); // Invalidate inventory stock levels
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, updatedPO.id] });
             setSelectedPO(updatedPO);
             toast.success(`Purchase order status updated to ${updatedPO.status}`);
         },

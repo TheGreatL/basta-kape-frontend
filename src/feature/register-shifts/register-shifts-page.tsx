@@ -11,6 +11,7 @@ import { Link } from '@tanstack/react-router';
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -72,7 +73,7 @@ export default function RegisterShiftsPage() {
             toast.success('Register Shift Drawer Opened', {
                 description: `Shift session successfully initialized with standard balance of ₱${shift.startBalance.toFixed(2)}.`
             });
-            queryClient.invalidateQueries({ queryKey: ['register-shifts:history'] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.REGISTER_SHIFTS.HISTORY] });
             openForm.reset();
         },
         onError: (err) => {
@@ -88,7 +89,7 @@ export default function RegisterShiftsPage() {
             toast.success('Register Shift Drawer Closed', {
                 description: 'Operational shift session successfully ended and drawer settled.'
             });
-            queryClient.invalidateQueries({ queryKey: ['register-shifts:history'] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.REGISTER_SHIFTS.HISTORY] });
             setClosedSummary(shift);
             closeForm.reset();
         },
@@ -264,7 +265,7 @@ export default function RegisterShiftsPage() {
                                                             className="h-9 bg-background/50"
                                                         />
                                                     </FormControl>
-                                                    <FormDescription className="text-2xs text-muted-foreground">
+                                                    <FormDescription className="text-xs text-muted-foreground">
                                                         Enter exact final drawer cash. Discrepancies will be logged automatically.
                                                     </FormDescription>
                                                     <FormMessage />
@@ -350,7 +351,7 @@ export default function RegisterShiftsPage() {
                                                             className="h-9 bg-background/50"
                                                         />
                                                     </FormControl>
-                                                    <FormDescription className="text-2xs text-muted-foreground">
+                                                    <FormDescription className="text-xs text-muted-foreground">
                                                         The amount of cash placed in the register for change.
                                                     </FormDescription>
                                                     <FormMessage />
@@ -488,7 +489,7 @@ export default function RegisterShiftsPage() {
                                         <Alert className="border-emerald-500/20 bg-emerald-500/5 text-emerald-600 rounded-xl py-3">
                                             <CheckCircle2 className="h-4 w-4" />
                                             <AlertTitle className="font-bold text-xs">Drawer Balanced</AlertTitle>
-                                            <AlertDescription className="text-2xs font-medium mt-0.5">
+                                            <AlertDescription className="text-xs font-medium mt-0.5">
                                                 No discrepancies detected. All physical cash counts perfectly match expected electronic transactions.
                                             </AlertDescription>
                                         </Alert>
@@ -506,7 +507,7 @@ export default function RegisterShiftsPage() {
                                     >
                                         <AlertTriangle className="h-4 w-4" />
                                         <AlertTitle className="font-bold text-xs">{isShort ? 'Drawer Shortage' : 'Drawer Surplus'}</AlertTitle>
-                                        <AlertDescription className="text-2xs font-medium mt-0.5">
+                                        <AlertDescription className="text-xs font-medium mt-0.5">
                                             Drawer is {isShort ? 'short' : 'over'} by{' '}
                                             <span className="font-bold">
                                                 ₱

@@ -9,6 +9,7 @@ import { getRegisterShifts, getMyRegisterShifts } from '#/api/register-shift.api
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, AccessScope } from '#/constants/rbac.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -39,7 +40,7 @@ export default function RegisterShiftsHistoryPage() {
 
     // Fetch shifts history
     const { data: historyData, isLoading: isHistoryLoading } = useQuery({
-        queryKey: ['register-shifts:history', activeTab, historyPage, debouncedHistorySearch],
+        queryKey: [QUERY_KEY.REGISTER_SHIFTS.HISTORY, activeTab, historyPage, debouncedHistorySearch],
         queryFn: () => {
             const params = {
                 page: historyPage,
@@ -105,7 +106,7 @@ export default function RegisterShiftsHistoryPage() {
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-base font-bold flex items-center gap-2">Shift Drawer History Logs</CardTitle>
-                                    <CardDescription className="text-2xs">
+                                    <CardDescription className="text-xs">
                                         {activeTab === 'all-shifts'
                                             ? 'Listing all operational cashier shift logs with expectation and physical cash discrepancy verification.'
                                             : 'Listing your operational cashier shift logs with expectation and physical cash discrepancy verification.'}
@@ -127,7 +128,7 @@ export default function RegisterShiftsHistoryPage() {
                             {isHistoryLoading ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-2">
                                     <Spinner className="h-6 w-6 text-primary animate-spin" />
-                                    <span className="text-2xs text-muted-foreground font-medium">Fetching history logs...</span>
+                                    <span className="text-xs text-muted-foreground font-medium">Fetching history logs...</span>
                                 </div>
                             ) : shiftLogs.length === 0 ? (
                                 <div className="text-center py-12 text-xs text-muted-foreground font-medium border border-dashed border-border/60 rounded-lg bg-muted/5">
@@ -188,7 +189,7 @@ export default function RegisterShiftsHistoryPage() {
                                                             </td>
                                                             <td className="py-3 px-3 text-center">
                                                                 {isSessionOpen ? (
-                                                                    <span className="text-2xs text-muted-foreground font-medium">-</span>
+                                                                    <span className="text-xs text-muted-foreground font-medium">-</span>
                                                                 ) : diff === 0 ? (
                                                                     <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-semibold px-2">
                                                                         Balanced
@@ -229,7 +230,7 @@ export default function RegisterShiftsHistoryPage() {
                                                 <ChevronLeft className="size-3.5 mr-1" />
                                                 Previous
                                             </Button>
-                                            <span className="text-2xs text-muted-foreground font-medium px-2">
+                                            <span className="text-xs text-muted-foreground font-medium px-2">
                                                 Page {historyMeta.currentPage} of {historyMeta.pageCount}
                                             </span>
                                             <Button

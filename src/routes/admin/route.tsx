@@ -62,6 +62,12 @@ function AdminLayout() {
         return <Navigate to="/login" />;
     }
 
+    const isCustomer = user.roles.find((role) => role.name.toLowerCase() === 'customer');
+
+    if (isCustomer) {
+        return <Navigate to="/" />;
+    }
+
     return (
         <SidebarProvider>
             <AppSidebar />

@@ -289,7 +289,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                             type="button"
                                             variant={customerType === 'GUEST' ? 'default' : 'outline'}
                                             onClick={() => setCustomerType('GUEST')}
-                                            className="h-8.5 text-2xs flex-1 rounded-lg font-semibold"
+                                            className="h-8.5 text-xs flex-1 rounded-lg font-semibold"
                                         >
                                             Walk-in / Guest
                                         </Button>
@@ -297,7 +297,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                             type="button"
                                             variant={customerType === 'MEMBER' ? 'default' : 'outline'}
                                             onClick={() => setCustomerType('MEMBER')}
-                                            className="h-8.5 text-2xs flex-1 rounded-lg font-semibold"
+                                            className="h-8.5 text-xs flex-1 rounded-lg font-semibold"
                                         >
                                             Registered Member
                                         </Button>

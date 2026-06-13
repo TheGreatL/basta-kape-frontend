@@ -2,8 +2,22 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { History, Search, X, Calendar, DollarSign, CreditCard, Smartphone, XCircle, Clock, Eye, Upload, ImageIcon, User } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+    History,
+    Search,
+    X,
+    Calendar as CalendarIcon,
+    DollarSign,
+    CreditCard,
+    Smartphone,
+    XCircle,
+    Clock,
+    Eye,
+    Upload,
+    ImageIcon,
+    User
+} from 'lucide-react';
+import { format, parse } from 'date-fns';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/transactions.tsx';
@@ -11,13 +25,18 @@ import { getTransactions, updateTransactionReceipt, uploadImageFile } from '#/ap
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
+import { cn } from '#/lib/utils.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
+import { Calendar } from '#/components/ui/calendar.tsx';
 
 import type { ITransaction } from '#/api/transactions.api.ts';
+import { getFileUrl } from '#/utils/helper';
 
 export default function TransactionsPage() {
     const navigate = useNavigate({ from: '/admin/transactions' });
@@ -50,7 +69,7 @@ export default function TransactionsPage() {
 
     // Query: Transactions List
     const { data: txData, isLoading: isTxLoading } = useQuery({
-        queryKey: ['transactions', { page, pageSize, search, paymentMethod, paymentStatus, dateFrom, dateTo }],
+        queryKey: [QUERY_KEY.TRANSACTIONS.TRANSACTIONS_LIST, { page, pageSize, search, paymentMethod, paymentStatus, dateFrom, dateTo }],
         queryFn: () =>
             getTransactions({
                 page,
@@ -67,7 +86,7 @@ export default function TransactionsPage() {
     const updateReceiptMutation = useMutation({
         mutationFn: ({ paymentId, payload }: { paymentId: string; payload: any }) => updateTransactionReceipt(paymentId, payload),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.TRANSACTIONS.TRANSACTIONS_LIST] });
             setSelectedTx(data);
             toast.success('Receipt details updated successfully');
         },
@@ -309,19 +328,61 @@ export default function TransactionsPage() {
                             </Select>
 
                             <div className="flex items-center gap-1.5">
-                                <Input
-                                    type="date"
-                                    value={dateFrom || ''}
-                                    onChange={(e) => setSearchParams({ dateFrom: e.target.value, page: 1 })}
-                                    className="h-9 w-[130px] bg-background/50 text-xs p-1"
-                                />
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className={cn(
+                                                'h-9 justify-start text-left font-normal text-xs bg-background/50 border-border/60 rounded-xl px-3 min-w-[130px]',
+                                                !dateFrom && 'text-muted-foreground'
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                            {dateFrom ? format(parse(dateFrom, 'yyyy-MM-dd', new Date()), 'LLL dd, yyyy') : <span>Start date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateFrom ? parse(dateFrom, 'yyyy-MM-dd', new Date()) : undefined}
+                                            onSelect={(date) => {
+                                                setSearchParams({
+                                                    dateFrom: date ? format(date, 'yyyy-MM-dd') : '',
+                                                    page: 1
+                                                });
+                                            }}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+
                                 <span className="text-muted-foreground text-xs font-semibold">to</span>
-                                <Input
-                                    type="date"
-                                    value={dateTo || ''}
-                                    onChange={(e) => setSearchParams({ dateTo: e.target.value, page: 1 })}
-                                    className="h-9 w-[130px] bg-background/50 text-xs p-1"
-                                />
+
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className={cn(
+                                                'h-9 justify-start text-left font-normal text-xs bg-background/50 border-border/60 rounded-xl px-3 min-w-[130px]',
+                                                !dateTo && 'text-muted-foreground'
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                            {dateTo ? format(parse(dateTo, 'yyyy-MM-dd', new Date()), 'LLL dd, yyyy') : <span>End date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateTo ? parse(dateTo, 'yyyy-MM-dd', new Date()) : undefined}
+                                            onSelect={(date) => {
+                                                setSearchParams({
+                                                    dateTo: date ? format(date, 'yyyy-MM-dd') : '',
+                                                    page: 1
+                                                });
+                                            }}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
 
                             {(search || paymentMethod || paymentStatus || dateFrom || dateTo) && (
@@ -478,10 +539,10 @@ export default function TransactionsPage() {
                                             </div>
                                         ) : selectedTx.paymentProofPhoto ? (
                                             <img
-                                                src={selectedTx.paymentProofPhoto}
+                                                src={getFileUrl(selectedTx.paymentProofPhoto)}
                                                 alt="Payment Proof Screenshot"
                                                 className="w-full max-h-[260px] object-contain cursor-pointer"
-                                                onClick={() => window.open(selectedTx.paymentProofPhoto!, '_blank')}
+                                                onClick={() => window.open(getFileUrl(selectedTx.paymentProofPhoto), '_blank')}
                                             />
                                         ) : (
                                             <div className="text-center p-4">

@@ -293,9 +293,9 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                                     {od.discount?.name || 'Discount'}
                                                                 </span>
                                                                 {od.referenceId && (
-                                                                    <span className="text-2xs font-mono">Card ID: {od.referenceId}</span>
+                                                                    <span className="text-xs font-mono">Card ID: {od.referenceId}</span>
                                                                 )}
-                                                                {od.referenceName && <span className="text-2xs">Holder: {od.referenceName}</span>}
+                                                                {od.referenceName && <span className="text-xs">Holder: {od.referenceName}</span>}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -352,7 +352,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                             <>
                                                                 <div className="flex justify-between text-emerald-700">
                                                                     <span>Reference ID:</span>
-                                                                    <span className="font-mono text-2xs font-semibold bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-900">
+                                                                    <span className="font-mono text-xs font-semibold bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-900">
                                                                         {payment.gcashReferenceNumber}
                                                                     </span>
                                                                 </div>
@@ -428,7 +428,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
 
                                                         {orderDetails.discounts && orderDetails.discounts.length > 0 ? (
                                                             <div className="space-y-3">
-                                                                <div className="p-2.5 rounded-xl border border-primary/20 bg-primary/5 text-2xs flex justify-between items-center">
+                                                                <div className="p-2.5 rounded-xl border border-primary/20 bg-primary/5 text-xs flex justify-between items-center">
                                                                     <div>
                                                                         <span className="font-bold text-foreground block">
                                                                             {orderDetails.discounts[0].discount?.name}
@@ -459,12 +459,12 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                                             Select Discount
                                                                         </label>
                                                                         <Select value={selectedDiscountId} onValueChange={setSelectedDiscountId}>
-                                                                            <SelectTrigger className="h-8.5 text-2xs bg-background/50">
+                                                                            <SelectTrigger className="h-8.5 text-xs bg-background/50">
                                                                                 <SelectValue placeholder="Choose a discount..." />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
                                                                                 {activeDiscounts.map((d: IDiscount) => (
-                                                                                    <SelectItem key={d.id} value={d.id} className="text-2xs">
+                                                                                    <SelectItem key={d.id} value={d.id} className="text-xs">
                                                                                         {d.name}{' '}
                                                                                         {d.type === 'PERCENTAGE' ? `(${d.value}%)` : `(₱${d.value})`}
                                                                                     </SelectItem>
@@ -647,7 +647,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                         <TrendingUp className="size-4 text-muted-foreground" />
                                         Audit Status Log History
                                     </h3>
-                                    <div className="border border-border/50 rounded-xl overflow-hidden divide-y divide-border/20 text-2xs bg-muted/5">
+                                    <div className="border border-border/50 rounded-xl overflow-hidden divide-y divide-border/20 text-xs bg-muted/5">
                                         {orderDetails.statusHistory.map((history: IOrderStatusHistory) => (
                                             <div key={history.id} className="p-3 flex items-start gap-4 hover:bg-muted/10 transition-colors">
                                                 <Badge

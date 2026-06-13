@@ -14,7 +14,6 @@ import {
     DropdownMenuTrigger
 } from '#/components/ui/dropdown-menu.tsx';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '#/components/ui/breadcrumb.tsx';
-import { Button } from '#/components/ui/button.tsx';
 
 export default function AdminHeader() {
     const location = useLocation();
@@ -55,7 +54,7 @@ export default function AdminHeader() {
     };
 
     return (
-        <header className="sticky top-0 z-10 flex py-4 items-center justify-between border-b bg-background/95 backdrop-blur-md px-4 lg:px-6 transition-all duration-200">
+        <header className="sticky top-0 z-10 flex py-2 items-center justify-between border-b bg-background/95 backdrop-blur-md px-4 lg:px-6 transition-all duration-200">
             {/* Left Side: Sidebar Trigger + Breadcrumbs */}
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="-ml-2 hover:bg-muted/60 transition-colors" />
@@ -96,16 +95,18 @@ export default function AdminHeader() {
             <div className="flex items-center gap-4">
                 {user && (
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative size-8 rounded-full border border-border/50 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring select-none"
-                            >
+                        <DropdownMenuTrigger className="p-2 duration-300 outline-1 rounded-2xl hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring transition-colors">
+                            <div className="flex items-center gap-2">
                                 <Avatar size="sm">
                                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">{initials}</AvatarFallback>
                                 </Avatar>
-                            </Button>
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-semibold leading-none text-foreground">
+                                        {user.firstName} {user.lastName}
+                                    </p>
+                                    <p className="text-xs leading-none text-muted-foreground font-medium truncate">{user.email}</p>
+                                </div>
+                            </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal">

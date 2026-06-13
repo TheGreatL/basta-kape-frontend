@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Truck } from 'lucide-react';
+import { CalendarIcon, Truck } from 'lucide-react';
+import { format, parse, isValid } from 'date-fns';
 
 import { createDelivery, getIngredients } from '#/api/inventory.api.ts';
 import { getSuppliersList } from '#/api/suppliers.api.ts';
@@ -19,6 +20,9 @@ import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
+import { Calendar } from '#/components/ui/calendar.tsx';
+import { cn } from '#/lib/utils.ts';
 
 const deliveryFormSchema = z.object({
     ingredientId: z.string().uuid('Please select a valid raw ingredient'),
@@ -245,15 +249,42 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                     <FormField
                                         control={form.control}
                                         name="expiryDate"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Expiration Date</FormLabel>
-                                                <FormControl>
-                                                    <Input type="date" {...field} className="h-9 bg-background/50" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+                                        render={({ field }) => {
+                                            const parsedDate = field.value ? parse(field.value, 'yyyy-MM-dd', new Date()) : undefined;
+                                            const date = parsedDate && isValid(parsedDate) ? parsedDate : undefined;
+
+                                            return (
+                                                <FormItem className="flex flex-col">
+                                                    <FormLabel className="font-semibold text-foreground/80">Expiration Date</FormLabel>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <FormControl>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className={cn(
+                                                                        'w-full h-9 pl-3 text-left font-normal bg-background/50',
+                                                                        !field.value && 'text-muted-foreground'
+                                                                    )}
+                                                                >
+                                                                    {field.value && date ? format(date, 'PPP') : <span>Pick a date</span>}
+                                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                                </Button>
+                                                            </FormControl>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-auto p-0" align="start">
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={date}
+                                                                onSelect={(selectedDate) => {
+                                                                    field.onChange(selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '');
+                                                                }}
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            );
+                                        }}
                                     />
                                 </>
                             )}

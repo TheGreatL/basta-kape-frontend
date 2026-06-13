@@ -40,7 +40,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
 
     // Fetch modifier groups for this product
     const { data: modifierGroupsRes, isLoading: isModifiersLoading } = useQuery({
-        queryKey: ['MODIFIER_GROUPS_FOR_PRODUCT', productId],
+        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, productId],
         queryFn: () => getModifierGroups({ productId, limit: 100 }),
         enabled: !!productId
     });

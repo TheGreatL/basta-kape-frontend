@@ -1,15 +1,18 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, Calendar, DollarSign, Percent, ShoppingBag, Coffee, X, RotateCcw } from 'lucide-react';
+import { TrendingUp, Calendar as CalendarIcon, DollarSign, Percent, ShoppingBag, Coffee, X, RotateCcw } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { format, subDays } from 'date-fns';
+import { format, subDays, parse } from 'date-fns';
 
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { Route } from '#/routes/admin/sales.tsx';
 import { getSalesAnalytics } from '#/api/reports.api.ts';
+import { cn } from '#/lib/utils.ts';
 import { Button } from '#/components/ui/button.tsx';
-import { Input } from '#/components/ui/input.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
+import { Calendar } from '#/components/ui/calendar.tsx';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
@@ -28,7 +31,7 @@ export default function SalesPage() {
 
     // Query: Sales Analytics Data
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['salesAnalytics', { dateFrom, dateTo }],
+        queryKey: [QUERY_KEY.SALES.SALES_ANALYTICS, { dateFrom, dateTo }],
         queryFn: () => getSalesAnalytics(dateFrom || undefined, dateTo || undefined)
     });
 
@@ -152,26 +155,62 @@ export default function SalesPage() {
                         </Button>
                     </div>
 
-                    <div className="flex items-center gap-1.5 bg-card border border-border/50 rounded-xl p-1 px-2">
-                        <Calendar className="size-3.5 text-muted-foreground" />
-                        <Input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="h-7 w-[125px] border-0 bg-transparent text-xs p-0 focus-visible:ring-0"
-                        />
+                    <div className="flex items-center gap-1.5">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        'h-9 justify-start text-left font-normal text-xs bg-background/50 border-border/60 rounded-xl px-3 min-w-[125px]',
+                                        !startDate && 'text-muted-foreground'
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                    {startDate ? format(parse(startDate, 'yyyy-MM-dd', new Date()), 'LLL dd, yyyy') : <span>Start date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={startDate ? parse(startDate, 'yyyy-MM-dd', new Date()) : undefined}
+                                    onSelect={(date) => {
+                                        setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
+                                    }}
+                                />
+                            </PopoverContent>
+                        </Popover>
+
                         <span className="text-muted-foreground text-xs font-semibold">to</span>
-                        <Input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="h-7 w-[125px] border-0 bg-transparent text-xs p-0 focus-visible:ring-0"
-                        />
+
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        'h-9 justify-start text-left font-normal text-xs bg-background/50 border-border/60 rounded-xl px-3 min-w-[125px]',
+                                        !endDate && 'text-muted-foreground'
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                    {endDate ? format(parse(endDate, 'yyyy-MM-dd', new Date()), 'LLL dd, yyyy') : <span>End date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={endDate ? parse(endDate, 'yyyy-MM-dd', new Date()) : undefined}
+                                    onSelect={(date) => {
+                                        setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
+                                    }}
+                                />
+                            </PopoverContent>
+                        </Popover>
+
                         <Button
                             size="sm"
                             onClick={handleApplyCustomDates}
                             disabled={!startDate || !endDate}
-                            className="h-7 text-xs font-bold rounded-lg px-2"
+                            className="h-9 text-xs font-bold rounded-xl px-3 shadow-3xs"
                         >
                             Apply
                         </Button>

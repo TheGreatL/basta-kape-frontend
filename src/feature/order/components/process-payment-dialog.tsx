@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Coins, CreditCard, Lock, ArrowRight, ShieldAlert, CheckCircle2, Landmark, Wallet } from 'lucide-react';
+import { Coins, CreditCard, Lock, ArrowRight, ShieldAlert, CheckCircle2, Landmark, Wallet, Upload, Trash2 } from 'lucide-react';
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { createOrderPayment } from '#/api/orders.api.ts';
+import { uploadImageFile } from '#/api/transactions.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder } from '../order.types';
 
@@ -20,6 +21,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Alert, AlertDescription, AlertTitle } from '#/components/ui/alert.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { getFileUrl } from '#/utils/helper';
 
 // Opening shift validation schema
 const openShiftSchema = z.object({
@@ -59,6 +61,40 @@ interface ProcessPaymentDialogProps {
 export default function ProcessPaymentDialog({ open, onOpenChange, order, onSuccess }: ProcessPaymentDialogProps) {
     const queryClient = useQueryClient();
     const { activeShift, openShift } = useRegisterShiftStore();
+
+    const [isUploading, setIsUploading] = React.useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const uploadRes = await uploadImageFile(file);
+            paymentForm.setValue('paymentProofPhoto', uploadRes.url);
+            toast.success('Proof of payment uploaded successfully');
+        } catch (err) {
+            toast.error('Failed to upload image', {
+                description: getErrorMessage(err)
+            });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleUploadClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        paymentForm.setValue('paymentProofPhoto', undefined);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const netTotal = order?.netTotal || 0;
     const paymentSchema = React.useMemo(() => createPaymentSchema(netTotal), [netTotal]);
@@ -130,7 +166,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
             });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, order?.id] });
-            queryClient.invalidateQueries({ queryKey: ['order-payments', order?.id] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, order?.id] });
             paymentForm.reset();
             onOpenChange(false);
             if (onSuccess) onSuccess();
@@ -251,7 +287,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                 <CreditCard className="size-5 text-primary" />
                                 Process Order Payment
                             </DialogTitle>
-                            <DialogDescription className="text-2xs text-muted-foreground">
+                            <DialogDescription className="text-xs text-muted-foreground">
                                 Record payment for Ticket **#{order.queueNumber}** (Customer: **{order.customerName || 'Walk-in'}**).
                             </DialogDescription>
                         </DialogHeader>
@@ -388,18 +424,61 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                 control={paymentForm.control}
                                                 name="paymentProofPhoto"
                                                 render={({ field }) => (
-                                                    <FormItem>
+                                                    <FormItem className="space-y-1.5">
                                                         <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                            Proof of Payment URL (Optional)
+                                                            Proof of Payment Receipt
                                                         </FormLabel>
                                                         <FormControl>
-                                                            <Input
-                                                                type="text"
-                                                                placeholder="e.g. /uploads/proofs/screenshot.jpg"
-                                                                value={field.value || ''}
-                                                                onChange={field.onChange}
-                                                                className="h-9 bg-background/50 text-xs"
-                                                            />
+                                                            <div className="space-y-2">
+                                                                <input
+                                                                    type="file"
+                                                                    ref={fileInputRef}
+                                                                    onChange={handleFileChange}
+                                                                    accept="image/*"
+                                                                    className="hidden"
+                                                                />
+                                                                {isUploading ? (
+                                                                    <div className="flex flex-col items-center justify-center border border-border/60 rounded-xl min-h-[140px] bg-muted/10 gap-2">
+                                                                        <Spinner className="h-6 w-6 text-primary animate-spin" />
+                                                                        <span className="text-xs text-muted-foreground font-medium">
+                                                                            Uploading receipt...
+                                                                        </span>
+                                                                    </div>
+                                                                ) : field.value ? (
+                                                                    <div className="relative border border-border/40 rounded-xl overflow-hidden bg-muted/5 min-h-[140px] flex items-center justify-center group">
+                                                                        <img
+                                                                            src={getFileUrl(field.value)}
+                                                                            alt="Payment Proof"
+                                                                            className="w-full max-h-[220px] object-contain cursor-pointer"
+                                                                            onClick={() => window.open(getFileUrl(field.value), '_blank')}
+                                                                        />
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="destructive"
+                                                                            size="icon"
+                                                                            onClick={handleRemovePhoto}
+                                                                            className="absolute top-2 right-2 size-7 rounded-lg shadow-md opacity-90 hover:opacity-100 transition-opacity"
+                                                                        >
+                                                                            <Trash2 className="size-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div
+                                                                        onClick={handleUploadClick}
+                                                                        className="border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-muted/15 rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-center"
+                                                                    >
+                                                                        <div className="size-8.5 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground mb-1">
+                                                                            <Upload className="size-4.5" />
+                                                                        </div>
+                                                                        <span className="text-xs font-bold text-foreground">
+                                                                            Upload payment screenshot
+                                                                        </span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            JPEG, PNG, WEBP (max. 5MB)
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>

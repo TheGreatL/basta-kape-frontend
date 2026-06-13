@@ -80,6 +80,21 @@ const QUERY_KEY = {
     STORE_SETTINGS: {
         ACTIVE: 'store_settings:active',
         DISCOUNTS_LIST: 'store_settings:discounts_list'
+    },
+    TRANSACTIONS: {
+        TRANSACTIONS_LIST: 'transactions:transactions_list'
+    },
+    SALES: {
+        SALES_ANALYTICS: 'sales:sales_analytics'
+    },
+    REGISTER_SHIFTS: {
+        HISTORY: 'register_shifts:history'
+    },
+    PURCHASE_ORDERS: {
+        PURCHASE_ORDERS_LIST: 'purchase_orders:purchase_orders_list',
+        PURCHASE_ORDER_DETAILS: 'purchase_orders:purchase_order_details',
+        ACTIVE_SUPPLIERS_LIST: 'purchase_orders:active_suppliers_list',
+        ACTIVE_INGREDIENTS_LIST: 'purchase_orders:active_ingredients_list'
     }
 };
 export default QUERY_KEY;

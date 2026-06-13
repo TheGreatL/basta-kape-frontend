@@ -107,11 +107,8 @@ export default function CustomerHeader() {
 
                             {/* User Profile Dropdown */}
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className="relative flex items-center gap-2 px-2 h-9 rounded-full hover:bg-muted/80 select-none"
-                                    >
+                                <DropdownMenuTrigger className="p-1 duration-300  rounded-2xl hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring transition-colors">
+                                    <div className="flex items-center gap-2">
                                         <Avatar className="size-8 border border-border/60">
                                             <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs uppercase">
                                                 {user.firstName && user.lastName
@@ -120,9 +117,9 @@ export default function CustomerHeader() {
                                             </AvatarFallback>
                                         </Avatar>
                                         <span className="hidden lg:inline text-sm font-semibold text-foreground max-w-[120px] truncate">
-                                            {user.firstName || user.username}
+                                            {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                                         </span>
-                                    </Button>
+                                    </div>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
                                     align="end"
