@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 
 import { getOrderById, updateOrderStatus, getOrderPayments } from '#/api/orders.api.ts';
 import { getDiscountsConfig, applyDiscountToOrder, removeDiscountFromOrder } from '#/api/discounts.api.ts';
+import { updateTransactionReceipt } from '#/api/transactions.api.ts';
+import { getFileUrl } from '#/utils/helper';
 import type { IDiscount } from '../../store-settings/discounts.types';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -149,6 +151,22 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
         }
     });
 
+    // Mutation: Approve Pending Digital Payment
+    const approvePaymentMutation = useMutation({
+        mutationFn: (paymentId: string) => updateTransactionReceipt(paymentId, {}),
+        onSuccess: () => {
+            toast.success('Digital payment approved successfully');
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            if (orderId) {
+                queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, orderId] });
+                queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, orderId] });
+            }
+        },
+        onError: (err) => {
+            toast.error('Failed to approve payment', { description: getErrorMessage(err) });
+        }
+    });
+
     const handleUpdateStatusSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!orderId || !statusChangeValue) return;
@@ -224,6 +242,16 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                     </Badge>
                                 </div>
                             </div>
+
+                            {/* Master Order Notes */}
+                            {orderDetails.notes && (
+                                <div className="border border-amber-500/20 bg-amber-500/5 p-3.5 rounded-xl space-y-1">
+                                    <h4 className="font-bold text-amber-800 uppercase text-[10px] tracking-wider">
+                                        Order Instructions & Delivery Details
+                                    </h4>
+                                    <p className="text-amber-900 leading-relaxed font-mono whitespace-pre-wrap text-[11px]">{orderDetails.notes}</p>
+                                </div>
+                            )}
 
                             {/* Ordered Items list */}
                             <div className="space-y-2.5">
@@ -330,7 +358,15 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                     >
                                                         <div className="flex justify-between">
                                                             <span>Payment Status:</span>
-                                                            <Badge className="bg-emerald-600/10 text-emerald-700 border-emerald-600/20 text-xs uppercase font-bold py-0 px-1.5">
+                                                            <Badge
+                                                                className={`text-[10px] uppercase font-bold py-0 px-1.5 ${
+                                                                    payment.paymentStatus === 'PAID'
+                                                                        ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20'
+                                                                        : payment.paymentStatus === 'PENDING'
+                                                                          ? 'bg-amber-600/10 text-amber-700 border-amber-600/20'
+                                                                          : 'bg-rose-600/10 text-rose-700 border-rose-600/20'
+                                                                }`}
+                                                            >
                                                                 {payment.paymentStatus}
                                                             </Badge>
                                                         </div>
@@ -357,12 +393,31 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <div className="flex justify-between text-emerald-700">
-                                                                    <span>Reference ID:</span>
-                                                                    <span className="font-mono text-xs font-semibold bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-900">
-                                                                        {payment.gcashReferenceNumber}
-                                                                    </span>
-                                                                </div>
+                                                                {payment.gcashReferenceNumber && (
+                                                                    <div className="flex justify-between text-emerald-700">
+                                                                        <span>Reference ID:</span>
+                                                                        <span className="font-mono text-xs font-semibold bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-900">
+                                                                            {payment.gcashReferenceNumber}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {payment.paymentProofPhoto && (
+                                                                    <div className="mt-2 space-y-1">
+                                                                        <span className="text-[10px] text-emerald-700 block uppercase font-bold">
+                                                                            Screenshot Receipt
+                                                                        </span>
+                                                                        <div className="border border-emerald-500/20 rounded-lg overflow-hidden bg-background max-h-[140px] flex items-center justify-center relative">
+                                                                            <img
+                                                                                src={getFileUrl(payment.paymentProofPhoto)}
+                                                                                alt="Proof of Payment"
+                                                                                className="w-full max-h-[130px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                                                                                onClick={() =>
+                                                                                    window.open(getFileUrl(payment.paymentProofPhoto), '_blank')
+                                                                                }
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </>
                                                         )}
                                                         <div className="text-xs text-emerald-600 font-medium pt-1 text-right">
@@ -424,7 +479,47 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                         </div>
                                     ) : (
                                         <>
-                                            {orderDetails.status === 'PENDING' && (!payments || payments.length === 0) ? (
+                                            {orderDetails.status === 'PENDING' &&
+                                            payments &&
+                                            payments.some((p: IOrderPayment) => p.paymentStatus === 'PENDING') ? (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-xs flex items-center gap-1.5">
+                                                            <CreditCard className="size-3.5 text-muted-foreground" />
+                                                            Pending Digital Payment
+                                                        </h4>
+                                                        <p className="text-xs text-muted-foreground leading-normal mt-2">
+                                                            This order has a pending digital payment. Please review the reference ID and screenshot
+                                                            receipt details on the left, then click Approve to confirm the payment and queue the order
+                                                            for preparation.
+                                                        </p>
+                                                    </div>
+
+                                                    <Button
+                                                        type="button"
+                                                        disabled={approvePaymentMutation.isPending}
+                                                        onClick={() => {
+                                                            const pendingPayment = payments.find((p: IOrderPayment) => p.paymentStatus === 'PENDING');
+                                                            if (pendingPayment) {
+                                                                approvePaymentMutation.mutate(pendingPayment.id);
+                                                            }
+                                                        }}
+                                                        className="w-full h-9.5 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                                    >
+                                                        {approvePaymentMutation.isPending ? (
+                                                            <>
+                                                                <Spinner className="size-3.5 animate-spin mr-1.5" />
+                                                                Approving Payment...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <CheckCircle2 className="size-4 mr-1.5" />
+                                                                Approve Digital Payment
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            ) : orderDetails.status === 'PENDING' && (!payments || payments.length === 0) ? (
                                                 <div className="space-y-4">
                                                     {/* Discounts section */}
                                                     <div className="space-y-3 pb-3 border-b border-dashed border-border/40">

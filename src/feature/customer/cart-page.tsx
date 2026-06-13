@@ -162,7 +162,7 @@ export default function CartPage() {
                 <div className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground/60 mb-6">
                     <ShoppingCart className="size-8" />
                 </div>
-                <h2 className="text-xl font-extrabold text-foreground">Sign in to view your cart</h2>
+                <h2 className="text-xl font-bold text-foreground">Sign in to view your cart</h2>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xs">You need to be logged in to manage your shopping cart and view items.</p>
                 <Link to="/login" className="mt-8">
                     <Button className="rounded-xl px-6">Sign In Now</Button>
@@ -193,7 +193,7 @@ export default function CartPage() {
                 <div className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground/60 mb-6">
                     <ShoppingCart className="size-8" />
                 </div>
-                <h2 className="text-xl font-extrabold text-foreground">Your cart is empty</h2>
+                <h2 className="text-xl font-bold text-foreground">Your cart is empty</h2>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xs">Looks like you haven't added any coffees or snacks to your cart yet.</p>
                 <Link to="/products" className="mt-8">
                     <Button className="rounded-xl px-6">Explore Our Menu</Button>
@@ -206,7 +206,7 @@ export default function CartPage() {
         <div className="container mx-auto px-4 py-8 max-w-5xl min-h-screen">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-foreground">Shopping Cart</h1>
+                <h1 className="text-3xl font-bold text-foreground">Shopping Cart</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     You have {items.reduce((acc: number, item: ICartItemResponse) => acc + item.quantity, 0)} items in your cart.
                 </p>

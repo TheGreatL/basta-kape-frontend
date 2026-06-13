@@ -79,6 +79,7 @@ export interface IOrder {
     statusHistory?: IOrderStatusHistory[];
     discounts?: IOrderDiscount[];
     voidLogs?: IVoidLog[];
+    payments?: IOrderPayment[];
 }
 
 export interface ICreateOrderPayload {
@@ -87,6 +88,9 @@ export interface ICreateOrderPayload {
     notes?: string;
     customerId?: string | null;
     customerName?: string;
+    paymentMethod?: 'CASH' | 'GCASH' | 'PAYMAYA' | null;
+    gcashReferenceNumber?: string | null;
+    paymentProofPhoto?: string | null;
     items: Array<{
         productVariantId: string;
         quantity: number;

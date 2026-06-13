@@ -345,7 +345,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     {/* Category Label */}
                     <div className="text-xs font-semibold text-primary uppercase mb-2">{product.category?.name || 'Beverage'}</div>
 
-                    <h1 className="text-3xl font-extrabold text-foreground leading-tight">{product.name}</h1>
+                    <h1 className="text-3xl font-bold text-foreground leading-tight">{product.name}</h1>
 
                     <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
                         {product.description || 'No description available for this item.'}

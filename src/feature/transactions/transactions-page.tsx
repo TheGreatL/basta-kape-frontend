@@ -7,7 +7,6 @@ import {
     Search,
     X,
     Calendar as CalendarIcon,
-    DollarSign,
     CreditCard,
     Smartphone,
     XCircle,
@@ -15,7 +14,8 @@ import {
     Eye,
     Upload,
     ImageIcon,
-    User
+    User,
+    PhilippinePeso
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { toast } from 'sonner';
@@ -142,7 +142,7 @@ export default function TransactionsPage() {
     const getPaymentMethodIcon = (method: string) => {
         switch (method) {
             case 'CASH':
-                return <DollarSign className="size-4 text-emerald-600" />;
+                return <PhilippinePeso className="size-4 text-emerald-600" />;
             case 'GCASH':
             case 'PAYMAYA':
                 return <Smartphone className="size-4 text-blue-600" />;
@@ -410,7 +410,7 @@ export default function TransactionsPage() {
             <Dialog open={!!selectedTx} onOpenChange={(open) => !open && setSelectedTx(null)}>
                 <DialogContent className="max-w-md w-full rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="font-extrabold text-foreground flex items-center gap-2">
+                        <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <History className="size-5 text-primary" />
                             Transaction Details
                         </DialogTitle>
@@ -456,7 +456,7 @@ export default function TransactionsPage() {
                                 </div>
                                 <div className="flex justify-between items-center py-1 border-b border-border/30">
                                     <span className="text-muted-foreground font-medium">Total Amount Due</span>
-                                    <span className="font-extrabold text-foreground">
+                                    <span className="font-bold text-foreground">
                                         ₱{selectedTx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>

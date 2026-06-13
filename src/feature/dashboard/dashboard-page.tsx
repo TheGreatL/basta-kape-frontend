@@ -188,7 +188,7 @@ export default function DashboardPage() {
                         {/* Gross Sales */}
                         <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                             <div className="flex justify-between items-center text-muted-foreground">
-                                <span className="text-xs font-extrabold uppercase">Gross Sales</span>
+                                <span className="text-xs font-bold uppercase">Gross Sales</span>
                                 <DollarSign className="size-4 text-muted-foreground/80" />
                             </div>
                             <div className="space-y-0.5">
@@ -202,7 +202,7 @@ export default function DashboardPage() {
                         {/* Net Revenue */}
                         <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs bg-gradient-to-br from-primary/5 to-transparent space-y-2">
                             <div className="flex justify-between items-center text-primary">
-                                <span className="text-xs font-extrabold uppercase">Net Revenue</span>
+                                <span className="text-xs font-bold uppercase">Net Revenue</span>
                                 <TrendingUp className="size-4 text-primary" />
                             </div>
                             <div className="space-y-0.5">
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                         {/* Discounts */}
                         <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                             <div className="flex justify-between items-center text-amber-600">
-                                <span className="text-xs font-extrabold uppercase">Discounts Deducted</span>
+                                <span className="text-xs font-bold uppercase">Discounts Deducted</span>
                                 <Percent className="size-4 text-amber-600/80" />
                             </div>
                             <div className="space-y-0.5">
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                         {/* Total Orders */}
                         <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                             <div className="flex justify-between items-center text-muted-foreground">
-                                <span className="text-xs font-extrabold uppercase">Total Orders</span>
+                                <span className="text-xs font-bold uppercase">Total Orders</span>
                                 <ShoppingBag className="size-4 text-muted-foreground/80" />
                             </div>
                             <div className="space-y-0.5">
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                         {/* Average Receipt */}
                         <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                             <div className="flex justify-between items-center text-muted-foreground">
-                                <span className="text-xs font-extrabold uppercase">Average Receipt</span>
+                                <span className="text-xs font-bold uppercase">Average Receipt</span>
                                 <Coffee className="size-4 text-muted-foreground/80" />
                             </div>
                             <div className="space-y-0.5">
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Card className="lg:col-span-2 shadow-2xs border-border/60 rounded-2xl">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-extrabold text-foreground">Sales Trend (Last 30 Days)</CardTitle>
+                            <CardTitle className="text-sm font-bold text-foreground">Sales Trend (Last 30 Days)</CardTitle>
                             <CardDescription className="text-xs text-muted-foreground">Historical view of net daily sales revenue.</CardDescription>
                         </CardHeader>
                         <CardContent className="h-[260px] pt-4">
@@ -330,7 +330,7 @@ export default function DashboardPage() {
                     {/* Top Favorites */}
                     <Card className="shadow-2xs border-border/60 rounded-2xl flex flex-col justify-between">
                         <CardHeader>
-                            <CardTitle className="text-sm font-extrabold text-foreground">Top 5 Best-Selling Favorites</CardTitle>
+                            <CardTitle className="text-sm font-bold text-foreground">Top 5 Best-Selling Favorites</CardTitle>
                             <CardDescription className="text-xs text-muted-foreground">Most popular items based on sales volume.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col justify-center">
@@ -343,7 +343,7 @@ export default function DashboardPage() {
                                                     #{idx + 1}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-extrabold text-foreground leading-tight">{p.name}</span>
+                                                    <span className="text-xs font-bold text-foreground leading-tight">{p.name}</span>
                                                     <span className="text-xs text-muted-foreground font-semibold">{p.quantity} cups sold</span>
                                                 </div>
                                             </div>
@@ -370,7 +370,7 @@ export default function DashboardPage() {
                     <Card className="lg:col-span-2 shadow-2xs border-border/60 rounded-2xl">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div>
-                                <CardTitle className="text-sm font-extrabold text-foreground">Order Queue & Recent Transactions</CardTitle>
+                                <CardTitle className="text-sm font-bold text-foreground">Order Queue & Recent Transactions</CardTitle>
                                 <CardDescription className="text-xs text-muted-foreground">
                                     Monitor real-time status of orders in preparation.
                                 </CardDescription>
@@ -416,11 +416,11 @@ export default function DashboardPage() {
                                         <Table>
                                             <TableHeader>
                                                 <TableRow className="bg-muted/30">
-                                                    <TableHead className="font-extrabold text-xs uppercase">Queue #</TableHead>
-                                                    <TableHead className="font-extrabold text-xs uppercase">Customer</TableHead>
-                                                    <TableHead className="font-extrabold text-xs uppercase">Type</TableHead>
-                                                    <TableHead className="font-extrabold text-xs uppercase">Status</TableHead>
-                                                    <TableHead className="font-extrabold text-xs uppercase text-right">Total</TableHead>
+                                                    <TableHead className="font-bold text-xs uppercase">Queue #</TableHead>
+                                                    <TableHead className="font-bold text-xs uppercase">Customer</TableHead>
+                                                    <TableHead className="font-bold text-xs uppercase">Type</TableHead>
+                                                    <TableHead className="font-bold text-xs uppercase">Status</TableHead>
+                                                    <TableHead className="font-bold text-xs uppercase text-right">Total</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -480,7 +480,7 @@ export default function DashboardPage() {
                     {canReadPOS && (
                         <Card className="shadow-2xs border-border/60 rounded-2xl bg-gradient-to-br from-background via-background to-secondary/15">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-extrabold text-foreground">Cashier Register Drawer</CardTitle>
+                                <CardTitle className="text-sm font-bold text-foreground">Cashier Register Drawer</CardTitle>
                                 <CardDescription className="text-xs text-muted-foreground">
                                     Current session status for taking customer orders.
                                 </CardDescription>
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                         <Card className="shadow-2xs border-border/60 rounded-2xl">
                             <CardHeader className="pb-2 flex flex-row items-center justify-between">
                                 <div>
-                                    <CardTitle className="text-sm font-extrabold text-foreground">Live Stock Alerts</CardTitle>
+                                    <CardTitle className="text-sm font-bold text-foreground">Live Stock Alerts</CardTitle>
                                     <CardDescription className="text-xs text-muted-foreground">
                                         Monitors ingredients near or below reorder levels.
                                     </CardDescription>
@@ -547,11 +547,11 @@ export default function DashboardPage() {
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-2.5 flex flex-col items-center">
                                         <span className="text-lg font-bold text-rose-500">{summary.inventorySummary.outOfStockCount}</span>
-                                        <span className="text-xs uppercase font-extrabold text-muted-foreground">Out of Stock</span>
+                                        <span className="text-xs uppercase font-bold text-muted-foreground">Out of Stock</span>
                                     </div>
                                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-2.5 flex flex-col items-center">
                                         <span className="text-lg font-bold text-amber-500">{summary.inventorySummary.criticalCount}</span>
-                                        <span className="text-xs uppercase font-extrabold text-muted-foreground">Critical Stock</span>
+                                        <span className="text-xs uppercase font-bold text-muted-foreground">Critical Stock</span>
                                     </div>
                                 </div>
 
@@ -562,7 +562,7 @@ export default function DashboardPage() {
                                             {summary.inventorySummary.lowStockItems.map((item: any) => (
                                                 <div key={item.id} className="space-y-1">
                                                     <div className="flex justify-between items-center text-xs">
-                                                        <span className="font-extrabold text-foreground leading-tight">{item.name}</span>
+                                                        <span className="font-bold text-foreground leading-tight">{item.name}</span>
                                                         <span
                                                             className={cn(
                                                                 'font-bold',
@@ -599,7 +599,7 @@ export default function DashboardPage() {
 
             {/* Quick Action Navigation Grid */}
             <div className="space-y-4">
-                <h3 className="text-sm font-extrabold text-foreground">Quick Shortcuts</h3>
+                <h3 className="text-sm font-bold text-foreground">Quick Shortcuts</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     {canReadPOS && (
                         <Link to="/admin/pos">

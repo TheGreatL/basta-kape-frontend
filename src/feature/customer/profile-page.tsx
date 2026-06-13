@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-            <h1 className="text-3xl font-extrabold text-foreground mb-8">My Profile</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-8">My Profile</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Profile Detail Card */}

@@ -7,7 +7,8 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
-import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus } from '#/feature/order/order.types.ts';
+import { getFileUrl } from '#/utils/helper';
+import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
 
 export default function OrderDetailsPage() {
     const { id } = useParams({
@@ -145,7 +146,7 @@ export default function OrderDetailsPage() {
                             <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10 text-primary">
                                 <Volume2 className="size-5 animate-pulse" />
                                 <div className="text-xs">
-                                    <span className="font-extrabold block">Buzzer Active</span>
+                                    <span className="font-bold block">Buzzer Active</span>
                                     <span className="font-semibold text-primary/80">Device ID: #{order.buzzerId}</span>
                                 </div>
                             </div>
@@ -237,7 +238,7 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
                             <AlertCircle className="size-5 shrink-0" />
                             <div className="text-xs">
-                                <span className="font-extrabold block">Cancelled Details</span>
+                                <span className="font-bold block">Cancelled Details</span>
                                 <span className="font-medium">
                                     This transaction has been cancelled. Staff reference logs: "{order.notes || 'No description provided'}"
                                 </span>
@@ -288,7 +289,7 @@ export default function OrderDetailsPage() {
                                 </div>
 
                                 <div className="text-right shrink-0">
-                                    <span className="font-extrabold text-sm text-foreground">₱{item.totalPrice.toFixed(2)}</span>
+                                    <span className="font-bold text-sm text-foreground">₱{item.totalPrice.toFixed(2)}</span>
                                     <span className="block text-xs text-muted-foreground">₱{item.unitPrice.toFixed(2)} each</span>
                                 </div>
                             </div>
@@ -324,11 +325,98 @@ export default function OrderDetailsPage() {
                         <Separator className="bg-border/60" />
 
                         <div className="flex justify-between items-baseline pt-1">
-                            <span className="font-bold text-base text-foreground">Total Paid</span>
+                            <span className="font-bold text-base text-foreground">
+                                {order.payments && order.payments.some((p: IOrderPayment) => p.paymentStatus === 'PAID')
+                                    ? 'Total Paid'
+                                    : 'Total Amount Due'}
+                            </span>
                             <span className="font-bold text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
+
+                {/* Payment Information Card */}
+                {order.payments && order.payments.length > 0 && (
+                    <div className="p-6 rounded-2xl border border-border/40 bg-card shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Receipt className="size-5 text-primary" />
+                            <h2 className="text-lg font-bold text-foreground">Payment Information</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            {order.payments.map((payment: IOrderPayment) => (
+                                <div key={payment.id} className="space-y-3 p-4 rounded-xl border border-border/40 bg-muted/10">
+                                    <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                                        <span className="font-semibold text-muted-foreground">Payment Method</span>
+                                        <span className="font-bold text-foreground capitalize">
+                                            {payment.paymentMethod === 'PAYMAYA' ? 'Maya' : payment.paymentMethod.toLowerCase()}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                                        <span className="font-semibold text-muted-foreground">Status</span>
+                                        <Badge
+                                            variant="outline"
+                                            className={`text-2xs font-bold py-0.5 px-2 capitalize ${
+                                                payment.paymentStatus === 'PAID'
+                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
+                                                    : payment.paymentStatus === 'PENDING'
+                                                      ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
+                                                      : 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40'
+                                            }`}
+                                        >
+                                            {payment.paymentStatus.toLowerCase()}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                                        <span className="font-semibold text-muted-foreground">Amount Settled</span>
+                                        <span className="font-bold text-foreground">₱{payment.amount.toFixed(2)}</span>
+                                    </div>
+                                    {payment.paymentMethod === 'CASH' ? (
+                                        <>
+                                            {payment.amountTendered !== null && payment.amountTendered !== undefined && (
+                                                <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                                                    <span className="font-semibold text-muted-foreground">Amount Tendered</span>
+                                                    <span className="font-medium text-foreground">₱{payment.amountTendered.toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                            {payment.amountChange !== null && payment.amountChange !== undefined && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-semibold text-muted-foreground">Change Given</span>
+                                                    <span className="font-bold text-emerald-600">₱{payment.amountChange.toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {payment.gcashReferenceNumber && (
+                                                <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                                                    <span className="font-semibold text-muted-foreground">Reference ID</span>
+                                                    <span className="font-mono text-xs bg-muted border border-border/40 px-2 py-0.5 rounded text-foreground font-bold">
+                                                        {payment.gcashReferenceNumber}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {payment.paymentProofPhoto && (
+                                                <div className="space-y-1.5 pt-1">
+                                                    <span className="text-[10px] font-semibold text-muted-foreground block">
+                                                        Uploaded Receipt Screenshot
+                                                    </span>
+                                                    <div className="border border-border/40 rounded-xl overflow-hidden bg-background max-h-[160px] flex items-center justify-center relative group">
+                                                        <img
+                                                            src={getFileUrl(payment.paymentProofPhoto)}
+                                                            alt="Receipt Screenshot"
+                                                            className="w-full max-h-[150px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                                                            onClick={() => window.open(getFileUrl(payment.paymentProofPhoto), '_blank')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Status Transitions Audit Trail */}
                 {order.statusHistory && order.statusHistory.length > 0 && (
@@ -346,7 +434,7 @@ export default function OrderDetailsPage() {
 
                                     <div className="space-y-1">
                                         <div className="flex flex-wrap items-baseline gap-2">
-                                            <span className="text-sm font-extrabold text-foreground">{getStatusText(history.status)}</span>
+                                            <span className="text-sm font-bold text-foreground">{getStatusText(history.status)}</span>
                                             <span className="text-xs text-muted-foreground">
                                                 {new Date(history.createdAt).toLocaleTimeString(undefined, {
                                                     hour: '2-digit',

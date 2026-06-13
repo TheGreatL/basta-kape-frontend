@@ -21,7 +21,7 @@ export default function LandingPage() {
                         <span>Freshly brewed daily</span>
                     </div>
 
-                    <h1 className="text-4xl font-extrabold sm:text-5xl md:text-6xl max-w-3xl leading-none">
+                    <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl max-w-3xl leading-none">
                         Crafting Moments, <br />
                         <span className="bg-gradient-to-r from-amber-200 to-yellow-400 bg-clip-text text-transparent">One Cup at a Time</span>
                     </h1>

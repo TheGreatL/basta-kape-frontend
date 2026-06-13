@@ -1,8 +1,7 @@
-import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ChefHat, Package, Edit, Plus, RotateCcw } from 'lucide-react';
+import { ChefHat, Package, RotateCcw } from 'lucide-react';
 
 import { Route } from '#/routes/admin/products/recipes.tsx';
 import { getProductsList } from '#/api/products.api.ts';
@@ -20,10 +19,7 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import RecipeDialog from '../products/components/recipe-dialog.tsx';
-
-interface IVariantWithProduct extends IProductVariant {
-    product: IProduct;
-}
+import React from 'react';
 
 export default function RecipesPage() {
     const navigate = useNavigate({ from: '/admin/products/recipes' });
@@ -79,30 +75,22 @@ export default function RecipesPage() {
             })
     });
 
-    // Map products to flat variants list
-    const allVariants = React.useMemo(() => {
+    // Filter products client side based on recipe status
+    const filteredProducts = React.useMemo(() => {
         if (!productsData?.data) return [];
-        return productsData.data.flatMap((product: IProduct) =>
-            product.variants.map((variant: IProductVariant) => ({
-                ...variant,
-                product
-            }))
-        );
-    }, [productsData]);
+        return productsData.data.filter((product: IProduct) => {
+            const hasConfigured = product.variants.some((v) => !!v.recipe);
+            const hasUnconfigured = product.variants.some((v) => !v.recipe);
 
-    // Filter variants client side based on recipe status
-    const filteredVariants = React.useMemo(() => {
-        return allVariants.filter((v: IVariantWithProduct) => {
-            const hasRecipe = !!v.recipe;
-            if (recipeStatus === 'configured') return hasRecipe;
-            if (recipeStatus === 'not_configured') return !hasRecipe;
+            if (recipeStatus === 'configured') return hasConfigured;
+            if (recipeStatus === 'not_configured') return hasUnconfigured;
             return true;
         });
-    }, [allVariants, recipeStatus]);
+    }, [productsData, recipeStatus]);
 
-    const handleOpenRecipe = (variant: IVariantWithProduct) => {
+    const handleOpenRecipe = (variant: IProductVariant, productName: string) => {
         setSelectedVariant(variant);
-        setSelectedProductName(variant.product.name);
+        setSelectedProductName(productName);
         setRecipeOpen(true);
     };
 
@@ -120,108 +108,102 @@ export default function RecipesPage() {
     const hasActiveFilters = !!search || !!productCategoryId || !!productTypeId || recipeStatus !== 'all';
 
     // Table Columns definition
-    const columns = React.useMemo<ColumnDef<IVariantWithProduct>[]>(
+    const columns = React.useMemo<ColumnDef<IProduct>[]>(
         () => [
             {
                 id: 'product',
-                header: 'Product Variant',
+                header: 'Product',
                 cell: ({ row }) => {
-                    const v = row.original;
-                    const productName = v.product.name;
-                    const attrString = v.attributes.map((a) => a.attributeValue.value).join(', ');
+                    const product = row.original;
                     return (
                         <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-lg overflow-hidden border border-border bg-muted/50 shrink-0 flex items-center justify-center">
-                                {v.product.photo ? (
+                            <div className="size-12 rounded-lg overflow-hidden border border-border bg-muted/50 shrink-0 flex items-center justify-center">
+                                {product.photo ? (
                                     <img
-                                        src={v.product.photo.startsWith('http') ? v.product.photo : getFileUrl(v.product.photo)}
-                                        alt={productName}
+                                        src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
+                                        alt={product.name}
                                         className="size-full object-cover"
                                     />
                                 ) : (
-                                    <Package className="size-5 text-muted-foreground stroke-[1.5]" />
+                                    <Package className="size-6 text-muted-foreground stroke-[1.5]" />
                                 )}
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="font-semibold text-foreground/90 leading-tight truncate">{productName}</span>
-                                <span className="text-xs text-muted-foreground font-medium mt-0.5">{attrString || 'Standard / No Modifiers'}</span>
+                                <span className="font-semibold text-foreground/90 leading-tight truncate">{product.name}</span>
+                                <span className="text-xs text-muted-foreground font-medium mt-1 truncate max-w-[250px]">
+                                    {product.description || 'No description'}
+                                </span>
                             </div>
                         </div>
                     );
                 }
             },
             {
-                accessorKey: 'sku',
-                header: 'SKU',
-                cell: ({ row }) => <span className="font-mono text-xs font-semibold uppercase text-muted-foreground">{row.original.sku || '—'}</span>
-            },
-            {
-                accessorKey: 'price',
-                header: 'Price',
-                cell: ({ row }) => <span className="font-semibold text-foreground/85">₱{row.original.price.toFixed(2)}</span>
-            },
-            {
                 id: 'category',
                 header: 'Category / Type',
-                cell: ({ row }) => (
-                    <div className="flex flex-col gap-1 items-start">
-                        <Badge variant="outline" className="text-xs font-semibold bg-background py-0.5 px-1.5 leading-none shrink-0 border-border/80">
-                            {row.original.product.category?.name || 'Unassigned'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground/80 font-semibold pl-1.5">
-                            Type: {row.original.product.type?.name || 'Unassigned'}
-                        </span>
-                    </div>
-                )
-            },
-            {
-                id: 'recipeStatus',
-                header: 'Recipe Status',
                 cell: ({ row }) => {
-                    const v = row.original;
-                    const hasRecipe = !!v.recipe;
+                    const product = row.original;
                     return (
-                        <Badge
-                            className={`text-xs font-semibold px-2 py-0.5 flex items-center gap-1.5 w-fit ${
-                                hasRecipe
-                                    ? 'bg-emerald-100/90 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
-                                    : 'bg-amber-100/90 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
-                            }`}
-                        >
-                            <ChefHat className="size-3.5" />
-                            {hasRecipe ? 'Configured' : 'Not Configured'}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                            <Badge
+                                variant="outline"
+                                className="text-xs font-semibold bg-background py-0.5 px-1.5 leading-none shrink-0 border-border/80"
+                            >
+                                {product.category?.name || 'Unassigned'}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground/80 font-semibold pl-1.5">Type: {product.type?.name || 'Unassigned'}</span>
+                        </div>
                     );
                 }
             },
             {
-                id: 'actions',
-                header: 'Actions',
+                id: 'variants',
+                header: 'Variants & Recipe Specifications',
                 cell: ({ row }) => {
-                    const v = row.original;
-                    const hasRecipe = !!v.recipe;
+                    const product = row.original;
                     return (
-                        <div className="flex items-center gap-1.5">
-                            <RequirePermission module="Products Management" action="read">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 text-xs font-semibold gap-1 px-2.5 border-border/70 hover:bg-muted"
-                                    onClick={() => handleOpenRecipe(v)}
-                                >
-                                    {hasRecipe ? (
-                                        <>
-                                            <Edit className="size-3.5 text-primary" />
-                                            Edit Recipe
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="size-3.5 text-primary" />
-                                            Configure
-                                        </>
-                                    )}
-                                </Button>
-                            </RequirePermission>
+                        <div className="flex flex-col gap-2 min-w-[320px]">
+                            {product.variants.map((v) => {
+                                const attrString = v.attributes.map((a) => a.attributeValue.value).join(', ');
+                                const hasRecipe = !!v.recipe;
+                                return (
+                                    <div
+                                        key={v.id}
+                                        className="flex items-center justify-between gap-4 p-2 rounded-lg border border-border/40 bg-background/50 hover:bg-background/80 transition-colors"
+                                    >
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-xs font-semibold text-foreground/90 truncate">
+                                                {attrString || 'Standard / No Modifiers'}
+                                            </span>
+                                            <span className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">
+                                                SKU: {v.sku || '—'} | ₱{v.price.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <Badge
+                                                className={`text-[10px] font-semibold px-2 py-0.5 flex items-center gap-1 w-fit ${
+                                                    hasRecipe
+                                                        ? 'bg-emerald-100/95 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
+                                                        : 'bg-amber-100/95 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
+                                                }`}
+                                            >
+                                                <ChefHat className="size-3" />
+                                                {hasRecipe ? 'Configured' : 'Not Configured'}
+                                            </Badge>
+                                            <RequirePermission module="Products Management" action="read">
+                                                <Button
+                                                    variant="outline"
+                                                    size="xs"
+                                                    className="h-7 text-xs font-semibold gap-1 px-2 border-border/70 hover:bg-muted"
+                                                    onClick={() => handleOpenRecipe(v, product.name)}
+                                                >
+                                                    {hasRecipe ? 'Edit Recipe' : 'Configure'}
+                                                </Button>
+                                            </RequirePermission>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     );
                 }
@@ -251,7 +233,7 @@ export default function RecipesPage() {
             {/* List Datatable */}
             <DataTable
                 columns={columns as ColumnDef<any, any>[]}
-                data={filteredVariants}
+                data={filteredProducts}
                 pageCount={productsData?.meta.pageCount || 1}
                 pageIndex={page - 1}
                 pageSize={pageSize}

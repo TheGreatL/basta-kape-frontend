@@ -50,7 +50,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
                 {/* Footer / Price info */}
                 <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/30">
-                    <div className="text-sm font-extrabold text-foreground">{hasPriceRange ? `₱${minPrice} - ₱${maxPrice}` : `₱${minPrice}`}</div>
+                    <div className="text-sm font-bold text-foreground">{hasPriceRange ? `₱${minPrice} - ₱${maxPrice}` : `₱${minPrice}`}</div>
                     <span className="text-xs font-bold text-primary group-hover:underline">Customize →</span>
                 </div>
             </div>

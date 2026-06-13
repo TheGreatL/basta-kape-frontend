@@ -1,13 +1,14 @@
 import * as React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Trash2, Coins, Wallet, Landmark, Upload, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { createOrder } from '#/api/orders.api.ts';
+import { createOrder, createOrderPayment } from '#/api/orders.api.ts';
 import { getCustomers } from '#/api/customer.api.ts';
 import { getProductsList } from '#/api/products.api.ts';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
 import { getProductionForecast } from '#/api/inventory.api.ts';
+import { uploadImageFile } from '#/api/transactions.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { TOrderType } from '../order.types';
@@ -19,6 +20,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
+import { Spinner } from '#/components/ui/spinner.tsx';
 import type { IModifierGroup } from '#/feature/modifier/modifier.types';
 import type { IForecast } from '#/feature/inventory/inventory.types';
 
@@ -37,6 +39,17 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
     const [selectedCustomer, setSelectedCustomer] = React.useState<ICustomerResponse | null>(null);
     const [orderTypeVal, setOrderTypeVal] = React.useState<TOrderType>('DINE_IN');
     const [notes, setNotes] = React.useState('');
+
+    // Payment states
+    const [paymentMethod, setPaymentMethod] = React.useState<'UNPAID' | 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD'>('UNPAID');
+    const [amountTendered, setAmountTendered] = React.useState<number>(0);
+    const [referenceNumber, setReferenceNumber] = React.useState<string>('');
+    const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
+    const [receiptPreview, setReceiptPreview] = React.useState<string>('');
+    const [isUploading, setIsUploading] = React.useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     // Items list being added
     const [orderItems, setOrderItems] = React.useState<
@@ -76,8 +89,68 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
             setSelectedQuantity(1);
             setItemNotes('');
             setSelectedModifierIds([]);
+            setPaymentMethod('UNPAID');
+            setAmountTendered(0);
+            setReferenceNumber('');
+            setReceiptFile(null);
+            if (receiptPreview) {
+                URL.revokeObjectURL(receiptPreview);
+                setReceiptPreview('');
+            }
+            setIsSubmitting(false);
+            setIsUploading(false);
         }
-    }, [open]);
+    }, [open, receiptPreview]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Invalid file type', {
+                description: 'Please upload an image file (PNG, JPG, or JPEG).'
+            });
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File too large', {
+                description: 'Receipt photo must be smaller than 5MB.'
+            });
+            return;
+        }
+
+        setReceiptFile(file);
+        const previewUrl = URL.createObjectURL(file);
+        setReceiptPreview(previewUrl);
+    };
+
+    const handleRemoveReceipt = () => {
+        setReceiptFile(null);
+        if (receiptPreview) {
+            URL.revokeObjectURL(receiptPreview);
+            setReceiptPreview('');
+        }
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const netTotal = React.useMemo(() => {
+        return orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    }, [orderItems]);
+
+    React.useEffect(() => {
+        if (paymentMethod === 'CASH') {
+            setAmountTendered(netTotal);
+        }
+    }, [paymentMethod, netTotal]);
+
+    const changeDue = React.useMemo(() => {
+        if (paymentMethod !== 'CASH') return 0;
+        const diff = amountTendered - netTotal;
+        return diff > 0 ? diff : 0;
+    }, [paymentMethod, amountTendered, netTotal]);
 
     // Query: Fetch Modifier Groups for the selected product
     const { data: modifierGroupsResponse } = useQuery({
@@ -93,18 +166,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         enabled: open
     });
 
-    // Mutation: Create Order
-    const createOrderMutation = useMutation({
-        mutationFn: createOrder,
-        onSuccess: (order) => {
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
-            toast.success(`Order Queue #${order.queueNumber} placed successfully!`);
-            onOpenChange(false);
-        },
-        onError: (err) => {
-            toast.error('Failed to create order', { description: getErrorMessage(err) });
-        }
-    });
+    // Order creation will be managed directly in the async form submit handler.
 
     const handleToggleModifierOption = (groupId: string, optionId: string, maxSelect: number, isRequired: boolean, groupName: string) => {
         const group = modifierGroupsResponse?.data.find((g: IModifierGroup) => g.id === groupId);
@@ -235,31 +297,90 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         setOrderItems((prev) => prev.filter((_, idx) => idx !== index));
     };
 
-    const handleCreateOrderSubmit = (e: React.FormEvent) => {
+    const handleCreateOrderSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (orderItems.length === 0) {
             toast.error('Please add at least one item to the order');
             return;
         }
 
-        const customerNameVal =
-            customerType === 'MEMBER' && selectedCustomer
-                ? `${selectedCustomer.user.firstName || ''} ${selectedCustomer.user.lastName || ''}`.trim()
-                : guestName;
+        if (paymentMethod === 'CASH') {
+            if (amountTendered < netTotal) {
+                toast.error('Insufficient Amount', {
+                    description: `Amount tendered must be at least the net total of ₱${netTotal.toFixed(2)}`
+                });
+                return;
+            }
+        }
 
-        createOrderMutation.mutate({
-            orderType: orderTypeVal,
-            orderSource: 'POS',
-            notes: notes || undefined,
-            customerId: customerType === 'MEMBER' ? selectedCustomerId : null,
-            customerName: customerNameVal || 'Walk-in',
-            items: orderItems.map((item) => ({
-                productVariantId: item.productVariantId,
-                quantity: item.quantity,
-                notes: item.notes,
-                modifierOptionIds: item.modifierOptionIds
-            }))
-        });
+        if (paymentMethod !== 'UNPAID') {
+            if (paymentMethod !== 'CASH') {
+                if (!referenceNumber.trim() || referenceNumber.trim().length < 5) {
+                    toast.error('Reference Number Required', {
+                        description: 'Digital payments require a reference number of at least 5 characters.'
+                    });
+                    return;
+                }
+            }
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            // 1. Upload receipt if file is selected
+            let uploadedUrl = '';
+            if (receiptFile) {
+                setIsUploading(true);
+                const uploadRes = await uploadImageFile(receiptFile);
+                uploadedUrl = uploadRes.url;
+                setIsUploading(false);
+            }
+
+            // 2. Create POS order
+            const customerNameVal =
+                customerType === 'MEMBER' && selectedCustomer
+                    ? `${selectedCustomer.user.firstName || ''} ${selectedCustomer.user.lastName || ''}`.trim()
+                    : guestName;
+
+            const order = await createOrder({
+                orderType: orderTypeVal,
+                orderSource: 'POS',
+                notes: notes || undefined,
+                customerId: customerType === 'MEMBER' ? selectedCustomerId : null,
+                customerName: customerNameVal || 'Walk-in',
+                items: orderItems.map((item) => ({
+                    productVariantId: item.productVariantId,
+                    quantity: item.quantity,
+                    notes: item.notes,
+                    modifierOptionIds: item.modifierOptionIds
+                }))
+            });
+
+            // 3. Create payment transaction if not unpaid
+            if (paymentMethod !== 'UNPAID') {
+                const paymentPayload = {
+                    paymentMethod,
+                    amountTendered: paymentMethod === 'CASH' ? amountTendered : undefined,
+                    gcashReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : undefined,
+                    paymentProofPhoto: uploadedUrl || undefined
+                };
+
+                await createOrderPayment(order.id, paymentPayload);
+                toast.success(`Order #${order.queueNumber} placed and paid successfully!`);
+            } else {
+                toast.success(`Order Queue #${order.queueNumber} placed successfully!`);
+            }
+
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            onOpenChange(false);
+        } catch (err) {
+            toast.error('Failed to create order', {
+                description: getErrorMessage(err)
+            });
+        } finally {
+            setIsSubmitting(false);
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -643,6 +764,118 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                             </div>
                         </div>
 
+                        {/* POS Payment Method Selector Card */}
+                        <div className="border border-border/50 p-4 rounded-xl bg-card space-y-3 shrink-0">
+                            <h3 className="font-bold text-xs uppercase text-muted-foreground pb-1 border-b border-border/30">
+                                Payment Method Details
+                            </h3>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { id: 'UNPAID', label: 'Pay Later', icon: Clock },
+                                    { id: 'CASH', label: 'Cash Payment', icon: Coins },
+                                    { id: 'GCASH', label: 'GCash', icon: Wallet },
+                                    { id: 'PAYMAYA', label: 'Maya Wallet', icon: Landmark }
+                                ].map((method) => {
+                                    const Icon = method.icon;
+                                    const isSelected = paymentMethod === method.id;
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={method.id}
+                                            onClick={() => {
+                                                setPaymentMethod(method.id as any);
+                                                setReferenceNumber('');
+                                                handleRemoveReceipt();
+                                            }}
+                                            className={`flex items-center gap-1.5 p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                                                isSelected
+                                                    ? 'bg-primary/10 border-primary text-primary font-bold shadow-3xs'
+                                                    : 'bg-background hover:bg-muted/10 border-border/60 text-muted-foreground hover:text-foreground'
+                                            }`}
+                                        >
+                                            <Icon className="size-3.5 shrink-0" />
+                                            <span className="text-3xs truncate">{method.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* CASH FLOW Details */}
+                            {paymentMethod === 'CASH' && (
+                                <div className="space-y-2.5 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                    <div className="space-y-1">
+                                        <label className="font-bold text-foreground/80 block text-3xs">Amount Tendered (₱)</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            placeholder={netTotal.toFixed(2)}
+                                            value={amountTendered || ''}
+                                            onChange={(e) => setAmountTendered(e.target.value === '' ? 0 : Number(e.target.value))}
+                                            className="h-8 text-2xs bg-background/50 rounded-lg font-bold"
+                                        />
+                                    </div>
+                                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-2 rounded-lg flex justify-between items-center text-3xs font-semibold">
+                                        <span className="text-emerald-700">Change Due:</span>
+                                        <span className="text-emerald-600 font-bold text-xs">₱{changeDue.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* DIGITAL WALLETS Details */}
+                            {(paymentMethod === 'GCASH' || paymentMethod === 'PAYMAYA') && (
+                                <div className="space-y-2.5 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                    <div className="space-y-1">
+                                        <label className="font-bold text-foreground/80 block text-3xs">
+                                            Reference / Txn ID <span className="text-rose-500">*</span>
+                                        </label>
+                                        <Input
+                                            placeholder={`Enter ${paymentMethod === 'GCASH' ? 'GCash' : 'Maya'} reference`}
+                                            value={referenceNumber}
+                                            onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, ''))}
+                                            className="h-8 text-2xs bg-background/50 rounded-lg font-mono"
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Optional File zone */}
+                                    {receiptPreview ? (
+                                        <div className="relative border border-border/40 rounded-lg overflow-hidden bg-background/50 p-1.5 flex items-center justify-between gap-2 text-3xs">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <img
+                                                    src={receiptPreview}
+                                                    alt="Receipt Preview"
+                                                    className="size-8 rounded object-cover shrink-0 cursor-pointer"
+                                                    onClick={() => window.open(receiptPreview, '_blank')}
+                                                />
+                                                <span className="truncate font-semibold text-muted-foreground">{receiptFile?.name}</span>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handleRemoveReceipt}
+                                                className="size-6 text-muted-foreground hover:text-rose-500"
+                                            >
+                                                <Trash2 className="size-3" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="w-full py-2 border border-dashed border-border hover:border-primary rounded-lg flex flex-col items-center justify-center gap-0.5 text-3xs text-muted-foreground bg-background/30 hover:bg-muted/10 transition-all cursor-pointer"
+                                        >
+                                            <Upload className="size-3.5 text-muted-foreground" />
+                                            <span className="font-bold">Upload slip screenshot (Optional)</span>
+                                        </button>
+                                    )}
+
+                                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                                </div>
+                            )}
+                        </div>
+
                         {/* Summary computations & submit */}
                         <div className="border border-border/50 p-4 rounded-xl bg-muted/10 space-y-3 font-medium shrink-0">
                             <div className="space-y-1.5 text-xs">
@@ -658,13 +891,11 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                             <div className="space-y-1.5 pt-1.5 border-t border-border/30">
                                 <div className="flex justify-between text-muted-foreground text-xs">
                                     <span>Items Subtotal:</span>
-                                    <span>₱{orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}</span>
+                                    <span>₱{netTotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-sm text-foreground pt-1.5 border-t border-dashed border-border/40">
                                     <span>Net Due Total:</span>
-                                    <span className="text-primary font-bold">
-                                        ₱{orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
-                                    </span>
+                                    <span className="text-primary font-bold">₱{netTotal.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -672,16 +903,34 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                 </div>
 
                 <DialogFooter className="px-6 py-4 border-t bg-muted/30">
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9.5 text-xs rounded-lg font-semibold">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={isSubmitting || isUploading}
+                        className="h-9.5 text-xs rounded-lg font-semibold"
+                    >
                         Cancel
                     </Button>
                     <Button
                         type="button"
                         onClick={handleCreateOrderSubmit}
-                        disabled={orderItems.length === 0 || createOrderMutation.isPending}
+                        disabled={orderItems.length === 0 || isSubmitting || isUploading}
                         className="h-9.5 text-xs rounded-lg font-bold bg-primary text-primary-foreground shadow-sm px-6"
                     >
-                        {createOrderMutation.isPending ? 'Placing Order...' : 'Place POS Order'}
+                        {isUploading ? (
+                            <>
+                                <Spinner className="size-3.5 animate-spin mr-1.5" />
+                                Uploading Receipt...
+                            </>
+                        ) : isSubmitting ? (
+                            <>
+                                <Spinner className="size-3.5 animate-spin mr-1.5" />
+                                Processing Order...
+                            </>
+                        ) : (
+                            'Place POS Order'
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>

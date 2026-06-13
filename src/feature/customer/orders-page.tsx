@@ -101,7 +101,7 @@ export default function OrdersPage() {
             {/* Page Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                         <ClipboardCheck className="size-8 text-primary" />
                         My Orders
                     </h1>

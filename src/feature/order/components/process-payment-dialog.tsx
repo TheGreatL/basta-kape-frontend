@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,8 +8,8 @@ import { Coins, CreditCard, Lock, ArrowRight, ShieldAlert, CheckCircle2, Landmar
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import { createOrderPayment } from '#/api/orders.api.ts';
-import { uploadImageFile } from '#/api/transactions.api.ts';
+import { createOrderPayment, getOrderPayments } from '#/api/orders.api.ts';
+import { uploadImageFile, updateTransactionReceipt } from '#/api/transactions.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder } from '../order.types';
 
@@ -62,8 +62,46 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
     const queryClient = useQueryClient();
     const { activeShift, openShift } = useRegisterShiftStore();
 
+    const [overridePending, setOverridePending] = React.useState(false);
     const [isUploading, setIsUploading] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    // Query: Fetch payments for this order
+    const { data: payments, isLoading: isPaymentsLoading } = useQuery({
+        queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, order?.id],
+        queryFn: () => getOrderPayments(order!.id),
+        enabled: open && !!order?.id
+    });
+
+    const pendingPayment = React.useMemo(() => {
+        return payments?.find(
+            (p: any) =>
+                p.paymentStatus === 'PENDING' && (p.paymentMethod === 'GCASH' || p.paymentMethod === 'PAYMAYA' || p.paymentMethod === 'CREDIT_CARD')
+        );
+    }, [payments]);
+
+    // Reset override when dialog closes
+    React.useEffect(() => {
+        if (!open) {
+            setOverridePending(false);
+        }
+    }, [open]);
+
+    // Mutation: Approve Pending Digital Payment
+    const approvePaymentMutation = useMutation({
+        mutationFn: (paymentId: string) => updateTransactionReceipt(paymentId, {}),
+        onSuccess: () => {
+            toast.success('Digital payment approved successfully');
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, order?.id] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, order?.id] });
+            onOpenChange(false);
+            if (onSuccess) onSuccess();
+        },
+        onError: (err) => {
+            toast.error('Failed to approve payment', { description: getErrorMessage(err) });
+        }
+    });
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -293,219 +331,305 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                         </DialogHeader>
 
                         <div className="px-6 py-5">
-                            {/* Order Total Highlight */}
-                            <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center mb-5 shrink-0">
-                                <div>
-                                    <span className="text-xs text-muted-foreground font-semibold block uppercase">Amount Due</span>
-                                    <span className="text-xl font-bold text-foreground">
-                                        ₱{netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </span>
+                            {isPaymentsLoading ? (
+                                <div className="py-12 flex flex-col items-center justify-center gap-2">
+                                    <Spinner className="size-5 text-primary animate-spin" />
+                                    <span className="text-xs text-muted-foreground">Checking existing payments...</span>
                                 </div>
-                                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-semibold px-2 py-0.5 uppercase">
-                                    Unpaid
-                                </Badge>
-                            </div>
-
-                            <Form {...paymentForm}>
-                                <form onSubmit={paymentForm.handleSubmit(handlePaymentSubmit)} className="space-y-4">
-                                    {/* Payment Method Selector */}
-                                    <FormField
-                                        control={paymentForm.control}
-                                        name="paymentMethod"
-                                        render={({ field }) => (
-                                            <FormItem className="space-y-2">
-                                                <FormLabel className="font-semibold text-foreground/80 text-xs">Payment Method</FormLabel>
-                                                <FormControl>
-                                                    <div className="grid grid-cols-4 gap-2">
-                                                        {[
-                                                            { id: 'CASH', label: 'Cash', icon: Coins },
-                                                            { id: 'GCASH', label: 'GCash', icon: Wallet },
-                                                            { id: 'PAYMAYA', label: 'PayMaya', icon: Landmark },
-                                                            { id: 'CREDIT_CARD', label: 'Card', icon: CreditCard }
-                                                        ].map((method) => {
-                                                            const Icon = method.icon;
-                                                            const isSelected = field.value === method.id;
-                                                            return (
-                                                                <button
-                                                                    key={method.id}
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        field.onChange(method.id);
-                                                                        if (method.id === 'CASH') {
-                                                                            paymentForm.setValue('amountTendered' as any, netTotal);
-                                                                        } else {
-                                                                            paymentForm.setValue('amountTendered' as any, undefined);
-                                                                        }
-                                                                    }}
-                                                                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                                                                        isSelected
-                                                                            ? 'bg-primary/10 border-primary text-primary font-bold shadow-3xs'
-                                                                            : 'bg-background hover:bg-muted/10 border-border/60 text-muted-foreground hover:text-foreground'
-                                                                    }`}
-                                                                >
-                                                                    <Icon className="size-4.5 mb-1" />
-                                                                    <span className="text-xs">{method.label}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    {/* Cash Panel */}
-                                    {paymentMethodValue === 'CASH' && (
-                                        <div className="space-y-4 pt-2 border-t border-dashed border-border/40">
-                                            <FormField
-                                                control={paymentForm.control}
-                                                name="amountTendered"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5 text-xs">
-                                                            <Coins className="size-3.5 text-muted-foreground" />
-                                                            Amount Tendered (₱)
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                type="number"
-                                                                step="0.01"
-                                                                placeholder={netTotal.toFixed(2)}
-                                                                value={field.value}
-                                                                onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                                className="h-9 bg-background/50 text-xs font-bold text-foreground"
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            {/* Change Due Display */}
-                                            <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl flex justify-between items-center text-xs">
-                                                <span className="text-emerald-700 font-semibold">Change Due:</span>
-                                                <span className="text-emerald-600 font-bold text-sm">
-                                                    ₱{changeDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ) : pendingPayment && !overridePending ? (
+                                <div className="space-y-4">
+                                    <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-4 space-y-3 text-xs">
+                                        <h4 className="font-bold text-amber-800 uppercase tracking-wider text-[10px]">
+                                            Pending Digital Payment Verification
+                                        </h4>
+                                        <div className="space-y-2 text-amber-900 font-medium">
+                                            <div className="flex justify-between">
+                                                <span>Payment Method:</span>
+                                                <span className="font-bold capitalize">
+                                                    {pendingPayment.paymentMethod === 'PAYMAYA' ? 'Maya' : pendingPayment.paymentMethod.toLowerCase()}
                                                 </span>
                                             </div>
+                                            <div className="flex justify-between">
+                                                <span>Amount Settled:</span>
+                                                <span className="font-bold">₱{pendingPayment.amount.toFixed(2)}</span>
+                                            </div>
+                                            {pendingPayment.gcashReferenceNumber && (
+                                                <div className="flex justify-between">
+                                                    <span>Reference ID:</span>
+                                                    <span className="font-mono bg-amber-500/10 px-1.5 py-0.5 rounded text-amber-950 font-bold">
+                                                        {pendingPayment.gcashReferenceNumber}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {pendingPayment.paymentProofPhoto && (
+                                                <div className="space-y-1.5 pt-1">
+                                                    <span className="text-[10px] text-amber-700 block uppercase font-bold">Screenshot Receipt</span>
+                                                    <div className="border border-amber-500/20 rounded-lg overflow-hidden bg-background max-h-[160px] flex items-center justify-center relative">
+                                                        <img
+                                                            src={getFileUrl(pendingPayment.paymentProofPhoto)}
+                                                            alt="Proof of Payment"
+                                                            className="w-full max-h-[150px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                                                            onClick={() => window.open(getFileUrl(pendingPayment.paymentProofPhoto), '_blank')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
 
-                                    {/* Digital Panel */}
-                                    {paymentMethodValue !== 'CASH' && (
-                                        <div className="space-y-4 pt-2 border-t border-dashed border-border/40">
+                                    <div className="space-y-2 pt-2">
+                                        <Button
+                                            type="button"
+                                            disabled={approvePaymentMutation.isPending}
+                                            onClick={() => approvePaymentMutation.mutate(pendingPayment.id)}
+                                            className="w-full h-9.5 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                        >
+                                            {approvePaymentMutation.isPending ? (
+                                                <>
+                                                    <Spinner className="size-3.5 animate-spin mr-1.5" />
+                                                    Approving Payment...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle2 className="size-4 mr-1.5" />
+                                                    Approve Digital Payment
+                                                </>
+                                            )}
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={() => setOverridePending(true)}
+                                            className="w-full h-9 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                                        >
+                                            Decline / Pay with Cash or Card
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Order Total Highlight */}
+                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center mb-5 shrink-0">
+                                        <div>
+                                            <span className="text-xs text-muted-foreground font-semibold block uppercase">Amount Due</span>
+                                            <span className="text-xl font-bold text-foreground">
+                                                ₱{netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                        <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-semibold px-2 py-0.5 uppercase">
+                                            Unpaid
+                                        </Badge>
+                                    </div>
+
+                                    <Form {...paymentForm}>
+                                        <form onSubmit={paymentForm.handleSubmit(handlePaymentSubmit)} className="space-y-4">
+                                            {/* Payment Method Selector */}
                                             <FormField
                                                 control={paymentForm.control}
-                                                name="gcashReferenceNumber"
+                                                name="paymentMethod"
                                                 render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                            Digital Reference Number
-                                                        </FormLabel>
+                                                    <FormItem className="space-y-2">
+                                                        <FormLabel className="font-semibold text-foreground/80 text-xs">Payment Method</FormLabel>
                                                         <FormControl>
-                                                            <Input
-                                                                type="text"
-                                                                placeholder="e.g. 9012345678901"
-                                                                value={field.value || ''}
-                                                                onChange={field.onChange}
-                                                                className="h-9 bg-background/50 text-xs font-mono"
-                                                            />
-                                                        </FormControl>
-                                                        <FormDescription className="text-xs text-muted-foreground">
-                                                            Input reference ID (minimum 5 characters) printed on receipt.
-                                                        </FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={paymentForm.control}
-                                                name="paymentProofPhoto"
-                                                render={({ field }) => (
-                                                    <FormItem className="space-y-1.5">
-                                                        <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                            Proof of Payment Receipt
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <div className="space-y-2">
-                                                                <input
-                                                                    type="file"
-                                                                    ref={fileInputRef}
-                                                                    onChange={handleFileChange}
-                                                                    accept="image/*"
-                                                                    className="hidden"
-                                                                />
-                                                                {isUploading ? (
-                                                                    <div className="flex flex-col items-center justify-center border border-border/60 rounded-xl min-h-[140px] bg-muted/10 gap-2">
-                                                                        <Spinner className="h-6 w-6 text-primary animate-spin" />
-                                                                        <span className="text-xs text-muted-foreground font-medium">
-                                                                            Uploading receipt...
-                                                                        </span>
-                                                                    </div>
-                                                                ) : field.value ? (
-                                                                    <div className="relative border border-border/40 rounded-xl overflow-hidden bg-muted/5 min-h-[140px] flex items-center justify-center group">
-                                                                        <img
-                                                                            src={getFileUrl(field.value)}
-                                                                            alt="Payment Proof"
-                                                                            className="w-full max-h-[220px] object-contain cursor-pointer"
-                                                                            onClick={() => window.open(getFileUrl(field.value), '_blank')}
-                                                                        />
-                                                                        <Button
+                                                            <div className="grid grid-cols-4 gap-2">
+                                                                {[
+                                                                    { id: 'CASH', label: 'Cash', icon: Coins },
+                                                                    { id: 'GCASH', label: 'GCash', icon: Wallet },
+                                                                    { id: 'PAYMAYA', label: 'PayMaya', icon: Landmark },
+                                                                    { id: 'CREDIT_CARD', label: 'Card', icon: CreditCard }
+                                                                ].map((method) => {
+                                                                    const Icon = method.icon;
+                                                                    const isSelected = field.value === method.id;
+                                                                    return (
+                                                                        <button
+                                                                            key={method.id}
                                                                             type="button"
-                                                                            variant="destructive"
-                                                                            size="icon"
-                                                                            onClick={handleRemovePhoto}
-                                                                            className="absolute top-2 right-2 size-7 rounded-lg shadow-md opacity-90 hover:opacity-100 transition-opacity"
+                                                                            onClick={() => {
+                                                                                field.onChange(method.id);
+                                                                                if (method.id === 'CASH') {
+                                                                                    paymentForm.setValue('amountTendered' as any, netTotal);
+                                                                                } else {
+                                                                                    paymentForm.setValue('amountTendered' as any, undefined);
+                                                                                }
+                                                                            }}
+                                                                            className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                                                                                isSelected
+                                                                                    ? 'bg-primary/10 border-primary text-primary font-bold shadow-3xs'
+                                                                                    : 'bg-background hover:bg-muted/10 border-border/60 text-muted-foreground hover:text-foreground'
+                                                                            }`}
                                                                         >
-                                                                            <Trash2 className="size-3.5" />
-                                                                        </Button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div
-                                                                        onClick={handleUploadClick}
-                                                                        className="border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-muted/15 rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-center"
-                                                                    >
-                                                                        <div className="size-8.5 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground mb-1">
-                                                                            <Upload className="size-4.5" />
-                                                                        </div>
-                                                                        <span className="text-xs font-bold text-foreground">
-                                                                            Upload payment screenshot
-                                                                        </span>
-                                                                        <span className="text-xs text-muted-foreground">
-                                                                            JPEG, PNG, WEBP (max. 5MB)
-                                                                        </span>
-                                                                    </div>
-                                                                )}
+                                                                            <Icon className="size-4.5 mb-1" />
+                                                                            <span className="text-xs">{method.label}</span>
+                                                                        </button>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
 
-                                    <Button
-                                        type="submit"
-                                        disabled={processPaymentMutation.isPending}
-                                        className="w-full h-9.5 gap-1.5 text-xs font-bold mt-4"
-                                    >
-                                        {processPaymentMutation.isPending ? (
-                                            <>
-                                                <Spinner className="h-4 w-4 animate-spin" />
-                                                Recording Payment...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircle2 className="size-4" />
-                                                Confirm Payment of ₱{netTotal.toFixed(2)}
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </Form>
+                                            {/* Cash Panel */}
+                                            {paymentMethodValue === 'CASH' && (
+                                                <div className="space-y-4 pt-2 border-t border-dashed border-border/40">
+                                                    <FormField
+                                                        control={paymentForm.control}
+                                                        name="amountTendered"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5 text-xs">
+                                                                    <Coins className="size-3.5 text-muted-foreground" />
+                                                                    Amount Tendered (₱)
+                                                                </FormLabel>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        placeholder={netTotal.toFixed(2)}
+                                                                        value={field.value}
+                                                                        onChange={(e) =>
+                                                                            field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+                                                                        }
+                                                                        className="h-9 bg-background/50 text-xs font-bold text-foreground"
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    {/* Change Due Display */}
+                                                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl flex justify-between items-center text-xs">
+                                                        <span className="text-emerald-700 font-semibold">Change Due:</span>
+                                                        <span className="text-emerald-600 font-bold text-sm">
+                                                            ₱
+                                                            {changeDue.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Digital Panel */}
+                                            {paymentMethodValue !== 'CASH' && (
+                                                <div className="space-y-4 pt-2 border-t border-dashed border-border/40">
+                                                    <FormField
+                                                        control={paymentForm.control}
+                                                        name="gcashReferenceNumber"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                                    Digital Reference Number
+                                                                </FormLabel>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        type="text"
+                                                                        placeholder="e.g. 9012345678901"
+                                                                        value={field.value || ''}
+                                                                        onChange={field.onChange}
+                                                                        className="h-9 bg-background/50 text-xs font-mono"
+                                                                    />
+                                                                </FormControl>
+                                                                <FormDescription className="text-xs text-muted-foreground">
+                                                                    Input reference ID (minimum 5 characters) printed on receipt.
+                                                                </FormDescription>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    <FormField
+                                                        control={paymentForm.control}
+                                                        name="paymentProofPhoto"
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-1.5">
+                                                                <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                                    Proof of Payment Receipt
+                                                                </FormLabel>
+                                                                <FormControl>
+                                                                    <div className="space-y-2">
+                                                                        <input
+                                                                            type="file"
+                                                                            ref={fileInputRef}
+                                                                            onChange={handleFileChange}
+                                                                            accept="image/*"
+                                                                            className="hidden"
+                                                                        />
+                                                                        {isUploading ? (
+                                                                            <div className="flex flex-col items-center justify-center border border-border/60 rounded-xl min-h-[140px] bg-muted/10 gap-2">
+                                                                                <Spinner className="h-6 w-6 text-primary animate-spin" />
+                                                                                <span className="text-xs text-muted-foreground font-medium">
+                                                                                    Uploading receipt...
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : field.value ? (
+                                                                            <div className="relative border border-border/40 rounded-xl overflow-hidden bg-muted/5 min-h-[140px] flex items-center justify-center group">
+                                                                                <img
+                                                                                    src={getFileUrl(field.value)}
+                                                                                    alt="Payment Proof"
+                                                                                    className="w-full max-h-[220px] object-contain cursor-pointer"
+                                                                                    onClick={() => window.open(getFileUrl(field.value), '_blank')}
+                                                                                />
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    variant="destructive"
+                                                                                    size="icon"
+                                                                                    onClick={handleRemovePhoto}
+                                                                                    className="absolute top-2 right-2 size-7 rounded-lg shadow-md opacity-90 hover:opacity-100 transition-opacity"
+                                                                                >
+                                                                                    <Trash2 className="size-3.5" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div
+                                                                                onClick={handleUploadClick}
+                                                                                className="border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-muted/15 rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-center"
+                                                                            >
+                                                                                <div className="size-8.5 rounded-lg bg-muted/40 flex items-center justify-center text-muted-foreground mb-1">
+                                                                                    <Upload className="size-4.5" />
+                                                                                </div>
+                                                                                <span className="text-xs font-bold text-foreground">
+                                                                                    Upload payment screenshot
+                                                                                </span>
+                                                                                <span className="text-xs text-muted-foreground">
+                                                                                    JPEG, PNG, WEBP (max. 5MB)
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <Button
+                                                type="submit"
+                                                disabled={processPaymentMutation.isPending}
+                                                className="w-full h-9.5 gap-1.5 text-xs font-bold mt-4"
+                                            >
+                                                {processPaymentMutation.isPending ? (
+                                                    <>
+                                                        <Spinner className="h-4 w-4 animate-spin" />
+                                                        Recording Payment...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CheckCircle2 className="size-4" />
+                                                        Confirm Payment of ₱{netTotal.toFixed(2)}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </form>
+                                    </Form>
+                                </>
+                            )}
                         </div>
                     </>
                 )}

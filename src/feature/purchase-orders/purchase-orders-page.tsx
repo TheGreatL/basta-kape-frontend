@@ -392,7 +392,7 @@ export default function PurchaseOrdersPage() {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="max-w-2xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
                     <DialogHeader className="shrink-0">
-                        <DialogTitle className="font-extrabold text-foreground flex items-center gap-2">
+                        <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <ShoppingCart className="size-5 text-primary" />
                             Create Purchase Order
                         </DialogTitle>
@@ -526,7 +526,7 @@ export default function PurchaseOrdersPage() {
 
                         {/* Grand Total */}
                         <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-2xl flex justify-between items-center mt-2 shrink-0">
-                            <span className="text-xs font-extrabold text-primary">Estimated Purchase Order Total</span>
+                            <span className="text-xs font-bold text-primary">Estimated Purchase Order Total</span>
                             <span className="text-lg font-bold text-primary font-mono">
                                 ₱{calculatePOTotal().toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
@@ -561,7 +561,7 @@ export default function PurchaseOrdersPage() {
             <Dialog open={!!selectedPO} onOpenChange={(open) => !open && setSelectedPO(null)}>
                 <DialogContent className="max-w-xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
                     <DialogHeader className="shrink-0">
-                        <DialogTitle className="font-extrabold text-foreground flex items-center gap-2">
+                        <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <FileText className="size-5 text-primary" />
                             Purchase Order Details
                         </DialogTitle>
@@ -650,7 +650,7 @@ export default function PurchaseOrdersPage() {
                                 <div className="border border-border/40 rounded-2xl overflow-hidden">
                                     <table className="w-full text-left border-collapse text-xs">
                                         <thead>
-                                            <tr className="bg-muted/40 border-b border-border/40 font-extrabold text-muted-foreground">
+                                            <tr className="bg-muted/40 border-b border-border/40 font-bold text-muted-foreground">
                                                 <th className="p-3">Ingredient</th>
                                                 <th className="p-3 text-right">Quantity</th>
                                                 <th className="p-3 text-right">Unit Cost</th>

@@ -26,7 +26,7 @@ function AdminProfilePage() {
         <div className="space-y-6 w-full max-w-5xl mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-extrabold text-foreground">My Profile</h1>
+                <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
                 <p className="text-sm text-muted-foreground mt-1">Manage your administrator account details and password security.</p>
             </div>
 

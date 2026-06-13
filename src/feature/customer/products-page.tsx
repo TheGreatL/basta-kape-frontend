@@ -53,7 +53,7 @@ export default function ProductsPage() {
             {/* Page Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground">Our Coffee Menu</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Our Coffee Menu</h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         Explore our curated selection of hot brews, cold refreshers, and artisanal treats.
                     </p>

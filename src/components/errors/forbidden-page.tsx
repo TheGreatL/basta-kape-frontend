@@ -10,7 +10,7 @@ export default function ForbiddenPage() {
                     <ShieldAlert className="h-12 w-12 text-destructive" />
                 </div>
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-extrabold sm:text-5xl text-destructive">403</h1>
+                    <h1 className="text-4xl font-bold sm:text-5xl text-destructive">403</h1>
                     <h2 className="text-2xl font-semibold">Access Denied</h2>
                     <p className="text-muted-foreground">
                         You do not have the required permissions to access this page or resource. Please contact your system administrator if you

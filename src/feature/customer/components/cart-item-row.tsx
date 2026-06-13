@@ -151,7 +151,7 @@ export default function CartItemRow({
                 </div>
 
                 {/* Total item price */}
-                <div className="text-sm sm:text-base font-extrabold text-foreground w-16 text-right">
+                <div className="text-sm sm:text-base font-bold text-foreground w-16 text-right">
                     ₱{((item.unitPrice + modifiersPrice) * item.quantity).toFixed(2)}
                 </div>
 

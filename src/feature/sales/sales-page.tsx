@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, Calendar as CalendarIcon, DollarSign, Percent, ShoppingBag, Coffee, X, RotateCcw } from 'lucide-react';
+import { TrendingUp, Calendar as CalendarIcon, DollarSign, Percent, ShoppingBag, Coffee, X, RotateCcw, Eye, Search } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { format, subDays, parse } from 'date-fns';
 
@@ -13,6 +13,10 @@ import { Button } from '#/components/ui/button.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
+import { Input } from '#/components/ui/input.tsx';
+import OrderDetailsDialog from '#/feature/order/components/order-details-dialog.tsx';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
@@ -22,6 +26,9 @@ export default function SalesPage() {
 
     const [startDate, setStartDate] = React.useState(dateFrom || '');
     const [endDate, setEndDate] = React.useState(dateTo || '');
+
+    const [inspectedOrderId, setInspectedOrderId] = React.useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = React.useState('');
 
     const setSearchParams = (updates: Record<string, any>) => {
         navigate({
@@ -34,6 +41,19 @@ export default function SalesPage() {
         queryKey: [QUERY_KEY.SALES.SALES_ANALYTICS, { dateFrom, dateTo }],
         queryFn: () => getSalesAnalytics(dateFrom || undefined, dateTo || undefined)
     });
+
+    const orders = React.useMemo(() => data?.orders || [], [data?.orders]);
+    const filteredOrders = React.useMemo(() => {
+        if (!searchQuery) return orders;
+        const query = searchQuery.toLowerCase();
+        return orders.filter(
+            (order: any) =>
+                (order.queueNumber && order.queueNumber.toLowerCase().includes(query)) ||
+                (order.customerName && order.customerName.toLowerCase().includes(query)) ||
+                (order.orderType && order.orderType.toLowerCase().includes(query)) ||
+                (order.orderSource && order.orderSource.toLowerCase().includes(query))
+        );
+    }, [orders, searchQuery]);
 
     React.useEffect(() => {
         setStartDate(dateFrom || '');
@@ -297,7 +317,7 @@ export default function SalesPage() {
 
             {/* Sales Trend Chart */}
             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs">
-                <h3 className="text-sm font-extrabold text-foreground mb-4">Daily Sales Trend</h3>
+                <h3 className="text-sm font-bold text-foreground mb-4">Daily Sales Trend</h3>
                 <div className="h-[280px] w-full">
                     {dailyTrend.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
@@ -355,7 +375,7 @@ export default function SalesPage() {
                 {/* Panel 1: Top Favorites list */}
                 <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
                     <div>
-                        <h3 className="text-sm font-extrabold text-foreground mb-4">Top 5 Best-Selling Favorites</h3>
+                        <h3 className="text-sm font-bold text-foreground mb-4">Top 5 Best-Selling Favorites</h3>
                         <div className="space-y-4">
                             {topProducts.length > 0 ? (
                                 topProducts.map((p: any, idx: number) => (
@@ -365,7 +385,7 @@ export default function SalesPage() {
                                                 #{idx + 1}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-extrabold text-foreground leading-tight">{p.name}</span>
+                                                <span className="text-xs font-bold text-foreground leading-tight">{p.name}</span>
                                                 <span className="text-xs text-muted-foreground font-semibold">{p.quantity} cups sold</span>
                                             </div>
                                         </div>
@@ -383,7 +403,7 @@ export default function SalesPage() {
 
                 {/* Panel 2: Order Dining Types breakdown */}
                 <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col">
-                    <h3 className="text-sm font-extrabold text-foreground mb-4">Dining Methods Distribution</h3>
+                    <h3 className="text-sm font-bold text-foreground mb-4">Dining Methods Distribution</h3>
                     <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-6">
                         {orderTypeData.length > 0 ? (
                             <>
@@ -412,7 +432,7 @@ export default function SalesPage() {
                                         <div key={item.name} className="flex items-center gap-2">
                                             <div className="size-3 rounded-xs shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-extrabold text-foreground uppercase">{item.name}</span>
+                                                <span className="text-xs font-bold text-foreground uppercase">{item.name}</span>
                                                 <span className="text-xs text-muted-foreground font-semibold">
                                                     ₱{item.value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ({item.count} orders)
                                                 </span>
@@ -429,7 +449,7 @@ export default function SalesPage() {
 
                 {/* Panel 3: Payment breakdown chart */}
                 <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col">
-                    <h3 className="text-sm font-extrabold text-foreground mb-4">Payment Methods Revenue</h3>
+                    <h3 className="text-sm font-bold text-foreground mb-4">Payment Methods Revenue</h3>
                     <div className="flex-1 flex items-center justify-center">
                         {paymentData.length > 0 ? (
                             <div className="h-[180px] w-full">
@@ -466,6 +486,102 @@ export default function SalesPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Per Order Breakdown Table */}
+            <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-sm font-bold text-foreground">Per Order Breakdown</h3>
+                        <p className="text-xs text-muted-foreground">List of all completed transactions within the selected timeframe.</p>
+                    </div>
+
+                    {/* Local Search Input */}
+                    <div className="relative w-full sm:w-[300px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/80" />
+                        <Input
+                            type="text"
+                            placeholder="Search by queue, customer, type..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="h-9 pl-9 pr-4 text-xs bg-background/50 border-border/60 rounded-xl"
+                        />
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto border border-border/50 rounded-xl">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/30">
+                                <TableHead className="font-bold text-xs uppercase">Date & Time</TableHead>
+                                <TableHead className="font-bold text-xs uppercase">Queue #</TableHead>
+                                <TableHead className="font-bold text-xs uppercase">Customer</TableHead>
+                                <TableHead className="font-bold text-xs uppercase">Dining Type</TableHead>
+                                <TableHead className="font-bold text-xs uppercase">Order Source</TableHead>
+                                <TableHead className="font-bold text-xs uppercase">Payment Method</TableHead>
+                                <TableHead className="font-bold text-xs uppercase text-right">Net Total</TableHead>
+                                <TableHead className="font-bold text-xs uppercase text-center w-[100px]">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredOrders.length > 0 ? (
+                                filteredOrders.map((order: any) => {
+                                    const paymentMethods = order.payments
+                                        .filter((p: any) => p.paymentStatus === 'PAID')
+                                        .map((p: any) => p.paymentMethod)
+                                        .join(', ');
+
+                                    return (
+                                        <TableRow key={order.id} className="hover:bg-muted/10">
+                                            <TableCell className="text-xs text-muted-foreground font-semibold">
+                                                {format(new Date(order.createdAt), 'MMM d, yyyy h:mm a')}
+                                            </TableCell>
+                                            <TableCell className="font-bold text-xs text-foreground">#{order.queueNumber}</TableCell>
+                                            <TableCell className="text-xs font-semibold text-foreground truncate max-w-[150px]">
+                                                {order.customerName || 'Walk-in Customer'}
+                                            </TableCell>
+                                            <TableCell className="text-xs text-muted-foreground font-medium">
+                                                {order.orderType.replace('_', ' ')}
+                                            </TableCell>
+                                            <TableCell className="text-xs text-muted-foreground font-medium">
+                                                <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 uppercase">
+                                                    {order.orderSource}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-xs font-medium text-foreground uppercase">
+                                                {paymentMethods || 'UNPAID'}
+                                            </TableCell>
+                                            <TableCell className="font-bold text-xs text-right text-foreground">
+                                                ₱{order.netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0 rounded-lg hover:bg-muted"
+                                                    onClick={() => setInspectedOrderId(order.id)}
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="size-3.5 text-muted-foreground hover:text-foreground" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground font-semibold">
+                                        No transactions found within this timeframe.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+
+            {/* Order Details Modal Dialog */}
+            <OrderDetailsDialog open={!!inspectedOrderId} onOpenChange={(open) => !open && setInspectedOrderId(null)} orderId={inspectedOrderId} />
         </div>
     );
 }
