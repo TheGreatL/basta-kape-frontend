@@ -1,4 +1,5 @@
 import type { IPaginationParams } from '#/types/base.types';
+import type { IOrderDiscount } from '../store-settings/discounts.types';
 
 export type TOrderStatus = 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
 export type TOrderType = 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
@@ -76,6 +77,8 @@ export interface IOrder {
     updatedAt: string;
     items?: IOrderItem[];
     statusHistory?: IOrderStatusHistory[];
+    discounts?: IOrderDiscount[];
+    voidLogs?: IVoidLog[];
 }
 
 export interface ICreateOrderPayload {
@@ -95,4 +98,48 @@ export interface ICreateOrderPayload {
 export interface IUpdateOrderStatusPayload {
     status: TOrderStatus;
     notes?: string;
+}
+
+export type TPaymentMethod = 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD';
+export type TPaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+
+export interface IOrderPayment {
+    id: string;
+    orderId: string;
+    paymentMethod: TPaymentMethod;
+    paymentStatus: TPaymentStatus;
+    amount: number;
+    gcashReferenceNumber?: string | null;
+    paymentProofPhoto?: string | null;
+    amountTendered?: number | null;
+    amountChange?: number | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ICreatePaymentPayload {
+    paymentMethod: TPaymentMethod;
+    amountTendered?: number;
+    gcashReferenceNumber?: string;
+    paymentProofPhoto?: string;
+}
+
+export interface IVoidLog {
+    id: string;
+    orderId: string;
+    reason: string;
+    voidedById: string;
+    createdAt: string;
+    voidedBy: {
+        id: string;
+        username: string;
+        firstName: string;
+        lastName: string;
+    };
+    order: {
+        id: string;
+        queueNumber: string;
+        customerName: string | null;
+        netTotal: number;
+    };
 }

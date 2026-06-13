@@ -1,7 +1,14 @@
 import { api } from './api';
 import { ApiError } from '../utils/error-handler';
 import type { IPaginatedResult } from '../types/base.types';
-import type { IGetOrdersParams, IOrder, ICreateOrderPayload, IUpdateOrderStatusPayload } from '../feature/order/order.types';
+import type {
+    IGetOrdersParams,
+    IOrder,
+    ICreateOrderPayload,
+    IUpdateOrderStatusPayload,
+    IOrderPayment,
+    ICreatePaymentPayload
+} from '../feature/order/order.types';
 
 export const getOrders = async (params: IGetOrdersParams): Promise<IPaginatedResult<IOrder>> => {
     const query = new URLSearchParams();
@@ -43,6 +50,46 @@ export const updateOrderStatus = async (id: string, payload: IUpdateOrderStatusP
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to modify order preparation status', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getOrderPayments = async (orderId: string): Promise<IOrderPayment[]> => {
+    const response = await api.get(`/orders/${orderId}/payments`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch order payments list', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const createOrderPayment = async (orderId: string, payload: ICreatePaymentPayload): Promise<IOrderPayment> => {
+    const response = await api.post(`/orders/${orderId}/payments`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to process payment for order', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const voidOrder = async (orderId: string, payload: { reason: string }, tempToken?: string): Promise<any> => {
+    const headers: Record<string, string> = {};
+    if (tempToken) {
+        headers['Authorization'] = `Bearer ${tempToken}`;
+    }
+    const response = await api.post(`/orders/${orderId}/void`, payload, { headers });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to void order', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getVoidLogs = async (): Promise<any[]> => {
+    const response = await api.get('/orders/void-logs');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to retrieve void logs', response.status, errorData);
     }
     return response.json();
 };

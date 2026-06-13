@@ -66,7 +66,9 @@ const QUERY_KEY = {
     },
     ORDERS: {
         ORDERS_LIST: 'orders:orders_list',
-        ORDER_DETAILS: 'orders:order_details'
+        ORDER_DETAILS: 'orders:order_details',
+        ORDER_PAYMENTS: 'orders:order_payments',
+        VOID_LOGS: 'orders:void_logs'
     },
     ACTIVITY_LOGS: {
         LOGS_LIST: 'activity_logs:logs_list'
@@ -76,7 +78,8 @@ const QUERY_KEY = {
         PREVIEW: 'reports:preview'
     },
     STORE_SETTINGS: {
-        ACTIVE: 'store_settings:active'
+        ACTIVE: 'store_settings:active',
+        DISCOUNTS_LIST: 'store_settings:discounts_list'
     }
 };
 export default QUERY_KEY;

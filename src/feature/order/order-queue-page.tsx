@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Clock, Play, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getOrders, updateOrderStatus } from '#/api/orders.api.ts';
@@ -12,16 +12,20 @@ import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
+import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
+import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
 
 export default function OrderQueuePage() {
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = React.useState('');
     const [autoRefreshInterval, setAutoRefreshInterval] = React.useState<number>(10000); // Default: 10s
 
-    // Cancellation dialog states
-    const [cancelOrderId, setCancelOrderId] = React.useState<string | null>(null);
-    const [cancelNotes, setCancelNotes] = React.useState('');
+    // Void dialog states
+    const [voidOrderId, setVoidOrderId] = React.useState<string | null>(null);
+    const [voidOrderNumber, setVoidOrderNumber] = React.useState<string | null>(null);
+
+    // Payment dialog states
+    const [paymentOrder, setPaymentOrder] = React.useState<IOrder | null>(null);
 
     // Timer state to force refresh the elapsed minutes ticker every 30 seconds
     const [, setTicker] = React.useState(0);
@@ -49,8 +53,6 @@ export default function OrderQueuePage() {
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             toast.success(`Order #${updated.queueNumber} updated to ${updated.status}`);
-            setCancelOrderId(null);
-            setCancelNotes('');
         },
         onError: (err) => {
             toast.error('Failed to transition order status', { description: getErrorMessage(err) });
@@ -61,18 +63,6 @@ export default function OrderQueuePage() {
         updateStatusMutation.mutate({
             orderId,
             payload: { status: targetStatus, notes: `Transitioned to ${targetStatus} via KDS Board` }
-        });
-    };
-
-    const handleCancelSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!cancelOrderId) return;
-        updateStatusMutation.mutate({
-            orderId: cancelOrderId,
-            payload: {
-                status: 'CANCELLED',
-                notes: cancelNotes || 'Cancelled via Queue KDS Board'
-            }
         });
     };
 
@@ -198,9 +188,12 @@ export default function OrderQueuePage() {
                         variant="ghost"
                         size="sm"
                         disabled={updateStatusMutation.isPending}
-                        onClick={() => setCancelOrderId(order.id)}
+                        onClick={() => {
+                            setVoidOrderId(order.id);
+                            setVoidOrderNumber(order.queueNumber);
+                        }}
                         className="h-8.5 px-2 hover:bg-rose-500/10 hover:text-rose-600 text-muted-foreground transition-colors text-xs rounded-lg"
-                        title="Cancel Order"
+                        title="Void Order"
                     >
                         <XCircle className="size-4 shrink-0" />
                     </Button>
@@ -208,12 +201,11 @@ export default function OrderQueuePage() {
                     {order.status === 'PENDING' && (
                         <Button
                             size="sm"
-                            disabled={updateStatusMutation.isPending}
-                            onClick={() => handleTransition(order.id, 'PREPARING')}
+                            onClick={() => setPaymentOrder(order)}
                             className="h-8.5 flex-1 gap-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                         >
-                            <Play className="size-3.5 fill-current shrink-0" />
-                            Start Brew
+                            <CreditCard className="size-3.5 shrink-0" />
+                            Collect Payment
                         </Button>
                     )}
 
@@ -397,46 +389,16 @@ export default function OrderQueuePage() {
                 </div>
             )}
 
-            {/* Cancellation Confirmation Dialog */}
-            <Dialog open={!!cancelOrderId} onOpenChange={(open) => !open && setCancelOrderId(null)}>
-                <DialogContent className="max-w-md bg-background">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 font-bold text-foreground">
-                            <AlertTriangle className="size-5 text-rose-500" />
-                            Cancel Order Session
-                        </DialogTitle>
-                        <DialogDescription className="text-xs">
-                            Are you sure you want to cancel this order? This action transitions order status to CANCELLED and adds an audit trail.
-                        </DialogDescription>
-                    </DialogHeader>
+            {/* Void Confirmation Override Dialog */}
+            <VoidOrderDialog
+                open={!!voidOrderId}
+                onOpenChange={(open) => !open && setVoidOrderId(null)}
+                orderId={voidOrderId}
+                orderNumber={voidOrderNumber}
+            />
 
-                    <form onSubmit={handleCancelSubmit} className="space-y-4 text-xs">
-                        <div className="space-y-1">
-                            <label className="font-semibold text-foreground/80">Cancellation Notes / Reason</label>
-                            <Input
-                                placeholder="e.g. Customer change of mind, wrong variant checkout..."
-                                value={cancelNotes}
-                                onChange={(e) => setCancelNotes(e.target.value)}
-                                className="h-9 text-xs bg-background/50"
-                                required
-                            />
-                        </div>
-
-                        <DialogFooter className="gap-2 pt-2">
-                            <Button type="button" variant="outline" onClick={() => setCancelOrderId(null)} className="h-9 text-xs">
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={updateStatusMutation.isPending}
-                                className="h-9 text-xs bg-rose-600 hover:bg-rose-700 text-white shadow-3xs"
-                            >
-                                {updateStatusMutation.isPending ? 'Processing...' : 'Confirm Cancel Order'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            {/* Payment Modal */}
+            <ProcessPaymentDialog open={!!paymentOrder} onOpenChange={(open) => !open && setPaymentOrder(null)} order={paymentOrder} />
         </div>
     );
 }

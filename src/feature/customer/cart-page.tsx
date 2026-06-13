@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from '@tanstack/react-router';
-import { ShoppingCart, Trash2, ShoppingBag } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { ShoppingCart, Trash2 } from 'lucide-react';
 import { useCart } from './use-cart.ts';
 import { useAuthStore } from '#/store/auth-store.ts';
+import { useCheckoutStore } from '#/store/checkout-store.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { toast } from 'sonner';
@@ -18,26 +18,17 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from '#/components/ui/alert-dialog.tsx';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import { Textarea } from '#/components/ui/textarea.tsx';
-import { createOrder } from '#/api/orders.api.ts';
-import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { TOrderType } from '#/feature/order/order.types';
 import CartItemRow from './components/cart-item-row.tsx';
 import CartSummary from './components/cart-summary.tsx';
 
 export default function CartPage() {
     const user = useAuthStore((state) => state.user);
-    const { customer, cart, isLoading, updateItem, removeItem, clearCart, isClearing, isUpdating, isRemoving } = useCart();
+    const { cart, isLoading, updateItem, removeItem, clearCart, isClearing, isUpdating, isRemoving } = useCart();
     const [itemToDelete, setItemToDelete] = useState<ICartItemResponse | null>(null);
     const [selectedIds, setSelectedIds] = useState<Record<string, boolean | undefined>>({});
     const [isClearCartDialogOpen, setIsClearCartDialogOpen] = useState(false);
 
-    // Checkout states
-    const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
-    const [orderType, setOrderType] = useState<TOrderType>('DINE_IN');
-    const [notes, setNotes] = useState('');
+    const navigate = useNavigate();
 
     // Modifiers selections state: key is cartItemId, value is object containing array of ids, names, and computed modifiers price
     const [selectedModifiers, setSelectedModifiers] = useState<Record<string, { ids: string[]; price: number; names: string[] } | undefined>>({});
@@ -132,47 +123,27 @@ export default function CartPage() {
         }
     };
 
-    const createOrderMutation = useMutation({
-        mutationFn: createOrder,
-        onSuccess: async () => {
-            await clearCart();
-            setIsCheckoutDialogOpen(false);
-            setNotes('');
-            toast.success('Order placed successfully!', {
-                description: 'Your order is now in the queue.'
-            });
-        },
-        onError: (err) => {
-            toast.error('Failed to place order', {
-                description: getErrorMessage(err)
-            });
-        }
-    });
-
     const handleCheckout = () => {
         if (selectedItems.length === 0) {
             toast.error('Please select at least one item to checkout.');
             return;
         }
-        setIsCheckoutDialogOpen(true);
-    };
 
-    const handleCheckoutSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!customer) return;
-        createOrderMutation.mutate({
-            orderType,
-            orderSource: 'WEBSITE',
-            notes: notes || undefined,
-            customerId: customer.id,
-            customerName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username || 'Customer',
-            items: selectedItems.map((item: ICartItemResponse) => ({
-                productVariantId: item.productVariantId,
-                quantity: item.quantity,
-                notes: undefined,
-                modifierOptionIds: selectedModifiers[item.id]?.ids || []
-            }))
+        const checkoutModifiers: Record<string, { ids: string[]; price: number; names: string[] } | undefined> = {};
+        selectedItems.forEach((item: ICartItemResponse) => {
+            const mods = selectedModifiers[item.id];
+            if (mods) {
+                checkoutModifiers[item.id] = mods;
+            }
         });
+
+        useCheckoutStore.getState().setCheckoutState(
+            selectedItems.map((item: ICartItemResponse) => item.id),
+            true,
+            checkoutModifiers
+        );
+
+        navigate({ to: '/checkout' });
     };
 
     // Helper: format variant attribute values (e.g. Size: Large)
@@ -341,107 +312,6 @@ export default function CartPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {/* Premium Checkout Dialog */}
-            <Dialog open={isCheckoutDialogOpen} onOpenChange={setIsCheckoutDialogOpen}>
-                <DialogContent className="max-w-md bg-background border-border/60 rounded-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 font-black text-xl text-foreground">
-                            <ShoppingBag className="size-5 text-primary" />
-                            Finalize Your Order
-                        </DialogTitle>
-                        <DialogDescription className="text-xs text-muted-foreground mt-1">
-                            Choose your dining method and add any special preparation requests.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleCheckoutSubmit} className="space-y-4 pt-2 text-xs">
-                        <div className="space-y-2">
-                            <label className="font-bold text-foreground/80 block">Dining Option</label>
-                            <Select value={orderType} onValueChange={(val: TOrderType) => setOrderType(val)}>
-                                <SelectTrigger className="h-10 text-xs bg-background/50 rounded-xl">
-                                    <SelectValue placeholder="Select dining option" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    <SelectItem value="DINE_IN" className="text-xs">
-                                        Dine In
-                                    </SelectItem>
-                                    <SelectItem value="TAKE_OUT" className="text-xs">
-                                        Take Out
-                                    </SelectItem>
-                                    <SelectItem value="DELIVERY" className="text-xs">
-                                        Delivery
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="font-bold text-foreground/80 block">Special Instructions / Notes (Optional)</label>
-                            <Textarea
-                                placeholder="e.g. Extra sugar, no ice, milk alternative requests..."
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                className="bg-background/50 text-xs resize-none rounded-xl h-20"
-                            />
-                        </div>
-
-                        <div className="border border-border/50 p-4 rounded-2xl bg-muted/10 space-y-3 font-medium">
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pb-1 border-b border-border/30">
-                                Order Breakdown ({selectedItems.length} items Selected)
-                            </div>
-                            <div className="max-h-[150px] overflow-y-auto space-y-3 pr-1">
-                                {selectedItems.map((item: ICartItemResponse) => {
-                                    const modifierPrice = selectedModifiers[item.id]?.price || 0;
-                                    const modifierNames = selectedModifiers[item.id]?.names || [];
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className="flex flex-col gap-0.5 text-muted-foreground text-[11px] border-b border-border/10 pb-1.5 last:border-0 last:pb-0"
-                                        >
-                                            <div className="flex justify-between">
-                                                <span className="truncate max-w-[200px] font-bold text-foreground/80">
-                                                    {item.productVariant.product.name} x{item.quantity}
-                                                </span>
-                                                <span className="font-bold text-foreground/85">
-                                                    ₱{((item.unitPrice + modifierPrice) * item.quantity).toFixed(2)}
-                                                </span>
-                                            </div>
-                                            {modifierNames.length > 0 && (
-                                                <span className="text-[9px] text-muted-foreground italic font-semibold">
-                                                    Add-ons: {modifierNames.join(', ')}
-                                                </span>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="flex justify-between font-bold border-t border-dashed border-border/40 pt-2 text-sm">
-                                <span className="text-foreground">Total Due:</span>
-                                <span className="text-primary font-black">₱{selectedTotalAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        <DialogFooter className="gap-2 pt-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsCheckoutDialogOpen(false)}
-                                className="h-10 text-xs rounded-xl font-semibold"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={createOrderMutation.isPending}
-                                className="h-10 text-xs rounded-xl font-bold bg-primary text-primary-foreground shadow-md hover:shadow-lg flex-1"
-                            >
-                                {createOrderMutation.isPending ? 'Placing Order...' : 'Confirm Order & Pay'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

@@ -158,31 +158,37 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
         // Validate modifier groups constraints
         let hasValidationError = false;
-        modifierGroupsResponse?.data.forEach((group: IModifierGroup) => {
-            const groupOptionIds = group.options.map((opt) => opt.id);
-            const selectedFromGroup = selectedModifierIds.filter((id) => groupOptionIds.includes(id));
+        if (modifierGroupsResponse?.data) {
+            for (const group of modifierGroupsResponse.data) {
+                const groupOptionIds = group.options.map((opt: any) => opt.id);
+                const selectedFromGroup = selectedModifierIds.filter((id) => groupOptionIds.includes(id));
 
-            if (group.isRequired && selectedFromGroup.length === 0) {
-                toast.error(`Please select at least one option for ${group.name}.`);
-                hasValidationError = true;
-            } else if (selectedFromGroup.length < group.minSelect) {
-                toast.error(`Please select at least ${group.minSelect} option(s) for ${group.name}.`);
-                hasValidationError = true;
-            } else if (selectedFromGroup.length > group.maxSelect) {
-                toast.error(`You can select at most ${group.maxSelect} option(s) for ${group.name}.`);
-                hasValidationError = true;
+                if (group.isRequired && selectedFromGroup.length === 0) {
+                    toast.error(`Please select at least one option for ${group.name}.`);
+                    hasValidationError = true;
+                } else if (selectedFromGroup.length < group.minSelect) {
+                    toast.error(`Please select at least ${group.minSelect} option(s) for ${group.name}.`);
+                    hasValidationError = true;
+                } else if (selectedFromGroup.length > group.maxSelect) {
+                    toast.error(`You can select at most ${group.maxSelect} option(s) for ${group.name}.`);
+                    hasValidationError = true;
+                }
             }
-        });
+        }
 
         // Check if any selected modifier is out of stock
-        selectedModifierIds.forEach((modId) => {
-            const modForecast = forecastData?.find((f: IForecast) => f.variantId === modId);
+        for (const modId of selectedModifierIds) {
+            const modForecast = forecastData?.find((f: any) => f.variantId === modId);
             if (modForecast && modForecast.maxProduceable === 0) {
                 const cleanName = modForecast.name.replace('[Modifier] ', '');
                 toast.error(`Add-on "${cleanName}" is out of stock!`);
                 hasValidationError = true;
             }
-        });
+        }
+
+        if (hasValidationError) {
+            return;
+        }
 
         // Collect selected modifiers
         const selectedModifiers: any[] = [];

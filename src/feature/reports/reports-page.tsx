@@ -2,11 +2,14 @@ import * as React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { AlertTriangle, FileBarChart, FileSpreadsheet, FileText } from 'lucide-react';
+import { AlertTriangle, FileBarChart, FileSpreadsheet, FileText, Calendar, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/reports';
 import { exportReport, getReportModules, previewReport } from '#/api/reports.api.ts';
+import { getVoidLogs } from '#/api/orders.api.ts';
+import { useAuthStore } from '#/store/auth-store.ts';
+import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -17,9 +20,11 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Alert, AlertDescription, AlertTitle } from '#/components/ui/alert.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Button } from '#/components/ui/button.tsx';
+import { Input } from '#/components/ui/input.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { cn } from '#/lib/utils.ts';
+import { format as formatDate } from 'date-fns';
 
 const EXPORT_ROW_LIMIT = 5000;
 
@@ -52,10 +57,127 @@ function buildColumns(columns: IReportColumn[]): ColumnDef<ReportRow>[] {
     }));
 }
 
+function VoidLogsAuditView() {
+    const [search, setSearch] = React.useState('');
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [{ pageIndex, pageSize }, setPagination] = React.useState({
+        pageIndex: 0,
+        pageSize: 10
+    });
+
+    const { data: voidLogsData, isLoading } = useQuery({
+        queryKey: [QUERY_KEY.ORDERS.VOID_LOGS],
+        queryFn: getVoidLogs
+    });
+
+    const list = voidLogsData ?? [];
+
+    const filtered = React.useMemo(() => {
+        if (!search) return list;
+        const q = search.toLowerCase();
+        return list.filter((log: any) => {
+            const name = `${log.voidedBy?.firstName ?? ''} ${log.voidedBy?.lastName ?? ''}`.toLowerCase();
+            const queue = (log.order?.queueNumber ?? '').toLowerCase();
+            const reason = (log.reason ?? '').toLowerCase();
+            return queue.includes(q) || name.includes(q) || reason.includes(q);
+        });
+    }, [list, search]);
+
+    const columns = React.useMemo<ColumnDef<any>[]>(
+        () => [
+            {
+                accessorKey: 'createdAt',
+                header: 'Date & Time',
+                cell: ({ row }) => (
+                    <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                        <Calendar className="size-3.5" />
+                        {formatDate(new Date(row.original.createdAt), 'MMM dd, yyyy - hh:mm a')}
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'order.queueNumber',
+                header: 'Order Queue No.',
+                cell: ({ row }) => <span className="font-mono font-bold text-foreground">{row.original.order?.queueNumber || '#N/A'}</span>
+            },
+            {
+                accessorKey: 'order.netTotal',
+                header: 'Order Amount',
+                cell: ({ row }) => (
+                    <span className="font-bold text-foreground/90">
+                        ₱{(row.original.order?.netTotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                )
+            },
+            {
+                id: 'authorizedBy',
+                header: 'Authorized By',
+                cell: ({ row }) => (
+                    <span className="font-semibold text-foreground/90">
+                        {row.original.voidedBy?.firstName} {row.original.voidedBy?.lastName} (@{row.original.voidedBy?.username})
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'reason',
+                header: 'Stated Reason',
+                cell: ({ row }) => <span className="italic text-muted-foreground font-medium whitespace-pre-wrap">{row.original.reason}</span>
+            }
+        ],
+        []
+    );
+
+    const pageCount = Math.ceil(filtered.length / pageSize) || 1;
+    const paginatedData = React.useMemo(() => {
+        const start = pageIndex * pageSize;
+        return filtered.slice(start, start + pageSize);
+    }, [filtered, pageIndex, pageSize]);
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                    <h2 className="text-lg font-semibold text-foreground">Void Logs Audit Trail</h2>
+                    <p className="text-xs text-muted-foreground">Detailed audit log tracking of supervisor/manager-authorized void overrides.</p>
+                </div>
+
+                <div className="relative w-full sm:w-[240px]">
+                    <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by queue, supervisor, or reason..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="h-9 pl-8.5 bg-background/50 text-xs"
+                    />
+                </div>
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-card/20 p-4">
+                <DataTable
+                    columns={columns}
+                    data={paginatedData}
+                    pageCount={pageCount}
+                    pageIndex={pageIndex}
+                    pageSize={pageSize}
+                    onPaginationChange={(idx, size) => setPagination({ pageIndex: idx, pageSize: size })}
+                    sorting={sorting}
+                    onSortingChange={setSorting}
+                    showColumnVisibilityToggle={true}
+                    isLoading={isLoading}
+                />
+            </div>
+        </div>
+    );
+}
+
 export default function ReportsPage() {
     const navigate = useNavigate({ from: '/admin/reports' });
     const searchParams = Route.useSearch();
     const { module: selectedModuleId, page, pageSize } = searchParams;
+
+    const user = useAuthStore((state) => state.user);
+    const permissions = React.useMemo(() => getUserPermissions(user), [user]);
+    const canReadOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ), [permissions]);
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [previewToken, setPreviewToken] = React.useState(0);
@@ -76,7 +198,7 @@ export default function ReportsPage() {
         queryFn: getReportModules
     });
 
-    const modules = modulesData?.data ?? [];
+    const modules: IReportModuleDefinition[] = modulesData?.data ?? [];
     const activeModule = (modules.find((module) => module.id === (selectedModuleId as ReportModule)) ?? modules[0]) as IReportModuleDefinition | null;
 
     React.useEffect(() => {
@@ -207,14 +329,25 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            <Tabs value={activeModule.id} onValueChange={handleModuleChange}>
+            <Tabs value={selectedModuleId || (modules[0]?.id ?? '')} onValueChange={handleModuleChange}>
                 <TabsList className="h-auto flex-wrap justify-start gap-1 bg-muted/40 p-1">
                     {modules.map((module: IReportModuleDefinition) => (
                         <TabsTrigger key={module.id} value={module.id} className="text-xs sm:text-sm">
                             {module.label}
                         </TabsTrigger>
                     ))}
+                    {canReadOrders && (
+                        <TabsTrigger value="void-logs-audit" className="text-xs sm:text-sm">
+                            Void Logs Audit
+                        </TabsTrigger>
+                    )}
                 </TabsList>
+
+                {canReadOrders && (
+                    <TabsContent value="void-logs-audit" className="mt-4 space-y-4">
+                        <VoidLogsAuditView />
+                    </TabsContent>
+                )}
 
                 {modules.map((module) => (
                     <TabsContent key={module.id} value={module.id} className="mt-4 space-y-4">
