@@ -194,7 +194,7 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                                 value={field.value || ''}
                                             />
                                         </FormControl>
-                                        <FormDescription className="text-[10px] text-muted-foreground">
+                                        <FormDescription className="text-xs text-muted-foreground">
                                             Optional custom code. Case-insensitive SC or PWD triggers VAT-exemption behavior.
                                         </FormDescription>
                                         <FormMessage />
@@ -209,7 +209,7 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                     <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 bg-muted/10 p-3.5 shadow-3xs">
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-xs font-bold text-foreground/80">Active Configuration</FormLabel>
-                                            <FormDescription className="text-[10px] text-muted-foreground leading-none">
+                                            <FormDescription className="text-xs text-muted-foreground leading-none">
                                                 Inactive discounts cannot be applied at POS.
                                             </FormDescription>
                                         </div>

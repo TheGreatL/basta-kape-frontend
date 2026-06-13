@@ -134,7 +134,7 @@ export default function CustomerHeader() {
                                                 {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username}
                                             </p>
                                             <p className="text-xs text-muted-foreground truncate font-normal">@{user.username}</p>
-                                            {user.email && <p className="text-[10px] text-muted-foreground/80 truncate font-normal">{user.email}</p>}
+                                            {user.email && <p className="text-xs text-muted-foreground/80 truncate font-normal">{user.email}</p>}
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator className="bg-border/40" />

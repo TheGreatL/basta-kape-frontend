@@ -130,9 +130,9 @@ function OrderDetailRouteComponent() {
                 {/* Header Ticket Stats */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center p-6 rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xs gap-4 shadow-sm">
                     <div className="space-y-1">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Queue Number</span>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase ">Queue Number</span>
                         <div className="flex items-baseline gap-3">
-                            <span className="text-4xl font-black text-foreground tracking-tight">{order.queueNumber}</span>
+                            <span className="text-4xl font-black text-foreground ">{order.queueNumber}</span>
                             <Badge
                                 variant="outline"
                                 className="text-xs rounded-full font-bold px-3 py-0.5 bg-primary/5 text-primary border-primary/20"
@@ -172,7 +172,7 @@ function OrderDetailRouteComponent() {
                 <div className="p-6 md:p-8 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-xs shadow-sm">
                     <div className="flex items-center gap-2 mb-6">
                         {getStatusIcon(order.status)}
-                        <h2 className="text-xl font-bold text-foreground tracking-tight">{getStatusText(order.status)}</h2>
+                        <h2 className="text-xl font-bold text-foreground ">{getStatusText(order.status)}</h2>
                     </div>
                     <p className="text-sm text-muted-foreground mb-8">{getStatusDescription(order.status)}</p>
 
@@ -226,7 +226,7 @@ function OrderDetailRouteComponent() {
                                                 {getStatusText(status)}
                                             </span>
                                             {isActive && (
-                                                <span className="text-[10px] text-primary/80 font-bold uppercase tracking-wider animate-pulse block mt-0.5">
+                                                <span className="text-xs text-primary/80 font-bold uppercase  animate-pulse block mt-0.5">
                                                     Current Status
                                                 </span>
                                             )}
@@ -277,7 +277,7 @@ function OrderDetailRouteComponent() {
                                             {item.modifiers.map((mod: IOrderItemModifier) => (
                                                 <span
                                                     key={mod.id}
-                                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md mr-1.5"
+                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md mr-1.5"
                                                 >
                                                     + {mod.modifierOption.name} (₱{mod.price.toFixed(2)})
                                                 </span>
@@ -291,7 +291,7 @@ function OrderDetailRouteComponent() {
 
                                 <div className="text-right shrink-0">
                                     <span className="font-extrabold text-sm text-foreground">₱{item.totalPrice.toFixed(2)}</span>
-                                    <span className="block text-[10px] text-muted-foreground">₱{item.unitPrice.toFixed(2)} each</span>
+                                    <span className="block text-xs text-muted-foreground">₱{item.unitPrice.toFixed(2)} each</span>
                                 </div>
                             </div>
                         ))}
@@ -299,7 +299,7 @@ function OrderDetailRouteComponent() {
 
                     {/* Receipt breakdown summary footer */}
                     <div className="bg-muted/30 p-5 border-t border-border/40 space-y-3">
-                        <div className="flex items-center gap-2 mb-2 text-xs font-bold text-foreground uppercase tracking-wider">
+                        <div className="flex items-center gap-2 mb-2 text-xs font-bold text-foreground uppercase ">
                             <Receipt className="size-4 text-muted-foreground" />
                             <span>Payment Summary</span>
                         </div>
@@ -327,7 +327,7 @@ function OrderDetailRouteComponent() {
 
                         <div className="flex justify-between items-baseline pt-1">
                             <span className="font-bold text-base text-foreground">Total Paid</span>
-                            <span className="font-black text-2xl text-primary tracking-tight">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="font-black text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>

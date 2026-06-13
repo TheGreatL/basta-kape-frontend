@@ -133,14 +133,14 @@ export default function OrderQueuePage() {
                         <div className="flex items-center gap-1">
                             <Badge
                                 variant="outline"
-                                className={`text-[9px] font-bold py-0 px-1.5 leading-none uppercase ${getOrderTypeBadgeColor(order.orderType)}`}
+                                className={`text-xs font-bold py-0 px-1.5 leading-none uppercase ${getOrderTypeBadgeColor(order.orderType)}`}
                             >
                                 {order.orderType.replace('_', ' ')}
                             </Badge>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-[10px]">
+                    <div className="flex items-center gap-1 text-xs">
                         <Clock className={`size-3 shrink-0 ${mins >= 15 ? 'text-rose-500 animate-spin-slow' : ''}`} />
                         <span className={getTimerColorClass(mins)}>{mins === 0 ? 'Just now' : `${mins}m ago`}</span>
                     </div>
@@ -155,7 +155,7 @@ export default function OrderQueuePage() {
 
                     {/* Overall Notes (if available) */}
                     {order.notes && (
-                        <div className="text-[10px] text-amber-700 bg-amber-500/5 border border-amber-500/10 p-2 rounded-lg font-medium leading-relaxed">
+                        <div className="text-xs text-amber-700 bg-amber-500/5 border border-amber-500/10 p-2 rounded-lg font-medium leading-relaxed">
                             <strong>Note:</strong> {order.notes}
                         </div>
                     )}
@@ -168,10 +168,10 @@ export default function OrderQueuePage() {
                                     {item.quantity} x {item.variant.product.name}
                                 </div>
                                 {/* Size/Attributes string */}
-                                {item.variant.sku && <span className="text-[10px] text-muted-foreground font-semibold">{item.variant.sku}</span>}
+                                {item.variant.sku && <span className="text-xs text-muted-foreground font-semibold">{item.variant.sku}</span>}
                                 {/* Modifiers list */}
                                 {item.modifiers.length > 0 && (
-                                    <div className="text-[10px] text-muted-foreground font-medium flex flex-wrap gap-x-1 pl-1">
+                                    <div className="text-xs text-muted-foreground font-medium flex flex-wrap gap-x-1 pl-1">
                                         {item.modifiers.map((mod) => (
                                             <span key={mod.id}>+ {mod.modifierOption.name}</span>
                                         ))}
@@ -317,11 +317,11 @@ export default function OrderQueuePage() {
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 tracking-wider">Pending Orders</h3>
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Pending Orders</h3>
                             </div>
                             <Badge
                                 variant="secondary"
-                                className="text-[10px] font-bold py-0.5 px-2 bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                className="text-xs font-bold py-0.5 px-2 bg-amber-500/10 text-amber-600 border border-amber-500/20"
                             >
                                 {pendingOrders.length}
                             </Badge>
@@ -342,11 +342,11 @@ export default function OrderQueuePage() {
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 tracking-wider">Preparing</h3>
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Preparing</h3>
                             </div>
                             <Badge
                                 variant="secondary"
-                                className="text-[10px] font-bold py-0.5 px-2 bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                                className="text-xs font-bold py-0.5 px-2 bg-blue-500/10 text-blue-600 border border-blue-500/20"
                             >
                                 {preparingOrders.length}
                             </Badge>
@@ -367,11 +367,11 @@ export default function OrderQueuePage() {
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 tracking-wider">Ready for Pick</h3>
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Ready for Pick</h3>
                             </div>
                             <Badge
                                 variant="secondary"
-                                className="text-[10px] font-bold py-0.5 px-2 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                                className="text-xs font-bold py-0.5 px-2 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                             >
                                 {readyOrders.length}
                             </Badge>

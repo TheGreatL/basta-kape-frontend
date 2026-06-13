@@ -148,7 +148,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                         <div className="space-y-3">
                             <Alert variant="destructive" className="bg-destructive/5 border-destructive/20 text-destructive">
                                 <ShieldAlert className="size-4 text-destructive" />
-                                <AlertTitle className="font-bold text-2xs uppercase tracking-wide">Manager Override Required</AlertTitle>
+                                <AlertTitle className="font-bold text-2xs uppercase ">Manager Override Required</AlertTitle>
                                 <AlertDescription className="text-2xs leading-normal">
                                     Current session account does not hold Point of Sale Delete scope. Please authenticate a supervisor or manager to
                                     override this void transaction.
@@ -185,7 +185,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                     ) : (
                         <Alert className="bg-emerald-500/5 border-emerald-500/10 text-emerald-700">
                             <CheckCircle2 className="size-4 text-emerald-600" />
-                            <AlertTitle className="font-bold text-2xs uppercase tracking-wide">Privilege Approved</AlertTitle>
+                            <AlertTitle className="font-bold text-2xs uppercase ">Privilege Approved</AlertTitle>
                             <AlertDescription className="text-2xs leading-normal">
                                 You hold the necessary authorization to perform this void override directly.
                             </AlertDescription>

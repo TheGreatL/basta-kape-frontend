@@ -198,17 +198,17 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                             {/* Header details */}
                             <div className="flex flex-wrap gap-4 items-center justify-between border-b pb-3 border-border/40">
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-muted-foreground">Queue Ticket</div>
+                                    <div className="text-xs uppercase font-bold text-muted-foreground">Queue Ticket</div>
                                     <div className="text-base font-black text-foreground">{orderDetails.queueNumber}</div>
                                 </div>
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-muted-foreground">Placed On</div>
+                                    <div className="text-xs uppercase font-bold text-muted-foreground">Placed On</div>
                                     <div className="font-semibold text-foreground">
                                         {format(new Date(orderDetails.createdAt), 'MMMM dd, yyyy - hh:mm a')}
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-muted-foreground">Order Status</div>
+                                    <div className="text-xs uppercase font-bold text-muted-foreground">Order Status</div>
                                     <Badge
                                         variant="outline"
                                         className={`font-bold capitalize py-0.5 px-2.5 mt-0.5 ${getStatusBadgeClass(orderDetails.status)}`}
@@ -220,7 +220,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
 
                             {/* Ordered Items list */}
                             <div className="space-y-2.5">
-                                <h4 className="font-bold text-foreground/70 uppercase text-[10px] tracking-wider">Ordered Items</h4>
+                                <h4 className="font-bold text-foreground/70 uppercase text-xs ">Ordered Items</h4>
                                 <div className="border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20 bg-background/50">
                                     {orderDetails.items?.map((item: IOrderItem) => (
                                         <div key={item.id} className="p-3.5 flex items-start justify-between gap-4">
@@ -231,7 +231,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                 </div>
 
                                                 {/* Attributes (e.g. Size: Large) */}
-                                                <span className="text-[10px] text-muted-foreground font-medium block">
+                                                <span className="text-xs text-muted-foreground font-medium block">
                                                     Base Variant Price: ₱{item.unitPrice.toFixed(2)}
                                                 </span>
 
@@ -242,7 +242,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                             <Badge
                                                                 key={mod.id}
                                                                 variant="outline"
-                                                                className="text-[9px] font-semibold bg-muted/20 py-0 px-2 text-muted-foreground border-border/50"
+                                                                className="text-xs font-semibold bg-muted/20 py-0 px-2 text-muted-foreground border-border/50"
                                                             >
                                                                 + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
                                                             </Badge>
@@ -252,7 +252,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
 
                                                 {/* Item Notes */}
                                                 {item.notes && (
-                                                    <span className="text-[10px] text-amber-600 font-medium italic block pt-0.5">
+                                                    <span className="text-xs text-amber-600 font-medium italic block pt-0.5">
                                                         Note: "{item.notes}"
                                                     </span>
                                                 )}
@@ -268,7 +268,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                 {/* Amounts Summary */}
                                 <div className="space-y-4">
                                     <div className="border border-border/50 p-4 rounded-xl bg-muted/10 space-y-2.5 text-xs">
-                                        <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-[10px] tracking-wider">
+                                        <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-xs ">
                                             Computations Breakdown
                                         </h4>
                                         <div className="space-y-2 font-medium">
@@ -286,7 +286,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                     <span className="text-foreground/80">-₱{orderDetails.discountAmount.toFixed(2)}</span>
                                                 </div>
                                                 {orderDetails.discounts && orderDetails.discounts.length > 0 && (
-                                                    <div className="text-[10px] text-muted-foreground mt-0.5 space-y-0.5 bg-background/50 p-2 rounded-lg border border-border/40">
+                                                    <div className="text-xs text-muted-foreground mt-0.5 space-y-0.5 bg-background/50 p-2 rounded-lg border border-border/40">
                                                         {orderDetails.discounts.map((od: any) => (
                                                             <div key={od.id} className="flex flex-col">
                                                                 <span className="font-bold text-foreground/80">
@@ -311,7 +311,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                     {/* Payment Settlement Details Card */}
                                     {payments && payments.length > 0 && (
                                         <div className="border border-emerald-500/20 p-4 rounded-xl bg-emerald-500/5 space-y-2.5 text-xs">
-                                            <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                            <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                 <CheckCircle2 className="size-3.5 text-emerald-600" />
                                                 Payment Settlement Details
                                             </h4>
@@ -323,7 +323,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                     >
                                                         <div className="flex justify-between">
                                                             <span>Payment Status:</span>
-                                                            <Badge className="bg-emerald-600/10 text-emerald-700 border-emerald-600/20 text-[9px] uppercase font-bold py-0 px-1.5">
+                                                            <Badge className="bg-emerald-600/10 text-emerald-700 border-emerald-600/20 text-xs uppercase font-bold py-0 px-1.5">
                                                                 {payment.paymentStatus}
                                                             </Badge>
                                                         </div>
@@ -358,7 +358,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                                 </div>
                                                             </>
                                                         )}
-                                                        <div className="text-[9px] text-emerald-600 font-medium pt-1 text-right">
+                                                        <div className="text-xs text-emerald-600 font-medium pt-1 text-right">
                                                             Paid on {format(new Date(payment.createdAt), 'MMM dd, yyyy - hh:mm a')}
                                                         </div>
                                                     </div>
@@ -372,7 +372,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                 <div className="border border-border/50 p-4 rounded-xl bg-card space-y-3">
                                     {orderDetails.status === 'CANCELLED' ? (
                                         <div className="border border-rose-500/20 p-4 rounded-xl bg-rose-500/5 space-y-2 text-xs">
-                                            <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                            <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                 <AlertTriangle className="size-3.5 text-rose-600" />
                                                 Order Void details
                                             </h4>
@@ -393,7 +393,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                                 <span>{format(new Date(voidLog.createdAt), 'MMM dd, yyyy - hh:mm a')}</span>
                                                             </div>
                                                             <div className="mt-1 pt-1.5 border-t border-rose-500/10">
-                                                                <span className="text-[10px] text-rose-700 block font-bold">Stated Reason:</span>
+                                                                <span className="text-xs text-rose-700 block font-bold">Stated Reason:</span>
                                                                 <span className="italic">"{voidLog.reason}"</span>
                                                             </div>
                                                         </div>
@@ -407,7 +407,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                         </div>
                                     ) : orderDetails.status === 'COMPLETED' ? (
                                         <div className="border border-emerald-500/20 p-4 rounded-xl bg-emerald-500/5 space-y-2 text-xs">
-                                            <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                            <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                 <CheckCircle2 className="size-3.5 text-emerald-600" />
                                                 Fulfillment Complete
                                             </h4>
@@ -421,7 +421,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                 <div className="space-y-4">
                                                     {/* Discounts section */}
                                                     <div className="space-y-3 pb-3 border-b border-dashed border-border/40">
-                                                        <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                                        <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                             <Tag className="size-3.5 text-muted-foreground" />
                                                             Order Discounts
                                                         </h4>
@@ -455,7 +455,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                             <RequirePermission module="Point of Sale (POS)" action="create">
                                                                 <div className="space-y-3">
                                                                     <div className="space-y-1">
-                                                                        <label className="text-[10px] font-semibold text-foreground/80">
+                                                                        <label className="text-xs font-semibold text-foreground/80">
                                                                             Select Discount
                                                                         </label>
                                                                         <Select value={selectedDiscountId} onValueChange={setSelectedDiscountId}>
@@ -475,12 +475,12 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
 
                                                                     {isSelectedBIR && (
                                                                         <div className="space-y-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
-                                                                            <div className="text-[9px] text-amber-700 font-semibold leading-normal">
+                                                                            <div className="text-xs text-amber-700 font-semibold leading-normal">
                                                                                 BIR compliance: Enter card details to apply senior/PWD discount.
                                                                             </div>
                                                                             <div className="space-y-2">
                                                                                 <div className="space-y-1">
-                                                                                    <label className="text-[9px] font-bold text-foreground/75 block">
+                                                                                    <label className="text-xs font-bold text-foreground/75 block">
                                                                                         Card ID Number
                                                                                     </label>
                                                                                     <Input
@@ -491,7 +491,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                                                     />
                                                                                 </div>
                                                                                 <div className="space-y-1">
-                                                                                    <label className="text-[9px] font-bold text-foreground/75 block">
+                                                                                    <label className="text-xs font-bold text-foreground/75 block">
                                                                                         Cardholder Name
                                                                                     </label>
                                                                                     <Input
@@ -535,11 +535,11 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                     {/* Payment Action block */}
                                                     <div className="space-y-3">
                                                         <div>
-                                                            <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                                            <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                                 <CreditCard className="size-3.5 text-muted-foreground" />
                                                                 Awaiting Payment Collection
                                                             </h4>
-                                                            <p className="text-[10px] text-muted-foreground leading-normal mt-2">
+                                                            <p className="text-xs text-muted-foreground leading-normal mt-2">
                                                                 This order has not been paid yet. Process the payment to transition the order to the
                                                                 preparing queue.
                                                             </p>
@@ -556,7 +556,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3">
-                                                    <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                                                    <h4 className="font-bold text-foreground/70 border-b border-border/40 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                                         <RefreshCw className="size-3.5 text-muted-foreground animate-pulse-slow" />
                                                         Update Preparation State
                                                     </h4>
@@ -643,7 +643,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                             {/* Order Status History Audit Logs */}
                             {orderDetails.statusHistory && orderDetails.statusHistory.length > 0 && (
                                 <div className="space-y-2 pt-2">
-                                    <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-wider flex items-center gap-1.5">
+                                    <h3 className="text-xs font-bold text-foreground/60 uppercase  flex items-center gap-1.5">
                                         <TrendingUp className="size-4 text-muted-foreground" />
                                         Audit Status Log History
                                     </h3>

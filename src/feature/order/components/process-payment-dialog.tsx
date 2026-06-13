@@ -216,8 +216,8 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
 
                                     <Alert className="border-destructive/20 bg-destructive/5 text-destructive rounded-xl py-2.5">
                                         <ShieldAlert className="h-4 w-4" />
-                                        <AlertTitle className="font-bold text-[10px]">Drawer Required</AlertTitle>
-                                        <AlertDescription className="text-[9px] font-medium leading-normal">
+                                        <AlertTitle className="font-bold text-xs">Drawer Required</AlertTitle>
+                                        <AlertDescription className="text-xs font-medium leading-normal">
                                             Sales audits enforce drawer balance logs. Opening the drawer will initialize POS active session.
                                         </AlertDescription>
                                     </Alert>
@@ -260,12 +260,12 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                             {/* Order Total Highlight */}
                             <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center mb-5 shrink-0">
                                 <div>
-                                    <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Amount Due</span>
+                                    <span className="text-xs text-muted-foreground font-semibold block uppercase">Amount Due</span>
                                     <span className="text-xl font-black text-foreground">
                                         ₱{netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
-                                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-semibold px-2 py-0.5 uppercase">
+                                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-semibold px-2 py-0.5 uppercase">
                                     Unpaid
                                 </Badge>
                             </div>
@@ -308,7 +308,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                                     }`}
                                                                 >
                                                                     <Icon className="size-4.5 mb-1" />
-                                                                    <span className="text-[10px]">{method.label}</span>
+                                                                    <span className="text-xs">{method.label}</span>
                                                                 </button>
                                                             );
                                                         })}
@@ -376,7 +376,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                                 className="h-9 bg-background/50 text-xs font-mono"
                                                             />
                                                         </FormControl>
-                                                        <FormDescription className="text-[10px] text-muted-foreground">
+                                                        <FormDescription className="text-xs text-muted-foreground">
                                                             Input reference ID (minimum 5 characters) printed on receipt.
                                                         </FormDescription>
                                                         <FormMessage />

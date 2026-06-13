@@ -116,7 +116,7 @@ export default function OrdersPage() {
                     <div className="flex flex-col gap-0.5 min-w-[120px]">
                         <span className="font-semibold text-foreground/90 leading-tight">{row.original.customerName || 'Walk-in Customer'}</span>
                         {row.original.customerId && (
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                                 <User className="size-3" /> Member Profile
                             </span>
                         )}
@@ -148,13 +148,13 @@ export default function OrdersPage() {
                     <div className="flex flex-wrap gap-1 items-center">
                         <Badge
                             variant="secondary"
-                            className="text-[9px] font-semibold tracking-wide py-0 px-1.5 uppercase bg-primary/5 text-primary border border-primary/10"
+                            className="text-xs font-semibold  py-0 px-1.5 uppercase bg-primary/5 text-primary border border-primary/10"
                         >
                             {row.original.orderType.replace('_', ' ')}
                         </Badge>
                         <Badge
                             variant="outline"
-                            className="text-[9px] font-semibold py-0 px-1.5 gap-1 capitalize bg-background/50 border-border/70 text-muted-foreground"
+                            className="text-xs font-semibold py-0 px-1.5 gap-1 capitalize bg-background/50 border-border/70 text-muted-foreground"
                         >
                             {getSourceIcon(row.original.orderSource)}
                             {row.original.orderSource.toLowerCase().replace('_', ' ')}

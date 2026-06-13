@@ -101,7 +101,7 @@ export default function OrdersPage() {
             {/* Page Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground flex items-center gap-2">
                         <ClipboardCheck className="size-8 text-primary" />
                         My Orders
                     </h1>
@@ -194,7 +194,7 @@ export default function OrdersPage() {
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1">
                                             <span className="text-xs font-semibold text-muted-foreground">Queue Ticket</span>
-                                            <h3 className="text-2xl font-black text-foreground tracking-tight">{order.queueNumber}</h3>
+                                            <h3 className="text-2xl font-black text-foreground">{order.queueNumber}</h3>
                                         </div>
                                         <Badge
                                             variant="outline"
@@ -243,7 +243,7 @@ export default function OrdersPage() {
                                                             {item.modifiers.map((mod) => (
                                                                 <span
                                                                     key={mod.id}
-                                                                    className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
+                                                                    className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
                                                                 >
                                                                     + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
                                                                 </span>

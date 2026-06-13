@@ -158,13 +158,13 @@ export default function DiscountManager({ canUpdate, canDelete }: DiscountManage
                                             {discount.code && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-[9px] font-mono font-semibold py-0 px-1.5 uppercase bg-muted/20"
+                                                    className="text-xs font-mono font-semibold py-0 px-1.5 uppercase bg-muted/20"
                                                 >
                                                     Code: {discount.code}
                                                 </Badge>
                                             )}
                                             {isBIR && (
-                                                <Badge className="text-[9px] font-semibold py-0 px-1.5 bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                                <Badge className="text-xs font-semibold py-0 px-1.5 bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                                     BIR SC/PWD Exempt
                                                 </Badge>
                                             )}
@@ -172,7 +172,7 @@ export default function DiscountManager({ canUpdate, canDelete }: DiscountManage
                                     </div>
                                     <Badge
                                         variant={discount.isActive ? 'default' : 'outline'}
-                                        className={`text-[9px] font-bold py-0 px-1.5 scale-90 ${
+                                        className={`text-xs font-bold py-0 px-1.5 scale-90 ${
                                             discount.isActive ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20' : 'text-muted-foreground'
                                         }`}
                                     >
@@ -209,7 +209,7 @@ export default function DiscountManager({ canUpdate, canDelete }: DiscountManage
                                                     size="sm"
                                                     title={discount.isActive ? 'Deactivate Discount' : 'Activate Discount'}
                                                 />
-                                                <span className="text-[10px] text-muted-foreground font-semibold">
+                                                <span className="text-xs text-muted-foreground font-semibold">
                                                     {discount.isActive ? 'Active' : 'Disabled'}
                                                 </span>
                                             </div>

@@ -333,7 +333,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                 return (
                                     <div key={attrName} className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{attrName}</h3>
+                                            <h3 className="text-xs font-bold text-foreground uppercase">{attrName}</h3>
                                             {currentValue && (
                                                 <span className="text-xs font-semibold text-primary/80 bg-primary/5 px-2 py-0.5 rounded-md">
                                                     {currentValue}
@@ -372,7 +372,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     {modifierGroups.length > 0 && (
                         <div className="mt-8 pt-6 border-t border-border/40 space-y-6">
                             <div>
-                                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Customize Your Drink</h3>
+                                <h3 className="text-xs font-bold text-foreground uppercase">Customize Your Drink</h3>
                                 <p className="text-xs text-muted-foreground mt-1">Select optional add-ons or customize details.</p>
                             </div>
 
@@ -385,16 +385,16 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs font-bold text-foreground">{group.name}</span>
                                                 {group.isRequired ? (
-                                                    <span className="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded-md border border-rose-500/10">
+                                                    <span className="text-xs font-bold text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded-md border border-rose-500/10">
                                                         Required
                                                     </span>
                                                 ) : (
-                                                    <span className="text-[10px] font-semibold text-muted-foreground bg-muted border border-border/40 px-1.5 py-0.5 rounded-md">
+                                                    <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border/40 px-1.5 py-0.5 rounded-md">
                                                         Optional
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                            <span className="text-xs text-muted-foreground font-medium">
                                                 {group.maxSelect === 1 ? 'Choose 1' : `Choose up to ${group.maxSelect}`}
                                                 {currentSelectedCount > 0 && ` (${currentSelectedCount} selected)`}
                                             </span>

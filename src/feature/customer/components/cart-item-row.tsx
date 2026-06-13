@@ -82,7 +82,7 @@ export default function CartItemRow({
                     <div className="mt-2.5 pt-2 border-t border-border/20 space-y-2">
                         {modifierGroups.map((group: any) => (
                             <div key={group.id} className="space-y-1">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">{group.name}</span>
+                                <span className="text-xs font-bold text-muted-foreground uppercase block">{group.name}</span>
                                 <div className="flex flex-wrap gap-1.5">
                                     {group.options.map((opt: any) => {
                                         const isChecked = selectedModifierIds.includes(opt.id);
@@ -97,7 +97,7 @@ export default function CartItemRow({
                                                         : [...selectedModifierIds, opt.id];
                                                     onModifiersChange(nextIds, modifierGroups);
                                                 }}
-                                                className="h-6 text-[9px] font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"
+                                                className="h-6 text-xs font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"
                                             >
                                                 {opt.name} (+₱{opt.price.toFixed(2)})
                                             </Button>

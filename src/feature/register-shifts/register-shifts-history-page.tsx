@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/com
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Tabs, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
+import type { IRegisterShift } from './register-shifts.types';
 
 export default function RegisterShiftsHistoryPage() {
     const currentUser = useAuthStore((state) => state.user);
@@ -148,7 +149,7 @@ export default function RegisterShiftsHistoryPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-border/30">
-                                                {shiftLogs.map((log) => {
+                                                {shiftLogs.map((log: IRegisterShift) => {
                                                     const isSessionOpen = !log.closedAt;
                                                     const expectedEnd = log.endBalance ?? 0;
                                                     const actualSettle = log.actualBalance ?? 0;
@@ -160,7 +161,7 @@ export default function RegisterShiftsHistoryPage() {
                                                                 <div className="font-bold text-foreground">
                                                                     {log.cashier ? `${log.cashier.firstName} ${log.cashier.lastName}` : 'System'}
                                                                 </div>
-                                                                <div className="text-[10px] text-muted-foreground">
+                                                                <div className="text-xs text-muted-foreground">
                                                                     @{log.cashier?.username || 'system'}
                                                                 </div>
                                                             </td>
@@ -171,7 +172,7 @@ export default function RegisterShiftsHistoryPage() {
                                                                 {log.closedAt ? (
                                                                     format(new Date(log.closedAt), 'MMM dd, yyyy - hh:mm a')
                                                                 ) : (
-                                                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-semibold px-2 py-0.5">
+                                                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-semibold px-2 py-0.5">
                                                                         Active Shift
                                                                     </Badge>
                                                                 )}
@@ -189,19 +190,19 @@ export default function RegisterShiftsHistoryPage() {
                                                                 {isSessionOpen ? (
                                                                     <span className="text-2xs text-muted-foreground font-medium">-</span>
                                                                 ) : diff === 0 ? (
-                                                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px] font-semibold px-2">
+                                                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-semibold px-2">
                                                                         Balanced
                                                                     </Badge>
                                                                 ) : diff < 0 ? (
                                                                     <Badge
-                                                                        className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-semibold px-2"
+                                                                        className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-xs font-semibold px-2"
                                                                         title={`Shortage of ₱${Math.abs(diff).toFixed(2)}`}
                                                                     >
                                                                         Short: ₱{Math.abs(diff).toFixed(2)}
                                                                     </Badge>
                                                                 ) : (
                                                                     <Badge
-                                                                        className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-semibold px-2"
+                                                                        className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-semibold px-2"
                                                                         title={`Surplus of ₱${diff.toFixed(2)}`}
                                                                     >
                                                                         Over: ₱{diff.toFixed(2)}

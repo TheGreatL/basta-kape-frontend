@@ -234,9 +234,7 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                                         <Package className="size-4 text-primary" />
                                         Map to Menu Products
                                     </FormLabel>
-                                    <span className="text-[10px] text-muted-foreground font-semibold">
-                                        {form.watch('productIds').length} selected
-                                    </span>
+                                    <span className="text-xs text-muted-foreground font-semibold">{form.watch('productIds').length} selected</span>
                                 </div>
 
                                 <div className="relative">

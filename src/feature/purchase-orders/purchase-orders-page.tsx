@@ -433,7 +433,7 @@ export default function PurchaseOrdersPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <label className="text-xs font-bold text-foreground">Ingredient Line Items</label>
-                                <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="h-8 text-[11px] font-bold gap-1">
+                                <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="h-8 text-xs font-bold gap-1">
                                     <Plus className="size-3" /> Add Item
                                 </Button>
                             </div>
@@ -447,7 +447,7 @@ export default function PurchaseOrdersPage() {
                                         <div key={index} className="flex items-end gap-2 p-3 border border-border/40 rounded-xl bg-muted/20 relative">
                                             {/* Ingredient Picker */}
                                             <div className="flex-1 space-y-1">
-                                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Ingredient</span>
+                                                <span className="text-xs uppercase font-bold text-muted-foreground">Ingredient</span>
                                                 <Select
                                                     value={item.ingredientId}
                                                     onValueChange={(val) => handleItemChange(index, 'ingredientId', val)}
@@ -467,10 +467,10 @@ export default function PurchaseOrdersPage() {
 
                                             {/* Quantity */}
                                             <div className="w-[110px] space-y-1">
-                                                <span className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
+                                                <span className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
                                                     Qty{' '}
                                                     {unitAbbrev && (
-                                                        <span className="text-[9px] text-muted-foreground/80 font-normal">({unitAbbrev})</span>
+                                                        <span className="text-xs text-muted-foreground/80 font-normal">({unitAbbrev})</span>
                                                     )}
                                                 </span>
                                                 <Input
@@ -485,7 +485,7 @@ export default function PurchaseOrdersPage() {
 
                                             {/* Unit Cost */}
                                             <div className="w-[120px] space-y-1">
-                                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
+                                                <span className="text-xs uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
                                                 <Input
                                                     type="number"
                                                     min="0"
@@ -498,7 +498,7 @@ export default function PurchaseOrdersPage() {
 
                                             {/* Total */}
                                             <div className="w-[100px] text-right pb-2 space-y-0.5 shrink-0">
-                                                <span className="text-[9px] uppercase font-bold text-muted-foreground block">Subtotal</span>
+                                                <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
                                                 <span className="text-xs font-black text-foreground block">
                                                     ₱
                                                     {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
@@ -577,11 +577,11 @@ export default function PurchaseOrdersPage() {
                             {/* Summary Card */}
                             <div className="p-4 bg-muted/30 border border-border/40 rounded-2xl grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">PO Number</span>
+                                    <span className="text-xs uppercase font-bold text-muted-foreground">PO Number</span>
                                     <h4 className="font-mono font-black text-sm text-foreground">{selectedPODetails.poNumber}</h4>
                                 </div>
                                 <div className="space-y-0.5 flex flex-col items-end">
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Status</span>
+                                    <span className="text-xs uppercase font-bold text-muted-foreground">Status</span>
                                     <Badge
                                         variant="outline"
                                         className={`text-xs font-bold py-0.5 px-2 capitalize ${getStatusBadgeClass(selectedPODetails.status)}`}
@@ -590,11 +590,11 @@ export default function PurchaseOrdersPage() {
                                     </Badge>
                                 </div>
                                 <div className="space-y-0.5">
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Supplier</span>
+                                    <span className="text-xs uppercase font-bold text-muted-foreground">Supplier</span>
                                     <p className="text-xs font-bold text-foreground">{selectedPODetails.supplier.name}</p>
                                 </div>
                                 <div className="space-y-0.5 flex flex-col items-end">
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Total Amount</span>
+                                    <span className="text-xs uppercase font-bold text-muted-foreground">Total Amount</span>
                                     <p className="text-sm font-black text-foreground">
                                         ₱{selectedPODetails.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </p>
@@ -636,7 +636,7 @@ export default function PurchaseOrdersPage() {
                             {/* Notes */}
                             {selectedPODetails.notes && (
                                 <div className="space-y-1">
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Notes</span>
+                                    <span className="text-xs uppercase font-bold text-muted-foreground">Notes</span>
                                     <p className="text-xs p-3 bg-muted/40 border border-border/20 rounded-xl text-foreground/90 italic">
                                         "{selectedPODetails.notes}"
                                     </p>
@@ -645,7 +645,7 @@ export default function PurchaseOrdersPage() {
 
                             {/* Items List */}
                             <div className="space-y-2">
-                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Procurement Line Items</span>
+                                <span className="text-xs uppercase font-bold text-muted-foreground">Procurement Line Items</span>
                                 <div className="border border-border/40 rounded-2xl overflow-hidden">
                                     <table className="w-full text-left border-collapse text-xs">
                                         <thead>

@@ -147,7 +147,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                     <Badge
                         key={attr.id}
                         variant="secondary"
-                        className="text-[9px] leading-none font-semibold capitalize py-0.5 px-1 bg-primary/5 text-primary border border-primary/10 shadow-3xs"
+                        className="text-xs leading-none font-semibold capitalize py-0.5 px-1 bg-primary/5 text-primary border border-primary/10 shadow-3xs"
                     >
                         {attr.attributeValue.attribute.name}: {attr.attributeValue.value}
                     </Badge>
@@ -207,7 +207,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                         <h3 className="text-base font-bold text-foreground/90 truncate leading-tight">
                                             {customer.user.firstName} {customer.user.lastName}
                                         </h3>
-                                        <Badge variant="outline" className="text-[10px] py-0 px-2 font-semibold bg-background uppercase">
+                                        <Badge variant="outline" className="text-xs py-0 px-2 font-semibold bg-background uppercase">
                                             {customer.deletedAt !== null ? 'Archived' : 'Active'}
                                         </Badge>
                                     </div>
@@ -222,7 +222,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                             </>
                                         )}
                                     </div>
-                                    <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-1.5 font-normal">
+                                    <p className="text-xs text-muted-foreground pt-1 flex items-center gap-1.5 font-normal">
                                         <Calendar className="size-3.5 text-muted-foreground" />
                                         Joined: {format(new Date(customer.createdAt), 'MMMM dd, yyyy - hh:mm a')}
                                     </p>
@@ -247,7 +247,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                 {/* ============================================================ */}
                                 <TabsContent value="cart" className="mt-4 space-y-4">
                                     <div className="flex items-center justify-between border-b pb-1.5">
-                                        <h3 className="text-xs font-bold text-foreground/50 uppercase tracking-wider">Shopping Cart Items</h3>
+                                        <h3 className="text-xs font-bold text-foreground/50 uppercase ">Shopping Cart Items</h3>
                                         {cartData && cartData.items.length > 0 && (
                                             <RequirePermission module="Customers Management" action="update">
                                                 <Button
@@ -255,7 +255,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                     disabled={clearCartMutation.isPending}
                                                     size="xs"
                                                     variant="outline"
-                                                    className="h-7 text-[10px] gap-1 border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive transition-colors shadow-3xs"
+                                                    className="h-7 text-xs gap-1 border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive transition-colors shadow-3xs"
                                                 >
                                                     <X className="size-3" /> Clear Cart
                                                 </Button>
@@ -307,7 +307,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                                     </span>
                                                                     {renderAttributeBadges(item.productVariant.attributes)}
                                                                     {item.productVariant.sku && (
-                                                                        <span className="text-[9px] font-mono text-muted-foreground uppercase pt-0.5">
+                                                                        <span className="text-xs font-mono text-muted-foreground uppercase pt-0.5">
                                                                             SKU: {item.productVariant.sku}
                                                                         </span>
                                                                     )}
@@ -356,7 +356,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                                     <span className="text-xs font-bold text-foreground/80">
                                                                         ₱{subtotal.toFixed(2)}
                                                                     </span>
-                                                                    <span className="text-[9px] text-muted-foreground font-semibold">
+                                                                    <span className="text-xs text-muted-foreground font-semibold">
                                                                         ₱{item.unitPrice.toFixed(2)} each
                                                                     </span>
                                                                 </div>
@@ -382,9 +382,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
 
                                             {/* Total Summary Amount Card */}
                                             <div className="flex justify-between items-center bg-muted/20 p-3.5 rounded-xl border border-border/40 shadow-3xs">
-                                                <span className="text-[10px] font-bold text-foreground/70 uppercase tracking-wide">
-                                                    Computed Cart Subtotal
-                                                </span>
+                                                <span className="text-xs font-bold text-foreground/70 uppercase ">Computed Cart Subtotal</span>
                                                 <span className="text-base font-black text-primary">₱{cartData.totalAmount.toFixed(2)}</span>
                                             </div>
                                         </div>
@@ -473,7 +471,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                                     <span className="font-bold text-foreground">Queue {order.queueNumber}</span>
                                                                     <Badge
                                                                         variant="outline"
-                                                                        className={`text-[10px] font-bold py-0.5 px-2 capitalize leading-none ${getStatusBadgeClass(
+                                                                        className={`text-xs font-bold py-0.5 px-2 capitalize leading-none ${getStatusBadgeClass(
                                                                             order.status
                                                                         )}`}
                                                                     >
@@ -498,13 +496,13 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                             {isExpanded && (
                                                                 <div className="border-t border-border/20 bg-muted/5 p-3.5 space-y-3 text-xs">
                                                                     {order.notes && (
-                                                                        <div className="text-[11px] text-amber-700 bg-amber-500/5 border border-amber-500/10 p-2 rounded-lg font-medium">
+                                                                        <div className="text-xs text-amber-700 bg-amber-500/5 border border-amber-500/10 p-2 rounded-lg font-medium">
                                                                             <strong>Order Notes:</strong> {order.notes}
                                                                         </div>
                                                                     )}
 
                                                                     <div className="space-y-2">
-                                                                        <span className="text-[9px] font-bold text-foreground/50 uppercase block tracking-wider">
+                                                                        <span className="text-xs font-bold text-foreground/50 uppercase block ">
                                                                             Ordered Items ({order.items?.length || 0})
                                                                         </span>
 
@@ -530,7 +528,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                                                                     <Badge
                                                                                                         key={mod.id}
                                                                                                         variant="outline"
-                                                                                                        className="text-[9px] font-semibold bg-background py-0 px-1.5 border-border/60 text-muted-foreground"
+                                                                                                        className="text-xs font-semibold bg-background py-0 px-1.5 border-border/60 text-muted-foreground"
                                                                                                     >
                                                                                                         + {mod.modifierOption.name}
                                                                                                     </Badge>
@@ -564,7 +562,7 @@ export default function CustomerViewDialog({ open, onOpenChange, customer }: Cus
                                                     >
                                                         &lt;
                                                     </Button>
-                                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                                    <span className="text-xs text-muted-foreground font-semibold">
                                                         Page {orderPage} of {ordersData.meta.pageCount}
                                                     </span>
                                                     <Button

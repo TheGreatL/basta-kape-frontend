@@ -118,7 +118,7 @@ export default function PosPage() {
                                                             className="h-9 bg-background/50"
                                                         />
                                                     </FormControl>
-                                                    <FormDescription className="text-[10px] text-muted-foreground leading-tight">
+                                                    <FormDescription className="text-xs text-muted-foreground leading-tight">
                                                         Starting cash in drawer for daily customer changes.
                                                     </FormDescription>
                                                     <FormMessage />
@@ -131,7 +131,7 @@ export default function PosPage() {
                                                 <User className="size-3.5" />
                                             </div>
                                             <div className="min-w-0">
-                                                <span className="text-[9px] text-muted-foreground block font-medium">Logged Cashier</span>
+                                                <span className="text-xs text-muted-foreground block font-medium">Logged Cashier</span>
                                                 <span className="text-xs font-bold text-foreground truncate block">
                                                     {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'POS Operator'}
                                                 </span>

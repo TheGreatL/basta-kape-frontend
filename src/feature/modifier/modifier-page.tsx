@@ -158,7 +158,7 @@ export default function ModifiersPage() {
                         <SlidersHorizontal className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground tracking-tight">Product Modifiers & Customizations</h1>
+                        <h1 className="text-2xl font-bold text-foreground ">Product Modifiers & Customizations</h1>
                         <p className="text-xs text-muted-foreground">
                             Configure drink adjustments, milk alternatives, syrup additions, and map choices to inventory ingredients.
                         </p>
@@ -275,7 +275,7 @@ export default function ModifiersPage() {
 
                                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                                         <Badge
-                                            className={`text-[10px] font-semibold py-0.5 px-2 ${
+                                            className={`text-xs font-semibold py-0.5 px-2 ${
                                                 group.isRequired
                                                     ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
                                                     : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800'
@@ -283,7 +283,7 @@ export default function ModifiersPage() {
                                         >
                                             {group.isRequired ? 'Required' : 'Optional'}
                                         </Badge>
-                                        <span className="text-[10px] text-muted-foreground font-semibold">
+                                        <span className="text-xs text-muted-foreground font-semibold">
                                             Limits: {group.minSelect} - {group.maxSelect} select
                                         </span>
                                     </div>
@@ -292,11 +292,11 @@ export default function ModifiersPage() {
                                 <CardContent className="p-4 flex-1 flex flex-col gap-4">
                                     {/* Linked Products */}
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-bold text-foreground/50 flex items-center gap-1 uppercase">
+                                        <span className="text-xs font-bold text-foreground/50 flex items-center gap-1 uppercase">
                                             <ShoppingBag className="size-3 text-primary" /> Linked Products ({group.products.length})
                                         </span>
                                         {group.products.length === 0 ? (
-                                            <span className="text-[11px] text-muted-foreground font-medium italic block pl-1">
+                                            <span className="text-xs text-muted-foreground font-medium italic block pl-1">
                                                 Not linked to any products yet.
                                             </span>
                                         ) : (
@@ -305,7 +305,7 @@ export default function ModifiersPage() {
                                                     <Badge
                                                         key={p.id}
                                                         variant="secondary"
-                                                        className="text-[10px] bg-muted/40 text-foreground/80 hover:bg-muted py-0 px-2 font-medium"
+                                                        className="text-xs bg-muted/40 text-foreground/80 hover:bg-muted py-0 px-2 font-medium"
                                                     >
                                                         {p.name}
                                                     </Badge>
@@ -317,7 +317,7 @@ export default function ModifiersPage() {
                                     {/* Options List */}
                                     <div className="flex-1 space-y-2">
                                         <div className="flex justify-between items-center border-b pb-1.5">
-                                            <span className="text-[10px] font-bold text-foreground/50 uppercase">
+                                            <span className="text-xs font-bold text-foreground/50 uppercase">
                                                 Option Choices ({group.options.length})
                                             </span>
                                             <RequirePermission module="Products Management" action="create">
@@ -325,7 +325,7 @@ export default function ModifiersPage() {
                                                     variant="ghost"
                                                     size="xs"
                                                     onClick={() => handleOpenCreateOption(group.id)}
-                                                    className="h-6 text-[10px] font-semibold gap-1 px-1.5 hover:bg-primary/5 hover:text-primary rounded-md"
+                                                    className="h-6 text-xs font-semibold gap-1 px-1.5 hover:bg-primary/5 hover:text-primary rounded-md"
                                                 >
                                                     <Plus className="size-3" /> Add Choice
                                                 </Button>
@@ -342,7 +342,7 @@ export default function ModifiersPage() {
                                                     <div key={opt.id} className="flex justify-between items-center pt-1.5 first:pt-0">
                                                         <div className="flex flex-col min-w-0">
                                                             <span className="text-xs font-semibold text-foreground/90 truncate">{opt.name}</span>
-                                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                                            <span className="text-xs text-muted-foreground font-medium">
                                                                 Price: ₱{opt.price.toFixed(2)}
                                                             </span>
                                                         </div>

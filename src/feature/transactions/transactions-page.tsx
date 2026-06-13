@@ -350,12 +350,12 @@ export default function TransactionsPage() {
                             {/* Order Details Header */}
                             <div className="p-3 bg-muted/30 border border-border/40 rounded-xl flex justify-between items-center">
                                 <div className="space-y-0.5">
-                                    <span className="text-[10px] uppercase font-semibold text-muted-foreground">Order Queue Number</span>
+                                    <span className="text-xs uppercase font-semibold text-muted-foreground">Order Queue Number</span>
                                     <h4 className="font-mono font-black text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
                                 </div>
                                 <Badge
                                     variant="outline"
-                                    className={`text-[10px] font-bold py-0.5 capitalize ${getPaymentStatusBadgeClass(selectedTx.paymentStatus)}`}
+                                    className={`text-xs font-bold py-0.5 capitalize ${getPaymentStatusBadgeClass(selectedTx.paymentStatus)}`}
                                 >
                                     {selectedTx.paymentStatus.toLowerCase()}
                                 </Badge>
@@ -413,7 +413,7 @@ export default function TransactionsPage() {
                                                 <Input
                                                     id="refNumInput"
                                                     placeholder="Input Reference Number"
-                                                    className="h-8 text-[11px] bg-background/50 rounded-lg flex-1"
+                                                    className="h-8 text-xs bg-background/50 rounded-lg flex-1"
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter') {
                                                             const val = (e.target as HTMLInputElement).value.trim();
@@ -428,7 +428,7 @@ export default function TransactionsPage() {
                                                 />
                                                 <Button
                                                     size="sm"
-                                                    className="h-8 text-[10px] rounded-lg font-bold"
+                                                    className="h-8 text-xs rounded-lg font-bold"
                                                     onClick={() => {
                                                         const el = document.getElementById('refNumInput') as HTMLInputElement;
                                                         const val = el.value.trim();
@@ -461,7 +461,7 @@ export default function TransactionsPage() {
                                             size="sm"
                                             onClick={handleFileUploadClick}
                                             disabled={isUploadPending || updateReceiptMutation.isPending}
-                                            className="h-8 text-[10px] font-bold rounded-lg border-border/70 hover:bg-muted"
+                                            className="h-8 text-xs font-bold rounded-lg border-border/70 hover:bg-muted"
                                         >
                                             <Upload className="size-3 mr-1" />
                                             {selectedTx.paymentProofPhoto ? 'Replace Receipt' : 'Upload Receipt'}
@@ -474,7 +474,7 @@ export default function TransactionsPage() {
                                         {isUploadPending ? (
                                             <div className="flex flex-col items-center gap-1.5">
                                                 <Clock className="size-6 text-primary animate-spin" />
-                                                <span className="text-[10px] text-muted-foreground font-semibold">Uploading Receipt...</span>
+                                                <span className="text-xs text-muted-foreground font-semibold">Uploading Receipt...</span>
                                             </div>
                                         ) : selectedTx.paymentProofPhoto ? (
                                             <img
@@ -486,10 +486,8 @@ export default function TransactionsPage() {
                                         ) : (
                                             <div className="text-center p-4">
                                                 <XCircle className="size-7 text-rose-500 mx-auto mb-1.5 opacity-60" />
-                                                <span className="text-[10px] text-muted-foreground font-semibold block">
-                                                    No Uploaded Screenshot Yet
-                                                </span>
-                                                <span className="text-[9px] text-muted-foreground/80 block mt-0.5">
+                                                <span className="text-xs text-muted-foreground font-semibold block">No Uploaded Screenshot Yet</span>
+                                                <span className="text-xs text-muted-foreground/80 block mt-0.5">
                                                     Please upload the GCash screenshot receipt.
                                                 </span>
                                             </div>

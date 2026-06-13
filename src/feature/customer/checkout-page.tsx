@@ -196,7 +196,7 @@ export default function CheckoutPage() {
                                     >
                                         <Icon className={`size-6 mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                                         <span className="font-bold text-foreground mb-1">{opt.label}</span>
-                                        <span className="text-[10px] leading-tight text-muted-foreground/80">{opt.description}</span>
+                                        <span className="text-xs leading-tight text-muted-foreground/80">{opt.description}</span>
                                     </button>
                                 );
                             })}
@@ -295,7 +295,7 @@ export default function CheckoutPage() {
                                                 </h4>
                                                 <span className="text-xs font-extrabold text-foreground shrink-0">₱{itemTotal.toFixed(2)}</span>
                                             </div>
-                                            <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground font-semibold">
+                                            <div className="flex flex-col gap-0.5 text-xs text-muted-foreground font-semibold">
                                                 <span>
                                                     Qty: {item.quantity} × ₱{(item.unitPrice + modifierPrice).toFixed(2)}
                                                 </span>
@@ -342,7 +342,7 @@ export default function CheckoutPage() {
                                     'Confirm & Place Order'
                                 )}
                             </Button>
-                            <Link to="/cart" className="block text-center text-[11px] font-bold text-muted-foreground hover:text-foreground py-1">
+                            <Link to="/cart" className="block text-center text-xs font-bold text-muted-foreground hover:text-foreground py-1">
                                 Cancel & Back to Cart
                             </Link>
                         </div>

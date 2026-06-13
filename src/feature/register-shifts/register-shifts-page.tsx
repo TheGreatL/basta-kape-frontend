@@ -363,9 +363,7 @@ export default function RegisterShiftsPage() {
                                                 <User className="size-4" />
                                             </div>
                                             <div className="min-w-0">
-                                                <span className="text-[10px] text-muted-foreground block font-medium leading-none">
-                                                    Starting Cashier
-                                                </span>
+                                                <span className="text-xs text-muted-foreground block font-medium leading-none">Starting Cashier</span>
                                                 <span className="text-xs font-bold text-foreground truncate block mt-0.5">
                                                     {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'System Cashier'}
                                                 </span>

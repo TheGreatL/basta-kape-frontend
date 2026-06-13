@@ -165,13 +165,10 @@ export default function RecipesPage() {
                 header: 'Category / Type',
                 cell: ({ row }) => (
                     <div className="flex flex-col gap-1 items-start">
-                        <Badge
-                            variant="outline"
-                            className="text-[10px] font-semibold bg-background py-0.5 px-1.5 leading-none shrink-0 border-border/80"
-                        >
+                        <Badge variant="outline" className="text-xs font-semibold bg-background py-0.5 px-1.5 leading-none shrink-0 border-border/80">
                             {row.original.product.category?.name || 'Unassigned'}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground/80 font-semibold pl-1.5">
+                        <span className="text-xs text-muted-foreground/80 font-semibold pl-1.5">
                             Type: {row.original.product.type?.name || 'Unassigned'}
                         </span>
                     </div>

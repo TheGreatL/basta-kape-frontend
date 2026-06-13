@@ -279,9 +279,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                     {/* Left Column: Config & Add Item */}
                     <div className="space-y-4">
                         <div className="border border-border/50 p-4 rounded-xl bg-card space-y-3">
-                            <h3 className="font-bold text-[10px] uppercase text-muted-foreground tracking-wider pb-1 border-b border-border/30">
-                                Customer & Method
-                            </h3>
+                            <h3 className="font-bold text-xs uppercase text-muted-foreground  pb-1 border-b border-border/30">Customer & Method</h3>
 
                             <div className="space-y-3">
                                 <div className="space-y-1">
@@ -364,7 +362,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
                         {/* Add Product Item Form */}
                         <div className="border border-border/50 p-4 rounded-xl bg-card space-y-3">
-                            <h3 className="font-bold text-[10px] uppercase text-muted-foreground tracking-wider pb-1 border-b border-border/30">
+                            <h3 className="font-bold text-xs uppercase text-muted-foreground  pb-1 border-b border-border/30">
                                 Add Coffee / Item Options
                             </h3>
 
@@ -439,23 +437,23 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                                 return (
                                                     <div className="mt-1 flex items-center gap-1.5">
                                                         {selectedVForecast.maxProduceable === 0 ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                                                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
                                                                 <span className="size-1 rounded-full bg-rose-500 animate-pulse" />
                                                                 Out of Stock
                                                             </span>
                                                         ) : selectedVForecast.maxProduceable === 'Unlimited' ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                                                                 <span className="size-1 rounded-full bg-emerald-500" />
                                                                 In Stock (Unlimited)
                                                             </span>
                                                         ) : typeof selectedVForecast.maxProduceable === 'number' &&
                                                           selectedVForecast.maxProduceable <= 10 ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse">
+                                                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse">
                                                                 <span className="size-1 rounded-full bg-amber-500" />
                                                                 Only {selectedVForecast.maxProduceable} left!
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                                                                 <span className="size-1 rounded-full bg-emerald-500" />
                                                                 In Stock ({selectedVForecast.maxProduceable} available)
                                                             </span>
@@ -482,18 +480,18 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                                             >
                                                                 <div className="flex justify-between items-center mb-1">
                                                                     <div className="flex items-center gap-1.5">
-                                                                        <span className="text-[11px] font-bold text-foreground">{group.name}</span>
+                                                                        <span className="text-xs font-bold text-foreground">{group.name}</span>
                                                                         {group.isRequired ? (
-                                                                            <span className="text-[9px] font-bold text-rose-500 bg-rose-500/10 px-1.5 py-0.2 rounded border border-rose-500/10">
+                                                                            <span className="text-xs font-bold text-rose-500 bg-rose-500/10 px-1.5 py-0.2 rounded border border-rose-500/10">
                                                                                 Required
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="text-[9px] font-semibold text-muted-foreground bg-muted border border-border/40 px-1.5 py-0.2 rounded">
+                                                                            <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border/40 px-1.5 py-0.2 rounded">
                                                                                 Optional
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <span className="text-[9px] text-muted-foreground font-medium">
+                                                                    <span className="text-xs text-muted-foreground font-medium">
                                                                         {group.maxSelect === 1 ? 'Choose 1' : `Choose up to ${group.maxSelect}`}
                                                                         {currentSelectedCount > 0 && ` (${currentSelectedCount} selected)`}
                                                                     </span>
@@ -598,7 +596,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                     {/* Right Column: Checkout Breakdown */}
                     <div className="flex flex-col h-full space-y-4">
                         <div className="border border-border/50 p-4 rounded-xl bg-card space-y-3 flex-1 flex flex-col min-h-[200px]">
-                            <h3 className="font-bold text-[10px] uppercase text-muted-foreground tracking-wider pb-1 border-b border-border/30 shrink-0">
+                            <h3 className="font-bold text-xs uppercase text-muted-foreground  pb-1 border-b border-border/30 shrink-0">
                                 Current Items
                             </h3>
 
@@ -617,13 +615,13 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                                 <div className="font-bold text-foreground truncate">
                                                     {item.name} x{item.quantity}
                                                 </div>
-                                                {item.sku && <span className="text-[10px] text-muted-foreground block">{item.sku}</span>}
+                                                {item.sku && <span className="text-xs text-muted-foreground block">{item.sku}</span>}
                                                 {item.modifierNames && item.modifierNames.length > 0 && (
-                                                    <span className="text-[10px] text-muted-foreground font-semibold block">
+                                                    <span className="text-xs text-muted-foreground font-semibold block">
                                                         Addons: {item.modifierNames.join(', ')}
                                                     </span>
                                                 )}
-                                                {item.notes && <span className="text-[10px] text-amber-600 block italic">Note: "{item.notes}"</span>}
+                                                {item.notes && <span className="text-xs text-amber-600 block italic">Note: "{item.notes}"</span>}
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="font-bold text-foreground/90 shrink-0">
