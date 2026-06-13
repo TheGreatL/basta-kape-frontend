@@ -14,6 +14,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 export default function OrderQueuePage() {
     const queryClient = useQueryClient();
@@ -129,7 +130,10 @@ export default function OrderQueuePage() {
                 {/* Card Header */}
                 <div className="flex items-start justify-between gap-2 border-b border-border/40 pb-2.5">
                     <div className="space-y-0.5">
-                        <span className="font-mono text-base font-black text-foreground">{order.queueNumber}</span>
+                        <div className="flex items-center gap-1">
+                            <span className="font-mono text-base font-black text-foreground">{order.queueNumber}</span>
+                            <CopyButton value={order.queueNumber} description={`Queue number #${order.queueNumber} copied`} />
+                        </div>
                         <div className="flex items-center gap-1">
                             <Badge
                                 variant="outline"

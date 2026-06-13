@@ -26,6 +26,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { cn } from '#/lib/utils.ts';
 import { format as formatDate } from 'date-fns';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 const EXPORT_ROW_LIMIT = 5000;
 
@@ -99,7 +100,17 @@ function VoidLogsAuditView() {
             {
                 accessorKey: 'order.queueNumber',
                 header: 'Order Queue No.',
-                cell: ({ row }) => <span className="font-mono font-bold text-foreground">{row.original.order?.queueNumber || '#N/A'}</span>
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-1">
+                        <span className="font-mono font-bold text-foreground">{row.original.order?.queueNumber || '#N/A'}</span>
+                        {row.original.order?.queueNumber && (
+                            <CopyButton
+                                value={row.original.order.queueNumber}
+                                description={`Queue number #${row.original.order.queueNumber} copied`}
+                            />
+                        )}
+                    </div>
+                )
             },
             {
                 accessorKey: 'order.netTotal',

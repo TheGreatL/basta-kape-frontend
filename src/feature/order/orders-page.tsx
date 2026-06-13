@@ -16,6 +16,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 import CreateOrderDialog from './components/create-order-dialog.tsx';
 import OrderDetailsDialog from './components/order-details-dialog.tsx';
@@ -107,7 +108,12 @@ export default function OrdersPage() {
             {
                 accessorKey: 'queueNumber',
                 header: 'Queue No.',
-                cell: ({ row }) => <span className="font-mono text-sm font-bold text-foreground">{row.original.queueNumber}</span>
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-1">
+                        <span className="font-mono text-sm font-bold text-foreground">{row.original.queueNumber}</span>
+                        <CopyButton value={row.original.queueNumber} description={`Queue number #${row.original.queueNumber} copied`} />
+                    </div>
+                )
             },
             {
                 accessorKey: 'customerName',

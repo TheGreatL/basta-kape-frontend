@@ -34,6 +34,7 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 import type { ITransaction } from '#/api/transactions.api.ts';
 import { getFileUrl } from '#/utils/helper';
@@ -170,7 +171,7 @@ export default function TransactionsPage() {
                 header: 'Transaction Date',
                 cell: ({ row }) => (
                     <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                        <Calendar className="size-3.5" />
+                        <CalendarIcon className="size-3.5" />
                         {format(new Date(row.original.createdAt), 'MMM dd, yyyy hh:mm a')}
                     </span>
                 )
@@ -178,7 +179,17 @@ export default function TransactionsPage() {
             {
                 accessorKey: 'order.queueNumber',
                 header: 'Order Queue #',
-                cell: ({ row }) => <span className="font-mono text-sm font-bold text-foreground">{row.original.order.queueNumber || 'N/A'}</span>
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-1">
+                        <span className="font-mono text-sm font-bold text-foreground">{row.original.order.queueNumber || 'N/A'}</span>
+                        {row.original.order.queueNumber && (
+                            <CopyButton
+                                value={row.original.order.queueNumber}
+                                description={`Queue number #${row.original.order.queueNumber} copied`}
+                            />
+                        )}
+                    </div>
+                )
             },
             {
                 accessorKey: 'order.customerName',
@@ -412,7 +423,15 @@ export default function TransactionsPage() {
                             <div className="p-3 bg-muted/30 border border-border/40 rounded-xl flex justify-between items-center">
                                 <div className="space-y-0.5">
                                     <span className="text-xs uppercase font-semibold text-muted-foreground">Order Queue Number</span>
-                                    <h4 className="font-mono font-black text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
+                                    <div className="flex items-center gap-1.5">
+                                        <h4 className="font-mono font-black text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
+                                        {selectedTx.order.queueNumber && (
+                                            <CopyButton
+                                                value={selectedTx.order.queueNumber}
+                                                description={`Queue number #${selectedTx.order.queueNumber} copied`}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                                 <Badge
                                     variant="outline"
@@ -465,7 +484,14 @@ export default function TransactionsPage() {
                                     <div className="space-y-2 pt-1 border-b border-border/30 pb-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-muted-foreground font-medium">GCash / Reference Number</span>
-                                            <span className="font-bold text-foreground font-mono">{selectedTx.gcashReferenceNumber || 'None'}</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-bold text-foreground font-mono">
+                                                    {selectedTx.gcashReferenceNumber || 'None'}
+                                                </span>
+                                                {selectedTx.gcashReferenceNumber && (
+                                                    <CopyButton value={selectedTx.gcashReferenceNumber} description={`Reference number copied`} />
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Reference input field if missing */}

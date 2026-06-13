@@ -20,6 +20,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import ProcessPaymentDialog from './process-payment-dialog.tsx';
 import VoidOrderDialog from './void-order-dialog.tsx';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 interface OrderDetailsDialogProps {
     open: boolean;
@@ -199,7 +200,13 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Orde
                             <div className="flex flex-wrap gap-4 items-center justify-between border-b pb-3 border-border/40">
                                 <div>
                                     <div className="text-xs uppercase font-bold text-muted-foreground">Queue Ticket</div>
-                                    <div className="text-base font-black text-foreground">{orderDetails.queueNumber}</div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="text-base font-black text-foreground">{orderDetails.queueNumber}</div>
+                                        <CopyButton
+                                            value={orderDetails.queueNumber}
+                                            description={`Queue number #${orderDetails.queueNumber} copied`}
+                                        />
+                                    </div>
                                 </div>
                                 <div>
                                     <div className="text-xs uppercase font-bold text-muted-foreground">Placed On</div>
