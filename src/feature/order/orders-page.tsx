@@ -5,7 +5,7 @@ import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { Route } from '#/routes/admin/orders.tsx';
+import { Route } from '#/routes/admin/orders/index.tsx';
 import { getOrders } from '#/api/orders.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderSource } from './order.types';
@@ -18,24 +18,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Badge } from '#/components/ui/badge.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 
-import CreateOrderDialog from './components/create-order-dialog.tsx';
-import OrderDetailsDialog from './components/order-details-dialog.tsx';
-
 export default function OrdersPage() {
-    const navigate = useNavigate({ from: '/admin/orders' });
+    const navigate = useNavigate({ from: '/admin/orders/' });
+    const globalNavigate = useNavigate();
     const { page, pageSize, search, status, orderType, orderSource } = Route.useSearch();
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
 
-    // Dialog state for order details inspection and creation
-    const [inspectedOrderId, setInspectedOrderId] = React.useState<string | null>(null);
-    const [isCreateOrderOpen, setIsCreateOrderOpen] = React.useState(false);
-
     const setSearchParams = (updates: Partial<ReturnType<typeof Route.useSearch>>) => {
         navigate({
-            search: (prev) => ({ ...prev, ...updates })
+            search: (prev: any) => ({ ...prev, ...updates })
         });
     };
 
@@ -187,7 +181,7 @@ export default function OrdersPage() {
                             variant="ghost"
                             size="icon"
                             className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                            onClick={() => setInspectedOrderId(row.original.id)}
+                            onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}/edit` })}
                             title="Inspect details"
                         >
                             <Eye className="size-4" />
@@ -217,7 +211,7 @@ export default function OrdersPage() {
                 </div>
 
                 <RequirePermission module="Orders Management" action="create">
-                    <Button onClick={() => setIsCreateOrderOpen(true)} className="h-9 gap-1.5 font-bold shadow-sm">
+                    <Button onClick={() => globalNavigate({ to: '/admin/orders/create' })} className="h-9 gap-1.5 font-bold shadow-sm">
                         <Plus className="size-4" />
                         Create POS Order
                     </Button>
@@ -333,12 +327,6 @@ export default function OrdersPage() {
                     }
                 />
             </div>
-
-            {/* Create POS Order Dialog */}
-            <CreateOrderDialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen} />
-
-            {/* Inspections Dialog */}
-            <OrderDetailsDialog open={!!inspectedOrderId} onOpenChange={(open) => !open && setInspectedOrderId(null)} orderId={inspectedOrderId} />
         </div>
     );
 }

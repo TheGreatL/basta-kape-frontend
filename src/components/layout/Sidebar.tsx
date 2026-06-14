@@ -119,6 +119,15 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
         }
     }
 
+    // Keep "Orders" active on nested creation and editing subroutes
+    if (item.path === '/admin/orders') {
+        const isCreate = matchRoute({ to: '/admin/orders/create' as any, fuzzy: false }) !== false;
+        const isEdit = matchRoute({ to: '/admin/orders/$id/edit' as any, fuzzy: false }) !== false;
+        if (isCreate || isEdit) {
+            isActive = true;
+        }
+    }
+
     return (
         <SidebarMenuItem>
             <SidebarMenuButton

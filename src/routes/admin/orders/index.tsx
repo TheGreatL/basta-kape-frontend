@@ -14,7 +14,7 @@ const searchParamsSchema = z.object({
     orderSource: z.enum(['POS', 'MOBILE_APP', 'WEBSITE', 'DELIVERY_PARTNER', '']).catch('')
 });
 
-export const Route = createFileRoute('/admin/orders')({
+export const Route = createFileRoute('/admin/orders/')({
     beforeLoad: async () => {
         if (typeof window === 'undefined') {
             return;

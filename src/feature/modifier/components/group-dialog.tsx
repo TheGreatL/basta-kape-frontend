@@ -17,7 +17,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Switch } from '#/components/ui/switch.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { ScrollArea } from '#/components/ui/scroll-area.tsx';
 import type { IProduct } from '#/feature/products/products.types';
 
 const groupFormSchema = z.object({

@@ -16,18 +16,17 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import OrderDetailsDialog from '#/feature/order/components/order-details-dialog.tsx';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
 export default function SalesPage() {
     const navigate = useNavigate({ from: '/admin/sales' });
+    const globalNavigate = useNavigate();
     const { dateFrom, dateTo } = Route.useSearch();
 
     const [startDate, setStartDate] = React.useState(dateFrom || '');
     const [endDate, setEndDate] = React.useState(dateTo || '');
 
-    const [inspectedOrderId, setInspectedOrderId] = React.useState<string | null>(null);
     const [searchQuery, setSearchQuery] = React.useState('');
 
     const setSearchParams = (updates: Record<string, any>) => {
@@ -559,7 +558,7 @@ export default function SalesPage() {
                                                     variant="ghost"
                                                     size="sm"
                                                     className="h-7 w-7 p-0 rounded-lg hover:bg-muted"
-                                                    onClick={() => setInspectedOrderId(order.id)}
+                                                    onClick={() => globalNavigate({ to: `/admin/orders/${order.id}/edit` })}
                                                     title="View Details"
                                                 >
                                                     <Eye className="size-3.5 text-muted-foreground hover:text-foreground" />
@@ -579,9 +578,6 @@ export default function SalesPage() {
                     </Table>
                 </div>
             </div>
-
-            {/* Order Details Modal Dialog */}
-            <OrderDetailsDialog open={!!inspectedOrderId} onOpenChange={(open) => !open && setInspectedOrderId(null)} orderId={inspectedOrderId} />
         </div>
     );
 }
