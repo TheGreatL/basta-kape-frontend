@@ -7,17 +7,18 @@ import { nitro } from 'nitro/vite';
 import viteReact from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-const config = defineConfig({
+const config = defineConfig(({ command }) => ({
     resolve: { tsconfigPaths: true },
     plugins: [
         devtools(),
         tailwindcss(),
         tanstackStart(),
-        nitro({
-            preset: 'vercel'
-        }),
+        command === 'build' &&
+            nitro({
+                preset: 'vercel'
+            }),
         viteReact()
-    ]
-});
+    ].filter(Boolean) as any
+}));
 
 export default config;
