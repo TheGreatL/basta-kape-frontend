@@ -35,13 +35,11 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
-import ProductCreateDialog from './components/product-create-dialog.tsx';
-import ProductEditDialog from './components/product-edit-dialog.tsx';
-import ProductViewDialog from './components/product-view-dialog.tsx';
 import ProductDeleteDialog from './components/product-delete-dialog.tsx';
 
 export default function ProductsPage() {
     const navigate = useNavigate({ from: '/admin/products/' });
+    const globalNavigate = useNavigate();
     const queryClient = useQueryClient();
     const { page, pageSize, search, status, productCategoryId, productTypeId } = Route.useSearch();
 
@@ -76,10 +74,6 @@ export default function ProductsPage() {
         setSearchParams({ search: debouncedSearch, page: 1 });
     }, [debouncedSearch]);
 
-    // Dialog States
-    const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);
-    const [selectedProduct, setSelectedProduct] = React.useState<IProduct | null>(null);
-
     // Delete Confirmation states
     const [productToDelete, setProductToDelete] = React.useState<IProduct | null>(null);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
@@ -112,18 +106,15 @@ export default function ProductsPage() {
     });
 
     const handleOpenCreate = () => {
-        setSelectedProduct(null);
-        setActionType('create');
+        globalNavigate({ to: '/admin/products/create' });
     };
 
     const handleOpenEdit = (product: IProduct) => {
-        setSelectedProduct(product);
-        setActionType('edit');
+        globalNavigate({ to: `/admin/products/${product.id}/edit` });
     };
 
     const handleOpenView = (product: IProduct) => {
-        setSelectedProduct(product);
-        setActionType('view');
+        globalNavigate({ to: `/admin/products/${product.id}/edit` });
     };
 
     const handleOpenDelete = (product: IProduct) => {
@@ -403,15 +394,6 @@ export default function ProductsPage() {
                     </>
                 }
             />
-
-            {/* CREATE DIALOG */}
-            <ProductCreateDialog open={actionType === 'create'} onOpenChange={(val) => !val && setActionType(null)} />
-
-            {/* EDIT DIALOG */}
-            <ProductEditDialog open={actionType === 'edit'} onOpenChange={(val) => !val && setActionType(null)} product={selectedProduct} />
-
-            {/* VIEW DIALOG */}
-            <ProductViewDialog open={actionType === 'view'} onOpenChange={(val) => !val && setActionType(null)} product={selectedProduct} />
 
             {/* DELETE CONFIRMATION DIALOG */}
             <ProductDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} product={productToDelete} />

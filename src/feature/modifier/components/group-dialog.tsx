@@ -247,46 +247,44 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                                     />
                                 </div>
 
-                                <div className="border border-border/40 rounded-xl overflow-hidden bg-background/20">
-                                    <ScrollArea className="h-[180px] p-2">
-                                        {filteredProducts.length === 0 ? (
-                                            <div className="text-center py-8 text-xs text-muted-foreground italic">
-                                                No products found matching search filter.
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {filteredProducts.map((p: IProduct) => {
-                                                    const isChecked = form.watch('productIds').includes(p.id);
-                                                    return (
-                                                        <label
-                                                            key={p.id}
-                                                            className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
-                                                                isChecked
-                                                                    ? 'bg-primary/5 border-primary/20 text-primary-foreground dark:text-primary-foreground'
-                                                                    : 'bg-background hover:bg-muted/30 border-border/40 text-foreground/85'
-                                                            }`}
-                                                        >
-                                                            <Checkbox
-                                                                checked={isChecked}
-                                                                onCheckedChange={(checked) => {
-                                                                    const currentIds = form.getValues('productIds');
-                                                                    if (checked) {
-                                                                        form.setValue('productIds', [...currentIds, p.id]);
-                                                                    } else {
-                                                                        form.setValue(
-                                                                            'productIds',
-                                                                            currentIds.filter((id) => id !== p.id)
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <span className="truncate">{p.name}</span>
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </ScrollArea>
+                                <div className="border border-border/40 rounded-xl p-2 overflow-hidden bg-background/20">
+                                    {filteredProducts.length === 0 ? (
+                                        <div className="text-center py-8 text-xs text-muted-foreground italic">
+                                            No products found matching search filter.
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {filteredProducts.map((p: IProduct) => {
+                                                const isChecked = form.watch('productIds').includes(p.id);
+                                                return (
+                                                    <label
+                                                        key={p.id}
+                                                        className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                                                            isChecked
+                                                                ? 'bg-primary/5 border-primary/20 text-primary-foreground dark:text-primary-foreground'
+                                                                : 'bg-background hover:bg-muted/30 border-border/40 text-foreground/85'
+                                                        }`}
+                                                    >
+                                                        <Checkbox
+                                                            checked={isChecked}
+                                                            onCheckedChange={(checked) => {
+                                                                const currentIds = form.getValues('productIds');
+                                                                if (checked) {
+                                                                    form.setValue('productIds', [...currentIds, p.id]);
+                                                                } else {
+                                                                    form.setValue(
+                                                                        'productIds',
+                                                                        currentIds.filter((id) => id !== p.id)
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="truncate">{p.name}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -143,15 +143,18 @@ function AttributeSelector({ attributeId, attributeName, initialValueIds, select
         queryFn: () => getAttributeValuesList(attributeId)
     });
 
+    const hasPopulatedInitial = React.useRef(false);
+
     // Populate initial value matching this attribute's values if present
     React.useEffect(() => {
-        if (valuesData && initialValueIds.length > 0 && !selectedValue) {
+        if (valuesData && initialValueIds.length > 0 && !hasPopulatedInitial.current) {
             const match = valuesData.data.find((v: IAttributeValue) => initialValueIds.includes(v.id));
             if (match) {
                 onChange(match.id);
             }
+            hasPopulatedInitial.current = true;
         }
-    }, [valuesData, initialValueIds, selectedValue, onChange]);
+    }, [valuesData, initialValueIds, onChange]);
 
     if (isLoading) {
         return (

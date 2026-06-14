@@ -56,9 +56,20 @@ interface RecipeDialogProps {
     onOpenChange: (open: boolean) => void;
     variant: IProductVariant | null;
     productName: string;
+    isLocal?: boolean;
+    localRecipe?: RecipeFormValues | null;
+    onSaveLocalRecipe?: (recipe: RecipeFormValues) => void;
 }
 
-export default function RecipeDialog({ open, onOpenChange, variant, productName }: RecipeDialogProps) {
+export default function RecipeDialog({
+    open,
+    onOpenChange,
+    variant,
+    productName,
+    isLocal = false,
+    localRecipe = null,
+    onSaveLocalRecipe
+}: RecipeDialogProps) {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = React.useState(false);
     const [isRendering, setIsRendering] = React.useState(false);
@@ -82,12 +93,12 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
     } = useQuery<IRecipe>({
         queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id],
         queryFn: () => getVariantRecipe(variant!.id),
-        enabled: open && !!variant?.id,
+        enabled: open && !!variant?.id && !isLocal,
         retry: false
     });
 
-    const isNotFound = isError && error instanceof ApiError && error.status === 404;
-    const isDataLoading = (isRecipeLoading && !isNotFound) || !isRendering || !variant;
+    const isNotFound = isLocal ? true : isError && error instanceof ApiError && error.status === 404;
+    const isDataLoading = isLocal ? !isRendering || !variant : (isRecipeLoading && !isNotFound) || !isRendering || !variant;
 
     // Query: Measurement Units
     const { data: unitsData } = useQuery({
@@ -114,7 +125,17 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
 
     // Populate form values when recipe changes
     React.useEffect(() => {
-        if (recipe) {
+        if (isLocal) {
+            if (localRecipe) {
+                form.reset(localRecipe);
+            } else {
+                form.reset({
+                    name: `${productName} Recipe`,
+                    description: '',
+                    ingredients: []
+                });
+            }
+        } else if (recipe) {
             form.reset({
                 name: recipe.name,
                 description: recipe.description || '',
@@ -132,7 +153,7 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
                 ingredients: []
             });
         }
-    }, [recipe, productName, form]);
+    }, [recipe, localRecipe, isLocal, productName, form]);
 
     // Mutations
     const createRecipeMutation = useMutation({
@@ -187,7 +208,12 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
     });
 
     const onSubmit = (values: RecipeFormValues) => {
-        if (isNotFound) {
+        if (isLocal) {
+            if (onSaveLocalRecipe) {
+                onSaveLocalRecipe(values);
+            }
+            onOpenChange(false);
+        } else if (isNotFound) {
             createRecipeMutation.mutate(values);
         } else {
             updateRecipeMutation.mutate(values);
@@ -195,7 +221,9 @@ export default function RecipeDialog({ open, onOpenChange, variant, productName 
     };
 
     const handleCancel = () => {
-        if (recipe) {
+        if (isLocal) {
+            onOpenChange(false);
+        } else if (recipe) {
             form.reset({
                 name: recipe.name,
                 description: recipe.description || '',

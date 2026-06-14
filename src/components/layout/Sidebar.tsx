@@ -108,7 +108,16 @@ const sidebarGroups: Array<{
 
 function SidebarLinkItem({ item }: { item: SidebarItem }) {
     const matchRoute = useMatchRoute();
-    const isActive = matchRoute({ to: item.path as any, fuzzy: !item.exact }) !== false;
+    let isActive = matchRoute({ to: item.path as any, fuzzy: !item.exact }) !== false;
+
+    // Keep "Products" active on nested creation and editing subroutes
+    if (item.path === '/admin/products') {
+        const isCreate = matchRoute({ to: '/admin/products/create' as any, fuzzy: false }) !== false;
+        const isEdit = matchRoute({ to: '/admin/products/$id/edit' as any, fuzzy: false }) !== false;
+        if (isCreate || isEdit) {
+            isActive = true;
+        }
+    }
 
     return (
         <SidebarMenuItem>
