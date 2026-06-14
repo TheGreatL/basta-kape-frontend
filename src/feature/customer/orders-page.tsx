@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Search, Coffee, ChevronLeft, ChevronRight, ClipboardCheck, Clock } from 'lucide-react';
+import { Search, Coffee, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Printer, FileText, Download } from 'lucide-react';
 
 import { getCustomerOrders } from '#/api/customer.api.ts';
 import { useCurrentCustomer } from '#/feature/customer/use-current-customer.ts';
@@ -11,6 +11,8 @@ import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { TOrderStatus, IOrder } from '#/feature/order/order.types.ts';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
+import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
 
 const STATUS_FILTERS: Array<{ label: string; value: TOrderStatus | 'ALL' }> = [
     { label: 'All Orders', value: 'ALL' },
@@ -263,15 +265,53 @@ export default function OrdersPage() {
                                         <span className="text-xs text-muted-foreground">Total Amount</span>
                                         <div className="text-lg font-bold text-foreground">₱{order.netTotal.toFixed(2)}</div>
                                     </div>
-                                    <Link to="/orders/$id" params={{ id: order.id }}>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 font-semibold"
-                                        >
-                                            Track Order
-                                        </Button>
-                                    </Link>
+                                    <div className="flex items-center gap-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-9 w-9 p-0 rounded-xl hover:text-primary hover:border-primary/45 transition-all cursor-pointer"
+                                                    title="Print / View Receipt"
+                                                >
+                                                    <Printer className="size-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="rounded-xl" align="end">
+                                                <DropdownMenuItem
+                                                    onClick={() => printReceiptHtml(order.id)}
+                                                    className="text-xs gap-2 font-semibold cursor-pointer"
+                                                >
+                                                    <Printer className="size-3.5 text-muted-foreground" />
+                                                    Print Thermal (HTML)
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => openReceiptPdf(order.id)}
+                                                    className="text-xs gap-2 font-semibold cursor-pointer"
+                                                >
+                                                    <FileText className="size-3.5 text-muted-foreground" />
+                                                    Open PDF Receipt
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
+                                                    className="text-xs gap-2 font-semibold cursor-pointer"
+                                                >
+                                                    <Download className="size-3.5 text-muted-foreground" />
+                                                    Download PDF Receipt
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+
+                                        <Link to="/orders/$id" params={{ id: order.id }}>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 font-semibold"
+                                            >
+                                                Track Order
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         ))}

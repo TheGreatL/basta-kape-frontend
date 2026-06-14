@@ -1,6 +1,22 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Clock, Coffee, Volume2, Receipt, ClipboardList, CheckCircle2, Loader2, XCircle, AlertCircle, User, Store } from 'lucide-react';
+import {
+    ArrowLeft,
+    Clock,
+    Coffee,
+    Volume2,
+    Receipt,
+    ClipboardList,
+    CheckCircle2,
+    Loader2,
+    XCircle,
+    AlertCircle,
+    User,
+    Store,
+    Printer,
+    FileText,
+    Download
+} from 'lucide-react';
 
 import { getOrderById } from '#/api/orders.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -9,6 +25,8 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
 import { getFileUrl } from '#/utils/helper';
 import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
+import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
 
 export default function OrderDetailsPage() {
     const { id } = useParams({
@@ -116,14 +134,46 @@ export default function OrderDetailsPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl min-h-screen">
-            {/* Back Button */}
-            <Link
-                to="/orders"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors"
-            >
-                <ArrowLeft className="size-4" />
-                <span>Back to My Orders</span>
-            </Link>
+            {/* Back Button & Action Toolbar */}
+            <div className="flex items-center justify-between gap-4 mb-8">
+                <Link
+                    to="/orders"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                    <ArrowLeft className="size-4" />
+                    <span>Back to My Orders</span>
+                </Link>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 px-3 bg-background border-border/60 hover:bg-muted text-foreground text-xs font-bold gap-1.5 rounded-xl cursor-pointer"
+                        >
+                            <Printer className="size-4 shrink-0" />
+                            Print / View Receipt
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="rounded-xl animate-in slide-in-from-top-2 duration-150" align="end">
+                        <DropdownMenuItem onClick={() => printReceiptHtml(order.id)} className="text-xs gap-2 font-semibold cursor-pointer">
+                            <Printer className="size-3.5 text-muted-foreground" />
+                            Print Thermal (HTML)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openReceiptPdf(order.id)} className="text-xs gap-2 font-semibold cursor-pointer">
+                            <FileText className="size-3.5 text-muted-foreground" />
+                            Open PDF Receipt
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
+                            className="text-xs gap-2 font-semibold cursor-pointer"
+                        >
+                            <Download className="size-3.5 text-muted-foreground" />
+                            Download PDF Receipt
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             <div className="grid grid-cols-1 gap-8">
                 {/* Header Ticket Stats */}

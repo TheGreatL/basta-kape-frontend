@@ -31,8 +31,9 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { createOrder } from '#/api/orders.api.ts';
 import { uploadImageFile } from '#/api/transactions.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { TOrderType } from '#/feature/order/order.types.ts';
+import type { TOrderType, IOrder } from '#/feature/order/order.types.ts';
 import type { ICartItemResponse } from '#/feature/customer/customer.types.ts';
+import CustomerCheckoutSuccessDialog from './components/customer-checkout-success-dialog.tsx';
 
 const diningOptions = [
     {
@@ -73,6 +74,8 @@ export default function CheckoutPage() {
     const [receiptPreview, setReceiptPreview] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+    const [createdOrder, setCreatedOrder] = useState<IOrder | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -243,7 +246,7 @@ export default function CheckoutPage() {
                 .filter(Boolean)
                 .join('\n');
 
-            await createOrder({
+            const order = await createOrder({
                 orderType,
                 orderSource: 'WEBSITE',
                 notes: finalNotes || undefined,
@@ -271,7 +274,8 @@ export default function CheckoutPage() {
                 description: 'Your order has been queued for barista preparation.'
             });
 
-            navigate({ to: '/orders' });
+            setCreatedOrder(order);
+            setShowSuccessDialog(true);
         } catch (err) {
             toast.error('Failed to place order', {
                 description: getErrorMessage(err)
@@ -778,6 +782,21 @@ export default function CheckoutPage() {
                     </div>
                 </div>
             </form>
+
+            <CustomerCheckoutSuccessDialog
+                open={showSuccessDialog}
+                onOpenChange={setShowSuccessDialog}
+                order={createdOrder}
+                paymentMethod={paymentMethod}
+                onClose={() => {
+                    setShowSuccessDialog(false);
+                    if (createdOrder) {
+                        navigate({ to: '/orders/$id', params: { id: createdOrder.id } });
+                    } else {
+                        navigate({ to: '/orders' });
+                    }
+                }}
+            />
         </div>
     );
 }
