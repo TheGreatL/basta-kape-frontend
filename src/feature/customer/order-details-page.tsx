@@ -397,7 +397,7 @@ export default function OrderDetailsPage() {
                                             )}
                                             {payment.paymentProofPhoto && (
                                                 <div className="space-y-1.5 pt-1">
-                                                    <span className="text-[10px] font-semibold text-muted-foreground block">
+                                                    <span className="text-xs font-semibold text-muted-foreground block">
                                                         Uploaded Receipt Screenshot
                                                     </span>
                                                     <div className="border border-border/40 rounded-xl overflow-hidden bg-background max-h-[160px] flex items-center justify-center relative group">

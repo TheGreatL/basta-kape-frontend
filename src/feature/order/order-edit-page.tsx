@@ -1,9 +1,25 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { RefreshCw, TrendingUp, ArrowRight, CreditCard, CheckCircle2, Tag, Trash2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import {
+    RefreshCw,
+    TrendingUp,
+    ArrowRight,
+    CreditCard,
+    CheckCircle2,
+    Tag,
+    Trash2,
+    AlertTriangle,
+    ArrowLeft,
+    Printer,
+    FileText,
+    Download
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 import { Route } from '#/routes/admin/orders/$id/edit.tsx';
 import { getOrderById, updateOrderStatus, getOrderPayments } from '#/api/orders.api.ts';
@@ -20,23 +36,52 @@ import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import ProcessPaymentDialog from './components/process-payment-dialog.tsx';
 import VoidOrderDialog from './components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
+import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+
+const discountFormSchema = z.object({
+    discountId: z.string().min(1, 'Please select a discount'),
+    referenceId: z.string().optional(),
+    referenceName: z.string().optional()
+});
+
+const statusFormSchema = z.object({
+    status: z.enum(['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
+    notes: z.string().optional()
+});
 
 export default function OrderEditPage() {
     const { id: orderId } = Route.useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const [statusChangeValue, setStatusChangeValue] = React.useState<TOrderStatus | ''>('');
-    const [statusChangeNotes, setStatusChangeNotes] = React.useState('');
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = React.useState(false);
     const [isVoidDialogOpen, setIsVoidDialogOpen] = React.useState(false);
-    const [selectedDiscountId, setSelectedDiscountId] = React.useState<string>('');
-    const [referenceId, setReferenceId] = React.useState<string>('');
-    const [referenceName, setReferenceName] = React.useState<string>('');
+
+    const discountForm = useForm<z.infer<typeof discountFormSchema>>({
+        resolver: zodResolver(discountFormSchema),
+        defaultValues: {
+            discountId: '',
+            referenceId: '',
+            referenceName: ''
+        }
+    });
+
+    const statusForm = useForm<z.infer<typeof statusFormSchema>>({
+        resolver: zodResolver(statusFormSchema),
+        defaultValues: {
+            status: undefined,
+            notes: ''
+        }
+    });
+
+    const selectedDiscountId = discountForm.watch('discountId');
+    const statusChangeValue = statusForm.watch('status');
 
     const handleBack = () => {
         navigate({
@@ -72,9 +117,11 @@ export default function OrderEditPage() {
             });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, orderId] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
-            setSelectedDiscountId('');
-            setReferenceId('');
-            setReferenceName('');
+            discountForm.reset({
+                discountId: '',
+                referenceId: '',
+                referenceName: ''
+            });
         },
         onError: (err) => {
             toast.error('Failed to apply discount', {
@@ -139,8 +186,10 @@ export default function OrderEditPage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, updated.id] });
             toast.success(`Order status updated to ${updated.status}`);
-            setStatusChangeValue('');
-            setStatusChangeNotes('');
+            statusForm.reset({
+                status: undefined,
+                notes: ''
+            });
         },
         onError: (err) => {
             toast.error('Failed to update order status', { description: getErrorMessage(err) });
@@ -161,14 +210,25 @@ export default function OrderEditPage() {
         }
     });
 
-    const handleUpdateStatusSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!orderId || !statusChangeValue) return;
+    const onApplyDiscountSubmit = (values: z.infer<typeof discountFormSchema>) => {
+        if (isSelectedBIR && (!values.referenceId?.trim() || !values.referenceName?.trim())) {
+            toast.error('BIR compliance: Card ID and Holder Name are required.');
+            return;
+        }
+        applyDiscountMutation.mutate({
+            discountId: values.discountId,
+            referenceId: isSelectedBIR ? values.referenceId : undefined,
+            referenceName: isSelectedBIR ? values.referenceName : undefined
+        });
+    };
+
+    const onUpdateStatusSubmit = (values: z.infer<typeof statusFormSchema>) => {
+        if (!orderId || !values.status) return;
         updateStatusMutation.mutate({
             orderIdVal: orderId,
             payload: {
-                status: statusChangeValue,
-                notes: statusChangeNotes || undefined
+                status: values.status,
+                notes: values.notes || undefined
             }
         });
     };
@@ -232,6 +292,34 @@ export default function OrderEditPage() {
                         </div>
                     </div>
                 </div>
+
+                <div className="flex items-center gap-2 mt-2 md:mt-0">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="h-9 gap-1.5 font-bold shadow-xs text-xs">
+                                <Printer className="size-4 shrink-0" />
+                                Print / View Receipt
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="rounded-xl font-medium" align="end">
+                            <DropdownMenuItem onClick={() => printReceiptHtml(orderDetails.id)} className="text-xs gap-2 font-semibold">
+                                <Printer className="size-3.5 text-muted-foreground" />
+                                Print Thermal (HTML)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openReceiptPdf(orderDetails.id)} className="text-xs gap-2 font-semibold">
+                                <FileText className="size-3.5 text-muted-foreground" />
+                                Open PDF Receipt
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => downloadReceiptPdf(orderDetails.id, orderDetails.queueNumber)}
+                                className="text-xs gap-2 font-semibold"
+                            >
+                                <Download className="size-3.5 text-muted-foreground" />
+                                Download PDF Receipt
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             {/* Content Desk Workspace */}
@@ -242,20 +330,20 @@ export default function OrderEditPage() {
                     <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-4">
                         <div className="flex flex-wrap gap-4 items-center justify-between border-b pb-3.5 border-border/30">
                             <div>
-                                <div className="text-3xs uppercase font-bold tracking-wider text-muted-foreground">Queue Ticket Number</div>
+                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Queue Ticket Number</div>
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-lg font-bold text-foreground">{orderDetails.queueNumber}</div>
                                     <CopyButton value={orderDetails.queueNumber} description={`Queue number #${orderDetails.queueNumber} copied`} />
                                 </div>
                             </div>
                             <div>
-                                <div className="text-3xs uppercase font-bold tracking-wider text-muted-foreground">Placed On</div>
+                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Placed On</div>
                                 <div className="font-semibold text-foreground text-sm pt-0.5">
                                     {format(new Date(orderDetails.createdAt), 'MMMM dd, yyyy - hh:mm a')}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-3xs uppercase font-bold tracking-wider text-muted-foreground">Customer</div>
+                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Customer</div>
                                 <div className="font-semibold text-foreground text-sm pt-0.5">{orderDetails.customerName || 'Walk-in Customer'}</div>
                             </div>
                         </div>
@@ -263,16 +351,14 @@ export default function OrderEditPage() {
                         {/* Master Order Notes */}
                         {orderDetails.notes && (
                             <div className="border border-amber-500/25 bg-amber-500/5 p-4 rounded-xl space-y-1">
-                                <h4 className="font-bold text-amber-800 uppercase text-[10px] tracking-wider">
-                                    Order Instructions & Delivery Details
-                                </h4>
+                                <h4 className="font-bold text-amber-800 uppercase text-xs ">Order Instructions & Delivery Details</h4>
                                 <p className="text-amber-900 leading-relaxed font-mono whitespace-pre-wrap text-2xs">{orderDetails.notes}</p>
                             </div>
                         )}
 
                         {/* Ordered Items list */}
                         <div className="space-y-3">
-                            <h4 className="font-bold text-foreground/75 uppercase text-2xs tracking-wider">Ordered Items</h4>
+                            <h4 className="font-bold text-foreground/75 uppercase text-2xs ">Ordered Items</h4>
                             <div className="border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20 bg-background/30">
                                 {orderDetails.items?.map((item: IOrderItem) => (
                                     <div key={item.id} className="p-4 flex items-start justify-between gap-4">
@@ -317,9 +403,7 @@ export default function OrderEditPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Amounts Summary */}
                         <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-3.5">
-                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs tracking-wider">
-                                Computation Breakdown
-                            </h4>
+                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs ">Computation Breakdown</h4>
                             <div className="space-y-2.5 font-medium text-xs">
                                 <div className="flex justify-between text-muted-foreground">
                                     <span>Subtotal Amount:</span>
@@ -356,7 +440,7 @@ export default function OrderEditPage() {
                         {/* Payment Settlement details card */}
                         {payments && payments.length > 0 && (
                             <div className="border border-emerald-500/20 p-5 rounded-2xl bg-emerald-500/5 shadow-3xs space-y-3.5">
-                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-2 uppercase text-2xs tracking-wider flex items-center gap-1.5">
+                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-2 uppercase text-2xs  flex items-center gap-1.5">
                                     <CheckCircle2 className="size-3.5 text-emerald-600" />
                                     Payment Settlement Details
                                 </h4>
@@ -366,7 +450,7 @@ export default function OrderEditPage() {
                                             <div className="flex justify-between">
                                                 <span>Payment Status:</span>
                                                 <Badge
-                                                    className={`text-[9px] uppercase font-bold py-0.5 px-2 ${
+                                                    className={`text-xs uppercase font-bold py-0.5 px-2 ${
                                                         payment.paymentStatus === 'PAID'
                                                             ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20'
                                                             : payment.paymentStatus === 'PENDING'
@@ -410,7 +494,7 @@ export default function OrderEditPage() {
                                                     )}
                                                     {payment.paymentProofPhoto && (
                                                         <div className="mt-2.5 space-y-1">
-                                                            <span className="text-[10px] text-emerald-700 block uppercase font-bold">
+                                                            <span className="text-xs text-emerald-700 block uppercase font-bold">
                                                                 Screenshot Receipt
                                                             </span>
                                                             <div className="border border-emerald-500/20 rounded-xl overflow-hidden bg-background max-h-[140px] flex items-center justify-center relative shadow-3xs">
@@ -442,7 +526,7 @@ export default function OrderEditPage() {
                     <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-4">
                         {orderDetails.status === 'CANCELLED' ? (
                             <div className="border border-rose-500/20 p-4 rounded-xl bg-rose-500/5 space-y-2 text-xs">
-                                <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-3xs tracking-wider flex items-center gap-1.5">
+                                <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-3xs  flex items-center gap-1.5">
                                     <AlertTriangle className="size-3.5 text-rose-600" />
                                     Order Void details
                                 </h4>
@@ -462,7 +546,7 @@ export default function OrderEditPage() {
                                                     <span>{format(new Date(voidLog.createdAt), 'MMM dd, yyyy - hh:mm a')}</span>
                                                 </div>
                                                 <div className="mt-1 pt-2 border-t border-rose-500/10">
-                                                    <span className="text-3xs text-rose-700 block font-bold uppercase tracking-wider">Reason:</span>
+                                                    <span className="text-3xs text-rose-700 block font-bold uppercase ">Reason:</span>
                                                     <span className="italic">"{voidLog.reason}"</span>
                                                 </div>
                                             </div>
@@ -474,7 +558,7 @@ export default function OrderEditPage() {
                             </div>
                         ) : orderDetails.status === 'COMPLETED' ? (
                             <div className="border border-emerald-500/20 p-4 rounded-xl bg-emerald-500/5 space-y-2.5 text-xs">
-                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-3xs tracking-wider flex items-center gap-1.5">
+                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-3xs  flex items-center gap-1.5">
                                     <CheckCircle2 className="size-3.5 text-emerald-600" />
                                     Fulfillment Complete
                                 </h4>
@@ -489,7 +573,7 @@ export default function OrderEditPage() {
                                 payments.some((p: IOrderPayment) => p.paymentStatus === 'PENDING') ? (
                                     <div className="space-y-4">
                                         <div className="space-y-1.5">
-                                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs tracking-wider flex items-center gap-1.5">
+                                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs  flex items-center gap-1.5">
                                                 <CreditCard className="size-3.5 text-muted-foreground" />
                                                 Pending Digital Payment
                                             </h4>
@@ -527,7 +611,7 @@ export default function OrderEditPage() {
                                     <div className="space-y-4">
                                         {/* Discounts Section */}
                                         <div className="space-y-3 pb-3 border-b border-dashed border-border/30">
-                                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs tracking-wider flex items-center gap-1.5">
+                                            <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs  flex items-center gap-1.5">
                                                 <Tag className="size-3.5 text-muted-foreground" />
                                                 Order Discounts
                                             </h4>
@@ -559,78 +643,98 @@ export default function OrderEditPage() {
                                                 </div>
                                             ) : (
                                                 <RequirePermission module="Point of Sale (POS)" action="create">
-                                                    <div className="space-y-3">
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-xs font-semibold text-foreground/80">Select Discount</label>
-                                                            <Select value={selectedDiscountId} onValueChange={setSelectedDiscountId}>
-                                                                <SelectTrigger className="h-9 text-xs bg-background/50 rounded-lg">
-                                                                    <SelectValue placeholder="Choose a discount..." />
-                                                                </SelectTrigger>
-                                                                <SelectContent className="rounded-xl">
-                                                                    {activeDiscounts.map((d: IDiscount) => (
-                                                                        <SelectItem key={d.id} value={d.id} className="text-xs">
-                                                                            {d.name} {d.type === 'PERCENTAGE' ? `(${d.value}%)` : `(₱${d.value})`}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
+                                                    <Form {...discountForm}>
+                                                        <form onSubmit={discountForm.handleSubmit(onApplyDiscountSubmit)} className="space-y-3">
+                                                            <FormField
+                                                                control={discountForm.control}
+                                                                name="discountId"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="space-y-1.5">
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Select Discount
+                                                                        </FormLabel>
+                                                                        <Select value={field.value} onValueChange={field.onChange}>
+                                                                            <FormControl>
+                                                                                <SelectTrigger className="h-9 text-xs bg-background/50 rounded-lg">
+                                                                                    <SelectValue placeholder="Choose a discount..." />
+                                                                                </SelectTrigger>
+                                                                            </FormControl>
+                                                                            <SelectContent className="rounded-xl">
+                                                                                {activeDiscounts.map((d: IDiscount) => (
+                                                                                    <SelectItem key={d.id} value={d.id} className="text-xs">
+                                                                                        {d.name}{' '}
+                                                                                        {d.type === 'PERCENTAGE' ? `(${d.value}%)` : `(₱${d.value})`}
+                                                                                    </SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
 
-                                                        {isSelectedBIR && (
-                                                            <div className="space-y-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3.5 animate-in slide-in-from-top-2 duration-150">
-                                                                <div className="text-3xs text-amber-700 font-bold leading-normal">
-                                                                    BIR compliance: Enter card details to apply senior/PWD discount.
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <div className="space-y-1">
-                                                                        <label className="text-3xs font-bold text-foreground/75 block">
-                                                                            Card ID Number
-                                                                        </label>
-                                                                        <Input
-                                                                            placeholder="e.g. SC-12345"
-                                                                            value={referenceId}
-                                                                            onChange={(e) => setReferenceId(e.target.value)}
-                                                                            className="h-8 text-2xs bg-background/50 font-mono rounded-lg"
+                                                            {isSelectedBIR && (
+                                                                <div className="space-y-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3.5 animate-in slide-in-from-top-2 duration-150">
+                                                                    <div className="text-3xs text-amber-700 font-bold leading-normal">
+                                                                        BIR compliance: Enter card details to apply senior/PWD discount.
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <FormField
+                                                                            control={discountForm.control}
+                                                                            name="referenceId"
+                                                                            render={({ field }) => (
+                                                                                <FormItem className="space-y-1">
+                                                                                    <FormLabel className="text-3xs font-bold text-foreground/75 block">
+                                                                                        Card ID Number
+                                                                                    </FormLabel>
+                                                                                    <FormControl>
+                                                                                        <Input
+                                                                                            placeholder="e.g. SC-12345"
+                                                                                            {...field}
+                                                                                            className="h-8 text-2xs bg-background/50 font-mono rounded-lg"
+                                                                                        />
+                                                                                    </FormControl>
+                                                                                    <FormMessage />
+                                                                                </FormItem>
+                                                                            )}
+                                                                        />
+
+                                                                        <FormField
+                                                                            control={discountForm.control}
+                                                                            name="referenceName"
+                                                                            render={({ field }) => (
+                                                                                <FormItem className="space-y-1">
+                                                                                    <FormLabel className="text-3xs font-bold text-foreground/75 block">
+                                                                                        Cardholder Name
+                                                                                    </FormLabel>
+                                                                                    <FormControl>
+                                                                                        <Input
+                                                                                            placeholder="e.g. Maria Santos"
+                                                                                            {...field}
+                                                                                            className="h-8 text-2xs bg-background/50 rounded-lg"
+                                                                                        />
+                                                                                    </FormControl>
+                                                                                    <FormMessage />
+                                                                                </FormItem>
+                                                                            )}
                                                                         />
                                                                     </div>
-                                                                    <div className="space-y-1">
-                                                                        <label className="text-3xs font-bold text-foreground/75 block">
-                                                                            Cardholder Name
-                                                                        </label>
-                                                                        <Input
-                                                                            placeholder="e.g. Maria Santos"
-                                                                            value={referenceName}
-                                                                            onChange={(e) => setReferenceName(e.target.value)}
-                                                                            className="h-8 text-2xs bg-background/50 rounded-lg"
-                                                                        />
-                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
-
-                                                        <Button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                applyDiscountMutation.mutate({
-                                                                    discountId: selectedDiscountId,
-                                                                    referenceId: isSelectedBIR ? referenceId : undefined,
-                                                                    referenceName: isSelectedBIR ? referenceName : undefined
-                                                                });
-                                                            }}
-                                                            disabled={
-                                                                !selectedDiscountId ||
-                                                                (isSelectedBIR && (!referenceId.trim() || !referenceName.trim())) ||
-                                                                applyDiscountMutation.isPending
-                                                            }
-                                                            className="w-full h-8.5 gap-1.5 text-xs font-semibold shadow-3xs rounded-lg"
-                                                        >
-                                                            {applyDiscountMutation.isPending ? (
-                                                                <Spinner className="size-3.5 animate-spin" />
-                                                            ) : (
-                                                                'Apply Discount'
                                                             )}
-                                                        </Button>
-                                                    </div>
+
+                                                            <Button
+                                                                type="submit"
+                                                                disabled={applyDiscountMutation.isPending}
+                                                                className="w-full h-8.5 gap-1.5 text-xs font-semibold shadow-3xs rounded-lg"
+                                                            >
+                                                                {applyDiscountMutation.isPending ? (
+                                                                    <Spinner className="size-3.5 animate-spin" />
+                                                                ) : (
+                                                                    'Apply Discount'
+                                                                )}
+                                                            </Button>
+                                                        </form>
+                                                    </Form>
                                                 </RequirePermission>
                                             )}
                                         </div>
@@ -638,7 +742,7 @@ export default function OrderEditPage() {
                                         {/* Payment Action block */}
                                         <div className="space-y-3">
                                             <div>
-                                                <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs tracking-wider flex items-center gap-1.5">
+                                                <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs  flex items-center gap-1.5">
                                                     <CreditCard className="size-3.5 text-muted-foreground" />
                                                     Awaiting Payment Collection
                                                 </h4>
@@ -659,69 +763,85 @@ export default function OrderEditPage() {
                                     </div>
                                 ) : (
                                     <div className="space-y-3.5">
-                                        <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs tracking-wider flex items-center gap-1.5">
+                                        <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs  flex items-center gap-1.5">
                                             <RefreshCw className="size-3.5 text-muted-foreground animate-pulse" />
                                             Update Preparation State
                                         </h4>
                                         <RequirePermission module="Orders Management" action="update">
-                                            <form onSubmit={handleUpdateStatusSubmit} className="space-y-3.5 text-xs">
-                                                <div className="space-y-1.5">
-                                                    <label className="font-semibold text-foreground/80">Fulfillment Status</label>
-                                                    <Select
-                                                        value={statusChangeValue}
-                                                        onValueChange={(val: TOrderStatus) => setStatusChangeValue(val)}
-                                                    >
-                                                        <SelectTrigger className="h-9.5 text-xs bg-background/50 rounded-lg">
-                                                            <SelectValue placeholder="Select target status..." />
-                                                        </SelectTrigger>
-                                                        <SelectContent className="rounded-xl">
-                                                            <SelectItem value="PENDING" className="text-xs">
-                                                                Pending
-                                                            </SelectItem>
-                                                            <SelectItem value="PREPARING" className="text-xs">
-                                                                Preparing
-                                                            </SelectItem>
-                                                            <SelectItem value="READY" className="text-xs">
-                                                                Ready
-                                                            </SelectItem>
-                                                            <SelectItem value="COMPLETED" className="text-xs">
-                                                                Completed
-                                                            </SelectItem>
-                                                            <SelectItem value="CANCELLED" className="text-xs">
-                                                                Cancelled
-                                                            </SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="space-y-1.5">
-                                                    <label className="font-semibold text-foreground/80">Audit Log Notes</label>
-                                                    <Input
-                                                        placeholder="Add reason, buzzer IDs, or pick-up logs..."
-                                                        value={statusChangeNotes}
-                                                        onChange={(e) => setStatusChangeNotes(e.target.value)}
-                                                        className="h-9.5 text-xs bg-background/50 rounded-lg"
+                                            <Form {...statusForm}>
+                                                <form onSubmit={statusForm.handleSubmit(onUpdateStatusSubmit)} className="space-y-3.5 text-xs">
+                                                    <FormField
+                                                        control={statusForm.control}
+                                                        name="status"
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-1.5">
+                                                                <FormLabel className="font-semibold text-foreground/80">Fulfillment Status</FormLabel>
+                                                                <Select value={field.value} onValueChange={field.onChange}>
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="h-9.5 text-xs bg-background/50 rounded-lg">
+                                                                            <SelectValue placeholder="Select target status..." />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent className="rounded-xl">
+                                                                        <SelectItem value="PENDING" className="text-xs">
+                                                                            Pending
+                                                                        </SelectItem>
+                                                                        <SelectItem value="PREPARING" className="text-xs">
+                                                                            Preparing
+                                                                        </SelectItem>
+                                                                        <SelectItem value="READY" className="text-xs">
+                                                                            Ready
+                                                                        </SelectItem>
+                                                                        <SelectItem value="COMPLETED" className="text-xs">
+                                                                            Completed
+                                                                        </SelectItem>
+                                                                        <SelectItem value="CANCELLED" className="text-xs">
+                                                                            Cancelled
+                                                                        </SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
                                                     />
-                                                </div>
 
-                                                <Button
-                                                    type="submit"
-                                                    disabled={!statusChangeValue || updateStatusMutation.isPending}
-                                                    className="w-full h-9.5 gap-1.5 text-xs bg-primary text-primary-foreground font-bold shadow-3xs rounded-lg"
-                                                >
-                                                    {updateStatusMutation.isPending ? (
-                                                        <>
-                                                            <Spinner className="size-3.5 animate-spin" />
-                                                            Saving Change...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <ArrowRight className="size-3.5" />
-                                                            Commit Status Change
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </form>
+                                                    <FormField
+                                                        control={statusForm.control}
+                                                        name="notes"
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-1.5">
+                                                                <FormLabel className="font-semibold text-foreground/80">Audit Log Notes</FormLabel>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        placeholder="Add reason, buzzer IDs, or pick-up logs..."
+                                                                        {...field}
+                                                                        className="h-9.5 text-xs bg-background/50 rounded-lg"
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    <Button
+                                                        type="submit"
+                                                        disabled={!statusChangeValue || updateStatusMutation.isPending}
+                                                        className="w-full h-9.5 gap-1.5 text-xs bg-primary text-primary-foreground font-bold shadow-3xs rounded-lg"
+                                                    >
+                                                        {updateStatusMutation.isPending ? (
+                                                            <>
+                                                                <Spinner className="size-3.5 animate-spin" />
+                                                                Saving Change...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <ArrowRight className="size-3.5" />
+                                                                Commit Status Change
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </form>
+                                            </Form>
                                         </RequirePermission>
                                     </div>
                                 )}
@@ -745,7 +865,7 @@ export default function OrderEditPage() {
                     {/* Status History Logs Card */}
                     {orderDetails.statusHistory && orderDetails.statusHistory.length > 0 && (
                         <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-3.5">
-                            <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-wider flex items-center gap-1.5">
+                            <h3 className="text-xs font-bold text-foreground/60 uppercase  flex items-center gap-1.5">
                                 <TrendingUp className="size-4 text-muted-foreground" />
                                 Audit Status Log History
                             </h3>

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus } from 'lucide-react';
+import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/orders/index.tsx';
@@ -10,6 +10,8 @@ import { getOrders } from '#/api/orders.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderSource } from './order.types';
 import DataTable from '#/components/data-table/data-table.tsx';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
+import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -187,6 +189,36 @@ export default function OrdersPage() {
                             <Eye className="size-4" />
                             <span className="sr-only">Inspect details</span>
                         </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                    title="Receipt options"
+                                >
+                                    <Printer className="size-4" />
+                                    <span className="sr-only">Receipt options</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="rounded-xl" align="end">
+                                <DropdownMenuItem onClick={() => printReceiptHtml(row.original.id)} className="text-xs gap-2 font-semibold">
+                                    <Printer className="size-3.5 text-muted-foreground" />
+                                    Print Thermal (HTML)
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openReceiptPdf(row.original.id)} className="text-xs gap-2 font-semibold">
+                                    <FileText className="size-3.5 text-muted-foreground" />
+                                    Open PDF Receipt
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => downloadReceiptPdf(row.original.id, row.original.queueNumber)}
+                                    className="text-xs gap-2 font-semibold"
+                                >
+                                    <Download className="size-3.5 text-muted-foreground" />
+                                    Download PDF Receipt
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 )
             }
