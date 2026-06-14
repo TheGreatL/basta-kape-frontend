@@ -543,7 +543,7 @@ export default function SalesPage() {
                                                 {order.orderType.replace('_', ' ')}
                                             </TableCell>
                                             <TableCell className="text-xs text-muted-foreground font-medium">
-                                                <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 uppercase">
+                                                <Badge variant="outline" className="text-xs font-bold px-1.5 py-0 uppercase">
                                                     {order.orderSource}
                                                 </Badge>
                                             </TableCell>

@@ -339,9 +339,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                             ) : pendingPayment && !overridePending ? (
                                 <div className="space-y-4">
                                     <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-4 space-y-3 text-xs">
-                                        <h4 className="font-bold text-amber-800 uppercase tracking-wider text-[10px]">
-                                            Pending Digital Payment Verification
-                                        </h4>
+                                        <h4 className="font-bold text-amber-800 uppercase  text-xs">Pending Digital Payment Verification</h4>
                                         <div className="space-y-2 text-amber-900 font-medium">
                                             <div className="flex justify-between">
                                                 <span>Payment Method:</span>
@@ -363,7 +361,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                             )}
                                             {pendingPayment.paymentProofPhoto && (
                                                 <div className="space-y-1.5 pt-1">
-                                                    <span className="text-[10px] text-amber-700 block uppercase font-bold">Screenshot Receipt</span>
+                                                    <span className="text-xs text-amber-700 block uppercase font-bold">Screenshot Receipt</span>
                                                     <div className="border border-amber-500/20 rounded-lg overflow-hidden bg-background max-h-[160px] flex items-center justify-center relative">
                                                         <img
                                                             src={getFileUrl(pendingPayment.paymentProofPhoto)}

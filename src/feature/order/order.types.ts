@@ -1,3 +1,5 @@
+import * as z from 'zod';
+import { Clock, Coins, Wallet, Landmark } from 'lucide-react';
 import type { IPaginationParams } from '#/types/base.types';
 import type { IOrderDiscount } from '../store-settings/discounts.types';
 
@@ -147,3 +149,86 @@ export interface IVoidLog {
         netTotal: number;
     };
 }
+
+export const orderCreateFormSchema = z
+    .object({
+        customerType: z.enum(['GUEST', 'MEMBER']),
+        guestName: z.string().optional(),
+        customerId: z.string().nullable().optional(),
+        orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY']),
+        notes: z.string().optional(),
+        items: z
+            .array(
+                z.object({
+                    productVariantId: z.string(),
+                    name: z.string(),
+                    sku: z.string().nullable(),
+                    price: z.number(),
+                    quantity: z.number(),
+                    notes: z.string().optional(),
+                    modifierOptionIds: z.array(z.string()).optional(),
+                    modifierNames: z.array(z.string()).optional()
+                })
+            )
+            .min(1, 'Please add at least one item to the order')
+    })
+    .superRefine((data, ctx) => {
+        if (data.customerType === 'GUEST' && (!data.guestName || !data.guestName.trim())) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['guestName'],
+                message: 'Guest name is required for guest checkouts'
+            });
+        }
+        if (data.customerType === 'MEMBER' && !data.customerId) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['customerId'],
+                message: 'Please select a registered member profile'
+            });
+        }
+    });
+
+export const orderDiscountFormSchema = z.object({
+    discountId: z.string().min(1, 'Please select a discount'),
+    referenceId: z.string().optional(),
+    referenceName: z.string().optional()
+});
+
+export const createOrderPaymentSchema = (netTotal: number) => {
+    return z
+        .object({
+            paymentMethod: z.enum(['UNPAID', 'CASH', 'GCASH', 'PAYMAYA', 'CREDIT_CARD']),
+            amountTendered: z.number().optional(),
+            referenceNumber: z.string().optional(),
+            receiptFile: z.any().nullable().optional()
+        })
+        .superRefine((data, ctx) => {
+            if (data.paymentMethod === 'CASH') {
+                if (data.amountTendered === undefined || data.amountTendered < netTotal) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        path: ['amountTendered'],
+                        message: `Amount tendered must be at least the net total of ₱${netTotal.toFixed(2)}`
+                    });
+                }
+            }
+            if (data.paymentMethod === 'GCASH' || data.paymentMethod === 'PAYMAYA') {
+                if (!data.referenceNumber || !data.referenceNumber.trim() || data.referenceNumber.trim().length < 5) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        path: ['referenceNumber'],
+                        message: 'Digital payments require a reference number of at least 5 characters.'
+                    });
+                }
+            }
+        });
+};
+
+export const PAYMENT_METHODS = [
+    { id: 'UNPAID', label: 'Unpaid / Delay', icon: Clock },
+    { id: 'CASH', label: 'Cash Drawer', icon: Coins },
+    { id: 'GCASH', label: 'GCash', icon: Wallet },
+    { id: 'PAYMAYA', label: 'Maya Wallet', icon: Wallet },
+    { id: 'CREDIT_CARD', label: 'Card Swipe', icon: Landmark }
+] as const;

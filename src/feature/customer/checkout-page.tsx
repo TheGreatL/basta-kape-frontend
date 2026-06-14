@@ -459,13 +459,13 @@ export default function CheckoutPage() {
                             <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                                     <div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">GCash Account Details</span>
+                                        <span className="text-xs font-bold uppercase  text-blue-600">GCash Account Details</span>
                                         <p className="text-sm font-bold text-foreground">BASTA KAPE STORE</p>
                                         <p className="text-xs font-mono text-muted-foreground">0917-123-4567</p>
                                     </div>
                                     <div className="flex items-center gap-2 border border-blue-500/10 rounded-lg p-2 bg-background/50 self-start">
                                         <QrCode className="size-8 text-blue-600" />
-                                        <div className="text-[10px] leading-tight font-semibold text-muted-foreground">
+                                        <div className="text-xs leading-tight font-semibold text-muted-foreground">
                                             <span className="font-bold text-foreground">Scan QR Code</span>
                                             <br /> Send payment before placing order
                                         </div>
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
                                                 />
                                                 <div className="min-w-0 text-xs">
                                                     <p className="font-bold text-foreground truncate">{receiptFile?.name}</p>
-                                                    <p className="text-[10px] text-muted-foreground">
+                                                    <p className="text-xs text-muted-foreground">
                                                         {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB
                                                     </p>
                                                 </div>
@@ -532,7 +532,7 @@ export default function CheckoutPage() {
                                             <span className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">
                                                 Upload GCash receipt photo
                                             </span>
-                                            <span className="text-[10px] text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
+                                            <span className="text-xs text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
                                         </button>
                                     </div>
                                 )}
@@ -544,13 +544,13 @@ export default function CheckoutPage() {
                             <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                                     <div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Maya Account Details</span>
+                                        <span className="text-xs font-bold uppercase  text-emerald-600">Maya Account Details</span>
                                         <p className="text-sm font-bold text-foreground">BASTA KAPE STORE</p>
                                         <p className="text-xs font-mono text-muted-foreground">0917-123-4567</p>
                                     </div>
                                     <div className="flex items-center gap-2 border border-emerald-500/10 rounded-lg p-2 bg-background/50 self-start">
                                         <QrCode className="size-8 text-emerald-600" />
-                                        <div className="text-[10px] leading-tight font-semibold text-muted-foreground">
+                                        <div className="text-xs leading-tight font-semibold text-muted-foreground">
                                             <span className="font-bold text-foreground">Scan QR Code</span>
                                             <br /> Send payment before placing order
                                         </div>
@@ -585,7 +585,7 @@ export default function CheckoutPage() {
                                                 />
                                                 <div className="min-w-0 text-xs">
                                                     <p className="font-bold text-foreground truncate">{receiptFile?.name}</p>
-                                                    <p className="text-[10px] text-muted-foreground">
+                                                    <p className="text-xs text-muted-foreground">
                                                         {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB
                                                     </p>
                                                 </div>
@@ -616,7 +616,7 @@ export default function CheckoutPage() {
                                             <span className="font-semibold text-foreground group-hover:text-emerald-600 transition-colors">
                                                 Upload Maya receipt photo
                                             </span>
-                                            <span className="text-[10px] text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
+                                            <span className="text-xs text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
                                         </button>
                                     </div>
                                 )}

@@ -214,7 +214,7 @@ export default function ProductEditPage() {
                     <Badge
                         key={attr.id}
                         variant="secondary"
-                        className="text-[10px] font-semibold capitalize py-0 px-1.5 bg-secondary/50 text-secondary-foreground/90"
+                        className="text-xs font-semibold capitalize py-0 px-1.5 bg-secondary/50 text-secondary-foreground/90"
                     >
                         {attr.attributeValue.attribute.name}: {attr.attributeValue.value}
                     </Badge>
@@ -314,7 +314,7 @@ export default function ProductEditPage() {
                                                 </FormItem>
                                             )}
                                         />
-                                        <div className="text-[10px] text-muted-foreground text-center max-w-[200px] leading-relaxed">
+                                        <div className="text-xs text-muted-foreground text-center max-w-[200px] leading-relaxed">
                                             Modify the beverage image representation. Only JPG, PNG, and WebP format.
                                         </div>
                                     </div>
@@ -463,7 +463,7 @@ export default function ProductEditPage() {
                         {/* Variant Addition Inline */}
                         {isAddingVariant && (
                             <div className="bg-muted/10 border border-dashed border-primary/20 rounded-xl p-4 space-y-3">
-                                <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">Configure New Variant</h4>
+                                <h4 className="text-xs font-bold text-foreground uppercase ">Configure New Variant</h4>
                                 <VariantForm
                                     onSubmit={(data) => createVariantMutation.mutate(data)}
                                     onCancel={() => setIsAddingVariant(false)}
@@ -488,9 +488,7 @@ export default function ProductEditPage() {
                                         if (isEditingThis) {
                                             return (
                                                 <div key={v.id} className="p-4 bg-muted/15">
-                                                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">
-                                                        Edit Variant Settings
-                                                    </h4>
+                                                    <h4 className="text-xs font-bold text-foreground uppercase  mb-3">Edit Variant Settings</h4>
                                                     <VariantForm
                                                         initialSku={v.sku}
                                                         initialPrice={v.price}
@@ -515,13 +513,13 @@ export default function ProductEditPage() {
                                                         {v.sku && (
                                                             <Badge
                                                                 variant="outline"
-                                                                className="text-[10px] py-0 px-1.5 font-mono uppercase bg-muted/50 border-muted text-muted-foreground"
+                                                                className="text-xs py-0 px-1.5 font-mono uppercase bg-muted/50 border-muted text-muted-foreground"
                                                             >
                                                                 {v.sku}
                                                             </Badge>
                                                         )}
                                                         <Badge
-                                                            className={`text-[9px] font-bold px-1.5 py-0 flex items-center gap-1 w-fit uppercase ${
+                                                            className={`text-xs font-bold px-1.5 py-0 flex items-center gap-1 w-fit uppercase ${
                                                                 v.recipe
                                                                     ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400'
                                                                     : 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400'
@@ -624,7 +622,7 @@ export default function ProductEditPage() {
 
             {/* System Audit Logs Metadata */}
             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-3">
-                <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-1.5">
+                <h3 className="text-xs font-bold uppercase text-muted-foreground  flex items-center gap-1.5">
                     <Calendar className="size-4 text-muted-foreground/80" />
                     Audit Log Details
                 </h3>

@@ -175,13 +175,13 @@ export default function RecipesPage() {
                                             <span className="text-xs font-semibold text-foreground/90 truncate">
                                                 {attrString || 'Standard / No Modifiers'}
                                             </span>
-                                            <span className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">
+                                            <span className="text-xs font-mono text-muted-foreground uppercase mt-0.5">
                                                 SKU: {v.sku || '—'} | ₱{v.price.toFixed(2)}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
                                             <Badge
-                                                className={`text-[10px] font-semibold px-2 py-0.5 flex items-center gap-1 w-fit ${
+                                                className={`text-xs font-semibold px-2 py-0.5 flex items-center gap-1 w-fit ${
                                                     hasRecipe
                                                         ? 'bg-emerald-100/95 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
                                                         : 'bg-amber-100/95 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'

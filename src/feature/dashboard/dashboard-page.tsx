@@ -158,7 +158,7 @@ export default function DashboardPage() {
             {/* Elegant Welcome Banner */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-primary-foreground p-6 text-primary-foreground shadow-lg md:p-8">
                 <div className="relative z-10 space-y-2.5">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase  backdrop-blur-sm">
                         <Shield className="size-3.5" /> {userRoles}
                     </span>
                     <h1 className="text-2xl font-bold md:text-3xl leading-tight">Welcome back, {displayName}!</h1>
@@ -410,7 +410,7 @@ export default function DashboardPage() {
 
                             {/* Recent Transactions List */}
                             <div className="space-y-2.5">
-                                <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Recent Transactions</h4>
+                                <h4 className="text-xs font-bold uppercase text-muted-foreground ">Recent Transactions</h4>
                                 {summary.ordersSummary.recentOrders.length > 0 ? (
                                     <div className="overflow-hidden border border-border/50 rounded-xl">
                                         <Table>
@@ -556,7 +556,7 @@ export default function DashboardPage() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Top Bottlenecks</h4>
+                                    <h4 className="text-xs font-bold uppercase text-muted-foreground ">Top Bottlenecks</h4>
                                     {summary.inventorySummary.lowStockItems.length > 0 ? (
                                         <div className="space-y-2.5">
                                             {summary.inventorySummary.lowStockItems.map((item: any) => (
