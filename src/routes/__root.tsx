@@ -10,7 +10,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import ErrorPage from '../components/errors/error-page';
 import NotFoundPage from '../components/errors/not-found-page';
 
-import type { getAuthStore } from '../store/auth-store';
+import { getAuthStore, waitForAuthHydration } from '#/store/auth-store';
+import { restoreSession, getCurrentUser } from '#/api/auth.api';
 import { Toaster } from '#/components/ui/sonner';
 import { getStoreSettings } from '#/api/store-settings.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -20,8 +21,33 @@ interface MyRouterContext {
     auth: typeof getAuthStore;
 }
 
+let authInitialized = false;
+
+const initAuth = async (context: MyRouterContext) => {
+    if (typeof window === 'undefined' || authInitialized) return;
+    authInitialized = true;
+
+    await waitForAuthHydration();
+
+    if (!context.auth().user) {
+        await restoreSession().catch(() => null);
+
+        if (!context.auth().user) {
+            const accessToken = getAuthStore().accessToken;
+            if (accessToken) {
+                const user = await getCurrentUser().catch(() => null);
+                if (user) {
+                    getAuthStore().setAuth(user, accessToken);
+                }
+            }
+        }
+    }
+};
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
     beforeLoad: async ({ context }) => {
+        await initAuth(context);
+
         const user = context.auth().user;
         if (user) {
             await context.queryClient
@@ -92,18 +118,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <body>
                 <TanstackQueryProvider>{children}</TanstackQueryProvider>
                 <Toaster position="top-right" richColors={true} closeButton={true} />
-                <TanStackDevtools
-                    config={{
-                        position: 'bottom-right'
-                    }}
-                    plugins={[
-                        {
-                            name: 'Tanstack Router',
-                            render: <TanStackRouterDevtoolsPanel />
-                        },
-                        TanStackQueryDevtools
-                    ]}
-                />
+                {import.meta.env.DEV ? (
+                    <TanStackDevtools
+                        config={{
+                            position: 'bottom-right'
+                        }}
+                        plugins={[
+                            {
+                                name: 'Tanstack Router',
+                                render: <TanStackRouterDevtoolsPanel />
+                            },
+                            TanStackQueryDevtools
+                        ]}
+                    />
+                ) : null}
                 <Scripts />
             </body>
         </html>

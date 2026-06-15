@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import CheckoutPage from '#/feature/customer/checkout-page.tsx';
 import { useCheckoutStore } from '#/store/checkout-store.ts';
 
-export const Route = createFileRoute('/_customer/checkout')({
+export const Route = createFileRoute('/_customer/_protected/checkout')({
     beforeLoad: async () => {
         const { isCheckoutAllowed, checkoutItemIds, isDirectCheckout, directCheckoutItem } = useCheckoutStore.getState();
         const hasCartItems = checkoutItemIds.length > 0;

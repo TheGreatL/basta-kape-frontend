@@ -40,9 +40,9 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'auth-storage', // name of the item in the storage (must be unique),
-            // Persist user & permissions; accessToken is in-memory only
-            // refreshToken is managed via HttpOnly cookie by the server
-            partialize: (state) => ({ user: state.user, accessToken: state.accessToken }),
+            // Persist only user metadata. accessToken stays in memory only.
+            // refreshToken is managed via HttpOnly cookie by the server.
+            partialize: (state) => ({ user: state.user }),
             onRehydrateStorage: () => (state) => {
                 state?.setHasHydrated(true);
             }

@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import TransactionsPage from '#/feature/transactions/transactions-page';
 import { requirePermission } from '#/utils/rbac.ts';
-import { waitForAuthHydration } from '#/store/auth-store.ts';
 
 const searchParamsSchema = z.object({
     page: z.number().catch(1),
@@ -15,8 +14,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/transactions')({
-    beforeLoad: async () => {
-        await waitForAuthHydration();
+    beforeLoad: () => {
         requirePermission(null, 'Transaction History', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

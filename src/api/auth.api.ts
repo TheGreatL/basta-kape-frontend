@@ -39,6 +39,22 @@ export const restoreSession = async () => {
     return data;
 };
 
+export const getCurrentUser = async () => {
+    const response = await api.get('/auth/me');
+
+    // if (response.status === 401) {
+    //     getAuthStore().logout();
+    //     return null;
+    // }
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to load current user', response.status, errorData);
+    }
+
+    return response.json();
+};
+
 export const logout = async () => {
     try {
         await api.post('/auth/logout', {});

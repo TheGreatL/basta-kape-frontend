@@ -4,8 +4,6 @@ import { z } from 'zod';
 import ReportsPage from '#/feature/reports/reports-page';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import { requirePermission } from '#/utils/rbac.ts';
-import { useAuthStore, waitForAuthHydration } from '#/store/auth-store.ts';
-import { restoreSession } from '#/api/auth.api.ts';
 
 const searchParamsSchema = z.object({
     module: z.string().catch(''),
@@ -23,17 +21,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/reports')({
-    beforeLoad: async () => {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        await waitForAuthHydration();
-
-        if (!useAuthStore.getState().user) {
-            await restoreSession().catch(() => null);
-        }
-
+    beforeLoad: () => {
         requirePermission(null, appModules.REPORTS_MANAGEMENT, appPermissions.READ);
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

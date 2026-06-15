@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import PurchaseOrdersPage from '#/feature/purchase-orders/purchase-orders-page';
 import { requirePermission } from '#/utils/rbac.ts';
-import { waitForAuthHydration } from '#/store/auth-store.ts';
 
 const searchParamsSchema = z.object({
     page: z.number().catch(1),
@@ -13,8 +12,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/purchase-orders')({
-    beforeLoad: async () => {
-        await waitForAuthHydration();
+    beforeLoad: () => {
         requirePermission(null, 'Purchase Orders Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

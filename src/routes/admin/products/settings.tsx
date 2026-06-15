@@ -2,8 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import ProductSettingsPage from '#/feature/product-settings/product-settings-page';
 import { requirePermission } from '#/utils/rbac.ts';
-import { useAuthStore, waitForAuthHydration } from '#/store/auth-store.ts';
-import { restoreSession } from '#/api/auth.api.ts';
 
 const searchParamsSchema = z.object({
     tab: z.enum(['categories', 'types', 'attributes']).catch('categories'),
@@ -28,17 +26,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/products/settings')({
-    beforeLoad: async () => {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        await waitForAuthHydration();
-
-        if (!useAuthStore.getState().user) {
-            await restoreSession().catch(() => null);
-        }
-
+    beforeLoad: () => {
         requirePermission(null, 'Product Settings Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

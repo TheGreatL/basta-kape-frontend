@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import SalesPage from '#/feature/sales/sales-page';
 import { requirePermission } from '#/utils/rbac.ts';
-import { waitForAuthHydration } from '#/store/auth-store.ts';
 
 const searchParamsSchema = z.object({
     dateFrom: z.string().catch(''),
@@ -10,8 +9,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/sales')({
-    beforeLoad: async () => {
-        await waitForAuthHydration();
+    beforeLoad: () => {
         requirePermission(null, 'Sales Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),

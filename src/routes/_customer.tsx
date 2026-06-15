@@ -1,12 +1,27 @@
-import { Outlet, Link, createFileRoute, Navigate } from '@tanstack/react-router';
+import { Outlet, Link, createFileRoute, Navigate, redirect } from '@tanstack/react-router';
 import CustomerHeader from '#/components/layout/customer-header.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
-import { useAuthStore } from '#/store/auth-store';
+import { useAuthStore, waitForAuthHydration } from '#/store/auth-store';
+import { restoreSession } from '#/api/auth.api.ts';
 
 export const Route = createFileRoute('/_customer')({
-    component: CustomerLayout
+    component: CustomerLayout,
+    beforeLoad: async () => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        await waitForAuthHydration();
+
+        if (!useAuthStore.getState().user) {
+            await restoreSession().catch(() => null);
+        }
+        if (useAuthStore.getState().user?.roles.find((role) => role.name.toLowerCase() === 'customer')) {
+            redirect({ to: '/admin' });
+        }
+    }
 });
 
 function CustomerLayout() {
