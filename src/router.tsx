@@ -6,6 +6,8 @@ import { createQueryClient } from './lib/query-client';
 import LoadingPage from '#/components/layout/loading-page';
 
 import { getAuthStore } from './store/auth-store';
+import ErrorPage from './components/errors/error-page';
+import NotFoundPage from './components/errors/not-found-page';
 
 export function getRouter() {
     const queryClient = createQueryClient();
@@ -20,7 +22,9 @@ export function getRouter() {
         scrollRestoration: true,
         defaultPreload: 'intent',
         defaultPreloadStaleTime: 0,
-        defaultPendingComponent: LoadingPage
+        defaultPendingComponent: LoadingPage,
+        defaultErrorComponent: ErrorPage,
+        defaultNotFoundComponent: NotFoundPage
     });
 
     setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
