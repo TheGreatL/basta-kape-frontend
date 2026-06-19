@@ -1,8 +1,11 @@
-import { Outlet, Link, createFileRoute, redirect } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { Outlet, Link, createFileRoute, redirect, useNavigate, Navigate } from '@tanstack/react-router';
 import CustomerHeader from '#/components/layout/customer-header.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
+import { useAuth } from '#/context/AuthContext';
+import LoadingPage from '#/components/layout/loading-page';
 
 export const Route = createFileRoute('/_customer')({
     component: CustomerLayout,
@@ -22,6 +25,29 @@ export const Route = createFileRoute('/_customer')({
 });
 
 function CustomerLayout() {
+    const { isLoading, isAuthenticated, user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isLoading && isAuthenticated && user) {
+            const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+            if (!isCustomer) {
+                navigate({ to: '/admin' as any });
+            }
+        }
+    }, [isLoading, isAuthenticated, user, navigate]);
+
+    if (isLoading) {
+        return <LoadingPage />;
+    }
+
+    if (isAuthenticated && user) {
+        const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+        if (!isCustomer) {
+            return <Navigate to="/admin" />;
+        }
+    }
+
     const { storeName } = useStoreSettings();
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
