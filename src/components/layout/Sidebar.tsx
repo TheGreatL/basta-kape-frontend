@@ -21,7 +21,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarSeparator,
-    SidebarFooter
+    SidebarFooter,
+    SidebarMenuSub,
+    SidebarMenuSubItem,
+    SidebarMenuSubButton
 } from '#/components/ui/sidebar.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx';
 import { ScrollArea, ScrollBar } from '#/components/ui/scroll-area.tsx';
@@ -33,15 +36,28 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '#/components/ui/dropdown-menu.tsx';
-import { ChevronDown, LogOut, Users } from 'lucide-react';
+import { ChevronDown, LogOut, Users, ChevronRight } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible.tsx';
+import { cn } from '#/lib/utils.ts';
+
+interface SidebarSubItem {
+    title: string;
+    path: string;
+    module?: TAppModule;
+    public?: boolean;
+    exact?: boolean;
+    badge?: string;
+}
 
 interface SidebarItem {
     title: string;
-    path: string;
+    path?: string;
     icon: IconName;
     module?: TAppModule;
     public?: boolean;
     exact?: boolean;
+    badge?: string;
+    items?: SidebarSubItem[];
 }
 
 const sidebarGroups: Array<{
@@ -56,9 +72,16 @@ const sidebarGroups: Array<{
         label: 'Operations',
         items: [
             { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
-            { title: 'Register Shifts', path: '/admin/register-shifts', icon: 'timer', module: appModules.POINT_OF_SALE, exact: true },
-            { title: 'Shift History', path: '/admin/register-shifts/history', icon: 'history', module: appModules.POINT_OF_SALE },
-            { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE },
+            {
+                title: 'Register Shifts',
+                icon: 'timer',
+                module: appModules.POINT_OF_SALE,
+                items: [
+                    { title: 'Shifts', path: '/admin/register-shifts', module: appModules.POINT_OF_SALE, exact: true },
+                    { title: 'Shift History', path: '/admin/register-shifts/history', module: appModules.POINT_OF_SALE }
+                ]
+            },
+            { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE, badge: '5' },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
             { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
         ]
@@ -67,22 +90,23 @@ const sidebarGroups: Array<{
         label: 'Catalog & Menu',
         items: [
             { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU },
-            { title: 'Products', path: '/admin/products', icon: 'package', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-            { title: 'Modifiers', path: '/admin/products/modifiers', icon: 'list-plus', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-            { title: 'Recipes', path: '/admin/products/recipes', icon: 'chef-hat', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
             {
-                title: 'Product Settings',
-                path: '/admin/products/settings',
-                icon: 'settings',
-                module: appModules.PRODUCT_SETTINGS_MANAGEMENT,
-                exact: true
+                title: 'Products',
+                icon: 'package',
+                module: appModules.PRODUCTS_MANAGEMENT,
+                items: [
+                    { title: 'Products List', path: '/admin/products', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+                    { title: 'Modifiers', path: '/admin/products/modifiers', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+                    { title: 'Recipes', path: '/admin/products/recipes', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+                    { title: 'Product Settings', path: '/admin/products/settings', module: appModules.PRODUCT_SETTINGS_MANAGEMENT, exact: true }
+                ]
             }
         ]
     },
     {
         label: 'Inventory & Purchasing',
         items: [
-            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT },
+            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT, badge: 'Low' },
             { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]
@@ -108,25 +132,82 @@ const sidebarGroups: Array<{
 
 function SidebarLinkItem({ item }: { item: SidebarItem }) {
     const matchRoute = useMatchRoute();
-    let isActive = matchRoute({ to: item.path as any, fuzzy: !item.exact }) !== false;
 
-    // Keep "Products" active on nested creation and editing subroutes
-    if (item.path === '/admin/products') {
-        const isCreate = matchRoute({ to: '/admin/products/create' as any, fuzzy: false }) !== false;
-        const isEdit = matchRoute({ to: '/admin/products/$id/edit' as any, fuzzy: false }) !== false;
-        if (isCreate || isEdit) {
-            isActive = true;
+    const isRouteActive = (path: string, exact?: boolean) => {
+        let active = matchRoute({ to: path as any, fuzzy: !exact }) !== false;
+
+        // Keep "Products" active on nested creation and editing subroutes
+        if (path === '/admin/products') {
+            const isCreate = matchRoute({ to: '/admin/products/create' as any, fuzzy: false }) !== false;
+            const isEdit = matchRoute({ to: '/admin/products/$id/edit' as any, fuzzy: false }) !== false;
+            if (isCreate || isEdit) {
+                active = true;
+            }
         }
+
+        // Keep "Orders" active on nested creation and editing subroutes
+        if (path === '/admin/orders') {
+            const isCreate = matchRoute({ to: '/admin/orders/create' as any, fuzzy: false }) !== false;
+            const isEdit = matchRoute({ to: '/admin/orders/$id/edit' as any, fuzzy: false }) !== false;
+            if (isCreate || isEdit) {
+                active = true;
+            }
+        }
+
+        return active;
+    };
+
+    // If it has children (accordion)
+    if (item.items && item.items.length > 0) {
+        const hasActiveChild = item.items.some((subItem) => isRouteActive(subItem.path, subItem.exact));
+
+        return (
+            <Collapsible asChild defaultOpen={hasActiveChild} className="group/collapsible">
+                <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={item.title}>
+                            <DynamicIcon name={item.icon} />
+                            <span>{item.title}</span>
+                            {item.badge && (
+                                <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full mr-2 group-data-[collapsible=icon]:hidden">
+                                    {item.badge}
+                                </span>
+                            )}
+                            <ChevronRight
+                                className={cn(
+                                    'size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90',
+                                    !item.badge && 'ml-auto'
+                                )}
+                            />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <SidebarMenuSub>
+                            {item.items.map((subItem) => {
+                                const isSubActive = isRouteActive(subItem.path, subItem.exact);
+                                return (
+                                    <SidebarMenuSubItem key={subItem.title}>
+                                        <SidebarMenuSubButton asChild isActive={isSubActive}>
+                                            <Link to={subItem.path}>
+                                                <span>{subItem.title}</span>
+                                                {subItem.badge && (
+                                                    <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                                                        {subItem.badge}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                );
+                            })}
+                        </SidebarMenuSub>
+                    </CollapsibleContent>
+                </SidebarMenuItem>
+            </Collapsible>
+        );
     }
 
-    // Keep "Orders" active on nested creation and editing subroutes
-    if (item.path === '/admin/orders') {
-        const isCreate = matchRoute({ to: '/admin/orders/create' as any, fuzzy: false }) !== false;
-        const isEdit = matchRoute({ to: '/admin/orders/$id/edit' as any, fuzzy: false }) !== false;
-        if (isCreate || isEdit) {
-            isActive = true;
-        }
-    }
+    const isActive = item.path ? isRouteActive(item.path, item.exact) : false;
 
     return (
         <SidebarMenuItem>
@@ -139,6 +220,11 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                 <Link to={item.path}>
                     <DynamicIcon name={item.icon} />
                     <span>{item.title}</span>
+                    {item.badge && (
+                        <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                            {item.badge}
+                        </span>
+                    )}
                 </Link>
             </SidebarMenuButton>
         </SidebarMenuItem>
@@ -151,14 +237,37 @@ export default function AppSidebar() {
     const { storeName } = useStoreSettings();
 
     const authorizedGroups = sidebarGroups
-        .map((group) => ({
-            ...group,
-            items: group.items.filter((item) => {
-                if (item.public) return true;
-                if (!item.module) return false;
-                return hasPermission(permissions, item.module, appPermissions.READ);
-            })
-        }))
+        .map((group) => {
+            const filteredItems = group.items
+                .map((item) => {
+                    if (item.items) {
+                        const filteredSubItems = item.items.filter((subItem) => {
+                            if (subItem.public) return true;
+                            if (!subItem.module) return false;
+                            return hasPermission(permissions, subItem.module, appPermissions.READ);
+                        });
+
+                        if (filteredSubItems.length === 0) {
+                            return null;
+                        }
+
+                        return {
+                            ...item,
+                            items: filteredSubItems
+                        };
+                    }
+
+                    if (item.public) return item;
+                    if (!item.module) return null;
+                    return hasPermission(permissions, item.module, appPermissions.READ) ? item : null;
+                })
+                .filter((item): item is SidebarItem => item !== null);
+
+            return {
+                ...group,
+                items: filteredItems
+            };
+        })
         .filter((group) => group.items.length > 0);
 
     // Profile variables
