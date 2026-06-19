@@ -3,6 +3,12 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 export const Route = createFileRoute('/(auth)')({
     component: RouteComponent,
     beforeLoad: ({ context }) => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        if (context.auth.isLoading) {
+            return;
+        }
         const user = context.auth.user;
         if (user) {
             const isCustomer = user.roles.find((role: any) => role.name.toLowerCase() === 'customer');

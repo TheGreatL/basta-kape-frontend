@@ -1,13 +1,19 @@
-import { Outlet, Link, createFileRoute, Navigate, redirect } from '@tanstack/react-router';
+import { Outlet, Link, createFileRoute, redirect } from '@tanstack/react-router';
 import CustomerHeader from '#/components/layout/customer-header.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
-import { useAuth } from '#/context/AuthContext';
 
 export const Route = createFileRoute('/_customer')({
     component: CustomerLayout,
     beforeLoad: ({ context }) => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        if (context.auth.isLoading) {
+            return;
+        }
+
         const user = context.auth.user;
         if (user) {
             const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');

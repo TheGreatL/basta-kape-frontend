@@ -1,23 +1,25 @@
-import { useAuth } from '#/context/AuthContext';
-import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_customer/_protected')({
-    component: RouteComponent
+    component: RouteComponent,
+    beforeLoad: ({ context }) => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        if (context.auth.isLoading) {
+            return;
+        }
+        const user = context.auth.user;
+        if (!user) {
+            throw redirect({ to: '/' });
+        }
+        const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+        if (!isCustomer) {
+            throw redirect({ to: '/admin' });
+        }
+    }
 });
 
 function RouteComponent() {
-    const { user, isLoading } = useAuth();
-
-    if (isLoading) {
-        return null;
-    }
-
-    if (user) {
-        const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
-        if (isCustomer) {
-            return <Outlet />;
-        }
-        return <Navigate to="/admin" />;
-    }
-    return <Navigate to="/login" />;
+    return <Outlet />;
 }
