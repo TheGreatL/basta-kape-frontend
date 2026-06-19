@@ -330,20 +330,20 @@ export default function OrderEditPage() {
                     <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-4">
                         <div className="flex flex-wrap gap-4 items-center justify-between border-b pb-3.5 border-border/30">
                             <div>
-                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Queue Ticket Number</div>
+                                <div className="text-xs uppercase font-bold  text-muted-foreground">Queue Ticket Number</div>
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-lg font-bold text-foreground">{orderDetails.queueNumber}</div>
                                     <CopyButton value={orderDetails.queueNumber} description={`Queue number #${orderDetails.queueNumber} copied`} />
                                 </div>
                             </div>
                             <div>
-                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Placed On</div>
+                                <div className="text-xs uppercase font-bold  text-muted-foreground">Placed On</div>
                                 <div className="font-semibold text-foreground text-sm pt-0.5">
                                     {format(new Date(orderDetails.createdAt), 'MMMM dd, yyyy - hh:mm a')}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-3xs uppercase font-bold  text-muted-foreground">Customer</div>
+                                <div className="text-xs uppercase font-bold  text-muted-foreground">Customer</div>
                                 <div className="font-semibold text-foreground text-sm pt-0.5">{orderDetails.customerName || 'Walk-in Customer'}</div>
                             </div>
                         </div>
@@ -379,7 +379,7 @@ export default function OrderEditPage() {
                                                         <Badge
                                                             key={mod.id}
                                                             variant="outline"
-                                                            className="text-3xs font-semibold bg-muted/20 py-0.5 px-2 text-muted-foreground border-border/50"
+                                                            className="text-xs font-semibold bg-muted/20 py-0.5 px-2 text-muted-foreground border-border/50"
                                                         >
                                                             + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
                                                         </Badge>
@@ -419,7 +419,7 @@ export default function OrderEditPage() {
                                         <span className="text-foreground/80 font-semibold">-₱{orderDetails.discountAmount.toFixed(2)}</span>
                                     </div>
                                     {orderDetails.discounts && orderDetails.discounts.length > 0 && (
-                                        <div className="text-3xs text-muted-foreground space-y-1 bg-background/50 p-2.5 rounded-xl border border-border/40">
+                                        <div className="text-xs text-muted-foreground space-y-1 bg-background/50 p-2.5 rounded-xl border border-border/40">
                                             {orderDetails.discounts.map((od: any) => (
                                                 <div key={od.id} className="flex flex-col">
                                                     <span className="font-bold text-foreground/80">{od.discount?.name || 'Discount'}</span>
@@ -509,7 +509,7 @@ export default function OrderEditPage() {
                                                     )}
                                                 </>
                                             )}
-                                            <div className="text-3xs text-emerald-600 font-semibold pt-1 text-right">
+                                            <div className="text-xs text-emerald-600 font-semibold pt-1 text-right">
                                                 Paid on {format(new Date(payment.createdAt), 'MMM dd, yyyy - hh:mm a')}
                                             </div>
                                         </div>
@@ -526,7 +526,7 @@ export default function OrderEditPage() {
                     <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-4">
                         {orderDetails.status === 'CANCELLED' ? (
                             <div className="border border-rose-500/20 p-4 rounded-xl bg-rose-500/5 space-y-2 text-xs">
-                                <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-3xs  flex items-center gap-1.5">
+                                <h4 className="font-bold text-rose-800 border-b border-rose-500/20 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                     <AlertTriangle className="size-3.5 text-rose-600" />
                                     Order Void details
                                 </h4>
@@ -546,7 +546,7 @@ export default function OrderEditPage() {
                                                     <span>{format(new Date(voidLog.createdAt), 'MMM dd, yyyy - hh:mm a')}</span>
                                                 </div>
                                                 <div className="mt-1 pt-2 border-t border-rose-500/10">
-                                                    <span className="text-3xs text-rose-700 block font-bold uppercase ">Reason:</span>
+                                                    <span className="text-xs text-rose-700 block font-bold uppercase ">Reason:</span>
                                                     <span className="italic">"{voidLog.reason}"</span>
                                                 </div>
                                             </div>
@@ -558,7 +558,7 @@ export default function OrderEditPage() {
                             </div>
                         ) : orderDetails.status === 'COMPLETED' ? (
                             <div className="border border-emerald-500/20 p-4 rounded-xl bg-emerald-500/5 space-y-2.5 text-xs">
-                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-3xs  flex items-center gap-1.5">
+                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-1.5 uppercase text-xs  flex items-center gap-1.5">
                                     <CheckCircle2 className="size-3.5 text-emerald-600" />
                                     Fulfillment Complete
                                 </h4>
@@ -675,7 +675,7 @@ export default function OrderEditPage() {
 
                                                             {isSelectedBIR && (
                                                                 <div className="space-y-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3.5 animate-in slide-in-from-top-2 duration-150">
-                                                                    <div className="text-3xs text-amber-700 font-bold leading-normal">
+                                                                    <div className="text-xs text-amber-700 font-bold leading-normal">
                                                                         BIR compliance: Enter card details to apply senior/PWD discount.
                                                                     </div>
                                                                     <div className="space-y-2">
@@ -684,7 +684,7 @@ export default function OrderEditPage() {
                                                                             name="referenceId"
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
-                                                                                    <FormLabel className="text-3xs font-bold text-foreground/75 block">
+                                                                                    <FormLabel className="text-xs font-bold text-foreground/75 block">
                                                                                         Card ID Number
                                                                                     </FormLabel>
                                                                                     <FormControl>
@@ -704,7 +704,7 @@ export default function OrderEditPage() {
                                                                             name="referenceName"
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
-                                                                                    <FormLabel className="text-3xs font-bold text-foreground/75 block">
+                                                                                    <FormLabel className="text-xs font-bold text-foreground/75 block">
                                                                                         Cardholder Name
                                                                                     </FormLabel>
                                                                                     <FormControl>
@@ -888,7 +888,7 @@ export default function OrderEditPage() {
                                                         : `System ID: ${history.changedById}`}
                                                 </span>
                                                 <span>•</span>
-                                                <span className="font-mono text-3xs">{format(new Date(history.createdAt), 'MMM dd, hh:mm a')}</span>
+                                                <span className="font-mono text-xs">{format(new Date(history.createdAt), 'MMM dd, hh:mm a')}</span>
                                             </div>
                                         </div>
                                     </div>

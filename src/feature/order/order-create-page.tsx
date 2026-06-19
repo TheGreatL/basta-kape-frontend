@@ -792,7 +792,7 @@ export default function OrderCreatePage() {
                                                                             group.name
                                                                         );
                                                                     }}
-                                                                    className={`h-7.5 text-3xs font-semibold py-0 px-2 rounded-md transition-all ${
+                                                                    className={`h-7.5 text-xs font-semibold py-0 px-2 rounded-md transition-all ${
                                                                         isChecked
                                                                             ? 'bg-primary text-primary-foreground'
                                                                             : isOutOfStock
@@ -1103,7 +1103,7 @@ export default function OrderCreatePage() {
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-7.5 px-2 bg-background border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 text-3xs font-bold gap-1 rounded-lg"
+                                                className="h-7.5 px-2 bg-background border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 text-xs font-bold gap-1 rounded-lg"
                                             >
                                                 <Printer className="size-3.5 shrink-0" />
                                                 Receipt
@@ -1291,7 +1291,7 @@ export default function OrderCreatePage() {
                                                                                 paymentForm.setValue('amountTendered', 0);
                                                                             }
                                                                         }}
-                                                                        className="h-10 px-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-lg text-3xs font-bold leading-none"
+                                                                        className="h-10 px-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-lg text-xs font-bold leading-none"
                                                                     >
                                                                         <MethodIcon className="size-3.5" />
                                                                         {method.label}

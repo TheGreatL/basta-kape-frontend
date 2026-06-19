@@ -15,7 +15,6 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route';
 import { Route as authRouteRouteImport } from './routes/(auth)/route';
 import { Route as AdminIndexRouteImport } from './routes/admin/index';
 import { Route as CustomerIndexRouteImport } from './routes/_customer/index';
-import { Route as AdminUsersRouteImport } from './routes/admin/users';
 import { Route as AdminTransactionsRouteImport } from './routes/admin/transactions';
 import { Route as AdminSuppliersRouteImport } from './routes/admin/suppliers';
 import { Route as AdminStoreSettingsRouteImport } from './routes/admin/store-settings';
@@ -27,23 +26,28 @@ import { Route as AdminPosRouteImport } from './routes/admin/pos';
 import { Route as AdminOrderQueueRouteImport } from './routes/admin/order-queue';
 import { Route as AdminMenuRouteImport } from './routes/admin/menu';
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory';
-import { Route as AdminCustomersRouteImport } from './routes/admin/customers';
 import { Route as AdminActivityLogsRouteImport } from './routes/admin/activity-logs';
 import { Route as CustomerProtectedRouteImport } from './routes/_customer/_protected';
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password';
 import { Route as authRegisterRouteImport } from './routes/(auth)/register';
 import { Route as authLoginRouteImport } from './routes/(auth)/login';
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password';
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index';
 import { Route as AdminRegisterShiftsIndexRouteImport } from './routes/admin/register-shifts/index';
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index';
 import { Route as AdminOrdersIndexRouteImport } from './routes/admin/orders/index';
+import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index';
 import { Route as CustomerProductsIndexRouteImport } from './routes/_customer/products/index';
+import { Route as AdminUsersCreateRouteImport } from './routes/admin/users/create';
+import { Route as AdminUsersSlugRouteImport } from './routes/admin/users/$slug';
 import { Route as AdminRegisterShiftsHistoryRouteImport } from './routes/admin/register-shifts/history';
 import { Route as AdminProductsSettingsRouteImport } from './routes/admin/products/settings';
 import { Route as AdminProductsRecipesRouteImport } from './routes/admin/products/recipes';
 import { Route as AdminProductsModifiersRouteImport } from './routes/admin/products/modifiers';
 import { Route as AdminProductsCreateRouteImport } from './routes/admin/products/create';
 import { Route as AdminOrdersCreateRouteImport } from './routes/admin/orders/create';
+import { Route as AdminCustomersCreateRouteImport } from './routes/admin/customers/create';
+import { Route as AdminCustomersSlugRouteImport } from './routes/admin/customers/$slug';
 import { Route as AdminrbacPermissionsRouteImport } from './routes/admin/(rbac)/permissions';
 import { Route as AdminrbacModulesRouteImport } from './routes/admin/(rbac)/modules';
 import { Route as CustomerProductsIdRouteImport } from './routes/_customer/products/$id';
@@ -85,11 +89,6 @@ const CustomerIndexRoute = CustomerIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => CustomerRoute
-} as any);
-const AdminUsersRoute = AdminUsersRouteImport.update({
-    id: '/users',
-    path: '/users',
-    getParentRoute: () => AdminRouteRoute
 } as any);
 const AdminTransactionsRoute = AdminTransactionsRouteImport.update({
     id: '/transactions',
@@ -146,11 +145,6 @@ const AdminInventoryRoute = AdminInventoryRouteImport.update({
     path: '/inventory',
     getParentRoute: () => AdminRouteRoute
 } as any);
-const AdminCustomersRoute = AdminCustomersRouteImport.update({
-    id: '/customers',
-    path: '/customers',
-    getParentRoute: () => AdminRouteRoute
-} as any);
 const AdminActivityLogsRoute = AdminActivityLogsRouteImport.update({
     id: '/activity-logs',
     path: '/activity-logs',
@@ -180,6 +174,11 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
     path: '/forgot-password',
     getParentRoute: () => authRouteRoute
 } as any);
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const AdminRegisterShiftsIndexRoute = AdminRegisterShiftsIndexRouteImport.update({
     id: '/register-shifts/',
     path: '/register-shifts/',
@@ -195,10 +194,25 @@ const AdminOrdersIndexRoute = AdminOrdersIndexRouteImport.update({
     path: '/orders/',
     getParentRoute: () => AdminRouteRoute
 } as any);
+const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => AdminRouteRoute
+} as any);
 const CustomerProductsIndexRoute = CustomerProductsIndexRouteImport.update({
     id: '/products/',
     path: '/products/',
     getParentRoute: () => CustomerRoute
+} as any);
+const AdminUsersCreateRoute = AdminUsersCreateRouteImport.update({
+    id: '/users/create',
+    path: '/users/create',
+    getParentRoute: () => AdminRouteRoute
+} as any);
+const AdminUsersSlugRoute = AdminUsersSlugRouteImport.update({
+    id: '/users/$slug',
+    path: '/users/$slug',
+    getParentRoute: () => AdminRouteRoute
 } as any);
 const AdminRegisterShiftsHistoryRoute = AdminRegisterShiftsHistoryRouteImport.update({
     id: '/register-shifts/history',
@@ -228,6 +242,16 @@ const AdminProductsCreateRoute = AdminProductsCreateRouteImport.update({
 const AdminOrdersCreateRoute = AdminOrdersCreateRouteImport.update({
     id: '/orders/create',
     path: '/orders/create',
+    getParentRoute: () => AdminRouteRoute
+} as any);
+const AdminCustomersCreateRoute = AdminCustomersCreateRouteImport.update({
+    id: '/customers/create',
+    path: '/customers/create',
+    getParentRoute: () => AdminRouteRoute
+} as any);
+const AdminCustomersSlugRoute = AdminCustomersSlugRouteImport.update({
+    id: '/customers/$slug',
+    path: '/customers/$slug',
     getParentRoute: () => AdminRouteRoute
 } as any);
 const AdminrbacPermissionsRoute = AdminrbacPermissionsRouteImport.update({
@@ -305,7 +329,6 @@ export interface FileRoutesByFullPath {
     '/register': typeof authRegisterRoute;
     '/reset-password': typeof authResetPasswordRoute;
     '/admin/activity-logs': typeof AdminActivityLogsRoute;
-    '/admin/customers': typeof AdminCustomersRoute;
     '/admin/inventory': typeof AdminInventoryRoute;
     '/admin/menu': typeof AdminMenuRoute;
     '/admin/order-queue': typeof AdminOrderQueueRoute;
@@ -317,7 +340,6 @@ export interface FileRoutesByFullPath {
     '/admin/store-settings': typeof AdminStoreSettingsRoute;
     '/admin/suppliers': typeof AdminSuppliersRoute;
     '/admin/transactions': typeof AdminTransactionsRoute;
-    '/admin/users': typeof AdminUsersRoute;
     '/admin/': typeof AdminIndexRoute;
     '/cart': typeof CustomerProtectedCartRoute;
     '/checkout': typeof CustomerProtectedCheckoutRoute;
@@ -325,16 +347,22 @@ export interface FileRoutesByFullPath {
     '/products/$id': typeof CustomerProductsIdRoute;
     '/admin/modules': typeof AdminrbacModulesRoute;
     '/admin/permissions': typeof AdminrbacPermissionsRoute;
+    '/admin/customers/$slug': typeof AdminCustomersSlugRoute;
+    '/admin/customers/create': typeof AdminCustomersCreateRoute;
     '/admin/orders/create': typeof AdminOrdersCreateRoute;
     '/admin/products/create': typeof AdminProductsCreateRoute;
     '/admin/products/modifiers': typeof AdminProductsModifiersRoute;
     '/admin/products/recipes': typeof AdminProductsRecipesRoute;
     '/admin/products/settings': typeof AdminProductsSettingsRoute;
     '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute;
+    '/admin/users/$slug': typeof AdminUsersSlugRoute;
+    '/admin/users/create': typeof AdminUsersCreateRoute;
     '/products/': typeof CustomerProductsIndexRoute;
+    '/admin/customers/': typeof AdminCustomersIndexRoute;
     '/admin/orders/': typeof AdminOrdersIndexRoute;
     '/admin/products/': typeof AdminProductsIndexRoute;
     '/admin/register-shifts/': typeof AdminRegisterShiftsIndexRoute;
+    '/admin/users/': typeof AdminUsersIndexRoute;
     '/orders/$id': typeof CustomerProtectedOrdersIdRoute;
     '/admin/roles/$slug': typeof AdminrbacRolesSlugRoute;
     '/admin/roles/create': typeof AdminrbacRolesCreateRoute;
@@ -351,7 +379,6 @@ export interface FileRoutesByTo {
     '/reset-password': typeof authResetPasswordRoute;
     '/': typeof CustomerIndexRoute;
     '/admin/activity-logs': typeof AdminActivityLogsRoute;
-    '/admin/customers': typeof AdminCustomersRoute;
     '/admin/inventory': typeof AdminInventoryRoute;
     '/admin/menu': typeof AdminMenuRoute;
     '/admin/order-queue': typeof AdminOrderQueueRoute;
@@ -363,7 +390,6 @@ export interface FileRoutesByTo {
     '/admin/store-settings': typeof AdminStoreSettingsRoute;
     '/admin/suppliers': typeof AdminSuppliersRoute;
     '/admin/transactions': typeof AdminTransactionsRoute;
-    '/admin/users': typeof AdminUsersRoute;
     '/admin': typeof AdminIndexRoute;
     '/cart': typeof CustomerProtectedCartRoute;
     '/checkout': typeof CustomerProtectedCheckoutRoute;
@@ -371,16 +397,22 @@ export interface FileRoutesByTo {
     '/products/$id': typeof CustomerProductsIdRoute;
     '/admin/modules': typeof AdminrbacModulesRoute;
     '/admin/permissions': typeof AdminrbacPermissionsRoute;
+    '/admin/customers/$slug': typeof AdminCustomersSlugRoute;
+    '/admin/customers/create': typeof AdminCustomersCreateRoute;
     '/admin/orders/create': typeof AdminOrdersCreateRoute;
     '/admin/products/create': typeof AdminProductsCreateRoute;
     '/admin/products/modifiers': typeof AdminProductsModifiersRoute;
     '/admin/products/recipes': typeof AdminProductsRecipesRoute;
     '/admin/products/settings': typeof AdminProductsSettingsRoute;
     '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute;
+    '/admin/users/$slug': typeof AdminUsersSlugRoute;
+    '/admin/users/create': typeof AdminUsersCreateRoute;
     '/products': typeof CustomerProductsIndexRoute;
+    '/admin/customers': typeof AdminCustomersIndexRoute;
     '/admin/orders': typeof AdminOrdersIndexRoute;
     '/admin/products': typeof AdminProductsIndexRoute;
     '/admin/register-shifts': typeof AdminRegisterShiftsIndexRoute;
+    '/admin/users': typeof AdminUsersIndexRoute;
     '/orders/$id': typeof CustomerProtectedOrdersIdRoute;
     '/admin/roles/$slug': typeof AdminrbacRolesSlugRoute;
     '/admin/roles/create': typeof AdminrbacRolesCreateRoute;
@@ -401,7 +433,6 @@ export interface FileRoutesById {
     '/(auth)/reset-password': typeof authResetPasswordRoute;
     '/_customer/_protected': typeof CustomerProtectedRouteWithChildren;
     '/admin/activity-logs': typeof AdminActivityLogsRoute;
-    '/admin/customers': typeof AdminCustomersRoute;
     '/admin/inventory': typeof AdminInventoryRoute;
     '/admin/menu': typeof AdminMenuRoute;
     '/admin/order-queue': typeof AdminOrderQueueRoute;
@@ -413,7 +444,6 @@ export interface FileRoutesById {
     '/admin/store-settings': typeof AdminStoreSettingsRoute;
     '/admin/suppliers': typeof AdminSuppliersRoute;
     '/admin/transactions': typeof AdminTransactionsRoute;
-    '/admin/users': typeof AdminUsersRoute;
     '/_customer/': typeof CustomerIndexRoute;
     '/admin/': typeof AdminIndexRoute;
     '/_customer/_protected/cart': typeof CustomerProtectedCartRoute;
@@ -422,16 +452,22 @@ export interface FileRoutesById {
     '/_customer/products/$id': typeof CustomerProductsIdRoute;
     '/admin/(rbac)/modules': typeof AdminrbacModulesRoute;
     '/admin/(rbac)/permissions': typeof AdminrbacPermissionsRoute;
+    '/admin/customers/$slug': typeof AdminCustomersSlugRoute;
+    '/admin/customers/create': typeof AdminCustomersCreateRoute;
     '/admin/orders/create': typeof AdminOrdersCreateRoute;
     '/admin/products/create': typeof AdminProductsCreateRoute;
     '/admin/products/modifiers': typeof AdminProductsModifiersRoute;
     '/admin/products/recipes': typeof AdminProductsRecipesRoute;
     '/admin/products/settings': typeof AdminProductsSettingsRoute;
     '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute;
+    '/admin/users/$slug': typeof AdminUsersSlugRoute;
+    '/admin/users/create': typeof AdminUsersCreateRoute;
     '/_customer/products/': typeof CustomerProductsIndexRoute;
+    '/admin/customers/': typeof AdminCustomersIndexRoute;
     '/admin/orders/': typeof AdminOrdersIndexRoute;
     '/admin/products/': typeof AdminProductsIndexRoute;
     '/admin/register-shifts/': typeof AdminRegisterShiftsIndexRoute;
+    '/admin/users/': typeof AdminUsersIndexRoute;
     '/_customer/_protected/orders/$id': typeof CustomerProtectedOrdersIdRoute;
     '/admin/(rbac)/roles/$slug': typeof AdminrbacRolesSlugRoute;
     '/admin/(rbac)/roles/create': typeof AdminrbacRolesCreateRoute;
@@ -451,7 +487,6 @@ export interface FileRouteTypes {
         | '/register'
         | '/reset-password'
         | '/admin/activity-logs'
-        | '/admin/customers'
         | '/admin/inventory'
         | '/admin/menu'
         | '/admin/order-queue'
@@ -463,7 +498,6 @@ export interface FileRouteTypes {
         | '/admin/store-settings'
         | '/admin/suppliers'
         | '/admin/transactions'
-        | '/admin/users'
         | '/admin/'
         | '/cart'
         | '/checkout'
@@ -471,16 +505,22 @@ export interface FileRouteTypes {
         | '/products/$id'
         | '/admin/modules'
         | '/admin/permissions'
+        | '/admin/customers/$slug'
+        | '/admin/customers/create'
         | '/admin/orders/create'
         | '/admin/products/create'
         | '/admin/products/modifiers'
         | '/admin/products/recipes'
         | '/admin/products/settings'
         | '/admin/register-shifts/history'
+        | '/admin/users/$slug'
+        | '/admin/users/create'
         | '/products/'
+        | '/admin/customers/'
         | '/admin/orders/'
         | '/admin/products/'
         | '/admin/register-shifts/'
+        | '/admin/users/'
         | '/orders/$id'
         | '/admin/roles/$slug'
         | '/admin/roles/create'
@@ -497,7 +537,6 @@ export interface FileRouteTypes {
         | '/reset-password'
         | '/'
         | '/admin/activity-logs'
-        | '/admin/customers'
         | '/admin/inventory'
         | '/admin/menu'
         | '/admin/order-queue'
@@ -509,7 +548,6 @@ export interface FileRouteTypes {
         | '/admin/store-settings'
         | '/admin/suppliers'
         | '/admin/transactions'
-        | '/admin/users'
         | '/admin'
         | '/cart'
         | '/checkout'
@@ -517,16 +555,22 @@ export interface FileRouteTypes {
         | '/products/$id'
         | '/admin/modules'
         | '/admin/permissions'
+        | '/admin/customers/$slug'
+        | '/admin/customers/create'
         | '/admin/orders/create'
         | '/admin/products/create'
         | '/admin/products/modifiers'
         | '/admin/products/recipes'
         | '/admin/products/settings'
         | '/admin/register-shifts/history'
+        | '/admin/users/$slug'
+        | '/admin/users/create'
         | '/products'
+        | '/admin/customers'
         | '/admin/orders'
         | '/admin/products'
         | '/admin/register-shifts'
+        | '/admin/users'
         | '/orders/$id'
         | '/admin/roles/$slug'
         | '/admin/roles/create'
@@ -546,7 +590,6 @@ export interface FileRouteTypes {
         | '/(auth)/reset-password'
         | '/_customer/_protected'
         | '/admin/activity-logs'
-        | '/admin/customers'
         | '/admin/inventory'
         | '/admin/menu'
         | '/admin/order-queue'
@@ -558,7 +601,6 @@ export interface FileRouteTypes {
         | '/admin/store-settings'
         | '/admin/suppliers'
         | '/admin/transactions'
-        | '/admin/users'
         | '/_customer/'
         | '/admin/'
         | '/_customer/_protected/cart'
@@ -567,16 +609,22 @@ export interface FileRouteTypes {
         | '/_customer/products/$id'
         | '/admin/(rbac)/modules'
         | '/admin/(rbac)/permissions'
+        | '/admin/customers/$slug'
+        | '/admin/customers/create'
         | '/admin/orders/create'
         | '/admin/products/create'
         | '/admin/products/modifiers'
         | '/admin/products/recipes'
         | '/admin/products/settings'
         | '/admin/register-shifts/history'
+        | '/admin/users/$slug'
+        | '/admin/users/create'
         | '/_customer/products/'
+        | '/admin/customers/'
         | '/admin/orders/'
         | '/admin/products/'
         | '/admin/register-shifts/'
+        | '/admin/users/'
         | '/_customer/_protected/orders/$id'
         | '/admin/(rbac)/roles/$slug'
         | '/admin/(rbac)/roles/create'
@@ -636,13 +684,6 @@ declare module '@tanstack/react-router' {
             fullPath: '/';
             preLoaderRoute: typeof CustomerIndexRouteImport;
             parentRoute: typeof CustomerRoute;
-        };
-        '/admin/users': {
-            id: '/admin/users';
-            path: '/users';
-            fullPath: '/admin/users';
-            preLoaderRoute: typeof AdminUsersRouteImport;
-            parentRoute: typeof AdminRouteRoute;
         };
         '/admin/transactions': {
             id: '/admin/transactions';
@@ -721,13 +762,6 @@ declare module '@tanstack/react-router' {
             preLoaderRoute: typeof AdminInventoryRouteImport;
             parentRoute: typeof AdminRouteRoute;
         };
-        '/admin/customers': {
-            id: '/admin/customers';
-            path: '/customers';
-            fullPath: '/admin/customers';
-            preLoaderRoute: typeof AdminCustomersRouteImport;
-            parentRoute: typeof AdminRouteRoute;
-        };
         '/admin/activity-logs': {
             id: '/admin/activity-logs';
             path: '/activity-logs';
@@ -770,6 +804,13 @@ declare module '@tanstack/react-router' {
             preLoaderRoute: typeof authForgotPasswordRouteImport;
             parentRoute: typeof authRouteRoute;
         };
+        '/admin/users/': {
+            id: '/admin/users/';
+            path: '/users';
+            fullPath: '/admin/users/';
+            preLoaderRoute: typeof AdminUsersIndexRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
         '/admin/register-shifts/': {
             id: '/admin/register-shifts/';
             path: '/register-shifts';
@@ -791,12 +832,33 @@ declare module '@tanstack/react-router' {
             preLoaderRoute: typeof AdminOrdersIndexRouteImport;
             parentRoute: typeof AdminRouteRoute;
         };
+        '/admin/customers/': {
+            id: '/admin/customers/';
+            path: '/customers';
+            fullPath: '/admin/customers/';
+            preLoaderRoute: typeof AdminCustomersIndexRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
         '/_customer/products/': {
             id: '/_customer/products/';
             path: '/products';
             fullPath: '/products/';
             preLoaderRoute: typeof CustomerProductsIndexRouteImport;
             parentRoute: typeof CustomerRoute;
+        };
+        '/admin/users/create': {
+            id: '/admin/users/create';
+            path: '/users/create';
+            fullPath: '/admin/users/create';
+            preLoaderRoute: typeof AdminUsersCreateRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/admin/users/$slug': {
+            id: '/admin/users/$slug';
+            path: '/users/$slug';
+            fullPath: '/admin/users/$slug';
+            preLoaderRoute: typeof AdminUsersSlugRouteImport;
+            parentRoute: typeof AdminRouteRoute;
         };
         '/admin/register-shifts/history': {
             id: '/admin/register-shifts/history';
@@ -838,6 +900,20 @@ declare module '@tanstack/react-router' {
             path: '/orders/create';
             fullPath: '/admin/orders/create';
             preLoaderRoute: typeof AdminOrdersCreateRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/admin/customers/create': {
+            id: '/admin/customers/create';
+            path: '/customers/create';
+            fullPath: '/admin/customers/create';
+            preLoaderRoute: typeof AdminCustomersCreateRouteImport;
+            parentRoute: typeof AdminRouteRoute;
+        };
+        '/admin/customers/$slug': {
+            id: '/admin/customers/$slug';
+            path: '/customers/$slug';
+            fullPath: '/admin/customers/$slug';
+            preLoaderRoute: typeof AdminCustomersSlugRouteImport;
             parentRoute: typeof AdminRouteRoute;
         };
         '/admin/(rbac)/permissions': {
@@ -952,7 +1028,6 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(authRouteRout
 
 interface AdminRouteRouteChildren {
     AdminActivityLogsRoute: typeof AdminActivityLogsRoute;
-    AdminCustomersRoute: typeof AdminCustomersRoute;
     AdminInventoryRoute: typeof AdminInventoryRoute;
     AdminMenuRoute: typeof AdminMenuRoute;
     AdminOrderQueueRoute: typeof AdminOrderQueueRoute;
@@ -964,19 +1039,24 @@ interface AdminRouteRouteChildren {
     AdminStoreSettingsRoute: typeof AdminStoreSettingsRoute;
     AdminSuppliersRoute: typeof AdminSuppliersRoute;
     AdminTransactionsRoute: typeof AdminTransactionsRoute;
-    AdminUsersRoute: typeof AdminUsersRoute;
     AdminIndexRoute: typeof AdminIndexRoute;
     AdminrbacModulesRoute: typeof AdminrbacModulesRoute;
     AdminrbacPermissionsRoute: typeof AdminrbacPermissionsRoute;
+    AdminCustomersSlugRoute: typeof AdminCustomersSlugRoute;
+    AdminCustomersCreateRoute: typeof AdminCustomersCreateRoute;
     AdminOrdersCreateRoute: typeof AdminOrdersCreateRoute;
     AdminProductsCreateRoute: typeof AdminProductsCreateRoute;
     AdminProductsModifiersRoute: typeof AdminProductsModifiersRoute;
     AdminProductsRecipesRoute: typeof AdminProductsRecipesRoute;
     AdminProductsSettingsRoute: typeof AdminProductsSettingsRoute;
     AdminRegisterShiftsHistoryRoute: typeof AdminRegisterShiftsHistoryRoute;
+    AdminUsersSlugRoute: typeof AdminUsersSlugRoute;
+    AdminUsersCreateRoute: typeof AdminUsersCreateRoute;
+    AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute;
     AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute;
     AdminProductsIndexRoute: typeof AdminProductsIndexRoute;
     AdminRegisterShiftsIndexRoute: typeof AdminRegisterShiftsIndexRoute;
+    AdminUsersIndexRoute: typeof AdminUsersIndexRoute;
     AdminrbacRolesSlugRoute: typeof AdminrbacRolesSlugRoute;
     AdminrbacRolesCreateRoute: typeof AdminrbacRolesCreateRoute;
     AdminOrdersIdEditRoute: typeof AdminOrdersIdEditRoute;
@@ -986,7 +1066,6 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
     AdminActivityLogsRoute: AdminActivityLogsRoute,
-    AdminCustomersRoute: AdminCustomersRoute,
     AdminInventoryRoute: AdminInventoryRoute,
     AdminMenuRoute: AdminMenuRoute,
     AdminOrderQueueRoute: AdminOrderQueueRoute,
@@ -998,19 +1077,24 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
     AdminStoreSettingsRoute: AdminStoreSettingsRoute,
     AdminSuppliersRoute: AdminSuppliersRoute,
     AdminTransactionsRoute: AdminTransactionsRoute,
-    AdminUsersRoute: AdminUsersRoute,
     AdminIndexRoute: AdminIndexRoute,
     AdminrbacModulesRoute: AdminrbacModulesRoute,
     AdminrbacPermissionsRoute: AdminrbacPermissionsRoute,
+    AdminCustomersSlugRoute: AdminCustomersSlugRoute,
+    AdminCustomersCreateRoute: AdminCustomersCreateRoute,
     AdminOrdersCreateRoute: AdminOrdersCreateRoute,
     AdminProductsCreateRoute: AdminProductsCreateRoute,
     AdminProductsModifiersRoute: AdminProductsModifiersRoute,
     AdminProductsRecipesRoute: AdminProductsRecipesRoute,
     AdminProductsSettingsRoute: AdminProductsSettingsRoute,
     AdminRegisterShiftsHistoryRoute: AdminRegisterShiftsHistoryRoute,
+    AdminUsersSlugRoute: AdminUsersSlugRoute,
+    AdminUsersCreateRoute: AdminUsersCreateRoute,
+    AdminCustomersIndexRoute: AdminCustomersIndexRoute,
     AdminOrdersIndexRoute: AdminOrdersIndexRoute,
     AdminProductsIndexRoute: AdminProductsIndexRoute,
     AdminRegisterShiftsIndexRoute: AdminRegisterShiftsIndexRoute,
+    AdminUsersIndexRoute: AdminUsersIndexRoute,
     AdminrbacRolesSlugRoute: AdminrbacRolesSlugRoute,
     AdminrbacRolesCreateRoute: AdminrbacRolesCreateRoute,
     AdminOrdersIdEditRoute: AdminOrdersIdEditRoute,

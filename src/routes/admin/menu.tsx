@@ -12,9 +12,9 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/menu')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: MenuPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Menu', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: MenuPage
+    }
 });

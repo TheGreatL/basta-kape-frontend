@@ -68,16 +68,16 @@ export default function CheckoutSuccessDialog({
                 <div className="px-6 py-4 space-y-4">
                     {/* Queue Number Showcase */}
                     <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-center space-y-1">
-                        <span className="text-3xs uppercase font-extrabold text-muted-foreground tracking-wider block">Queue Ticket Number</span>
-                        <span className="text-4xl font-black text-primary font-mono tracking-tight block">#{order.queueNumber}</span>
+                        <span className="text-xs uppercase font-extrabold text-muted-foreground  block">Queue Ticket Number</span>
+                        <span className="text-4xl font-black text-primary font-mono block">#{order.queueNumber}</span>
                         <div className="flex justify-center gap-1.5 pt-1.5">
                             <Badge
                                 variant="secondary"
-                                className="text-3xs font-semibold px-2 py-0 uppercase bg-primary/10 text-primary border border-primary/20"
+                                className="text-xs font-semibold px-2 py-0 uppercase bg-primary/10 text-primary border border-primary/20"
                             >
                                 {order.orderType.replace('_', ' ')}
                             </Badge>
-                            <Badge variant="outline" className="text-3xs font-semibold px-2 py-0 capitalize bg-background/50 text-muted-foreground">
+                            <Badge variant="outline" className="text-xs font-semibold px-2 py-0 capitalize bg-background/50 text-muted-foreground">
                                 {order.customerName || 'Walk-in'}
                             </Badge>
                         </div>
@@ -126,7 +126,7 @@ export default function CheckoutSuccessDialog({
 
                     {/* Print/View actions */}
                     <div className="space-y-2 pt-1">
-                        <span className="text-3xs uppercase font-extrabold text-muted-foreground tracking-wider block mb-1">Receipt Actions</span>
+                        <span className="text-xs uppercase font-extrabold text-muted-foreground  block mb-1">Receipt Actions</span>
                         <div className="grid grid-cols-2 gap-2">
                             <Button
                                 type="button"

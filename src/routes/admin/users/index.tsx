@@ -12,11 +12,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/users/')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: UsersPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Users Management', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: UsersPage
+    }
 });
 
 export type TUserSearchSchema = z.infer<typeof searchParamsSchema>;

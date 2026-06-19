@@ -39,11 +39,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/inventory')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: InventoryPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Inventory Management', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: InventoryPage
+    }
 });
 
 export type TInventorySearchSchema = z.infer<typeof searchParamsSchema>;

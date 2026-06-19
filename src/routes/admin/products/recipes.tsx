@@ -14,11 +14,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/products/recipes')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: RecipesPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Products Management', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: RecipesPage
+    }
 });
 
 export type TRecipesSearchSchema = z.infer<typeof searchParamsSchema>;

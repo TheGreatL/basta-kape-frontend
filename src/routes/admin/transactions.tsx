@@ -14,11 +14,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/transactions')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: TransactionsPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Transaction History', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: TransactionsPage
+    }
 });
 
 export type TTransactionsSearchSchema = z.infer<typeof searchParamsSchema>;

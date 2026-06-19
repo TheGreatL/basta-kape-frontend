@@ -21,11 +21,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/reports')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: ReportsPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, appModules.REPORTS_MANAGEMENT, appPermissions.READ);
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ReportsPage
+    }
 });
 
 export type TReportsSearchSchema = z.infer<typeof searchParamsSchema>;

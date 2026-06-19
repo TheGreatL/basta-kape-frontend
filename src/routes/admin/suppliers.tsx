@@ -11,11 +11,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/suppliers')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: SuppliersPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Suppliers Management', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: SuppliersPage
+    }
 });
 
 export type TSupplierSearchSchema = z.infer<typeof searchParamsSchema>;
