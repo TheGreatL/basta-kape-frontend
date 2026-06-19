@@ -3,34 +3,23 @@ import CustomerHeader from '#/components/layout/customer-header.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import logo from '#/assets/logo.png';
-import { useAuthStore, waitForAuthHydration } from '#/store/auth-store';
-import { restoreSession } from '#/api/auth.api.ts';
+import { useAuth } from '#/context/AuthContext';
 
 export const Route = createFileRoute('/_customer')({
     component: CustomerLayout,
-    beforeLoad: async () => {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        await waitForAuthHydration();
-
-        if (!useAuthStore.getState().user) {
-            await restoreSession().catch(() => null);
-        }
-        if (useAuthStore.getState().user?.roles.find((role) => role.name.toLowerCase() === 'customer')) {
-            redirect({ to: '/admin' });
+    beforeLoad: ({ context }) => {
+        const user = context.auth.user;
+        if (user) {
+            const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+            if (!isCustomer) {
+                throw redirect({ to: '/admin' });
+            }
         }
     }
 });
 
 function CustomerLayout() {
     const { storeName } = useStoreSettings();
-    const user = useAuthStore.getState().user;
-    const isCustomer = user?.roles.find((role) => role.name.toLowerCase() === 'customer');
-
-    if (user && !isCustomer) return <Navigate to="/admin" />;
-
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             {/* Nav Header */}

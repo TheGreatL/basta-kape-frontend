@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useAuthStore } from '#/store/auth-store';
+import { useAuth } from '#/context/AuthContext';
 import ChangePasswordForm from '#/feature/auth/components/change-password-form';
 import { Badge } from '#/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card';
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/admin/profile')({
 });
 
 function AdminProfilePage() {
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
 
     if (!user) {
         return (

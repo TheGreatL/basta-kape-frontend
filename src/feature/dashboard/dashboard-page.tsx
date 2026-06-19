@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -85,7 +85,7 @@ interface DashboardSummary {
 }
 
 export default function DashboardPage() {
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const permissions = React.useMemo(() => getUserPermissions(user), [user]);
 
     // String paths as escape hatch for TanStack Router Link strict search params checking

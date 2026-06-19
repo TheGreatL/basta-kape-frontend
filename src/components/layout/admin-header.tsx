@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from '@tanstack/react-router';
 import { LogOut, User as UserIcon, Settings, Home } from 'lucide-react';
 
 import { SidebarTrigger } from '#/components/ui/sidebar.tsx';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext.tsx';
 import { Avatar, AvatarFallback } from '#/components/ui/avatar.tsx';
 import {
     DropdownMenu,
@@ -18,7 +18,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 export default function AdminHeader() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user, logout } = useAuthStore();
+    const { user, logout } = useAuth();
 
     const breadcrumbs = React.useMemo(() => {
         const segments = location.pathname.split('/').filter(Boolean);
@@ -48,8 +48,8 @@ export default function AdminHeader() {
         return user.email.slice(0, 2).toUpperCase();
     }, [user]);
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate({ to: '/login' as any });
     };
 

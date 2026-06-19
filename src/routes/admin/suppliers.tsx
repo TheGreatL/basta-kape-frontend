@@ -11,8 +11,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/suppliers')({
-    beforeLoad: () => {
-        requirePermission(null, 'Suppliers Management', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Suppliers Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: SuppliersPage

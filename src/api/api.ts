@@ -1,144 +1,167 @@
 import { env } from '../env';
 
-import { getAuthStore } from '../store/auth-store';
+interface RequestOptions extends RequestInit {
+    skipAuth?: boolean;
+}
 
-// -----------------------------------------------------------------------------
-// Token Storage Placeholders
-// -----------------------------------------------------------------------------
+let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+export const getAccessToken = () => accessToken;
+
 export const setAccessToken = (token: string | null) => {
-    getAuthStore().setAccessToken(token);
-};
-
-export const getAccessToken = () => {
-    return getAuthStore().accessToken;
-};
-
-// -----------------------------------------------------------------------------
-// Refresh Logic State
-// -----------------------------------------------------------------------------
-let isRefreshing = false;
-let failedQueue: Array<{
-    resolve: (token: string) => void;
-    reject: (error: any) => void;
-}> = [];
-
-const processQueue = (error: Error | null, token: string | null = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
+    accessToken = token;
+    if (typeof window !== 'undefined') {
+        if (token) {
+            localStorage.setItem('accessToken', token);
         } else {
-            prom.resolve(token as string);
+            localStorage.removeItem('accessToken');
         }
-    });
-    failedQueue = [];
+        window.dispatchEvent(new CustomEvent('auth:token', { detail: token }));
+    }
 };
 
-// -----------------------------------------------------------------------------
-// Native Fetch API Wrapper
-// -----------------------------------------------------------------------------
-export async function apiFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
-    // Ensure endpoint starts with a slash or handle accordingly
-    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const url = `${env.VITE_API_URL}${path}`;
+export const logout = () => {
+    setAccessToken(null);
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('userId');
+        window.dispatchEvent(new Event('auth:logout'));
+    }
+};
+
+// Queue mechanism to prevent duplicate concurrent token refresh requests
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
+
+const processQueue = (token: string | null) => {
+    if (token) {
+        refreshQueue.forEach((callback) => callback(token));
+    }
+    refreshQueue = [];
+};
+
+/**
+ * Automatically calls the `/auth/refresh` endpoint to get a new access token
+ * using the HttpOnly refresh token cookie.
+ */
+async function handleTokenRefresh(): Promise<string> {
+    if (isRefreshing) {
+        return new Promise((resolve) => {
+            refreshQueue.push(resolve);
+        });
+    }
+
+    isRefreshing = true;
+
+    try {
+        const refreshUrl = `${env.VITE_API_URL}/auth/refresh`;
+        const response = await fetch(refreshUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Refresh token invalid or expired');
+        }
+
+        const data = await response.json();
+        const newToken = data.accessToken;
+
+        if (!newToken) {
+            throw new Error('Access token missing in refresh response');
+        }
+
+        setAccessToken(newToken);
+        processQueue(newToken);
+        return newToken;
+    } catch (error) {
+        processQueue(null);
+        logout();
+        throw error;
+    } finally {
+        isRefreshing = false;
+    }
+}
+
+/**
+ * Custom fetch wrapper that implements:
+ * 1. Base URL prefixing
+ * 2. Request interception (attaching Authorization headers and Content-Type)
+ * 3. Response interception (checking for 401 errors, queuing, and auto-token-refresh)
+ */
+async function request(url: string, options: RequestOptions = {}): Promise<Response> {
+    const absoluteUrl = url.startsWith('http://') || url.startsWith('https://') ? url : `${env.VITE_API_URL}${url}`;
 
     const headers = new Headers(options.headers);
 
-    // Default to JSON content type if body is present and not FormData
-    if (!headers.has('Content-Type') && options.body && !(options.body instanceof FormData)) {
+    // Auto-set Content-Type if there's a JSON body and it's not FormData
+    if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
 
+    // Auto-attach access token unless explicitly skipped
     const token = getAccessToken();
-    if (token) {
+    if (token && !options.skipAuth && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const config: RequestInit = {
+    // Ensure cookies are included (important for the HttpOnly refresh cookie)
+    if (options.credentials === undefined) {
+        options.credentials = 'include';
+    }
+
+    const finalOptions: RequestInit = {
         ...options,
-        headers,
-        credentials: 'include'
+        headers
     };
 
-    let response = await fetch(url, config);
+    let response = await fetch(absoluteUrl, finalOptions);
 
-    // -------------------------------------------------------------------------
-    // Handle 401 Unauthorized - Attempt Token Refresh
-    // -------------------------------------------------------------------------
-    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh');
-    if (response.status === 401 && !isAuthEndpoint) {
-        if (!isRefreshing) {
-            isRefreshing = true;
+    // Intercept 401 Unauthorized for token refresh
+    if (response.status === 401 && !options.skipAuth && !url.includes('/auth/refresh') && !url.includes('/auth/login')) {
+        try {
+            const newToken = await handleTokenRefresh();
 
-            try {
-                const refreshResponse = await fetch(`${env.VITE_API_URL}/auth/refresh`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                });
-
-                if (!refreshResponse.ok) {
-                    throw new Error('Token refresh failed');
-                }
-
-                const data = await refreshResponse.json();
-
-                const newAccessToken = data.accessToken;
-                setAccessToken(newAccessToken);
-
-                processQueue(null, newAccessToken);
-
-                // Retry the original request with the new token
-                headers.set('Authorization', `Bearer ${newAccessToken}`);
-                response = await fetch(url, { ...config, headers });
-            } catch (refreshError) {
-                processQueue(refreshError as Error, null);
-                getAuthStore().logout();
-                throw refreshError;
-            } finally {
-                isRefreshing = false;
-            }
-        } else {
-            // If already refreshing, queue the request and wait for the new token
-            return new Promise<string>((resolve, reject) => {
-                failedQueue.push({ resolve, reject });
-            }).then((newToken) => {
-                headers.set('Authorization', `Bearer ${newToken}`);
-                return fetch(url, { ...config, headers });
+            // Retry the original request with the new access token
+            headers.set('Authorization', `Bearer ${newToken}`);
+            response = await fetch(absoluteUrl, {
+                ...finalOptions,
+                headers
             });
+        } catch (refreshError) {
+            // Token refresh failed, handle token logout is already done in handleTokenRefresh
+            // We just let the original 401 response return or throw the error.
         }
     }
 
     return response;
 }
 
-// -----------------------------------------------------------------------------
-// Convenience Methods
-// -----------------------------------------------------------------------------
 export const api = {
-    get: (endpoint: string, options?: Omit<RequestInit, 'method'>) => apiFetch(endpoint, { ...options, method: 'GET' }),
+    get: (url: string, options?: RequestOptions) => request(url, { ...options, method: 'GET' }),
 
-    post: (endpoint: string, body: any, options?: Omit<RequestInit, 'method' | 'body'>) =>
-        apiFetch(endpoint, {
+    post: (url: string, body?: unknown, options?: RequestOptions) =>
+        request(url, {
             ...options,
             method: 'POST',
             body: body instanceof FormData ? body : JSON.stringify(body)
         }),
 
-    put: (endpoint: string, body: any, options?: Omit<RequestInit, 'method' | 'body'>) =>
-        apiFetch(endpoint, {
+    put: (url: string, body?: unknown, options?: RequestOptions) =>
+        request(url, {
             ...options,
             method: 'PUT',
             body: body instanceof FormData ? body : JSON.stringify(body)
         }),
 
-    patch: (endpoint: string, body: any, options?: Omit<RequestInit, 'method' | 'body'>) =>
-        apiFetch(endpoint, {
+    patch: (url: string, body?: unknown, options?: RequestOptions) =>
+        request(url, {
             ...options,
             method: 'PATCH',
             body: body instanceof FormData ? body : JSON.stringify(body)
         }),
 
-    delete: (endpoint: string, options?: Omit<RequestInit, 'method'>) => apiFetch(endpoint, { ...options, method: 'DELETE' })
+    delete: (url: string, options?: RequestOptions) => request(url, { ...options, method: 'DELETE' })
 };

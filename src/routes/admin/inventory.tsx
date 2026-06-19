@@ -39,8 +39,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/inventory')({
-    beforeLoad: () => {
-        requirePermission(null, 'Inventory Management', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Inventory Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: InventoryPage

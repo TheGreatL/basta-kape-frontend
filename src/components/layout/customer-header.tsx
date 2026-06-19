@@ -3,10 +3,9 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, User as UserIcon, LogOut, LayoutDashboard, Menu, X, ClipboardList } from 'lucide-react';
 
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext.tsx';
 import { useCurrentCustomer } from '#/feature/customer/use-current-customer.ts';
 import { getCart } from '#/api/customer.api.ts';
-import { logout as authLogout } from '#/api/auth.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -24,7 +23,7 @@ import {
 import { Avatar, AvatarFallback } from '#/components/ui/avatar.tsx';
 
 export default function CustomerHeader() {
-    const user = useAuthStore((state) => state.user);
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { storeName } = useStoreSettings();
@@ -43,7 +42,7 @@ export default function CustomerHeader() {
 
     const handleLogout = async () => {
         try {
-            await authLogout();
+            await logout();
             toast.success('Logged out successfully');
             navigate({ to: '/login' });
         } catch (error: unknown) {

@@ -11,7 +11,7 @@ import DiscountManager from './components/discount-manager.tsx';
 import { getStoreSettings, updateStoreSettings, deleteStoreSettings } from '#/api/store-settings.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 
@@ -49,7 +49,7 @@ export default function StoreSettingsPage() {
     const queryClient = useQueryClient();
 
     // Check RBAC Permissions
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const permissions = React.useMemo(() => getUserPermissions(user), [user]);
     const canUpdate = React.useMemo(() => hasPermission(permissions, appModules.STORE_SETTINGS, appPermissions.UPDATE), [permissions]);
     const canDelete = React.useMemo(() => hasPermission(permissions, appModules.STORE_SETTINGS, appPermissions.DELETE), [permissions]);

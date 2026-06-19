@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Lock, Loader2, Save } from 'lucide-react';
 
 import { changePassword } from '@/api/auth.api';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/utils/error-handler';
 import { changePasswordSchema } from '../auth.schema';
 import type { TChangePasswordSchema } from '../auth.schema';
@@ -19,7 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 
 export default function ChangePasswordForm() {
     const router = useRouter();
-    const logout = useAuthStore((state) => state.logout);
+    const { logout } = useAuth();
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -36,13 +36,13 @@ export default function ChangePasswordForm() {
     const changePasswordMutation = useMutation({
         mutationKey: [QUERY_KEY.AUTH.LOGIN, 'change-password'],
         mutationFn: changePassword,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             toast.success('Password Changed Successfully', {
                 description: data.message || 'Please log in again with your new password.'
             });
             // Revoking refresh tokens logs out all other devices/sessions.
             // Log out locally and redirect to login page.
-            logout();
+            await logout();
             router.navigate({ to: '/login' });
         },
         onError: (error) => {

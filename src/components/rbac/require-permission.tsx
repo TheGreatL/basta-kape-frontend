@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useAuthStore } from '../../store/auth-store';
+import { useAuth } from '../../context/AuthContext';
 import { hasPermission, getUserPermissions } from '../../utils/rbac';
 import type { TAppModule, TAppPermission, TAccessScope } from '../../constants/rbac';
 
@@ -12,7 +12,7 @@ interface RequirePermissionProps {
 }
 
 export function RequirePermission({ module, action, scope, children, fallback = null }: RequirePermissionProps) {
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
 
     if (!user) {
         return <>{fallback}</>;

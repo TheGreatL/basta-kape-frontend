@@ -6,8 +6,7 @@ import { Link, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 
-import { register } from '@/api/auth.api';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/utils/error-handler';
 import { registerSchema } from './auth.schema';
 import type { TRegisterSchema } from './auth.schema';
@@ -22,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 
 export default function RegisterPage() {
     const router = useRouter();
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const { register } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { storeName } = useStoreSettings();
@@ -43,9 +42,8 @@ export default function RegisterPage() {
 
     const registerMutation = useMutation({
         mutationKey: [QUERY_KEY.AUTH.REGISTER],
-        mutationFn: register,
-        onSuccess: (data) => {
-            setAuth(data.user, data.accessToken);
+        mutationFn: (credentials: TRegisterSchema) => register(credentials),
+        onSuccess: () => {
             toast.success('Account created!', {
                 description: 'You have successfully registered.'
             });

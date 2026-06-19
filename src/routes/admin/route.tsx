@@ -1,38 +1,29 @@
-import { createFileRoute, Outlet, Navigate } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import AppSidebar from '#/components/layout/Sidebar';
 import { SidebarProvider, SidebarInset } from '#/components/ui/sidebar';
 import AdminHeader from '#/components/layout/admin-header';
-import { useAuthStore, waitForAuthHydration } from '#/store/auth-store';
-import { restoreSession } from '#/api/auth.api';
 
 export const Route = createFileRoute('/admin')({
-    beforeLoad: async () => {
+    beforeLoad: ({ context }) => {
         if (typeof window === 'undefined') {
             return;
         }
-
-        await waitForAuthHydration();
-
-        if (!useAuthStore.getState().user) {
-            await restoreSession().catch(() => null);
+        if (context.auth.isLoading) {
+            return;
+        }
+        const user = context.auth.user;
+        if (!user) {
+            throw redirect({ to: '/login' });
+        }
+        const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+        if (isCustomer) {
+            throw redirect({ to: '/' });
         }
     },
     component: AdminLayout
 });
 
 function AdminLayout() {
-    const user = useAuthStore((state) => state.user);
-
-    if (!user) {
-        return <Navigate to="/login" />;
-    }
-
-    const isCustomer = user.roles.find((role) => role.name.toLowerCase() === 'customer');
-
-    if (isCustomer) {
-        return <Navigate to="/" />;
-    }
-
     return (
         <SidebarProvider>
             <AppSidebar />

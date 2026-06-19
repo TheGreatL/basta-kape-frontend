@@ -1,8 +1,9 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
+import { HeadContent, Scripts, createRootRouteWithContext, useRouteContext } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
+import { QueryClientProvider } from '@tanstack/react-query';
 
-import { TanStackQueryDevtools, TanstackQueryProvider } from '../lib/query-client';
+import { TanStackQueryDevtools } from '../lib/query-client';
 
 import appCss from '../styles.css?url';
 
@@ -10,54 +11,16 @@ import type { QueryClient } from '@tanstack/react-query';
 import ErrorPage from '../components/errors/error-page';
 import NotFoundPage from '../components/errors/not-found-page';
 
-import { getAuthStore, waitForAuthHydration } from '#/store/auth-store';
-import { restoreSession, getCurrentUser } from '#/api/auth.api';
+import { AuthProvider } from '#/context/AuthContext';
+import type { useAuth } from '#/context/AuthContext';
 import { Toaster } from '#/components/ui/sonner';
-import { getStoreSettings } from '#/api/store-settings.api.ts';
-import QUERY_KEY from '#/constants/query-keys.ts';
 
 interface MyRouterContext {
     queryClient: QueryClient;
-    auth: typeof getAuthStore;
+    auth: ReturnType<typeof useAuth>;
 }
 
-let authInitialized = false;
-
-const initAuth = async (context: MyRouterContext) => {
-    if (typeof window === 'undefined' || authInitialized) return;
-    authInitialized = true;
-
-    await waitForAuthHydration();
-
-    if (!context.auth().user) {
-        await restoreSession().catch(() => null);
-
-        if (!context.auth().user) {
-            const accessToken = getAuthStore().accessToken;
-            if (accessToken) {
-                const user = await getCurrentUser().catch(() => null);
-                if (user) {
-                    getAuthStore().setAuth(user, accessToken);
-                }
-            }
-        }
-    }
-};
-
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-    beforeLoad: async ({ context }) => {
-        await initAuth(context);
-
-        const user = context.auth().user;
-        if (user) {
-            await context.queryClient
-                .prefetchQuery({
-                    queryKey: [QUERY_KEY.STORE_SETTINGS.ACTIVE],
-                    queryFn: getStoreSettings
-                })
-                .catch(() => null);
-        }
-    },
     head: () => ({
         meta: [
             {
@@ -110,13 +73,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+    const { queryClient } = useRouteContext({ from: '__root__' });
+
     return (
         <html lang="en">
             <head>
                 <HeadContent />
             </head>
             <body>
-                <TanstackQueryProvider>{children}</TanstackQueryProvider>
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>{children}</AuthProvider>
+                </QueryClientProvider>
                 <Toaster position="top-right" richColors={true} closeButton={true} />
                 {import.meta.env.DEV ? (
                     <TanStackDevtools

@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useCurrentCustomer } from './use-current-customer.ts';
 import { updateCustomer } from '#/api/customer.api.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { toast } from 'sonner';
@@ -14,7 +14,7 @@ import EditProfileForm from './components/edit-profile-form.tsx';
 
 export default function ProfilePage() {
     const queryClient = useQueryClient();
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const { data: customer, isLoading } = useCurrentCustomer();
 
     // Form states

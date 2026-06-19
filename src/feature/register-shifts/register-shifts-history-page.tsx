@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { Timer, Search, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getRegisterShifts, getMyRegisterShifts } from '#/api/register-shift.api.ts';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, AccessScope } from '#/constants/rbac.ts';
@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import type { IRegisterShift } from './register-shifts.types';
 
 export default function RegisterShiftsHistoryPage() {
-    const currentUser = useAuthStore((state) => state.user);
+    const { user: currentUser } = useAuth();
     const permissions = getUserPermissions(currentUser);
     const hasAllScope = hasPermission(permissions, appModules.POINT_OF_SALE, 'read', AccessScope.ALL);
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ShoppingCart, Trash2 } from 'lucide-react';
 import { useCart } from './use-cart.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext.tsx';
 import { useCheckoutStore } from '#/store/checkout-store.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
@@ -22,7 +22,7 @@ import CartItemRow from './components/cart-item-row.tsx';
 import CartSummary from './components/cart-summary.tsx';
 
 export default function CartPage() {
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const { cart, isLoading, updateItem, removeItem, clearCart, isClearing, isUpdating, isRemoving } = useCart();
     const [itemToDelete, setItemToDelete] = useState<ICartItemResponse | null>(null);
     const [selectedIds, setSelectedIds] = useState<Record<string, boolean | undefined>>({});

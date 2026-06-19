@@ -26,8 +26,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/products/settings')({
-    beforeLoad: () => {
-        requirePermission(null, 'Product Settings Management', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Product Settings Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: ProductSettingsPage

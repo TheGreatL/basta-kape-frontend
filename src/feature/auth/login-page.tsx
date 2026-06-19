@@ -6,8 +6,7 @@ import { Link, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 
-import { login } from '@/api/auth.api';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/utils/error-handler';
 import { loginSchema } from './auth.schema';
 import type { TLoginSchema } from './auth.schema';
@@ -22,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 
 export default function LoginPage() {
     const router = useRouter();
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const { storeName } = useStoreSettings();
 
@@ -36,13 +35,12 @@ export default function LoginPage() {
 
     const loginMutation = useMutation({
         mutationKey: [QUERY_KEY.AUTH.LOGIN],
-        mutationFn: login,
-        onSuccess: (data) => {
-            setAuth(data.user, data.accessToken);
+        mutationFn: (credentials: TLoginSchema) => login(credentials),
+        onSuccess: (user) => {
             toast.success('Successfully logged in!', {
-                description: `Welcome back, ${data.user.firstName || 'User'}!`
+                description: `Welcome back, ${user.firstName || 'User'}!`
             });
-            const isCustomer = data.user.roles?.some((role: any) => role.name?.toLowerCase() === 'customer');
+            const isCustomer = user.roles.some((role: any) => role.name?.toLowerCase() === 'customer');
 
             if (isCustomer) {
                 router.navigate({ to: '/' });

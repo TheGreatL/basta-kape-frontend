@@ -9,7 +9,7 @@ import { Timer, Clock, Coins, FileText, CheckCircle2, AlertTriangle, User, Arrow
 import { Link } from '@tanstack/react-router';
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 
@@ -40,7 +40,7 @@ type CloseShiftFormValues = z.infer<typeof closeShiftSchema>;
 
 export default function RegisterShiftsPage() {
     const { activeShift, isLoading, hasChecked, fetchActiveShift, openShift, closeShift } = useRegisterShiftStore();
-    const currentUser = useAuthStore((state) => state.user);
+    const { user: currentUser } = useAuth();
     const [closedSummary, setClosedSummary] = React.useState<IRegisterShift | null>(null);
 
     const queryClient = useQueryClient();

@@ -5,7 +5,7 @@ import { DynamicIcon } from 'lucide-react/dynamic';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import type { TAppModule } from '#/constants/rbac.ts';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext.tsx';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 
 import logo from '#/assets/logo.png';
@@ -146,8 +146,7 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
 }
 
 export default function AppSidebar() {
-    const user = useAuthStore((state) => state.user);
-    const logout = useAuthStore((state) => state.logout);
+    const { user, logout } = useAuth();
     const permissions = getUserPermissions(user);
     const { storeName } = useStoreSettings();
 
@@ -166,8 +165,8 @@ export default function AppSidebar() {
     const displayName = user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest';
     const initials = user?.firstName ? `${user.firstName[0]}${user.lastName[0]}` : 'GU';
     const getStorageUrl = (url: string) => url;
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
     };
 
     return (

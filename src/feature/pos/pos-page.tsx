@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { Monitor, Lock, Coins, ArrowRight, ShieldAlert, CheckCircle2, User, Clock, ShoppingBag } from 'lucide-react';
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 
 import { Button } from '#/components/ui/button.tsx';
@@ -29,7 +29,7 @@ type OpenShiftFormValues = z.infer<typeof openShiftSchema>;
 
 export default function PosPage() {
     const { activeShift, isLoading, hasChecked, fetchActiveShift, openShift } = useRegisterShiftStore();
-    const currentUser = useAuthStore((state) => state.user);
+    const { user: currentUser } = useAuth();
 
     React.useEffect(() => {
         if (!hasChecked) {

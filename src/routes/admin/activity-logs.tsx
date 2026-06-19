@@ -12,8 +12,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/activity-logs')({
-    beforeLoad: () => {
-        requirePermission(null, 'Activity Logs', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Activity Logs', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: ActivityLogPage

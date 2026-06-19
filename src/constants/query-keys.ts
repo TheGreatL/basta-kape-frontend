@@ -1,7 +1,8 @@
 const QUERY_KEY = {
     AUTH: {
         LOGIN: 'auth:login',
-        REGISTER: 'auth:register'
+        REGISTER: 'auth:register',
+        ME: 'auth:me'
     },
     RBAC: {
         ROLES_LIST: 'rbac:roles_list',

@@ -1,6 +1,5 @@
 import { redirect } from '@tanstack/react-router';
-import { useAuthStore } from '../store/auth-store';
-import type { User } from '../store/auth-store';
+import type { User, useAuth } from '../context/AuthContext';
 import type { TAppModule, TAppPermission, TAccessScope } from '../constants/rbac';
 
 export type Permission = {
@@ -23,8 +22,16 @@ export function hasPermission(permissions: Permission[], module: TAppModule, act
     );
 }
 
-export function requirePermission(auth: { user: User | null } | null, module: TAppModule, action: TAppPermission, scope?: TAccessScope) {
-    const currentUser = auth?.user || useAuthStore.getState().user;
+export function requirePermission(auth: ReturnType<typeof useAuth> | null, module: TAppModule, action: TAppPermission, scope?: TAccessScope) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    if (auth?.isLoading) {
+        return;
+    }
+
+    const currentUser = auth?.user;
     const currentPermissions = getUserPermissions(currentUser);
 
     console.log('[DEBUG] requirePermission checked.', {

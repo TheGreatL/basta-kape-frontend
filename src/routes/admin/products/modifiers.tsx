@@ -11,8 +11,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/products/modifiers')({
-    beforeLoad: () => {
-        requirePermission(null, 'Products Management', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Products Management', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: ModifiersPage

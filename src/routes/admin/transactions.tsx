@@ -14,8 +14,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/transactions')({
-    beforeLoad: () => {
-        requirePermission(null, 'Transaction History', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Transaction History', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: TransactionsPage

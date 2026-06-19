@@ -9,7 +9,7 @@ import { getModifierGroups } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { useCart } from '#/feature/customer/use-cart.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import type { IMenuProductVariant, IMenuRecipeIngredient, IMenuVariantAttribute } from '#/feature/menu/menu.types.ts';
 import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifier.types.ts';
 import { getFileUrl } from '#/utils/helper';
@@ -22,7 +22,7 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ productId }: ProductDetailPageProps) {
     const { addItem, isAdding } = useCart();
     const navigate = useNavigate();
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
 

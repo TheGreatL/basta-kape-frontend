@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Route } from '#/routes/admin/reports';
 import { exportReport, getReportModules, previewReport } from '#/api/reports.api.ts';
 import { getVoidLogs } from '#/api/orders.api.ts';
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
@@ -187,7 +187,7 @@ export default function ReportsPage() {
     const searchParams = Route.useSearch();
     const { module: selectedModuleId, page, pageSize } = searchParams;
 
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const permissions = React.useMemo(() => getUserPermissions(user), [user]);
     const canReadOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ), [permissions]);
 

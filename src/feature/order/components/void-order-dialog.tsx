@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Lock, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useAuthStore } from '#/store/auth-store.ts';
+import { useAuth } from '#/context/AuthContext';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import { voidOrder } from '#/api/orders.api.ts';
@@ -30,7 +30,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
     const queryClient = useQueryClient();
 
     // Check currently logged-in user permissions
-    const currentUser = useAuthStore((state) => state.user);
+    const { user: currentUser } = useAuth();
     const userPermissions = React.useMemo(() => getUserPermissions(currentUser), [currentUser]);
     const hasPosDelete = React.useMemo(() => hasPermission(userPermissions, appModules.POINT_OF_SALE, appPermissions.DELETE), [userPermissions]);
 

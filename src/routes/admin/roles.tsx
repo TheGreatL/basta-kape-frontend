@@ -24,8 +24,8 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/roles')({
-    beforeLoad: () => {
-        requirePermission(null, 'Roles and Permissions', 'read');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Roles and Permissions', 'read');
     },
     validateSearch: (search) => searchParamsSchema.parse(search),
     component: RolePage

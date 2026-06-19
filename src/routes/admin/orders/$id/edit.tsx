@@ -3,8 +3,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { requirePermission } from '#/utils/rbac.ts';
 
 export const Route = createFileRoute('/admin/orders/$id/edit')({
-    beforeLoad: () => {
-        requirePermission(null, 'Orders Management', 'update');
+    beforeLoad: ({ context }) => {
+        requirePermission(context.auth, 'Orders Management', 'update');
     },
     component: OrderEditPage
 });
