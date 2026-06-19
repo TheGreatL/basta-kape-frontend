@@ -7,9 +7,6 @@ import logo from '#/assets/logo.png';
 export const Route = createFileRoute('/_customer')({
     component: CustomerLayout,
     beforeLoad: ({ context }) => {
-        if (typeof window === 'undefined') {
-            return;
-        }
         if (context.auth.isLoading) {
             return;
         }

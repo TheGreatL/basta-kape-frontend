@@ -1,13 +1,13 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { createFileRoute, Outlet, redirect, useNavigate, Navigate } from '@tanstack/react-router';
 import AppSidebar from '#/components/layout/Sidebar';
 import { SidebarProvider, SidebarInset } from '#/components/ui/sidebar';
 import AdminHeader from '#/components/layout/admin-header';
+import { useAuth } from '#/context/AuthContext';
+import LoadingPage from '#/components/layout/loading-page';
 
 export const Route = createFileRoute('/admin')({
     beforeLoad: ({ context }) => {
-        if (typeof window === 'undefined') {
-            return;
-        }
         if (context.auth.isLoading) {
             return;
         }
@@ -24,6 +24,33 @@ export const Route = createFileRoute('/admin')({
 });
 
 function AdminLayout() {
+    const { isLoading, isAuthenticated, user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            navigate({ to: '/login' as any });
+        } else if (!isLoading && user) {
+            const isCustomer = user.roles.some((role) => role.name.toLowerCase() === 'customer');
+            if (isCustomer) {
+                navigate({ to: '/' as any });
+            }
+        }
+    }, [isLoading, isAuthenticated, user, navigate]);
+
+    if (isLoading) {
+        return <LoadingPage />;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
+    }
+
+    const isCustomer = user?.roles.some((role) => role.name.toLowerCase() === 'customer');
+    if (isCustomer) {
+        return <Navigate to="/" />;
+    }
+
     return (
         <SidebarProvider>
             <AppSidebar />

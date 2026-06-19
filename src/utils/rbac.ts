@@ -23,10 +23,6 @@ export function hasPermission(permissions: Permission[], module: TAppModule, act
 }
 
 export function requirePermission(auth: ReturnType<typeof useAuth> | null, module: TAppModule, action: TAppPermission, scope?: TAccessScope) {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
     if (auth?.isLoading) {
         return;
     }

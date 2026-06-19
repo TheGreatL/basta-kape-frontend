@@ -22,7 +22,7 @@ export interface User {
     }>;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     accessToken: string | null;
     isLoading: boolean;
