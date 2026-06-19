@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -25,13 +25,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Spinner } from '#/components/ui/spinner.tsx';
 import type { IRoleListItem } from '../rbac/rbac.types.ts';
 
-interface UserDetailPageProps {
-    slug: string; // This corresponds to the user ID
-}
-
 type EditUserFormValues = TUpdateUserSchema;
 
-export default function UserDetailPage({ slug }: UserDetailPageProps) {
+export default function UserDetailPage() {
+    const { slug } = useParams({ from: '/admin/users/$slug' });
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user: authUser } = useAuth();

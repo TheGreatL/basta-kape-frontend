@@ -6,10 +6,5 @@ export const Route = createFileRoute('/admin/users/$slug')({
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Users Management', 'read');
     },
-    component: RouteComponent
+    component: UserDetailPage
 });
-
-function RouteComponent() {
-    const { slug } = Route.useParams();
-    return <UserDetailPage slug={slug} />;
-}
