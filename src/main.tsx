@@ -8,6 +8,13 @@ import './styles.css';
 
 function AppInner() {
     const auth = useAuth();
+
+    React.useEffect(() => {
+        if (!auth.isLoading) {
+            router.invalidate();
+        }
+    }, [auth.isLoading]);
+
     return <RouterProvider router={router} context={{ auth }} />;
 }
 
