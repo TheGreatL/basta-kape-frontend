@@ -1,26 +1,11 @@
 import * as React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, RotateCcw } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '#/components/ui/alert-dialog.tsx';
-
-import { Route } from '#/routes/admin/users.tsx';
-import { getUsersList, restoreUser } from '#/api/users.api.ts';
-import { getErrorMessage } from '#/utils/error-handler.ts';
+import { getUsersList } from '#/api/users.api.ts';
 import { getRolesList } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IUserListItem } from './users.types';
@@ -33,35 +18,29 @@ import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
-import UserCreateDialog from './components/user-create-dialog.tsx';
-import UserEditDialog from './components/user-edit-dialog.tsx';
-import UserViewDialog from './components/user-view-dialog.tsx';
 import UserDeleteDialog from './components/user-delete-dialog.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
+import UserRestoreDialog from './components/user-restore-dialog.tsx';
+
+interface IUserSearchSchema {
+    page: number;
+    pageSize: number;
+    search: string;
+    status: 'active' | 'archive';
+    role: string;
+}
 
 export default function UsersPage() {
-    const navigate = useNavigate({ from: '/admin/users' });
-    const queryClient = useQueryClient();
-    const { page, pageSize, search, status, role } = Route.useSearch();
+    const navigate = useNavigate({ from: '/admin/users/' });
 
-    const restoreMutation = useMutation({
-        mutationFn: restoreUser,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
-            toast.success('User profile successfully restored');
-        },
-        onError: (err) => {
-            toast.error('Failed to restore user profile', {
-                description: getErrorMessage(err)
-            });
-        }
-    });
+    const searchParams = useSearch({ from: '/admin/users/' }) as unknown as IUserSearchSchema;
+    const { page, pageSize, search, status, role } = searchParams;
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const debouncedSearch = useDebounce(localSearch, 400);
 
-    const setSearchParams = (updates: Record<string, any>) => {
+    const setSearchParams = (updates: Partial<IUserSearchSchema>) => {
         navigate({
             search: (prev: any) => ({ ...prev, ...updates })
         });
@@ -76,10 +55,6 @@ export default function UsersPage() {
             setSearchParams({ search: debouncedSearch, page: 1 });
         }
     }, [debouncedSearch, search]);
-
-    // Dialog States
-    const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);
-    const [selectedUser, setSelectedUser] = React.useState<IUserListItem | null>(null);
 
     // Delete Confirmation states
     const [userToDelete, setUserToDelete] = React.useState<IUserListItem | null>(null);
@@ -99,18 +74,15 @@ export default function UsersPage() {
     });
 
     const handleOpenCreate = () => {
-        setSelectedUser(null);
-        setActionType('create');
+        navigate({ to: '/admin/users/create' });
     };
 
     const handleOpenEdit = (user: IUserListItem) => {
-        setSelectedUser(user);
-        setActionType('edit');
+        navigate({ to: '/admin/users/$slug', params: { slug: user.username } });
     };
 
     const handleOpenView = (user: IUserListItem) => {
-        setSelectedUser(user);
-        setActionType('view');
+        navigate({ to: '/admin/users/$slug', params: { slug: user.username } });
     };
 
     const handleOpenDelete = (user: IUserListItem) => {
@@ -176,60 +148,21 @@ export default function UsersPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-2">
-                        <RequirePermission module="Users Management" action="read">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                onClick={() => handleOpenView(row.original)}
-                            >
-                                <Eye className="size-4" />
-                                <span className="sr-only">View User</span>
-                            </Button>
-                        </RequirePermission>
                         {row.original.deletedAt ? (
-                            <RequirePermission module="Users Management" action="delete">
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
-                                            title="Restore User"
-                                            disabled={restoreMutation.isPending}
-                                        >
-                                            <RotateCcw className="size-4" />
-                                            <span className="sr-only">Restore User</span>
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
-                                                <RotateCcw className="size-5 text-emerald-600" />
-                                                Restore Staff Account
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to restore the staff account for{' '}
-                                                <strong>
-                                                    "{row.original.firstName} {row.original.lastName}" (@{row.original.username})
-                                                </strong>
-                                                ? This will restore their system permissions and allow them to log in again.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={() => restoreMutation.mutate(row.original.id)}
-                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                                            >
-                                                Confirm Restore
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </RequirePermission>
+                            <UserRestoreDialog user={row.original} />
                         ) : (
                             <>
+                                <RequirePermission module="Users Management" action="read">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                        onClick={() => handleOpenView(row.original)}
+                                    >
+                                        <Eye className="size-4" />
+                                        <span className="sr-only">View User</span>
+                                    </Button>
+                                </RequirePermission>
                                 {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
                                     <RequirePermission module="Users Management" action="update">
                                         <Button
@@ -330,15 +263,6 @@ export default function UsersPage() {
                     </>
                 }
             />
-
-            {/* CREATE DIALOG */}
-            <UserCreateDialog open={actionType === 'create'} onOpenChange={(val) => !val && setActionType(null)} />
-
-            {/* EDIT DIALOG */}
-            <UserEditDialog open={actionType === 'edit'} onOpenChange={(val) => !val && setActionType(null)} user={selectedUser} />
-
-            {/* VIEW DIALOG */}
-            <UserViewDialog open={actionType === 'view'} onOpenChange={(val) => !val && setActionType(null)} user={selectedUser} />
 
             {/* DELETE CONFIRMATION DIALOG */}
             <UserDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} user={userToDelete} />

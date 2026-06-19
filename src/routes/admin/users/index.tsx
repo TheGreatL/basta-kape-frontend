@@ -11,7 +11,7 @@ const searchParamsSchema = z.object({
     role: z.string().catch('')
 });
 
-export const Route = createFileRoute('/admin/users')({
+export const Route = createFileRoute('/admin/users/')({
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Users Management', 'read');
     },
