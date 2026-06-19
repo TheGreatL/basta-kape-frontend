@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 import { getModulesPermissions, createRole } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -13,27 +14,12 @@ import type { TRoleFormSchema } from '../rbac.schema.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { RolePermissionTree } from './components/role-permission-tree.tsx';
 
-interface RoleCreateDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-}
-
-export default function RoleCreateDialog({ open, onOpenChange }: RoleCreateDialogProps) {
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
-                <RoleCreateDialogContent onOpenChange={onOpenChange} />
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function RoleCreateDialogContent({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
+export default function RoleCreatePage() {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [isRendering, setIsRendering] = React.useState(false);
 
@@ -64,7 +50,7 @@ function RoleCreateDialogContent({ onOpenChange }: { onOpenChange: (open: boolea
             toast.success('Custom Role Created', {
                 description: 'The new role and permission scopes have been successfully configured.'
             });
-            onOpenChange(false);
+            navigate({ to: '/admin/roles' });
         },
         onError: (error) => {
             toast.error('Failed to create role', {
@@ -81,20 +67,35 @@ function RoleCreateDialogContent({ onOpenChange }: { onOpenChange: (open: boolea
     const isLoading = isTreeLoading || !isRendering;
 
     return (
-        <>
-            <DialogHeader className="px-6 pt-6 pb-2">
-                <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-                    <Shield className="size-5 text-primary" />
-                    Configure New Custom Role
-                </DialogTitle>
-                <DialogDescription className="text-xs">
-                    Define the name, functional description, and configure modular nested permission scopes.
-                </DialogDescription>
-            </DialogHeader>
+        <div className="flex flex-col gap-6">
+            {/* Header */}
+            <div className="flex flex-col gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-fit gap-1 text-muted-foreground hover:text-foreground -ml-2"
+                    onClick={() => navigate({ to: '/admin/roles' })}
+                >
+                    <ArrowLeft className="size-4" />
+                    Back to Roles
+                </Button>
 
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 min-h-0">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                        <Shield className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Configure New Custom Role</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Define the name, functional description, and configure modular nested permission scopes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-6 shadow-xs">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-24 gap-3">
                                 <Spinner className="h-6 w-6 text-primary animate-spin" />
@@ -138,6 +139,7 @@ function RoleCreateDialogContent({ onOpenChange }: { onOpenChange: (open: boolea
                                         )}
                                     />
                                 </div>
+
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center justify-between border-b pb-2">
                                         <h3 className="text-sm font-bold text-foreground/80">Access Control Selection Tree</h3>
@@ -151,26 +153,26 @@ function RoleCreateDialogContent({ onOpenChange }: { onOpenChange: (open: boolea
                                         onPermissionChange={(permissions) => form.setValue('permissions', permissions, { shouldDirty: true })}
                                     />
                                 </div>
+
+                                <div className="flex items-center justify-end gap-2 border-t pt-4">
+                                    <Button type="button" variant="outline" onClick={() => navigate({ to: '/admin/roles' })} className="h-9">
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={createMutation.isPending || isLoading} className="h-9">
+                                        {createMutation.isPending ? (
+                                            <div className="flex items-center gap-1">
+                                                <Spinner className="h-4 w-4" /> Saving...
+                                            </div>
+                                        ) : (
+                                            'Create Role'
+                                        )}
+                                    </Button>
+                                </div>
                             </>
                         )}
-                    </div>
-
-                    <DialogFooter className="px-6 py-4 border-t bg-muted/30">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={createMutation.isPending || isLoading} className="h-9">
-                            {createMutation.isPending ? (
-                                <div className="flex items-center gap-1">
-                                    <Spinner className="h-4 w-4" /> Saving...
-                                </div>
-                            ) : (
-                                'Create Role'
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </Form>
-        </>
+                    </form>
+                </Form>
+            </div>
+        </div>
     );
 }

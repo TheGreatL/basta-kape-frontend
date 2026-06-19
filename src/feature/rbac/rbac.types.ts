@@ -60,7 +60,7 @@ export interface IGetModulesListParams extends IPaginationParams {
     search?: string;
 }
 
-export interface ModuleTabProps {
+export interface ModuleTableProps {
     page: number;
     pageSize: number;
     search: string;
@@ -68,7 +68,7 @@ export interface ModuleTabProps {
     onSearchChange: (search: string) => void;
 }
 
-export interface PermissionTabProps {
+export interface PermissionTableProps {
     page: number;
     pageSize: number;
     search: string;
@@ -76,7 +76,7 @@ export interface PermissionTabProps {
     onSearchChange: (search: string) => void;
 }
 
-export interface RoleTabProps {
+export interface RoleTableProps {
     page: number;
     pageSize: number;
     search: string;

@@ -20,7 +20,7 @@ import {
 import { getRolesList, restoreRole } from '#/api/rbac.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
-import type { RoleTabProps, IRoleListItem } from '../rbac.types';
+import type { RoleTableProps, IRoleListItem } from '../rbac.types';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -28,12 +28,10 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import RoleCreateDialog from './role-create-dialog.tsx';
-import RoleEditDialog from './role-edit-dialog.tsx';
-import RoleViewDialog from './role-view-dialog.tsx';
+import { useNavigate } from '@tanstack/react-router';
 import RoleDeleteDialog from './role-delete-dialog.tsx';
 
-export default function RoleTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: RoleTabProps) {
+export default function RoleTable({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: RoleTableProps) {
     const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -63,10 +61,6 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
         }
     }, [debouncedSearch, search, onSearchChange]);
 
-    // Dialog States
-    const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);
-    const [selectedRole, setSelectedRole] = React.useState<IRoleListItem | null>(null);
-
     // Delete Confirmation dialog states
     const [roleToDelete, setRoleToDelete] = React.useState<IRoleListItem | null>(null);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
@@ -85,19 +79,18 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
     });
 
     // Actions Handlers
+    const navigate = useNavigate();
+
     const handleOpenCreate = () => {
-        setSelectedRole(null);
-        setActionType('create');
+        navigate({ to: '/admin/roles/create' });
     };
 
     const handleOpenEdit = (role: IRoleListItem) => {
-        setSelectedRole(role);
-        setActionType('edit');
+        navigate({ to: `/admin/roles/${encodeURIComponent(role.name)}` });
     };
 
     const handleOpenView = (role: IRoleListItem) => {
-        setSelectedRole(role);
-        setActionType('view');
+        navigate({ to: `/admin/roles/${encodeURIComponent(role.name)}` });
     };
 
     const handleOpenDelete = (role: IRoleListItem) => {
@@ -287,15 +280,6 @@ export default function RoleTab({ page, pageSize, search, status, onPaginationCh
 
             {isRolesLoading ? null : (
                 <>
-                    {/* CREATE DIALOG */}
-                    <RoleCreateDialog open={actionType === 'create'} onOpenChange={(val) => !val && setActionType(null)} />
-
-                    {/* EDIT DIALOG */}
-                    <RoleEditDialog open={actionType === 'edit'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
-
-                    {/* VIEW DIALOG */}
-                    <RoleViewDialog open={actionType === 'view'} onOpenChange={(val) => !val && setActionType(null)} role={selectedRole} />
-
                     {/* DELETE CONFIRMATION DIALOG */}
                     <RoleDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} role={roleToDelete} />
                 </>

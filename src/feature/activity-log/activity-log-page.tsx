@@ -17,7 +17,7 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { DatePicker } from './components/date-picker.tsx';
 
 export default function ActivityLogPage() {
-    const navigate = useNavigate({ from: '/admin/activity-logs' });
+    const navigate = Route.useNavigate();
     const { page, pageSize, search, dateFrom, dateTo } = Route.useSearch();
 
     const [sorting, setSorting] = React.useState<SortingState>([]);

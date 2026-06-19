@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
+import { format } from 'date-fns';
 
-import { getModulesList } from '#/api/rbac.api.ts';
+import { getPermissionsList } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { Badge } from '#/components/ui/badge';
-import { format } from 'date-fns';
 import { Input } from '#/components/ui/input.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { ModuleTabProps, ISystemModule } from '../rbac.types';
+import type { PermissionTableProps, ISystemPermission } from '../rbac.types';
 
-export default function ModuleTab({ page, pageSize, search, onPaginationChange, onSearchChange }: ModuleTabProps) {
+export default function PermissionTable({ page, pageSize, search, onPaginationChange, onSearchChange }: PermissionTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -28,9 +28,9 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
     }, [debouncedSearch, search, onSearchChange]);
 
     const { data, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.RBAC.MODULES_LIST, { page, pageSize, search }],
+        queryKey: [QUERY_KEY.RBAC.PERMISSIONS_LIST, { page, pageSize, search }],
         queryFn: async () => {
-            const res = await getModulesList({
+            const res = await getPermissionsList({
                 page,
                 limit: pageSize,
                 search
@@ -39,11 +39,11 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
         }
     });
 
-    const columns = React.useMemo<ColumnDef<ISystemModule>[]>(
+    const columns = React.useMemo<ColumnDef<ISystemPermission>[]>(
         () => [
             {
                 accessorKey: 'name',
-                header: 'System Module',
+                header: 'Permission Action',
                 cell: ({ row }) => <Badge>{row.getValue('name')}</Badge>
             },
             {
@@ -61,14 +61,12 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
         ],
         []
     );
-    console.log(data);
+
     return (
         <div className="space-y-4">
             <div>
-                <h2 className="text-lg font-bold text-foreground/90">System Modules</h2>
-                <p className="text-xs text-muted-foreground">
-                    Directory of registered operational system modules available for custom security role configuration.
-                </p>
+                <h2 className="text-lg font-bold text-foreground/90">Action Permissions</h2>
+                <p className="text-xs text-muted-foreground">Directory of system-wide action nodes mapping nested module security scopes.</p>
             </div>
 
             <DataTable
@@ -84,7 +82,7 @@ export default function ModuleTab({ page, pageSize, search, onPaginationChange, 
                 isLoading={isLoading}
                 filterContent={
                     <Input
-                        placeholder="Search system modules..."
+                        placeholder="Search action permissions..."
                         value={localSearch}
                         onChange={(e) => setLocalSearch(e.target.value)}
                         className="h-9 w-full sm:w-[300px] bg-background/50"

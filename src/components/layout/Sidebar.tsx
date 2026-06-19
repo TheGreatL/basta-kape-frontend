@@ -116,7 +116,16 @@ const sidebarGroups: Array<{
         items: [
             { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
             { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
-            { title: 'Roles & Permissions', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS }
+            {
+                title: 'RBAC',
+                icon: 'shield',
+                module: appModules.ROLES_AND_PERMISSIONS,
+                items: [
+                    { title: 'Roles', path: '/admin/roles', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
+                    { title: 'Permissions', path: '/admin/permissions', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
+                    { title: 'Modules', path: '/admin/modules', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
+                ]
+            }
         ]
     },
     {
@@ -149,6 +158,15 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
         if (path === '/admin/orders') {
             const isCreate = matchRoute({ to: '/admin/orders/create' as any, fuzzy: false }) !== false;
             const isEdit = matchRoute({ to: '/admin/orders/$id/edit' as any, fuzzy: false }) !== false;
+            if (isCreate || isEdit) {
+                active = true;
+            }
+        }
+
+        // Keep "Roles" active on nested creation and details subroutes
+        if (path === '/admin/roles') {
+            const isCreate = matchRoute({ to: '/admin/roles/create' as any, fuzzy: false }) !== false;
+            const isEdit = matchRoute({ to: '/admin/roles/$slug' as any, fuzzy: false }) !== false;
             if (isCreate || isEdit) {
                 active = true;
             }

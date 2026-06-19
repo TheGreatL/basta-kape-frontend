@@ -12,11 +12,11 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute('/admin/activity-logs')({
+    validateSearch: (search) => searchParamsSchema.parse(search),
+    component: ActivityLogPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Activity Logs', 'read');
-    },
-    validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ActivityLogPage
+    }
 });
 
 export type TActivityLogSearchSchema = z.infer<typeof searchParamsSchema>;

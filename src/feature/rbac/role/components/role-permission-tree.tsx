@@ -147,7 +147,7 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                                                 onValueChange={(val: string) => handleScopeChange(val as Scope, mpOptions)}
                                                 disabled={readOnly}
                                             >
-                                                <SelectTrigger className="h-7 w-[100px] text-xs font-semibold border-dashed py-0">
+                                                <SelectTrigger className="h-7  text-xs font-semibold border-dashed py-0">
                                                     <SelectValue placeholder="Scope" />
                                                 </SelectTrigger>
                                                 <SelectContent position="popper" align="end">
