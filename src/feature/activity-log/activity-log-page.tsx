@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { Activity, X } from 'lucide-react';
 import { format } from 'date-fns';

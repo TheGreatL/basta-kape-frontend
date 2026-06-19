@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { Plus, Edit, Trash2, Eye, Users, Calendar, Phone, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
@@ -18,7 +18,6 @@ import {
     AlertDialogTrigger
 } from '#/components/ui/alert-dialog.tsx';
 
-import { Route } from '#/routes/admin/customers.tsx';
 import { getCustomers, restoreCustomer } from '#/api/customer.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -32,15 +31,12 @@ import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 
-import CustomerCreateDialog from './components/customer-create-dialog.tsx';
-import CustomerEditDialog from './components/customer-edit-dialog.tsx';
-import CustomerViewDialog from './components/customer-view-dialog.tsx';
 import CustomerDeleteDialog from './components/customer-delete-dialog.tsx';
 
 export default function CustomerManagementPage() {
-    const navigate = useNavigate({ from: '/admin/customers' });
+    const navigate = useNavigate({ from: '/admin/customers/' });
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status } = Route.useSearch();
+    const { page = 1, pageSize = 10, search = '', status = 'active' } = useSearch({ from: '/admin/customers/' });
 
     const restoreMutation = useMutation({
         mutationFn: restoreCustomer,
@@ -75,10 +71,6 @@ export default function CustomerManagementPage() {
         }
     }, [debouncedSearch, search]);
 
-    // Dialog States
-    const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);
-    const [selectedCustomer, setSelectedCustomer] = React.useState<ICustomerResponse | null>(null);
-
     // Delete Confirmation states
     const [customerToDelete, setCustomerToDelete] = React.useState<ICustomerResponse | null>(null);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
@@ -96,18 +88,15 @@ export default function CustomerManagementPage() {
     });
 
     const handleOpenCreate = () => {
-        setSelectedCustomer(null);
-        setActionType('create');
+        navigate({ to: '/admin/customers/create' });
     };
 
     const handleOpenEdit = (customer: ICustomerResponse) => {
-        setSelectedCustomer(customer);
-        setActionType('edit');
+        navigate({ to: '/admin/customers/$slug', params: { slug: customer.user.username || customer.id } });
     };
 
     const handleOpenView = (customer: ICustomerResponse) => {
-        setSelectedCustomer(customer);
-        setActionType('view');
+        navigate({ to: '/admin/customers/$slug', params: { slug: customer.user.username || customer.id } });
     };
 
     const handleOpenDelete = (customer: ICustomerResponse) => {
@@ -182,18 +171,6 @@ export default function CustomerManagementPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-2">
-                        <RequirePermission module="Customers Management" action="read">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg border border-transparent hover:bg-muted"
-                                onClick={() => handleOpenView(row.original)}
-                                title="View Details & Cart"
-                            >
-                                <Eye className="size-4" />
-                                <span className="sr-only">View Customer</span>
-                            </Button>
-                        </RequirePermission>
                         {row.original.deletedAt ? (
                             <RequirePermission module="Customers Management" action="delete">
                                 <AlertDialog>
@@ -238,6 +215,18 @@ export default function CustomerManagementPage() {
                             </RequirePermission>
                         ) : (
                             <>
+                                <RequirePermission module="Customers Management" action="read">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg border border-transparent hover:bg-muted"
+                                        onClick={() => handleOpenView(row.original)}
+                                        title="View Details & Cart"
+                                    >
+                                        <Eye className="size-4" />
+                                        <span className="sr-only">View Customer</span>
+                                    </Button>
+                                </RequirePermission>
                                 <RequirePermission module="Customers Management" action="update">
                                     <Button
                                         variant="ghost"
@@ -332,19 +321,6 @@ export default function CustomerManagementPage() {
                     </>
                 }
             />
-
-            {/* CREATE DIALOG */}
-            {actionType === 'create' && <CustomerCreateDialog open={true} onOpenChange={(val) => !val && setActionType(null)} />}
-
-            {/* EDIT DIALOG */}
-            {actionType === 'edit' && selectedCustomer && (
-                <CustomerEditDialog open={true} onOpenChange={(val) => !val && setActionType(null)} customer={selectedCustomer} />
-            )}
-
-            {/* VIEW DIALOG */}
-            {actionType === 'view' && selectedCustomer && (
-                <CustomerViewDialog open={true} onOpenChange={(val) => !val && setActionType(null)} customer={selectedCustomer} />
-            )}
 
             {/* DELETE CONFIRMATION DIALOG */}
             {isDeleteOpen && customerToDelete && <CustomerDeleteDialog open={true} onOpenChange={setIsDeleteOpen} customer={customerToDelete} />}

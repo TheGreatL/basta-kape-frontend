@@ -30,7 +30,7 @@ import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/re
 
 export default function OrderDetailsPage() {
     const { id } = useParams({
-        from: '/_customer/orders/$id'
+        from: '/_customer/_protected/orders/$id'
     });
 
     // Fetch order details with 5-second polling interval for real-time tracking
