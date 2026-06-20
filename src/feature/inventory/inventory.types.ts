@@ -183,3 +183,47 @@ export interface IForecast {
     } | null;
     ingredients: IForecastIngredient[];
 }
+
+// =============================================================================
+// Inventory Dashboard Widgets
+// =============================================================================
+export interface IInventoryDashboardOverview {
+    totalIngredients: number;
+    lowStockCount: number;
+    outOfStockCount: number;
+}
+
+export interface IDashboardDelivery {
+    id: string;
+    ingredientName: string;
+    supplierName: string | null;
+    quantityReceived: number;
+    unitAbbreviation: string | null;
+    totalCost: number;
+    receivedAt: string;
+}
+
+export interface IDashboardAdjustment {
+    id: string;
+    ingredientName: string;
+    quantity: number;
+    unitAbbreviation: string | null;
+    type: TAdjustmentType;
+    reason: string | null;
+    createdAt: string;
+}
+
+export interface IDashboardExpiringSoon {
+    id: string;
+    batchNumber: string | null;
+    expiryDate: string;
+    quantityReceived: number;
+    ingredientName: string;
+    unitAbbreviation: string | null;
+}
+
+export interface IDashboardWasteSummary {
+    type: TAdjustmentType;
+    count: number;
+    totalQuantity: number;
+}

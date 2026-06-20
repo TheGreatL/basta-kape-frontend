@@ -106,7 +106,20 @@ const sidebarGroups: Array<{
     {
         label: 'Inventory & Purchasing',
         items: [
-            { title: 'Inventory', path: '/admin/inventory', icon: 'archive', module: appModules.INVENTORY_MANAGEMENT, badge: 'Low' },
+            {
+                title: 'Inventory',
+                icon: 'archive',
+                module: appModules.INVENTORY_MANAGEMENT,
+                items: [
+                    { title: 'Dashboard', path: '/admin/inventory', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Projections', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Deliveries', path: '/admin/inventory/deliveries', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Waste Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
+                ]
+            },
             { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]

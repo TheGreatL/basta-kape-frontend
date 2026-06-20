@@ -18,7 +18,12 @@ import type {
     IAdjustment,
     IGetAdjustmentsParams,
     ICreateAdjustmentPayload,
-    IForecast
+    IForecast,
+    IInventoryDashboardOverview,
+    IDashboardDelivery,
+    IDashboardAdjustment,
+    IDashboardExpiringSoon,
+    IDashboardWasteSummary
 } from '../feature/inventory/inventory.types';
 
 // =============================================================================
@@ -252,4 +257,52 @@ export const getProductionForecast = async (): Promise<IForecast[]> => {
     }
     const data: IForecast[] = (await response.json()) || [];
     return data;
+};
+
+// =============================================================================
+// Inventory Dashboard Widgets APIs
+// =============================================================================
+export const getInventoryDashboardOverview = async (): Promise<IInventoryDashboardOverview> => {
+    const response = await api.get('/inventory/dashboard/overview');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch dashboard overview metrics', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getInventoryDashboardRecentDeliveries = async (): Promise<IDashboardDelivery[]> => {
+    const response = await api.get('/inventory/dashboard/recent-deliveries');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch recent deliveries', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getInventoryDashboardRecentAdjustments = async (): Promise<IDashboardAdjustment[]> => {
+    const response = await api.get('/inventory/dashboard/recent-adjustments');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch recent waste/adjustments logs', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getInventoryDashboardExpiringSoon = async (): Promise<IDashboardExpiringSoon[]> => {
+    const response = await api.get('/inventory/dashboard/expiring-soon');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch expiring batches', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getInventoryDashboardWasteSummary = async (): Promise<IDashboardWasteSummary[]> => {
+    const response = await api.get('/inventory/dashboard/waste-summary');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch waste summary breakdown', response.status, errorData);
+    }
+    return response.json();
 };
