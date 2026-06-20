@@ -51,10 +51,11 @@ export const exportReport = async (params: IReportExportParams): Promise<void> =
     downloadBlob(blob, filename);
 };
 
-export const getSalesAnalytics = async (dateFrom?: string, dateTo?: string): Promise<any> => {
+export const getSalesAnalytics = async (dateFrom?: string, dateTo?: string, type?: string): Promise<any> => {
     const query = new URLSearchParams();
     if (dateFrom) query.append('dateFrom', dateFrom);
     if (dateTo) query.append('dateTo', dateTo);
+    if (type) query.append('type', type);
 
     const response = await api.get(`/reports/sales-analytics?${query.toString()}`);
     if (!response.ok) {

@@ -64,6 +64,7 @@ export interface IOrder {
     id: string;
     queueNumber: string;
     buzzerId: string | null;
+    referenceNumber?: string | null;
     status: TOrderStatus;
     orderType: TOrderType;
     orderSource: TOrderSource;
@@ -90,6 +91,7 @@ export interface ICreateOrderPayload {
     notes?: string;
     customerId?: string | null;
     customerName?: string;
+    buzzerId?: string | null;
     paymentMethod?: 'CASH' | 'GCASH' | 'PAYMAYA' | null;
     gcashReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
@@ -155,6 +157,7 @@ export const orderCreateFormSchema = z
         customerType: z.enum(['GUEST', 'MEMBER']),
         guestName: z.string().optional(),
         customerId: z.string().nullable().optional(),
+        buzzerId: z.string().optional(),
         orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY']),
         notes: z.string().optional(),
         items: z

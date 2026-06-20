@@ -13,19 +13,24 @@ import {
     ArrowLeft,
     Printer,
     FileText,
-    Download
+    Download,
+    Volume2,
+    Clock,
+    XCircle,
+    ChefHat
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { cn } from '#/lib/utils.ts';
 
 import { Route } from '#/routes/admin/orders/$id/edit.tsx';
 import { getOrderById, updateOrderStatus, getOrderPayments } from '#/api/orders.api.ts';
+import { getFileUrl, getFrontendReference } from '#/utils/helper';
 import { getDiscountsConfig, applyDiscountToOrder, removeDiscountFromOrder } from '#/api/discounts.api.ts';
 import { updateTransactionReceipt } from '#/api/transactions.api.ts';
-import { getFileUrl } from '#/utils/helper';
 import type { IDiscount } from '../store-settings/discounts.types';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -250,6 +255,53 @@ export default function OrderEditPage() {
         }
     };
 
+    const getStatusTimelineConfig = (s: string) => {
+        switch (s) {
+            case 'PENDING':
+                return {
+                    icon: <Clock className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-amber-600 dark:text-amber-450',
+                    borderClass: 'border-amber-200 dark:border-amber-900/50',
+                    bgClass: 'bg-amber-50 dark:bg-amber-950/40'
+                };
+            case 'PREPARING':
+                return {
+                    icon: <ChefHat className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-blue-600 dark:text-blue-450',
+                    borderClass: 'border-blue-200 dark:border-blue-900/50',
+                    bgClass: 'bg-blue-50 dark:bg-blue-950/40'
+                };
+            case 'READY':
+                return {
+                    icon: <Volume2 className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-teal-600 dark:text-teal-450',
+                    borderClass: 'border-teal-200 dark:border-teal-900/50',
+                    bgClass: 'bg-teal-50 dark:bg-teal-950/40'
+                };
+            case 'COMPLETED':
+                return {
+                    icon: <CheckCircle2 className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-emerald-600 dark:text-emerald-450',
+                    borderClass: 'border-emerald-200 dark:border-emerald-900/50',
+                    bgClass: 'bg-emerald-50 dark:bg-emerald-950/40'
+                };
+            case 'CANCELLED':
+                return {
+                    icon: <XCircle className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-rose-600 dark:text-rose-450',
+                    borderClass: 'border-rose-200 dark:border-rose-900/50',
+                    bgClass: 'bg-rose-50 dark:bg-rose-950/40'
+                };
+            default:
+                return {
+                    icon: <Clock className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-slate-600 dark:text-slate-400',
+                    borderClass: 'border-slate-200 dark:border-slate-800/40',
+                    bgClass: 'bg-slate-50 dark:bg-slate-950/40'
+                };
+        }
+    };
+
     if (isDetailsLoading || !orderDetails) {
         return (
             <div className="py-20 flex flex-col items-center justify-center gap-3">
@@ -260,7 +312,7 @@ export default function OrderEditPage() {
     }
 
     return (
-        <div className="flex flex-col gap-6 max-w-6xl mx-auto px-1 py-3">
+        <div className="flex flex-col gap-6 ">
             {/* Header & Breadcrumbs */}
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b pb-4 border-border/40">
                 <div className="space-y-1">
@@ -336,6 +388,35 @@ export default function OrderEditPage() {
                                     <CopyButton value={orderDetails.queueNumber} description={`Queue number #${orderDetails.queueNumber} copied`} />
                                 </div>
                             </div>
+                            <div>
+                                <div className="text-xs uppercase font-bold  text-muted-foreground">Reference No.</div>
+                                <div className="flex items-center gap-1.5 font-semibold text-foreground text-sm pt-0.5">
+                                    <span className="font-mono">
+                                        {orderDetails.referenceNumber || getFrontendReference(orderDetails.createdAt, orderDetails.queueNumber)}
+                                    </span>
+                                    <CopyButton
+                                        value={orderDetails.referenceNumber || getFrontendReference(orderDetails.createdAt, orderDetails.queueNumber)}
+                                        description="Reference number copied"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs uppercase font-bold  text-muted-foreground">Receipt ID</div>
+                                <div className="flex items-center gap-1.5 font-semibold text-foreground text-sm pt-0.5">
+                                    <span className="font-mono">{orderDetails.id.slice(0, 8).toUpperCase()}</span>
+                                    <CopyButton value={orderDetails.id.slice(0, 8).toUpperCase()} description="Receipt ID copied" />
+                                </div>
+                            </div>
+                            {orderDetails.buzzerId && (
+                                <div>
+                                    <div className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-1">
+                                        <Volume2 className="size-3.5 text-amber-500 animate-pulse" /> Pager / Buzzer
+                                    </div>
+                                    <div className="font-bold text-amber-600 dark:text-amber-400 text-sm pt-0.5">
+                                        Device ID: #{orderDetails.buzzerId}
+                                    </div>
+                                </div>
+                            )}
                             <div>
                                 <div className="text-xs uppercase font-bold  text-muted-foreground">Placed On</div>
                                 <div className="font-semibold text-foreground text-sm pt-0.5">
@@ -864,35 +945,66 @@ export default function OrderEditPage() {
 
                     {/* Status History Logs Card */}
                     {orderDetails.statusHistory && orderDetails.statusHistory.length > 0 && (
-                        <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-3.5">
-                            <h3 className="text-xs font-bold text-foreground/60 uppercase  flex items-center gap-1.5">
-                                <TrendingUp className="size-4 text-muted-foreground" />
-                                Audit Status Log History
-                            </h3>
-                            <div className="border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20 text-xs bg-muted/5 max-h-[300px] overflow-y-auto">
-                                {orderDetails.statusHistory.map((history: IOrderStatusHistory) => (
-                                    <div key={history.id} className="p-3 flex items-start gap-3.5 hover:bg-muted/10 transition-colors">
-                                        <Badge
-                                            variant="outline"
-                                            className={`font-bold capitalize scale-90 py-0.5 px-2 shrink-0 ${getStatusBadgeClass(history.status)}`}
-                                        >
-                                            {history.status.toLowerCase()}
-                                        </Badge>
-                                        <div className="flex-1 space-y-0.5">
-                                            <p className="font-semibold text-foreground/80 leading-normal">{history.notes || 'Status updated.'}</p>
-                                            <div className="text-muted-foreground flex items-center gap-1.5 font-medium scale-95 origin-left">
-                                                <span>
-                                                    By:{' '}
-                                                    {history.changedBy
-                                                        ? `${history.changedBy.firstName} ${history.changedBy.lastName} (@${history.changedBy.username})`
-                                                        : `System ID: ${history.changedById}`}
-                                                </span>
-                                                <span>•</span>
-                                                <span className="font-mono text-xs">{format(new Date(history.createdAt), 'MMM dd, hh:mm a')}</span>
+                        <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/30 pb-3">
+                                <h3 className="text-xs font-bold text-foreground/60 uppercase flex items-center gap-1.5">
+                                    <TrendingUp className="size-4 text-muted-foreground" />
+                                    Audit Status Log History
+                                </h3>
+                                <span className="text-[10px] bg-muted px-2.5 py-0.5 rounded-full font-bold text-muted-foreground/80 border border-border/40">
+                                    {orderDetails.statusHistory.length} logs
+                                </span>
+                            </div>
+
+                            <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/60 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                {orderDetails.statusHistory.map((history: IOrderStatusHistory) => {
+                                    const config = getStatusTimelineConfig(history.status);
+                                    return (
+                                        <div key={history.id} className="relative group transition-all duration-200">
+                                            {/* Timeline Node Icon */}
+                                            <div
+                                                className={cn(
+                                                    'absolute -left-[27px] top-0.5 rounded-full size-6 flex items-center justify-center border bg-background shadow-3xs transition-transform duration-200 group-hover:scale-110 shrink-0',
+                                                    config.colorClass,
+                                                    config.borderClass,
+                                                    config.bgClass
+                                                )}
+                                            >
+                                                {config.icon}
+                                            </div>
+
+                                            {/* Timeline Content */}
+                                            <div className="space-y-1">
+                                                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={cn(
+                                                                'text-xs font-bold uppercase  px-1.5 py-0.5 rounded border leading-none shrink-0',
+                                                                config.colorClass,
+                                                                config.borderClass,
+                                                                config.bgClass
+                                                            )}
+                                                        >
+                                                            {history.status.toLowerCase()}
+                                                        </span>
+                                                        {history.changedBy && (
+                                                            <span className="text-xs text-muted-foreground font-semibold">
+                                                                by {history.changedBy.firstName} {history.changedBy.lastName}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground font-mono font-medium shrink-0">
+                                                        {format(new Date(history.createdAt), 'MMM dd, hh:mm a')}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-xs text-foreground/85 font-medium leading-relaxed">
+                                                    {history.notes || 'Status updated.'}
+                                                </p>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

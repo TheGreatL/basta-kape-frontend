@@ -23,7 +23,7 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
-import { getFileUrl } from '#/utils/helper';
+import { getFileUrl, getFrontendReference } from '#/utils/helper';
 import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
 import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
@@ -188,6 +188,17 @@ export default function OrderDetailsPage() {
                             >
                                 {formatOrderType(order.orderType)}
                             </Badge>
+                        </div>
+                        <div className="flex flex-col gap-0.5 pt-1.5 text-xs text-muted-foreground font-mono">
+                            <span>
+                                Reference No:{' '}
+                                <span className="font-bold text-foreground">
+                                    {order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber)}
+                                </span>
+                            </span>
+                            <span>
+                                Receipt ID: <span className="font-bold text-foreground">{order.id.slice(0, 8).toUpperCase()}</span>
+                            </span>
                         </div>
                     </div>
 

@@ -22,6 +22,8 @@ export interface ITransaction {
         orderType: string;
         orderSource: string;
         cashierSessionId: string | null;
+        referenceNumber?: string | null;
+        createdAt?: string;
     };
 }
 

@@ -37,7 +37,7 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 import type { ITransaction } from '#/api/transactions.api.ts';
-import { getFileUrl } from '#/utils/helper';
+import { getFileUrl, getFrontendReference } from '#/utils/helper';
 
 export default function TransactionsPage() {
     const navigate = useNavigate({ from: '/admin/transactions' });
@@ -177,19 +177,27 @@ export default function TransactionsPage() {
                 )
             },
             {
-                accessorKey: 'order.queueNumber',
-                header: 'Order Queue #',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-1">
-                        <span className="font-mono text-sm font-bold text-foreground">{row.original.order.queueNumber || 'N/A'}</span>
-                        {row.original.order.queueNumber && (
-                            <CopyButton
-                                value={row.original.order.queueNumber}
-                                description={`Queue number #${row.original.order.queueNumber} copied`}
-                            />
-                        )}
-                    </div>
-                )
+                accessorFn: (row) => row.order.referenceNumber || getFrontendReference(row.order.createdAt || row.createdAt, row.order.queueNumber),
+                id: 'orderReference',
+                header: 'Order Reference',
+                cell: ({ row }) => {
+                    const order = row.original.order;
+                    const referenceNumber =
+                        order.referenceNumber || getFrontendReference(order.createdAt || row.original.createdAt, order.queueNumber);
+                    const receiptId = order.id.slice(0, 8).toUpperCase();
+                    return (
+                        <div className="flex flex-col gap-0.5 min-w-[120px]">
+                            <div className="flex items-center gap-1 font-mono">
+                                <span className="text-xs font-bold text-foreground">{referenceNumber}</span>
+                                <CopyButton value={referenceNumber} description={`Reference number ${referenceNumber} copied`} />
+                            </div>
+                            <span className="text-xs text-muted-foreground font-mono flex items-center gap-0.5">
+                                <span className="font-semibold text-foreground/70">ID:</span> {receiptId}
+                                <CopyButton value={receiptId} className="h-3 w-3 p-0" description={`Receipt ID ${receiptId} copied`} />
+                            </span>
+                        </div>
+                    );
+                }
             },
             {
                 accessorKey: 'order.customerName',
@@ -422,15 +430,22 @@ export default function TransactionsPage() {
                             {/* Order Details Header */}
                             <div className="p-3 bg-muted/30 border border-border/40 rounded-xl flex justify-between items-center">
                                 <div className="space-y-0.5">
-                                    <span className="text-xs uppercase font-semibold text-muted-foreground">Order Queue Number</span>
+                                    <span className="text-xs uppercase font-semibold text-muted-foreground">Order Reference</span>
                                     <div className="flex items-center gap-1.5">
-                                        <h4 className="font-mono font-bold text-sm text-foreground">{selectedTx.order.queueNumber || 'N/A'}</h4>
-                                        {selectedTx.order.queueNumber && (
-                                            <CopyButton
-                                                value={selectedTx.order.queueNumber}
-                                                description={`Queue number #${selectedTx.order.queueNumber} copied`}
-                                            />
-                                        )}
+                                        <h4 className="font-mono font-bold text-sm text-foreground">
+                                            {selectedTx.order.referenceNumber ||
+                                                getFrontendReference(
+                                                    selectedTx.order.createdAt || selectedTx.createdAt,
+                                                    selectedTx.order.queueNumber
+                                                )}
+                                        </h4>
+                                        <CopyButton
+                                            value={
+                                                selectedTx.order.referenceNumber ||
+                                                getFrontendReference(selectedTx.order.createdAt || selectedTx.createdAt, selectedTx.order.queueNumber)
+                                            }
+                                            description="Reference number copied"
+                                        />
                                     </div>
                                 </div>
                                 <Badge
@@ -448,6 +463,16 @@ export default function TransactionsPage() {
                                     <span className="font-bold text-foreground flex items-center gap-1.5">
                                         <User className="size-3.5 text-muted-foreground" />
                                         {selectedTx.order.customerName || 'Walk-in Customer'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center py-1 border-b border-border/30">
+                                    <span className="text-muted-foreground font-medium">Receipt ID</span>
+                                    <span className="font-mono font-bold text-foreground flex items-center gap-1">
+                                        {selectedTx.order.id.slice(0, 8).toUpperCase()}
+                                        <CopyButton
+                                            value={selectedTx.order.id.slice(0, 8).toUpperCase()}
+                                            description={`Receipt ID ${selectedTx.order.id.slice(0, 8).toUpperCase()} copied`}
+                                        />
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center py-1 border-b border-border/30">

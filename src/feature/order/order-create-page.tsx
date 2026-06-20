@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Trash2, Upload, ArrowLeft, ShoppingBag, Tag, CreditCard, CheckCircle2, Printer, FileText, Download } from 'lucide-react';
+import { Trash2, Upload, ArrowLeft, ShoppingBag, Tag, CreditCard, CheckCircle2, Printer, FileText, Download, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -60,6 +60,7 @@ export default function OrderCreatePage() {
             customerType: 'GUEST',
             guestName: 'Walk-in',
             customerId: null,
+            buzzerId: '',
             orderType: 'DINE_IN',
             notes: '',
             items: []
@@ -67,6 +68,7 @@ export default function OrderCreatePage() {
     });
 
     const customerType = orderForm.watch('customerType');
+    const orderType = orderForm.watch('orderType');
     const orderItems = orderForm.watch('items');
 
     // Query: Discounts catalog
@@ -379,6 +381,7 @@ export default function OrderCreatePage() {
                 notes: values.notes || undefined,
                 customerId: values.customerType === 'MEMBER' ? values.customerId : null,
                 customerName: customerNameVal || 'Walk-in',
+                buzzerId: (values.orderType === 'DINE_IN' || values.orderType === 'TAKE_OUT') && values.buzzerId ? values.buzzerId : undefined,
                 items: values.items.map((item) => ({
                     productVariantId: item.productVariantId,
                     quantity: item.quantity,
@@ -627,6 +630,29 @@ export default function OrderCreatePage() {
                             </FormItem>
                         )}
                     />
+
+                    {(orderType === 'DINE_IN' || orderType === 'TAKE_OUT') && (
+                        <FormField
+                            control={orderForm.control}
+                            name="buzzerId"
+                            render={({ field }) => (
+                                <FormItem className="space-y-1.5 animate-in slide-in-from-top-1 duration-150">
+                                    <FormLabel className="font-bold text-foreground/80 flex items-center gap-1">
+                                        <Volume2 className="size-3.5" /> Pager / Buzzer ID (Optional)
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="e.g. 12, 45..."
+                                            {...field}
+                                            disabled={disabled}
+                                            className="h-9.5 bg-background/50 rounded-lg text-xs font-semibold"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
                 </div>
             </div>
         );

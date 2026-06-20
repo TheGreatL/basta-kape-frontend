@@ -2,11 +2,12 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download } from 'lucide-react';
+import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download, Volume2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/orders/index.tsx';
 import { getOrders } from '#/api/orders.api.ts';
+import { getFrontendReference } from '#/utils/helper';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderSource } from './order.types';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -103,13 +104,33 @@ export default function OrdersPage() {
         () => [
             {
                 accessorKey: 'queueNumber',
-                header: 'Queue No.',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-1">
-                        <span className="font-mono text-sm font-bold text-foreground">{row.original.queueNumber}</span>
-                        <CopyButton value={row.original.queueNumber} description={`Queue number #${row.original.queueNumber} copied`} />
-                    </div>
-                )
+                header: 'Order IDs',
+                cell: ({ row }) => {
+                    const receiptId = row.original.id.slice(0, 8).toUpperCase();
+                    const referenceNumber = row.original.referenceNumber || getFrontendReference(row.original.createdAt, row.original.queueNumber);
+                    return (
+                        <div className="flex flex-col gap-0.5 min-w-[100px]">
+                            <div className="flex items-center gap-1">
+                                <span className="font-mono text-sm font-bold text-foreground">{row.original.queueNumber}</span>
+                                <CopyButton value={row.original.queueNumber} description={`Queue number #${row.original.queueNumber} copied`} />
+                            </div>
+                            <div className="flex flex-col text-muted-foreground font-mono leading-none">
+                                <span className="flex items-center gap-0.5">
+                                    <span className="font-semibold text-xs text-foreground/70">Ref:</span> {referenceNumber}
+                                    <CopyButton
+                                        value={referenceNumber}
+                                        className="h-3 w-3 p-0"
+                                        description={`Reference number ${referenceNumber} copied`}
+                                    />
+                                </span>
+                                <span className="flex items-center gap-0.5">
+                                    <span className="font-semibold text-xs text-foreground/70">ID:</span> {receiptId}
+                                    <CopyButton value={receiptId} className="h-3 w-3 p-0" description={`Receipt ID ${receiptId} copied`} />
+                                </span>
+                            </div>
+                        </div>
+                    );
+                }
             },
             {
                 accessorKey: 'customerName',
@@ -120,6 +141,11 @@ export default function OrdersPage() {
                         {row.original.customerId && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                                 <User className="size-3" /> Member Profile
+                            </span>
+                        )}
+                        {row.original.buzzerId && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 font-semibold mt-0.5">
+                                <Volume2 className="size-3 animate-pulse text-amber-500" /> Buzzer: #{row.original.buzzerId}
                             </span>
                         )}
                     </div>
@@ -161,6 +187,25 @@ export default function OrdersPage() {
                             {getSourceIcon(row.original.orderSource)}
                             {row.original.orderSource.toLowerCase().replace('_', ' ')}
                         </Badge>
+                    </div>
+                )
+            },
+            {
+                id: 'Payment',
+                header: 'Payment Details',
+                cell: ({ row }) => (
+                    <div className="flex flex-wrap gap-1 items-center">
+                        {row.original.payments?.map((payment) => (
+                            <Badge
+                                key={payment.id}
+                                variant="secondary"
+                                className="text-xs font-semibold  py-0 px-1.5 uppercase bg-primary/5 text-primary border border-primary/10"
+                            >
+                                {payment.paymentMethod.replace('_', ' ')}
+                                {payment.amount}
+                                {payment.paymentStatus}
+                            </Badge>
+                        ))}
                     </div>
                 )
             },

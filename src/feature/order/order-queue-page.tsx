@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, CreditCard } from 'lucide-react';
+import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, CreditCard, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getOrders, updateOrderStatus } from '#/api/orders.api.ts';
+import { getFrontendReference } from '#/utils/helper';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderType } from './order.types';
@@ -140,13 +141,30 @@ export default function OrderQueuePage() {
                             <span className="font-mono text-base font-bold text-foreground">{order.queueNumber}</span>
                             <CopyButton value={order.queueNumber} description={`Queue number #${order.queueNumber} copied`} />
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="text-muted-foreground font-mono leading-none pt-0.5 flex items-center gap-0.5">
+                            <span>Ref: {order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber)}</span>
+                            <CopyButton
+                                value={order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber)}
+                                className="h-3 w-3 p-0"
+                                description="Reference number copied"
+                            />
+                        </div>
+                        <div className="flex items-center gap-1 flex-wrap">
                             <Badge
                                 variant="outline"
                                 className={`text-xs font-bold py-0 px-1.5 leading-none uppercase ${getOrderTypeBadgeColor(order.orderType)}`}
                             >
                                 {order.orderType.replace('_', ' ')}
                             </Badge>
+                            {order.buzzerId && (
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs font-bold py-0 px-1.5 leading-none uppercase bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40 flex items-center gap-0.5"
+                                >
+                                    <Volume2 className="size-2.5 animate-pulse text-amber-600 dark:text-amber-400" />
+                                    Buzzer #{order.buzzerId}
+                                </Badge>
+                            )}
                         </div>
                     </div>
 
