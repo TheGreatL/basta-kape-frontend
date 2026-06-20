@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { formatDuration, intervalToDuration } from 'date-fns';
 
 export default function OrderQueuePage() {
     const queryClient = useQueryClient();
@@ -118,6 +119,11 @@ export default function OrderQueuePage() {
     // Render Card component for modular KDS styling
     const renderOrderCard = (order: IOrder) => {
         const mins = getElapsedMinutes(order.createdAt);
+        const duration = intervalToDuration({
+            start: order.createdAt,
+            end: new Date()
+        });
+        const text = `${formatDuration(duration)} ago`;
         return (
             <div
                 key={order.id}
@@ -146,7 +152,7 @@ export default function OrderQueuePage() {
 
                     <div className="flex items-center gap-1 text-xs">
                         <Clock className={`size-3 shrink-0 ${mins >= 15 ? 'text-rose-500 animate-spin-slow' : ''}`} />
-                        <span className={getTimerColorClass(mins)}>{mins === 0 ? 'Just now' : `${mins}m ago`}</span>
+                        <span className={getTimerColorClass(mins)}>{text}</span>
                     </div>
                 </div>
 
