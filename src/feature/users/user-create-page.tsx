@@ -52,7 +52,9 @@ export default function UserCreatePage() {
             toast.success('User Profile Created', {
                 description: 'The new staff/user profile has been successfully configured and saved.'
             });
-            navigate({ to: '/admin/users' });
+            navigate({
+                to: '/admin/users'
+            });
         },
         onError: (error) => {
             toast.error('Failed to create user', {
@@ -245,29 +247,31 @@ export default function UserCreatePage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {rolesData?.data.map((role: IRoleListItem) => (
-                                        <div
-                                            key={role.id}
-                                            className="flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 hover:bg-background/55 transition-colors border-border/40"
-                                        >
-                                            <Checkbox
-                                                id={`role-${role.id}`}
-                                                checked={assignedRoles.includes(role.id)}
-                                                onCheckedChange={(val) => handleRoleToggle(!!val, role.id)}
-                                            />
-                                            <label
-                                                htmlFor={`role-${role.id}`}
-                                                className="text-xs font-semibold capitalize cursor-pointer select-none text-foreground/90 flex-1"
+                                    {rolesData?.data
+                                        .filter((role: IRoleListItem) => role.name.toLowerCase() !== 'customer')
+                                        .map((role: IRoleListItem) => (
+                                            <div
+                                                key={role.id}
+                                                className="flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 hover:bg-background/55 transition-colors border-border/40"
                                             >
-                                                {role.name}
-                                                {role.isSystem && (
-                                                    <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
-                                                        System
-                                                    </span>
-                                                )}
-                                            </label>
-                                        </div>
-                                    ))}
+                                                <Checkbox
+                                                    id={`role-${role.id}`}
+                                                    checked={assignedRoles.includes(role.id)}
+                                                    onCheckedChange={(val) => handleRoleToggle(!!val, role.id)}
+                                                />
+                                                <label
+                                                    htmlFor={`role-${role.id}`}
+                                                    className="text-xs font-semibold capitalize cursor-pointer select-none text-foreground/90 flex-1"
+                                                >
+                                                    {role.name}
+                                                    {role.isSystem && (
+                                                        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
+                                                            System
+                                                        </span>
+                                                    )}
+                                                </label>
+                                            </div>
+                                        ))}
                                     {rolesData?.data.length === 0 && (
                                         <div className="text-center text-xs text-muted-foreground py-2 col-span-2">
                                             No active security roles found in database.

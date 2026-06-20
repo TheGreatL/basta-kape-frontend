@@ -4,11 +4,11 @@ import { z } from 'zod';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
-    page: z.number().catch(1),
-    pageSize: z.number().catch(10),
-    search: z.string().catch(''),
-    status: z.enum(['active', 'archive']).catch('active'),
-    role: z.string().catch('')
+    page: z.number().default(1).optional(),
+    pageSize: z.number().default(10).optional(),
+    search: z.string().default('').optional(),
+    status: z.enum(['active', 'archive']).default('active').optional(),
+    role: z.string().default('').optional()
 });
 
 export const Route = createFileRoute('/admin/users/')({

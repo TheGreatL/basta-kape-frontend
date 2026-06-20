@@ -108,7 +108,8 @@ export default function CustomerManagementPage() {
     const columns = React.useMemo<ColumnDef<ICustomerResponse>[]>(
         () => [
             {
-                accessorKey: 'firstName',
+                id: 'Name',
+                accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
                 header: 'Customer Profile',
                 cell: ({ row }) => {
                     const initials = `${row.original.user.firstName[0] || ''}${row.original.user.lastName[0] || ''}`.toUpperCase();

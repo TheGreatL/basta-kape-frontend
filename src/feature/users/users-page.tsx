@@ -34,7 +34,7 @@ export default function UsersPage() {
     const navigate = useNavigate({ from: '/admin/users/' });
 
     const searchParams = useSearch({ from: '/admin/users/' }) as unknown as IUserSearchSchema;
-    const { page, pageSize, search, status, role } = searchParams;
+    const { page = 1, pageSize = 10, search = '', status = 'active', role = '' } = searchParams;
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
