@@ -14,6 +14,7 @@ import type { IMenuProductVariant, IMenuRecipeIngredient, IMenuVariantAttribute 
 import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifier.types.ts';
 import { getFileUrl } from '#/utils/helper';
 import { toast } from 'sonner';
+import { Badge } from '#/components/ui/badge';
 
 interface ProductDetailPageProps {
     productId: string;
@@ -343,7 +344,10 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                 {/* Product Configuration details */}
                 <div className="flex flex-col">
                     {/* Category Label */}
-                    <div className="text-xs font-semibold text-primary uppercase mb-2">{product.category?.name || 'Beverage'}</div>
+                    <div className="flex gap-3">
+                        <Badge variant={'outline'}>{product.category?.name || 'Beverage'}</Badge>
+                        <Badge variant={'outline'}>{product.type?.name || 'Beverage'}</Badge>
+                    </div>
 
                     <h1 className="text-3xl font-bold text-foreground leading-tight">{product.name}</h1>
 

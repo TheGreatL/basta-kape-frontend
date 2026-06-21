@@ -428,7 +428,7 @@ export default function ProductEditPage() {
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-1.5">
-                                                <Save className="size-4" /> Save Profile Details
+                                                <Save className="size-4" /> Save Product Details
                                             </div>
                                         )}
                                     </Button>
