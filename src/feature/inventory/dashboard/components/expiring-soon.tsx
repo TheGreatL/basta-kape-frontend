@@ -63,20 +63,20 @@ export default function ExpiringSoonWidget() {
                                         </span>
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             {batch.batchNumber && (
-                                                <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">
+                                                <span className="text-xs text-muted-foreground font-mono truncate max-w-[100px]">
                                                     Batch: {batch.batchNumber}
                                                 </span>
                                             )}
-                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                            <span className="text-xs text-muted-foreground font-medium">
                                                 Remaining: {batch.currentQuantity} {batch.unitAbbreviation}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="text-right shrink-0 ml-3">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full block leading-normal ${alertColor}`}>
+                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full block leading-normal ${alertColor}`}>
                                             {daysDiff <= 0 ? 'Expired' : `${daysDiff} ${daysDiff === 1 ? 'day' : 'days'} left`}
                                         </span>
-                                        <span className="text-[10px] text-muted-foreground block mt-0.5">
+                                        <span className="text-xs text-muted-foreground block mt-0.5">
                                             {format(new Date(batch.expiryDate), 'MMM d, yyyy')}
                                         </span>
                                     </div>

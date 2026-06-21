@@ -3,9 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Plus, X } from 'lucide-react';
 
-import { createAttribute } from '#/api/product-settings.ts';
+import { createAttribute, createAttributeValue } from '#/api/product-settings.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { attributeSchema } from '../product-settings.schema.ts';
@@ -16,6 +16,7 @@ import { Textarea } from '#/components/ui/textarea.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 
 interface AttributeCreateDialogProps {
     open: boolean;
@@ -30,6 +31,8 @@ interface CreateAttributeFormValues {
 export default function AttributeCreateDialog({ open, onOpenChange }: AttributeCreateDialogProps) {
     const queryClient = useQueryClient();
     const [isRendering, setIsRendering] = React.useState(false);
+    const [optionValues, setOptionValues] = React.useState<string[]>([]);
+    const [newOptionValue, setNewOptionValue] = React.useState('');
 
     React.useEffect(() => {
         if (open) {
@@ -54,15 +57,43 @@ export default function AttributeCreateDialog({ open, onOpenChange }: AttributeC
                 name: '',
                 description: ''
             });
+            setOptionValues([]);
+            setNewOptionValue('');
         }
     }, [open, form]);
 
+    const handleAddValue = () => {
+        const val = newOptionValue.trim();
+        if (val && !optionValues.includes(val)) {
+            setOptionValues([...optionValues, val]);
+            setNewOptionValue('');
+        }
+    };
+
+    const handleRemoveValue = (index: number) => {
+        setOptionValues(optionValues.filter((_, i) => i !== index));
+    };
+
     const createMutation = useMutation({
         mutationFn: createAttribute,
-        onSuccess: () => {
+        onSuccess: async (createdAttr) => {
+            if (optionValues.length > 0) {
+                try {
+                    await Promise.all(
+                        optionValues.map((value) =>
+                            createAttributeValue({
+                                productAttributeId: createdAttr.id,
+                                value
+                            })
+                        )
+                    );
+                } catch (err) {
+                    toast.error('Attribute created, but some option values failed to save');
+                }
+            }
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST] });
             toast.success('Attribute Created', {
-                description: 'The product customizing attribute has been successfully created.'
+                description: 'The product customizing attribute has been successfully created with its values.'
             });
             onOpenChange(false);
         },
@@ -136,6 +167,51 @@ export default function AttributeCreateDialog({ open, onOpenChange }: AttributeC
                                             </FormItem>
                                         )}
                                     />
+
+                                    <div className="space-y-2 pt-2">
+                                        <label className="text-sm font-semibold text-foreground/80 block">Option Values List</label>
+                                        <div className="flex gap-2 items-center">
+                                            <Input
+                                                placeholder="e.g. Regular / Large / 12oz"
+                                                value={newOptionValue}
+                                                onChange={(e) => setNewOptionValue(e.target.value)}
+                                                className="h-9 bg-background/50"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        handleAddValue();
+                                                    }
+                                                }}
+                                            />
+                                            <Button type="button" variant="outline" onClick={handleAddValue} className="h-9 gap-1 px-3 shrink-0">
+                                                <Plus className="size-4" /> Add
+                                            </Button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                            {optionValues.length === 0 ? (
+                                                <span className="text-xs text-muted-foreground italic">No values added yet. Add one above.</span>
+                                            ) : (
+                                                optionValues.map((val, idx) => (
+                                                    <Badge
+                                                        key={idx}
+                                                        variant="secondary"
+                                                        className="text-xs gap-1 py-1 pl-2 pr-1 bg-secondary/60 text-secondary-foreground"
+                                                    >
+                                                        {val}
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-4 w-4 p-0 rounded-full hover:bg-muted-foreground/20 text-muted-foreground hover:text-foreground shrink-0"
+                                                            onClick={() => handleRemoveValue(idx)}
+                                                        >
+                                                            <X className="size-3" />
+                                                        </Button>
+                                                    </Badge>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
                                 </>
                             )}
                         </div>

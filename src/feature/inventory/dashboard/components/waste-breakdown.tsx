@@ -67,9 +67,7 @@ export default function WasteBreakdownWidget() {
                 ) : (
                     <div className="space-y-4">
                         <div className="text-center pb-2 border-b border-border/5">
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold block">
-                                Total Loss Quantity
-                            </span>
+                            <span className="text-xs text-muted-foreground uppercase  font-semibold block">Total Loss Quantity</span>
                             <span className="text-2xl font-black text-rose-600 dark:text-rose-400 block font-sans">
                                 {totalQuantitySum.toLocaleString()} units
                             </span>
@@ -82,9 +80,7 @@ export default function WasteBreakdownWidget() {
                                 return (
                                     <div key={item.type} className="space-y-1.5">
                                         <div className="flex justify-between items-baseline text-xs">
-                                            <span className="text-muted-foreground font-medium">
-                                                {ADJUSTMENT_LABEL[item.type] || item.type}
-                                            </span>
+                                            <span className="text-muted-foreground font-medium">{ADJUSTMENT_LABEL[item.type] || item.type}</span>
                                             <span className="font-bold text-foreground/80">
                                                 {item.totalQuantity.toLocaleString()} ({item.count} {item.count === 1 ? 'event' : 'events'})
                                             </span>

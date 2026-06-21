@@ -951,7 +951,7 @@ export default function OrderEditPage() {
                                     <TrendingUp className="size-4 text-muted-foreground" />
                                     Audit Status Log History
                                 </h3>
-                                <span className="text-[10px] bg-muted px-2.5 py-0.5 rounded-full font-bold text-muted-foreground/80 border border-border/40">
+                                <span className="text-xs bg-muted px-2.5 py-0.5 rounded-full font-bold text-muted-foreground/80 border border-border/40">
                                     {orderDetails.statusHistory.length} logs
                                 </span>
                             </div>

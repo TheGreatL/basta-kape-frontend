@@ -127,6 +127,18 @@ export const restoreProductVariant = async (id: string): Promise<IProductVariant
     return response.json();
 };
 
+export const bulkSyncProductVariants = async (
+    productId: string,
+    payload: { variants: Array<{ id?: string | null; sku?: string | null; price: number; attributeValueIds: string[] }> }
+): Promise<{ message: string }> => {
+    const response = await api.put(`/products/${productId}/variants/bulk`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to bulk sync product variants', response.status, errorData);
+    }
+    return response.json();
+};
+
 // ==========================================
 // 3. FILE/PHOTO UPLOAD API
 // ==========================================

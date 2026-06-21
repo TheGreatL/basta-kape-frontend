@@ -200,7 +200,7 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                             <DynamicIcon name={item.icon} />
                             <span>{item.title}</span>
                             {item.badge && (
-                                <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full mr-2 group-data-[collapsible=icon]:hidden">
+                                <span className="ml-auto bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full mr-2 group-data-[collapsible=icon]:hidden">
                                     {item.badge}
                                 </span>
                             )}
@@ -222,7 +222,7 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                                             <Link to={subItem.path}>
                                                 <span>{subItem.title}</span>
                                                 {subItem.badge && (
-                                                    <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                                                    <span className="ml-auto bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
                                                         {subItem.badge}
                                                     </span>
                                                 )}
@@ -252,7 +252,7 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                     <DynamicIcon name={item.icon} />
                     <span>{item.title}</span>
                     {item.badge && (
-                        <span className="ml-auto bg-primary/10 text-primary font-medium text-[10px] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                        <span className="ml-auto bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
                             {item.badge}
                         </span>
                     )}

@@ -19,11 +19,18 @@ import {
 import { format } from 'date-fns';
 import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar, RotateCcw } from 'lucide-react';
 
-import { getVariantRecipe, createVariantRecipe, updateVariantRecipe, deleteVariantRecipe, restoreVariantRecipe } from '#/api/products.api.ts';
+import {
+    getProductById,
+    getVariantRecipe,
+    createVariantRecipe,
+    updateVariantRecipe,
+    deleteVariantRecipe,
+    restoreVariantRecipe
+} from '#/api/products.api.ts';
 import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
-import type { IProductVariant, IRecipe, IRecipeIngredient } from '../products.types';
+import type { IProduct, IProductVariant, IRecipe, IRecipeIngredient } from '../products.types';
 import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
@@ -96,6 +103,38 @@ export default function RecipeDialog({
         enabled: open && !!variant?.id && !isLocal,
         retry: false
     });
+
+    // Query: Product Details to get other variants for copying recipes
+    const { data: productDetailsData } = useQuery<IProduct>({
+        queryKey: [QUERY_KEY.PRODUCTS.PRODUCT_DETAILS, variant?.productId],
+        queryFn: () => getProductById(variant!.productId),
+        enabled: open && !!variant?.productId
+    });
+
+    const otherVariants = React.useMemo(() => {
+        if (!productDetailsData || !variant) return [];
+        return productDetailsData.variants.filter((v: IProductVariant) => v.id !== variant.id && !!v.recipe);
+    }, [productDetailsData, variant]);
+
+    const handleCopyRecipe = async (otherVariantId: string) => {
+        if (!otherVariantId) return;
+        try {
+            const copiedRecipe = await getVariantRecipe(otherVariantId);
+            form.reset({
+                name: `${productName} Recipe (${variant?.attributes.map((a) => a.attributeValue.value).join(', ') || 'Custom'})`,
+                description: copiedRecipe.description || '',
+                ingredients: copiedRecipe.ingredients.map((ing) => ({
+                    ingredientId: ing.ingredientId,
+                    quantity: ing.quantity,
+                    ingredientUnitId: ing.ingredientUnitId,
+                    _ingredientName: ing.ingredient.name
+                }))
+            });
+            toast.success('Recipe template copied successfully. Save changes to apply!');
+        } catch (err) {
+            toast.error('Failed to copy recipe template', { description: getErrorMessage(err) });
+        }
+    };
 
     const isNotFound = isLocal ? true : isError && error instanceof ApiError && error.status === 404;
     const isDataLoading = isLocal ? !isRendering || !variant : (isRecipeLoading && !isNotFound) || !isRendering || !variant;
@@ -263,6 +302,29 @@ export default function RecipeDialog({
                         // Form Edit/Create Mode
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                {otherVariants.length > 0 && (
+                                    <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-semibold text-foreground/80">Copy Recipe Template</span>
+                                            <span className="text-2xs text-muted-foreground">Select a variant to copy its ingredient list.</span>
+                                        </div>
+                                        <Select onValueChange={handleCopyRecipe}>
+                                            <SelectTrigger className="h-8 text-xs bg-background">
+                                                <SelectValue placeholder="Select variant to copy recipe from..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {otherVariants.map((v: IProductVariant) => {
+                                                    const attrString = v.attributes.map((a: any) => a.attributeValue.value).join(', ');
+                                                    return (
+                                                        <SelectItem key={v.id} value={v.id} className="text-xs">
+                                                            {attrString || 'Standard'} (SKU: {v.sku || 'N/A'})
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}

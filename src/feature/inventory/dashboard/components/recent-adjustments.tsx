@@ -3,7 +3,7 @@ import { getInventoryDashboardRecentAdjustments } from '#/api/inventory.api';
 import { ClipboardList, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
-import type { TAdjustmentType } from '../../inventory.types';
+import type { IDashboardAdjustment, TAdjustmentType } from '../../inventory.types';
 
 const ADJUSTMENT_LABEL: Record<TAdjustmentType, string> = {
     WASTE: 'Waste',
@@ -52,12 +52,12 @@ export default function RecentAdjustmentsWidget() {
                     <div className="text-xs text-muted-foreground py-12 text-center">No recent stock adjustments.</div>
                 ) : (
                     <div className="space-y-3.5">
-                        {data.map((adj) => (
+                        {data.map((adj: IDashboardAdjustment) => (
                             <div key={adj.id} className="flex items-center justify-between border-b border-border/10 pb-3 last:border-b-0 last:pb-0">
                                 <div className="space-y-0.5 min-w-0 flex-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                         <span className="text-sm font-bold text-foreground/80 truncate max-w-[150px]">{adj.ingredientName}</span>
-                                        <Badge variant="outline" className="text-[9px] font-semibold py-0 px-1 capitalize leading-none bg-muted/30">
+                                        <Badge variant="outline" className="text-xs font-semibold py-0 px-1 capitalize leading-none bg-muted/30">
                                             {ADJUSTMENT_LABEL[adj.type] || adj.type}
                                         </Badge>
                                     </div>

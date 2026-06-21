@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { SlidersHorizontal, Plus, Edit2, Trash2, ChefHat, ShoppingBag, Info, RotateCcw } from 'lucide-react';
+import { SlidersHorizontal, Plus, Edit2, Trash2, ShoppingBag, Info, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/products/modifiers.tsx';
@@ -20,7 +20,6 @@ import type { IProduct } from '#/feature/products/products.types.ts';
 
 import GroupDialog from './components/group-dialog';
 import OptionDialog from './components/option-dialog';
-import OptionRecipeDialog from './components/option-recipe-dialog';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
 
@@ -39,9 +38,6 @@ export default function ModifiersPage() {
     const [optionDialogOpen, setOptionDialogOpen] = React.useState(false);
     const [selectedGroupIdForOption, setSelectedGroupIdForOption] = React.useState<string>('');
     const [selectedOption, setSelectedOption] = React.useState<IModifierOption | null>(null);
-
-    const [recipeDialogOpen, setRecipeDialogOpen] = React.useState(false);
-    const [selectedOptionForRecipe, setSelectedOptionForRecipe] = React.useState<IModifierOption | null>(null);
 
     const setSearchParams = (updates: Record<string, any>) => {
         navigate({
@@ -119,11 +115,6 @@ export default function ModifiersPage() {
         setSelectedGroupIdForOption(groupId);
         setSelectedOption(option);
         setOptionDialogOpen(true);
-    };
-
-    const handleOpenRecipe = (option: IModifierOption) => {
-        setSelectedOptionForRecipe(option);
-        setRecipeDialogOpen(true);
     };
 
     const handleDeleteGroup = (group: IModifierGroup) => {
@@ -348,19 +339,6 @@ export default function ModifiersPage() {
                                                         </div>
 
                                                         <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                                                            {/* Recipe Specs Action */}
-                                                            <RequirePermission module="Products Management" action="read">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleOpenRecipe(opt)}
-                                                                    title="Configure recipe"
-                                                                    className="size-7 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg"
-                                                                >
-                                                                    <ChefHat className="size-3.5 text-primary" />
-                                                                </Button>
-                                                            </RequirePermission>
-
                                                             <RequirePermission module="Products Management" action="update">
                                                                 <Button
                                                                     variant="ghost"
@@ -426,10 +404,6 @@ export default function ModifiersPage() {
             <GroupDialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen} group={selectedGroup} />
 
             <OptionDialog open={optionDialogOpen} onOpenChange={setOptionDialogOpen} groupId={selectedGroupIdForOption} option={selectedOption} />
-
-            {selectedOptionForRecipe && (
-                <OptionRecipeDialog open={recipeDialogOpen} onOpenChange={setRecipeDialogOpen} option={selectedOptionForRecipe} />
-            )}
         </div>
     );
 }
