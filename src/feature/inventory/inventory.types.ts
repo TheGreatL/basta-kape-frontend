@@ -99,6 +99,7 @@ export interface IDelivery {
     ingredientId: string;
     supplierId: string | null;
     quantityReceived: number;
+    currentQuantity: number;
     unitCost: number;
     totalCost: number;
     batchNumber: string | null;
@@ -198,6 +199,7 @@ export interface IDashboardDelivery {
     ingredientName: string;
     supplierName: string | null;
     quantityReceived: number;
+    currentQuantity: number;
     unitAbbreviation: string | null;
     totalCost: number;
     receivedAt: string;
@@ -218,6 +220,7 @@ export interface IDashboardExpiringSoon {
     batchNumber: string | null;
     expiryDate: string;
     quantityReceived: number;
+    currentQuantity: number;
     ingredientName: string;
     unitAbbreviation: string | null;
 }

@@ -3,6 +3,7 @@ import { getInventoryDashboardExpiringSoon } from '#/api/inventory.api';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import { format, differenceInDays } from 'date-fns';
+import type { IDashboardExpiringSoon } from '../../inventory.types';
 
 export default function ExpiringSoonWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
@@ -42,7 +43,7 @@ export default function ExpiringSoonWidget() {
                     <div className="text-xs text-muted-foreground py-12 text-center">No expiring batches detected.</div>
                 ) : (
                     <div className="space-y-3.5">
-                        {data.map((batch) => {
+                        {data.map((batch: IDashboardExpiringSoon) => {
                             const daysDiff = differenceInDays(new Date(batch.expiryDate), new Date());
                             let alertColor = 'bg-muted/10 text-muted-foreground';
                             if (daysDiff <= 3) {
@@ -66,8 +67,8 @@ export default function ExpiringSoonWidget() {
                                                     Batch: {batch.batchNumber}
                                                 </span>
                                             )}
-                                            <span className="text-[10px] text-muted-foreground">
-                                                Qty: {batch.quantityReceived} {batch.unitAbbreviation}
+                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                                Remaining: {batch.currentQuantity} {batch.unitAbbreviation}
                                             </span>
                                         </div>
                                     </div>

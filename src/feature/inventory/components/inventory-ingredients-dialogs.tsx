@@ -173,7 +173,12 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                             <FormItem>
                                                 <FormLabel className="font-semibold text-foreground/80">Reorder Threshold Point</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" {...field} className="h-9 bg-background/50" />
+                                                    <Input
+                                                        type="number"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                        className="h-9 bg-background/50"
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -371,7 +376,12 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                             <FormItem>
                                                 <FormLabel className="font-semibold text-foreground/80">Reorder Threshold Point</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" {...field} className="h-9 bg-background/50" />
+                                                    <Input
+                                                        type="number"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                        className="h-9 bg-background/50"
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

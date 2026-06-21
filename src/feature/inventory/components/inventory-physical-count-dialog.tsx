@@ -117,7 +117,13 @@ export default function PhysicalCountDialog({ open, onOpenChange, inventory }: P
                                                 Actual Count Quantity ({inventory.ingredient.defaultUnit.abbreviation})
                                             </FormLabel>
                                             <FormControl>
-                                                <Input type="number" step="any" {...field} className="h-9 bg-background/50" />
+                                                <Input
+                                                    type="number"
+                                                    step="any"
+                                                    {...field}
+                                                    onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                    className="h-9 bg-background/50"
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

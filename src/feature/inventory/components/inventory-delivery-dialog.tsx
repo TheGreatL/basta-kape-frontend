@@ -210,7 +210,13 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                                 <FormItem>
                                                     <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
                                                     <FormControl>
-                                                        <Input type="number" step="any" {...field} className="h-9 bg-background/50" />
+                                                        <Input
+                                                            type="number"
+                                                            step="any"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                            className="h-9 bg-background/50"
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -224,7 +230,13 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                                 <FormItem>
                                                     <FormLabel className="font-semibold text-foreground/80">Unit Cost (₱)</FormLabel>
                                                     <FormControl>
-                                                        <Input type="number" step="any" {...field} className="h-9 bg-background/50" />
+                                                        <Input
+                                                            type="number"
+                                                            step="any"
+                                                            {...field}
+                                                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                            className="h-9 bg-background/50"
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

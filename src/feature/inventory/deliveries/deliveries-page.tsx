@@ -103,6 +103,33 @@ export default function DeliveriesPage() {
                 cell: ({ row }) => <span className="text-sm font-bold text-emerald-600">+{row.original.quantityReceived.toLocaleString()}</span>
             },
             {
+                accessorKey: 'currentQuantity',
+                header: 'Remaining Qty',
+                cell: ({ row }) => {
+                    const current = row.original.currentQuantity;
+                    const total = row.original.quantityReceived;
+                    const unit = row.original.ingredient?.defaultUnit?.abbreviation || '';
+                    const percent = total > 0 ? (current / total) * 100 : 0;
+
+                    let textColor = 'text-foreground/80';
+                    if (current === 0) {
+                        textColor = 'text-muted-foreground/60 line-through font-normal';
+                    } else if (percent <= 25) {
+                        textColor = 'text-rose-600 dark:text-rose-400 font-bold';
+                    } else if (percent <= 50) {
+                        textColor = 'text-amber-600 dark:text-amber-400 font-semibold';
+                    } else {
+                        textColor = 'text-foreground/90 font-semibold';
+                    }
+
+                    return (
+                        <span className={`text-sm ${textColor}`}>
+                            {current.toLocaleString()} {unit}
+                        </span>
+                    );
+                }
+            },
+            {
                 accessorKey: 'unitCost',
                 header: 'Unit Cost',
                 cell: ({ row }) => <span className="text-xs font-medium text-foreground/80">₱{row.original.unitCost.toFixed(2)}</span>
@@ -111,6 +138,19 @@ export default function DeliveriesPage() {
                 accessorKey: 'totalCost',
                 header: 'Total Cost',
                 cell: ({ row }) => <span className="text-sm font-bold text-foreground/90">₱{row.original.totalCost.toFixed(2)}</span>
+            },
+            {
+                id: 'createdBy',
+                header: 'Logged By',
+                cell: ({ row }) => {
+                    const user = row.original.createdBy;
+                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
+                    return (
+                        <span className="text-xs font-semibold text-foreground/85" title={user.email}>
+                            {user.firstName} {user.lastName}
+                        </span>
+                    );
+                }
             },
             {
                 accessorKey: 'receivedAt',

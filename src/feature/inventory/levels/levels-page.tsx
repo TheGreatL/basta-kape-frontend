@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link  } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Package, Truck, Trash2, ClipboardList } from 'lucide-react';
+import { Package, Truck, Trash2, ClipboardList, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/inventory/stock-levels.tsx';
@@ -13,7 +13,7 @@ import type { IIngredientInventory, IIngredient, TInventoryStatus } from '../inv
 
 import DataTable from '#/components/data-table/data-table.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
-import { Button } from '#/components/ui/button.tsx';
+import { Button, buttonVariants } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
@@ -109,6 +109,19 @@ export default function StockLevelsPage() {
                 )
             },
             {
+                id: 'updatedBy',
+                header: 'Last Updated By',
+                cell: ({ row }) => {
+                    const user = row.original.updatedBy;
+                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
+                    return (
+                        <span className="text-xs font-semibold text-foreground/85" title={user.email}>
+                            {user.firstName} {user.lastName}
+                        </span>
+                    );
+                }
+            },
+            {
                 accessorKey: 'lastPhysicalCount',
                 header: 'Last Counted',
                 cell: ({ row }) => (
@@ -122,6 +135,21 @@ export default function StockLevelsPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-1">
+                        <RequirePermission module="Inventory Management" action="read">
+                            <Link
+                                to="/admin/inventory/deliveries"
+                                title="Physical Count"
+                                className={buttonVariants({
+                                    variant: 'ghost',
+                                    size: 'icon',
+                                    className: 'size-8 text-muted-foreground hover:text-primary transition-colors'
+                                })}
+                                search={{ page: 1, pageSize: 10, search: row.original.ingredient.name }}
+                            >
+                                <Eye />
+                            </Link>
+                        </RequirePermission>
+
                         <RequirePermission module="Inventory Management" action="update">
                             <Button
                                 variant="ghost"

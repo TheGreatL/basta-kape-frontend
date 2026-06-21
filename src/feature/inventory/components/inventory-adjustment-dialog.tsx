@@ -69,6 +69,9 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
         }
     });
 
+    const selectedType = form.watch('type');
+    const isDiscrepancy = selectedType === 'PHYSICAL_COUNT_DISCREPANCY';
+
     React.useEffect(() => {
         if (open) {
             form.reset({
@@ -99,9 +102,11 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
     });
 
     const onSubmit = (values: AdjustmentFormValues) => {
+        const adjustedQuantity = values.type === 'PHYSICAL_COUNT_DISCREPANCY' ? values.quantity : -Math.abs(values.quantity);
+
         adjustmentMutation.mutate({
             ingredientId: values.ingredientId,
-            quantity: values.quantity,
+            quantity: adjustedQuantity,
             type: values.type,
             reason: values.reason || undefined
         });
@@ -197,17 +202,24 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                         name="quantity"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Quantity Change</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    {isDiscrepancy ? 'Quantity Change' : 'Quantity'}
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
                                                         step="any"
-                                                        placeholder="e.g. -500"
+                                                        placeholder={isDiscrepancy ? 'e.g. -500' : 'e.g. 500'}
                                                         {...field}
+                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
                                                         className="h-9 bg-background/50"
                                                     />
                                                 </FormControl>
-                                                <p className="text-xs text-muted-foreground">Use negative values for reductions (e.g. -500).</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {isDiscrepancy
+                                                        ? 'Use negative values for reductions, positive for corrections.'
+                                                        : 'Enter the quantity to deduct from stock.'}
+                                                </p>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

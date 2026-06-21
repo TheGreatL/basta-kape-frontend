@@ -91,6 +91,19 @@ export default function WasteLogPage() {
                 cell: ({ row }) => <span className="text-xs text-muted-foreground max-w-[200px] truncate block">{row.original.reason || '—'}</span>
             },
             {
+                id: 'createdBy',
+                header: 'Logged By',
+                cell: ({ row }) => {
+                    const user = row.original.createdBy;
+                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
+                    return (
+                        <span className="text-xs font-semibold text-foreground/85" title={user.email}>
+                            {user.firstName} {user.lastName}
+                        </span>
+                    );
+                }
+            },
+            {
                 accessorKey: 'createdAt',
                 header: 'Logged At',
                 cell: ({ row }) => (
