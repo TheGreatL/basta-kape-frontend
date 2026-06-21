@@ -1226,7 +1226,7 @@ function VariantAttributeSelect({ attributeId, attributeName, valueIds, onValueC
 
     return (
         <div className="flex flex-col gap-1 min-w-[120px] text-left">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{attributeName}</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase">{attributeName}</span>
             <Select
                 value={selectedValue?.id || 'none'}
                 onValueChange={(valId) => {

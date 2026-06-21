@@ -1,68 +1,455 @@
 import * as React from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { Monitor, Lock, Coins, ArrowRight, ShieldAlert, CheckCircle2, User, Clock, ShoppingBag } from 'lucide-react';
+import { Monitor, CheckCircle2 } from 'lucide-react';
 
 import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
 import { useAuth } from '#/context/AuthContext';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 
-import { Button } from '#/components/ui/button.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { Textarea } from '#/components/ui/textarea.tsx';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
+import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
+import { getModifierGroups } from '#/api/modifiers.api.ts';
+import { getCustomers } from '#/api/customer.api.ts';
+import { createOrder, createOrderPayment, updateOrderStatus } from '#/api/orders.api.ts';
+import { getDiscountsConfig, applyDiscountToOrder } from '#/api/discounts.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
+
+import type { IMenuProduct, IMenuProductVariant } from '../menu/menu.types';
+import type { IModifierOption } from '../modifier/modifier.types';
+import type { IDiscount } from '../store-settings/discounts.types';
+import type { IOrder } from '../order/order.types';
+
 import { Spinner } from '#/components/ui/spinner.tsx';
-import { Alert, AlertDescription, AlertTitle } from '#/components/ui/alert.tsx';
 
-// Validation Schema
-const openShiftSchema = z.object({
-    startBalance: z.number().min(0, 'Starting balance must be non-negative'),
-    notes: z.string().max(1000, 'Max 1000 characters').optional().nullable()
-});
+// Import refactored POS components
+import ShiftLockOverlay from './components/shift-lock-overlay.tsx';
+import CatalogToolbar from './components/catalog-toolbar.tsx';
+import ProductsGrid from './components/products-grid.tsx';
+import CartSidebar from './components/cart-sidebar.tsx';
+import ProductCustomizerDialog from './components/product-customizer-dialog.tsx';
+import DiscountSelectDialog from './components/discount-select-dialog.tsx';
+import CheckoutPaymentDialog from './components/checkout-payment-dialog.tsx';
+import { ReceiptPreviewDialog } from './components/receipt-preview-dialog.tsx';
 
-type OpenShiftFormValues = z.infer<typeof openShiftSchema>;
+// Cart Item Type
+interface CartItem {
+    id: string; // Unique row ID
+    product: IMenuProduct;
+    variant: IMenuProductVariant;
+    modifierOptions: IModifierOption[];
+    quantity: number;
+    notes?: string;
+}
 
 export default function PosPage() {
     const { activeShift, isLoading, hasChecked, fetchActiveShift, openShift } = useRegisterShiftStore();
     const { user: currentUser } = useAuth();
 
+    // Catalog States
+    const [search, setSearch] = React.useState('');
+    const [productCategoryId, setProductCategoryId] = React.useState('');
+    const [productTypeId, setProductTypeId] = React.useState('');
+    const [page, setPage] = React.useState(1);
+    const pageSize = 12;
+
+    // Cart States
+    const [cart, setCart] = React.useState<CartItem[]>([]);
+    const [appliedDiscount, setAppliedDiscount] = React.useState<IDiscount | null>(null);
+    const [discountRefId, setDiscountRefId] = React.useState('');
+    const [discountRefName, setDiscountRefName] = React.useState('');
+    const [editingCartItemId, setEditingCartItemId] = React.useState<string | null>(null);
+
+    // Product Customizer Modal States
+    const [configProduct, setConfigProduct] = React.useState<IMenuProduct | null>(null);
+    const [isConfigOpen, setIsConfigOpen] = React.useState(false);
+    const [selectedVariant, setSelectedVariant] = React.useState<IMenuProductVariant | null>(null);
+    const [chosenModifiers, setChosenModifiers] = React.useState<Record<string, string[] | undefined>>({}); // groupId -> array of optionIds
+    const [configQuantity, setConfigQuantity] = React.useState(1);
+    const [configNotes, setConfigNotes] = React.useState('');
+
+    // Discount Select Modal States
+    const [isDiscountOpen, setIsDiscountOpen] = React.useState(false);
+
+    // Checkout Panel States
+    const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
+    const [customerType, setCustomerType] = React.useState<'GUEST' | 'MEMBER'>('GUEST');
+    const [guestName, setGuestName] = React.useState('Walk-in Customer');
+    const [selectedCustomerId, setSelectedCustomerId] = React.useState<string>('');
+    const [buzzerId, setBuzzerId] = React.useState('');
+    const [orderType, setOrderType] = React.useState<'DINE_IN' | 'TAKE_OUT' | 'DELIVERY'>('DINE_IN');
+    const [paymentMethod, setPaymentMethod] = React.useState<'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD'>('CASH');
+    const [cashTendered, setCashTendered] = React.useState<number | ''>('');
+    const [referenceNumber, setReferenceNumber] = React.useState('');
+    const [paymentProofPhoto, setPaymentProofPhoto] = React.useState('');
+
+    // Receipt Modal States
+    const [, setPlacedOrder] = React.useState<IOrder | null>(null);
+    const [receiptHtml, setReceiptHtml] = React.useState<string | null>(null);
+    const [isReceiptOpen, setIsReceiptOpen] = React.useState(false);
+    const [isReceiptLoading, setIsReceiptLoading] = React.useState(false);
+    const iframeRef = React.useRef<HTMLIFrameElement | null>(null);
+
+    // Opening Shift Fetch
     React.useEffect(() => {
         if (!hasChecked) {
             fetchActiveShift();
         }
     }, [hasChecked, fetchActiveShift]);
 
-    // RHF Form for drawer opening
-    const openForm = useForm<OpenShiftFormValues>({
-        resolver: zodResolver(openShiftSchema),
-        defaultValues: {
-            startBalance: 5000,
-            notes: ''
-        }
+    // -------------------------------------------------------------
+    // QUERIES FOR CATALOG & CONFIG
+    // -------------------------------------------------------------
+
+    // Query categories list
+    const { data: categoriesData } = useQuery({
+        queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
+        queryFn: getMenuCategories,
+        enabled: !!activeShift
     });
 
-    const openShiftMutation = useMutation({
-        mutationFn: openShift,
-        onSuccess: (shift) => {
-            toast.success('POS Shift Started', {
-                description: `Register shift successfully initialized. Opening cash balance: ₱${shift.startBalance.toFixed(2)}.`
+    // Query product types list
+    const { data: typesData } = useQuery({
+        queryKey: [QUERY_KEY.MENU.TYPES_LIST],
+        queryFn: getMenuTypes,
+        enabled: !!activeShift
+    });
+
+    // Query menu items catalog
+    const {
+        data: menuData,
+        isLoading: isMenuLoading,
+        error: menuError
+    } = useQuery({
+        queryKey: [QUERY_KEY.MENU.CATALOG, { page, search, productCategoryId, productTypeId }],
+        queryFn: () =>
+            getMenuCatalog({
+                page,
+                limit: pageSize,
+                search,
+                productCategoryId: productCategoryId || undefined,
+                productTypeId: productTypeId || undefined
+            }),
+        enabled: !!activeShift
+    });
+
+    // Query modifier groups for customizer modal
+    const { data: modifierGroupsData, isLoading: isModifiersLoading } = useQuery({
+        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, { productId: configProduct?.id }],
+        queryFn: () => getModifierGroups({ productId: configProduct!.id, limit: 50 }),
+        enabled: !!configProduct?.id && isConfigOpen
+    });
+
+    // Query active discounts
+    const { data: discountsData } = useQuery({
+        queryKey: [QUERY_KEY.STORE_SETTINGS.DISCOUNTS_LIST],
+        queryFn: getDiscountsConfig,
+        enabled: !!activeShift
+    });
+
+    // Query members list
+    const { data: membersData } = useQuery({
+        queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST, { limit: 100 }],
+        queryFn: () => getCustomers({ limit: 100 }),
+        enabled: !!activeShift
+    });
+
+    // Reset pagination to page 1 on filter/search change
+    React.useEffect(() => {
+        setPage(1);
+    }, [search, productCategoryId, productTypeId]);
+
+    // -------------------------------------------------------------
+    // CART CALCULATION LOGIC
+    // -------------------------------------------------------------
+
+    const getCartItemPrice = (item: CartItem) => {
+        const modifiersTotal = item.modifierOptions.reduce((sum, opt) => sum + opt.price, 0);
+        return item.variant.price + modifiersTotal;
+    };
+
+    const cartSubtotal = React.useMemo(() => {
+        return cart.reduce((sum, item) => sum + getCartItemPrice(item) * item.quantity, 0);
+    }, [cart]);
+
+    const discountAmount = React.useMemo(() => {
+        if (!appliedDiscount || cartSubtotal === 0) return 0;
+        if (appliedDiscount.type === 'PERCENTAGE') {
+            return Math.round(((cartSubtotal * appliedDiscount.value) / 100) * 100) / 100;
+        } else {
+            return Math.min(appliedDiscount.value, cartSubtotal);
+        }
+    }, [appliedDiscount, cartSubtotal]);
+
+    const cartNetTotal = React.useMemo(() => {
+        const net = cartSubtotal - discountAmount;
+        return net > 0 ? net : 0;
+    }, [cartSubtotal, discountAmount]);
+
+    const cartVatAmount = React.useMemo(() => {
+        // VAT-inclusive 12% calculation: netTotal * (12 / 112)
+        return Math.round(cartNetTotal * (12 / 112) * 100) / 100;
+    }, [cartNetTotal]);
+
+    // Default cash tendered auto-filler & proof reset
+    React.useEffect(() => {
+        if (isCheckoutOpen) {
+            setCashTendered('');
+            setPaymentProofPhoto('');
+        }
+    }, [isCheckoutOpen]);
+
+    // -------------------------------------------------------------
+    // CART MUTATORS
+    // -------------------------------------------------------------
+
+    const handleProductClick = (product: IMenuProduct) => {
+        // If product has 0 variants, block
+        if (product.variants.length === 0) {
+            toast.error('No variants configured for this product.');
+            return;
+        }
+
+        setConfigProduct(product);
+        setSelectedVariant(product.variants[0]);
+        setChosenModifiers({});
+        setConfigQuantity(1);
+        setConfigNotes('');
+        setIsConfigOpen(true);
+    };
+
+    const handleEditCartItem = (item: CartItem) => {
+        setEditingCartItemId(item.id);
+        setConfigProduct(item.product);
+        setSelectedVariant(item.variant);
+
+        // Group modifier selections by parent group ID
+        const initialChosenModifiers: Record<string, string[] | undefined> = {};
+        item.modifierOptions.forEach((opt) => {
+            if (!initialChosenModifiers[opt.modifierGroupId]) {
+                initialChosenModifiers[opt.modifierGroupId] = [];
+            }
+            initialChosenModifiers[opt.modifierGroupId]!.push(opt.id);
+        });
+        setChosenModifiers(initialChosenModifiers);
+
+        setConfigQuantity(item.quantity);
+        setConfigNotes(item.notes || '');
+        setIsConfigOpen(true);
+    };
+
+    const handleAddToCart = () => {
+        if (!configProduct || !selectedVariant) return;
+
+        // Flatten chosen modifiers
+        const chosenOptionsList: IModifierOption[] = [];
+        if (modifierGroupsData?.data) {
+            for (const group of modifierGroupsData.data) {
+                const selections = chosenModifiers[group.id] || [];
+                // Check minSelect validation
+                if (selections.length < group.minSelect) {
+                    toast.error(`Please select at least ${group.minSelect} option(s) for "${group.name}".`);
+                    return;
+                }
+                // Check maxSelect validation
+                if (selections.length > group.maxSelect) {
+                    toast.error(`Please select at most ${group.maxSelect} option(s) for "${group.name}".`);
+                    return;
+                }
+
+                const optionsForGroup = group.options.filter((opt: IModifierOption) => selections.includes(opt.id));
+                chosenOptionsList.push(...optionsForGroup);
+            }
+        }
+
+        if (editingCartItemId) {
+            setCart((prev) =>
+                prev.map((item) =>
+                    item.id === editingCartItemId
+                        ? {
+                              ...item,
+                              product: configProduct,
+                              variant: selectedVariant,
+                              modifierOptions: chosenOptionsList,
+                              quantity: configQuantity,
+                              notes: configNotes.trim() || undefined
+                          }
+                        : item
+                )
+            );
+            setIsConfigOpen(false);
+            toast.success(`Updated ${configProduct.name} in cart.`);
+            setEditingCartItemId(null);
+        } else {
+            const newCartItem: CartItem = {
+                id: crypto.randomUUID(),
+                product: configProduct,
+                variant: selectedVariant,
+                modifierOptions: chosenOptionsList,
+                quantity: configQuantity,
+                notes: configNotes.trim() || undefined
+            };
+
+            setCart((prev) => [...prev, newCartItem]);
+            setIsConfigOpen(false);
+            toast.success(`Added ${configQuantity}x ${configProduct.name} to checkout cart.`);
+        }
+    };
+
+    const updateCartQuantity = (rowId: string, delta: number) => {
+        setCart((prev) =>
+            prev
+                .map((item) => {
+                    if (item.id === rowId) {
+                        const newQty = item.quantity + delta;
+                        return { ...item, quantity: newQty };
+                    }
+                    return item;
+                })
+                .filter((item) => item.quantity > 0)
+        );
+    };
+
+    const removeCartItem = (rowId: string) => {
+        setCart((prev) => prev.filter((item) => item.id !== rowId));
+        toast.info('Item removed from cart.');
+    };
+
+    const clearCart = () => {
+        setCart([]);
+        setAppliedDiscount(null);
+        setDiscountRefId('');
+        setDiscountRefName('');
+        toast.info('Cart cleared.');
+    };
+
+    // -------------------------------------------------------------
+    // DISCOUNTS HANDLERS
+    // -------------------------------------------------------------
+
+    const handleApplyDiscount = (discount: IDiscount) => {
+        setAppliedDiscount(discount);
+        // Prompt for senior/pwd reference if required
+        if (discount.name.toLowerCase().includes('senior') || discount.name.toLowerCase().includes('pwd')) {
+            setDiscountRefName(discount.name);
+        } else {
+            setDiscountRefId('');
+            setDiscountRefName('');
+        }
+        setIsDiscountOpen(false);
+        toast.success(`Discount "${discount.name}" applied to cart.`);
+    };
+
+    const handleRemoveDiscount = () => {
+        setAppliedDiscount(null);
+        setDiscountRefId('');
+        setDiscountRefName('');
+        toast.info('Discount removed.');
+    };
+
+    // -------------------------------------------------------------
+    // CHECKOUT PROCESS
+    // -------------------------------------------------------------
+
+    const checkoutMutation = useMutation({
+        mutationFn: async () => {
+            if (cart.length === 0) throw new Error('Cart is empty.');
+            if (paymentMethod === 'CASH' && (cashTendered === '' || cashTendered < cartNetTotal)) {
+                throw new Error(`Tendered cash must be at least the total of ₱${cartNetTotal.toFixed(2)}.`);
+            }
+            if ((paymentMethod === 'GCASH' || paymentMethod === 'PAYMAYA') && !referenceNumber.trim()) {
+                throw new Error('Digital payment Reference ID is required.');
+            }
+
+            const customerObj =
+                customerType === 'MEMBER' && membersData?.data ? membersData.data.find((m: any) => m.id === selectedCustomerId) : null;
+
+            // 1. Post Create Order
+            const orderPayload = {
+                orderType,
+                orderSource: 'POS' as const,
+                notes: 'POS checkout transaction.',
+                customerId: customerType === 'MEMBER' ? selectedCustomerId : null,
+                customerName: customerType === 'MEMBER' && customerObj ? `${customerObj.user.firstName} ${customerObj.user.lastName}` : guestName,
+                buzzerId: buzzerId || null,
+                items: cart.map((item: CartItem) => ({
+                    productVariantId: item.variant.id,
+                    quantity: item.quantity,
+                    notes: item.notes || undefined,
+                    modifierOptionIds: item.modifierOptions.map((o: IModifierOption) => o.id)
+                }))
+            };
+
+            const order = await createOrder(orderPayload);
+
+            // 2. Apply Discount if configured
+            if (appliedDiscount) {
+                await applyDiscountToOrder(order.id, {
+                    discountId: appliedDiscount.id,
+                    referenceId: discountRefId || null,
+                    referenceName: discountRefName || null
+                });
+            }
+
+            // 3. Process Payment
+            await createOrderPayment(order.id, {
+                paymentMethod,
+                amountTendered: paymentMethod === 'CASH' ? Number(cashTendered) : order.netTotal,
+                gcashReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber : undefined,
+                paymentProofPhoto: paymentMethod !== 'CASH' ? paymentProofPhoto || undefined : undefined
             });
-            openForm.reset();
+
+            // 4. Update status to PREPARING to show up in kitchen queue
+            const finalOrder = await updateOrderStatus(order.id, {
+                status: 'PREPARING',
+                notes: 'Checkout confirmed and paid at front register.'
+            });
+
+            return finalOrder;
+        },
+        onSuccess: async (order) => {
+            setPlacedOrder(order);
+            setIsCheckoutOpen(false);
+            setCart([]);
+            setAppliedDiscount(null);
+            setDiscountRefId('');
+            setDiscountRefName('');
+
+            // Load receipt template HTML
+            setIsReceiptLoading(true);
+            setIsReceiptOpen(true);
+            try {
+                const response = await fetch(
+                    `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/orders/${order.id}/receipt?format=html`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`
+                        }
+                    }
+                );
+                if (response.ok) {
+                    const html = await response.text();
+                    setReceiptHtml(html);
+                } else {
+                    setReceiptHtml('<p class="p-6 text-center text-xs text-muted-foreground">Failed to render receipt template.</p>');
+                }
+            } catch (err) {
+                setReceiptHtml('<p class="p-6 text-center text-xs text-muted-foreground">Error loading receipt details.</p>');
+            } finally {
+                setIsReceiptLoading(false);
+            }
         },
         onError: (err) => {
-            toast.error('Failed to start POS shift', {
+            toast.error('POS Checkout Failed', {
                 description: getErrorMessage(err)
             });
         }
     });
 
-    const handleOpenSubmit = (values: OpenShiftFormValues) => {
-        openShiftMutation.mutate(values);
+    const handlePrintReceipt = () => {
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.focus();
+            iframeRef.current.contentWindow.print();
+        }
     };
 
     if (isLoading || !hasChecked) {
@@ -77,187 +464,154 @@ export default function PosPage() {
     }
 
     if (!activeShift) {
-        // Render Lock Overlay for POS Drawer Requirement
-        return (
-            <div className="grow flex items-center justify-center py-12 px-4">
-                <div className="w-full max-w-lg">
-                    <Card className="shadow-2xl border-border/70 bg-card/60 backdrop-blur-md relative overflow-hidden transition-all duration-300">
-                        {/* Lock Accent Stripe */}
-                        <div className="absolute top-0 inset-x-0 h-1.5 bg-destructive" />
-
-                        <CardHeader className="text-center pt-8 border-b border-border/40 pb-5">
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 border border-destructive/20 text-destructive mb-3">
-                                <Lock className="h-6 w-6" />
-                            </div>
-                            <CardTitle className="text-xl font-bold text-foreground">Cashier Register Drawer Locked</CardTitle>
-                            <CardDescription className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
-                                An active register shift session is required to proceed with point of sale transactions and checkouts.
-                            </CardDescription>
-                        </CardHeader>
-
-                        <CardContent className="pt-6">
-                            <Form {...openForm}>
-                                <form onSubmit={openForm.handleSubmit(handleOpenSubmit)} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <FormField
-                                            control={openForm.control}
-                                            name="startBalance"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/85 flex items-center gap-1.5">
-                                                        <Coins className="size-3.5 text-muted-foreground" />
-                                                        Opening Drawer Cash (₱)
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            step="0.01"
-                                                            placeholder="5000.00"
-                                                            value={field.value}
-                                                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                            className="h-9 bg-background/50"
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription className="text-xs text-muted-foreground leading-tight">
-                                                        Starting cash in drawer for daily customer changes.
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <div className="flex items-center gap-2.5 bg-muted/30 p-3 rounded-xl border border-border/50 self-start mt-2">
-                                            <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
-                                                <User className="size-3.5" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <span className="text-xs text-muted-foreground block font-medium">Logged Cashier</span>
-                                                <span className="text-xs font-bold text-foreground truncate block">
-                                                    {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'POS Operator'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <FormField
-                                        control={openForm.control}
-                                        name="notes"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/85">Opening Shift Notes</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Add notes about cash drawer count, shift sched, or terminal ID..."
-                                                        value={field.value || ''}
-                                                        onChange={field.onChange}
-                                                        className="bg-background/50 text-xs resize-none"
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <Alert className="border-destructive/20 bg-destructive/5 text-destructive rounded-xl py-3">
-                                        <ShieldAlert className="h-4 w-4" />
-                                        <AlertTitle className="font-bold text-xs">Checkout Blocked</AlertTitle>
-                                        <AlertDescription className="text-2xs font-medium mt-0.5">
-                                            Sales posting and drawer balance locks are enforced. Open the shift register to initialize checkout.
-                                        </AlertDescription>
-                                    </Alert>
-
-                                    <Button
-                                        type="submit"
-                                        disabled={openShiftMutation.isPending}
-                                        className="w-full h-9 gap-1.5 shadow-sm mt-4 bg-primary text-primary-foreground"
-                                    >
-                                        {openShiftMutation.isPending ? (
-                                            <>
-                                                <Spinner className="h-4 w-4 animate-spin" />
-                                                Starting POS Session...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ArrowRight className="size-4" />
-                                                Open Drawer & Start Sales
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </Form>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
+        // Drawer Lock Overlay
+        return <ShiftLockOverlay currentUser={currentUser} openShift={openShift} />;
     }
 
-    // Render unlocked active POS workspace
+    // MAIN POS WORKSPACE VIEW
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5 h-[calc(100vh-100px)] overflow-hidden">
             {/* Page Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0 text-left">
                 <div className="flex items-center gap-2.5">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                         <Monitor className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">POS Sales Checkout</h1>
+                        <h1 className="text-xl font-bold text-foreground leading-tight">POS Sales Checkout</h1>
                         <p className="text-xs text-muted-foreground">Process customer payments, beverage custom orders, and generate prints.</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-1 rounded-lg text-xs font-semibold">
                     <CheckCircle2 className="size-4" />
-                    Shift Drawer Active: ₱{activeShift.startBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    Active Balance: ₱{activeShift.startBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
             </div>
 
-            {/* POS Checkout placeholder workspace */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
-                    <Card className="shadow-xs border-border/60 bg-card/40 backdrop-blur-xs min-h-[300px] flex flex-col items-center justify-center text-center p-8">
-                        <ShoppingBag className="size-10 text-muted-foreground/75 mb-3" />
-                        <h3 className="text-base font-bold text-foreground">Menu Products Catalog Workspace</h3>
-                        <p className="text-xs text-muted-foreground max-w-sm mt-1">
-                            Products catalogue list is unblocked. Select drinks items to build cashier checkout carts and process sales.
-                        </p>
-                    </Card>
+            {/* Layout Columns */}
+            <div className="flex-1 flex gap-5 overflow-hidden min-h-0">
+                {/* LEFT: PRODUCTS LIST & CATALOG FILTERING */}
+                <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+                    <CatalogToolbar
+                        search={search}
+                        setSearch={setSearch}
+                        productCategoryId={productCategoryId}
+                        setProductCategoryId={setProductCategoryId}
+                        productTypeId={productTypeId}
+                        setProductTypeId={setProductTypeId}
+                        categoriesData={categoriesData}
+                        typesData={typesData}
+                    />
+
+                    <div className="flex-1 overflow-y-auto min-h-0">
+                        <ProductsGrid
+                            menuData={menuData}
+                            isMenuLoading={isMenuLoading}
+                            menuError={menuError}
+                            page={page}
+                            setPage={setPage}
+                            onProductClick={handleProductClick}
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <Card className="shadow-xs border-border/60 bg-card/40 backdrop-blur-xs min-h-[300px] flex flex-col justify-between p-6">
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-foreground border-b border-border/40 pb-2">Active Drawer Session</h4>
-                            <div className="space-y-3 text-xs">
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground font-semibold">Active Cashier:</span>
-                                    <span className="font-bold text-foreground">
-                                        {activeShift.cashier
-                                            ? `${activeShift.cashier.firstName} ${activeShift.cashier.lastName}`
-                                            : `${currentUser?.firstName} ${currentUser?.lastName}`}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground font-semibold">Opened At:</span>
-                                    <span className="font-medium text-foreground">{format(new Date(activeShift.openedAt), 'hh:mm a (MMM dd)')}</span>
-                                </div>
-                                <div className="flex justify-between font-medium">
-                                    <span className="text-muted-foreground font-semibold">Starting balance:</span>
-                                    <span className="font-bold text-foreground">₱{activeShift.startBalance.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-border/40 space-y-2.5">
-                            <div className="text-2xs text-muted-foreground font-medium flex items-start gap-1">
-                                <Clock className="size-3 shrink-0 mt-0.5" />
-                                <span>Physical cash sales transaction details are aggregated and saved to the database.</span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
+                {/* RIGHT: ACTIVE CART SIDEBAR */}
+                <CartSidebar
+                    cart={cart}
+                    updateCartQuantity={updateCartQuantity}
+                    removeCartItem={removeCartItem}
+                    clearCart={clearCart}
+                    appliedDiscount={appliedDiscount}
+                    handleRemoveDiscount={handleRemoveDiscount}
+                    cartSubtotal={cartSubtotal}
+                    discountAmount={discountAmount}
+                    cartVatAmount={cartVatAmount}
+                    cartNetTotal={cartNetTotal}
+                    onOpenDiscount={() => setIsDiscountOpen(true)}
+                    onOpenCheckout={() => setIsCheckoutOpen(true)}
+                    getCartItemPrice={getCartItemPrice}
+                    onEditCartItem={handleEditCartItem}
+                />
             </div>
+
+            {/* MODALS */}
+            <ProductCustomizerDialog
+                open={isConfigOpen}
+                onOpenChange={(open) => {
+                    setIsConfigOpen(open);
+                    if (!open) {
+                        setEditingCartItemId(null);
+                        setConfigProduct(null);
+                        setSelectedVariant(null);
+                        setChosenModifiers({});
+                        setConfigQuantity(1);
+                        setConfigNotes('');
+                    }
+                }}
+                configProduct={configProduct}
+                selectedVariant={selectedVariant}
+                setSelectedVariant={setSelectedVariant}
+                chosenModifiers={chosenModifiers}
+                setChosenModifiers={setChosenModifiers}
+                configQuantity={configQuantity}
+                setConfigQuantity={setConfigQuantity}
+                configNotes={configNotes}
+                setConfigNotes={setConfigNotes}
+                onAddToCart={handleAddToCart}
+                isModifiersLoading={isModifiersLoading}
+                modifierGroupsData={modifierGroupsData}
+                isEditing={!!editingCartItemId}
+            />
+
+            <DiscountSelectDialog
+                open={isDiscountOpen}
+                onOpenChange={setIsDiscountOpen}
+                discountsData={discountsData}
+                onApplyDiscount={handleApplyDiscount}
+            />
+
+            <CheckoutPaymentDialog
+                open={isCheckoutOpen}
+                onOpenChange={setIsCheckoutOpen}
+                cartNetTotal={cartNetTotal}
+                cart={cart}
+                membersData={membersData}
+                customerType={customerType}
+                setCustomerType={setCustomerType}
+                guestName={guestName}
+                setGuestName={setGuestName}
+                selectedCustomerId={selectedCustomerId}
+                setSelectedCustomerId={setSelectedCustomerId}
+                buzzerId={buzzerId}
+                setBuzzerId={setBuzzerId}
+                orderType={orderType}
+                setOrderType={setOrderType}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                cashTendered={cashTendered}
+                setCashTendered={setCashTendered}
+                referenceNumber={referenceNumber}
+                setReferenceNumber={setReferenceNumber}
+                appliedDiscount={appliedDiscount}
+                discountRefId={discountRefId}
+                setDiscountRefId={setDiscountRefId}
+                discountRefName={discountRefName}
+                setDiscountRefName={setDiscountRefName}
+                isPending={checkoutMutation.isPending}
+                onSubmit={() => checkoutMutation.mutate()}
+                paymentProofPhoto={paymentProofPhoto}
+                setPaymentProofPhoto={setPaymentProofPhoto}
+            />
+
+            <ReceiptPreviewDialog
+                open={isReceiptOpen}
+                onOpenChange={setIsReceiptOpen}
+                isLoading={isReceiptLoading}
+                receiptHtml={receiptHtml}
+                onPrint={handlePrintReceipt}
+                iframeRef={iframeRef}
+            />
         </div>
     );
 }
