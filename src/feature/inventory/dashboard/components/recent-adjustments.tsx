@@ -67,9 +67,7 @@ export default function RecentAdjustmentsWidget() {
                                 </div>
                                 <div className="text-right shrink-0 ml-3">
                                     <span
-                                        className={`text-sm font-black block leading-tight ${
-                                            adj.quantity < 0 ? 'text-rose-600' : 'text-emerald-600'
-                                        }`}
+                                        className={`text-sm font-bold block leading-tight ${adj.quantity < 0 ? 'text-rose-600' : 'text-emerald-600'}`}
                                     >
                                         {adj.quantity > 0 ? '+' : ''}
                                         {adj.quantity.toLocaleString()} {adj.unitAbbreviation}

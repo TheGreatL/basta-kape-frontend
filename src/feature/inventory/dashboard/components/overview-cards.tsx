@@ -81,7 +81,7 @@ export default function OverviewCardsWidget() {
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="space-y-1.5 min-w-0">
                                     <span className="text-xs font-semibold text-muted-foreground uppercase block">{card.title}</span>
-                                    <span className="text-2xl font-black text-foreground/90 block font-sans">{card.value}</span>
+                                    <span className="text-2xl font-bold text-foreground/90 block font-sans">{card.value}</span>
                                 </div>
                                 <div className={`p-2.5 rounded-xl border ${card.color}`}>
                                     <Icon className="size-5" />

@@ -56,7 +56,7 @@ export default function RecentDeliveriesWidget() {
                                     </span>
                                 </div>
                                 <div className="text-right shrink-0 ml-3">
-                                    <span className="text-sm font-black text-emerald-600 block leading-tight">
+                                    <span className="text-sm font-bold text-emerald-600 block leading-tight">
                                         +{delivery.quantityReceived.toLocaleString()} {delivery.unitAbbreviation}
                                     </span>
                                     <span className="text-xs text-muted-foreground font-mono">₱{delivery.totalCost.toFixed(2)}</span>

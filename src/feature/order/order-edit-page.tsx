@@ -513,7 +513,7 @@ export default function OrderEditPage() {
                                 </div>
                                 <div className="flex justify-between font-bold text-sm pt-2">
                                     <span className="text-foreground">Net Due Total:</span>
-                                    <span className="text-primary text-base font-extrabold">₱{orderDetails.netTotal.toFixed(2)}</span>
+                                    <span className="text-primary text-base font-bold">₱{orderDetails.netTotal.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

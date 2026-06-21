@@ -194,7 +194,7 @@ export default function ProductCustomizerDialog({
                         {selectedVariant && (
                             <div className="text-right shrink-0">
                                 <span className="text-2xs text-muted-foreground font-bold block uppercase">Base Price</span>
-                                <span className="text-sm font-extrabold text-primary font-mono">₱{selectedVariant.price.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-primary font-mono">₱{selectedVariant.price.toFixed(2)}</span>
                             </div>
                         )}
                     </div>
@@ -208,7 +208,7 @@ export default function ProductCustomizerDialog({
                                 return (
                                     <div key={attrName} className="space-y-2 text-left">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-bold text-foreground/80 uppercase tracking-wider block">
+                                            <span className="text-xs font-bold text-foreground/80 uppercase block">
                                                 {idx + 1}. Choose {attrName}
                                             </span>
                                             {currentValue && (
@@ -364,7 +364,7 @@ export default function ProductCustomizerDialog({
                 <DialogFooter className="px-6 py-3 border-t bg-muted/20 shrink-0 flex items-center justify-between">
                     <div className="text-left">
                         <span className="text-2xs text-muted-foreground font-bold block uppercase leading-none">Total Price</span>
-                        <span className="text-sm font-extrabold text-primary font-mono mt-0.5 block">₱{overallTotal.toFixed(2)}</span>
+                        <span className="text-sm font-bold text-primary font-mono mt-0.5 block">₱{overallTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="ghost" onClick={() => onOpenChange(false)} className="h-8.5 text-xs font-semibold">

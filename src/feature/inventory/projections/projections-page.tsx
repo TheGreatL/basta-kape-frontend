@@ -99,7 +99,7 @@ export default function ProjectionsPage() {
                                             <CardDescription className="text-xs text-muted-foreground font-mono">SKU: {item.sku}</CardDescription>
                                         )}
                                     </div>
-                                    <span className="text-lg font-black text-primary shrink-0 leading-none">{item.maxProduceable}</span>
+                                    <span className="text-lg font-bold text-primary shrink-0 leading-none">{item.maxProduceable}</span>
                                 </CardHeader>
                                 <CardContent className="p-4 flex-1 flex flex-col gap-3">
                                     {!item.hasRecipe ? (

@@ -1156,7 +1156,7 @@ export default function OrderCreatePage() {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <span className="bg-emerald-500/10 px-2.5 py-1 rounded text-2xs font-extrabold border border-emerald-500/20 uppercase leading-none">
+                                    <span className="bg-emerald-500/10 px-2.5 py-1 rounded text-2xs font-bold border border-emerald-500/20 uppercase leading-none">
                                         {createdOrder.status}
                                     </span>
                                 </div>
@@ -1175,7 +1175,7 @@ export default function OrderCreatePage() {
                                         <div className="space-y-1">
                                             <div className="font-bold text-foreground flex items-center gap-1.5">
                                                 <span>{createdOrder.discounts[0].discount?.name || 'Discount'}</span>
-                                                <span className="text-primary font-extrabold font-mono">
+                                                <span className="text-primary font-bold font-mono">
                                                     {createdOrder.discounts[0].discount?.type === 'PERCENTAGE'
                                                         ? `-${createdOrder.discounts[0].discount.value}%`
                                                         : `-₱${(createdOrder.discounts[0].discount?.value ?? 0).toFixed(2)}`}
@@ -1460,7 +1460,7 @@ export default function OrderCreatePage() {
                                             </div>
                                             <div className="flex justify-between font-bold text-sm text-foreground pt-3 border-t border-dashed border-border/40">
                                                 <span>Total Net Amount:</span>
-                                                <span className="text-primary font-extrabold text-base">₱{createdOrder.netTotal.toFixed(2)}</span>
+                                                <span className="text-primary font-bold text-base">₱{createdOrder.netTotal.toFixed(2)}</span>
                                             </div>
                                         </div>
 

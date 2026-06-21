@@ -45,7 +45,7 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 mb-3 animate-in zoom-in duration-300">
                         <CheckCircle2 className="h-8 w-8 animate-pulse" />
                     </div>
-                    <DialogTitle className="text-xl font-extrabold text-foreground">Order Placed Successfully!</DialogTitle>
+                    <DialogTitle className="text-xl font-bold text-foreground">Order Placed Successfully!</DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
                         Your order has been queued for barista preparation.
                     </DialogDescription>
@@ -54,8 +54,8 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                 <div className="px-6 py-4 space-y-4">
                     {/* Queue Number Showcase */}
                     <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-center space-y-1">
-                        <span className="text-xs uppercase font-extrabold text-muted-foreground block">Queue Ticket Number</span>
-                        <span className="text-4xl font-black text-primary font-mono block">{order.queueNumber}</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground block">Queue Ticket Number</span>
+                        <span className="text-4xl font-bold text-primary font-mono block">{order.queueNumber}</span>
                         <div className="flex justify-center gap-1.5 pt-1.5">
                             <Badge
                                 variant="secondary"
@@ -83,7 +83,7 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                         )}
                         <div className="flex justify-between font-bold text-foreground border-t border-dashed border-border/40 pt-2 text-sm">
                             <span>Total Amount Due:</span>
-                            <span className="text-primary font-extrabold">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="text-primary font-bold">₱{order.netTotal.toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -104,7 +104,7 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
 
                     {/* Print/View actions */}
                     <div className="space-y-2 pt-1">
-                        <span className="text-xs uppercase font-extrabold text-muted-foreground  block mb-1">Receipt Actions</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground  block mb-1">Receipt Actions</span>
                         <div className="grid grid-cols-2 gap-2">
                             <Button
                                 type="button"

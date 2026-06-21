@@ -68,7 +68,7 @@ export default function WasteBreakdownWidget() {
                     <div className="space-y-4">
                         <div className="text-center pb-2 border-b border-border/5">
                             <span className="text-xs text-muted-foreground uppercase  font-semibold block">Total Loss Quantity</span>
-                            <span className="text-2xl font-black text-rose-600 dark:text-rose-400 block font-sans">
+                            <span className="text-2xl font-bold text-rose-600 dark:text-rose-400 block font-sans">
                                 {totalQuantitySum.toLocaleString()} units
                             </span>
                         </div>
