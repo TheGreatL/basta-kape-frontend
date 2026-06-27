@@ -148,8 +148,8 @@ export default function PosPage() {
 
     // Query members list
     const { data: membersData } = useQuery({
-        queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST, { limit: 100 }],
-        queryFn: () => getCustomers({ limit: 100 }),
+        queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST, { limit: 50 }],
+        queryFn: () => getCustomers({ limit: 50 }),
         enabled: !!activeShift
     });
 

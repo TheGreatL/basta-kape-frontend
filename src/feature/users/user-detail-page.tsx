@@ -28,7 +28,7 @@ import type { IRoleListItem } from '../rbac/rbac.types.ts';
 type EditUserFormValues = TUpdateUserSchema;
 
 export default function UserDetailPage() {
-    const { slug } = useParams({ from: '/admin/users/$slug' });
+    const { slug } = useParams({ strict: false });
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user: authUser } = useAuth();
@@ -39,7 +39,7 @@ export default function UserDetailPage() {
     // Fetch user details
     const { data: userDetails, isLoading: isUserDetailsLoading } = useQuery({
         queryKey: [QUERY_KEY.USERS.USER_DETAILS, slug],
-        queryFn: () => getUserById(slug),
+        queryFn: () => getUserById(slug as string),
         enabled: !!slug
     });
 

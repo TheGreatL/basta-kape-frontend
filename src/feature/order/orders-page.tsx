@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download, Volume2 } from 'lucide-react';
+import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download, Volume2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/orders/index.tsx';
@@ -231,16 +231,26 @@ export default function OrdersPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                            onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}` })}
+                            title="Inspect details"
+                        >
+                            <Eye className="size-4" />
+                            <span className="sr-only">Inspect details</span>
+                        </Button>
                         {canUpdateOrders && (
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="size-8 text-muted-foreground hover:text-primary transition-colors"
                                 onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}/edit` })}
-                                title="Inspect details"
+                                title="Edit order"
                             >
-                                <Eye className="size-4" />
-                                <span className="sr-only">Inspect details</span>
+                                <Pencil className="size-4" />
+                                <span className="sr-only">Edit order</span>
                             </Button>
                         )}
                         <DropdownMenu>

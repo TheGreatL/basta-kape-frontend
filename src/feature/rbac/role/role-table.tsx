@@ -86,7 +86,7 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
     };
 
     const handleOpenEdit = (role: IRoleListItem) => {
-        navigate({ to: `/admin/roles/${encodeURIComponent(role.name)}` });
+        navigate({ to: `/admin/roles/${encodeURIComponent(role.name)}/edit` });
     };
 
     const handleOpenView = (role: IRoleListItem) => {

@@ -114,7 +114,7 @@ export default function ProductsPage() {
     };
 
     const handleOpenView = (product: IProduct) => {
-        globalNavigate({ to: `/admin/products/${product.id}/edit` });
+        globalNavigate({ to: `/admin/products/${product.id}` });
     };
 
     const handleOpenDelete = (product: IProduct) => {

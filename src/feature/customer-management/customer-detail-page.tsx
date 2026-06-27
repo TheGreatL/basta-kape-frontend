@@ -45,7 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.t
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 
 export default function CustomerDetailPage() {
-    const { slug } = useParams({ from: '/admin/customers/$slug' });
+    const { slug } = useParams({ strict: false });
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user: authUser } = useAuth();

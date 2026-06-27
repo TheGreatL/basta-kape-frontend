@@ -92,7 +92,7 @@ export default function CustomerManagementPage() {
     };
 
     const handleOpenEdit = (customer: ICustomerResponse) => {
-        navigate({ to: '/admin/customers/$slug', params: { slug: customer.user.username || customer.id } });
+        navigate({ to: '/admin/customers/$slug/edit', params: { slug: customer.user.username || customer.id } });
     };
 
     const handleOpenView = (customer: ICustomerResponse) => {

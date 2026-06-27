@@ -79,7 +79,7 @@ export default function UsersPage() {
     };
 
     const handleOpenEdit = (user: IUserListItem) => {
-        navigate({ to: '/admin/users/$slug', params: { slug: user.username } });
+        navigate({ to: '/admin/users/$slug/edit', params: { slug: user.username } });
     };
 
     const handleOpenView = (user: IUserListItem) => {

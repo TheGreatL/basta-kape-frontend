@@ -131,14 +131,14 @@ export default function ProductEditPage() {
 
     // Query attributes list
     const { data: attributesData, isLoading: isAttributesLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST, { limit: 100, status: 'active' }],
-        queryFn: () => getAttributesList({ page: 1, limit: 100, status: 'active' })
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST, { limit: 50, status: 'active' }],
+        queryFn: () => getAttributesList({ page: 1, limit: 50, status: 'active' })
     });
 
     // Query modifier groups
     const { data: modifierGroupsData, isLoading: isGroupsLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, { limit: 100 }],
-        queryFn: () => getModifierGroups({ page: 1, limit: 100 })
+        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, { limit: 50 }],
+        queryFn: () => getModifierGroups({ page: 1, limit: 50 })
     });
 
     const form = useForm<ProductFormValues>({
