@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { formatDuration, intervalToDuration } from 'date-fns';
 
 export default function OrderQueuePage() {
@@ -212,53 +213,61 @@ export default function OrderQueuePage() {
 
                 {/* Card Footer Actions */}
                 <div className="flex items-center gap-1.5 pt-2 border-t border-border/30">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={updateStatusMutation.isPending}
-                        onClick={() => {
-                            setVoidOrderId(order.id);
-                            setVoidOrderNumber(order.queueNumber);
-                        }}
-                        className="h-8.5 px-2 hover:bg-rose-500/10 hover:text-rose-600 text-muted-foreground transition-colors text-xs rounded-lg"
-                        title="Void Order"
-                    >
-                        <XCircle className="size-4 shrink-0" />
-                    </Button>
+                    <RequirePermission module="Point of Sale (POS)" action="read">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={updateStatusMutation.isPending}
+                            onClick={() => {
+                                setVoidOrderId(order.id);
+                                setVoidOrderNumber(order.queueNumber);
+                            }}
+                            className="h-8.5 px-2 hover:bg-rose-500/10 hover:text-rose-600 text-muted-foreground transition-colors text-xs rounded-lg"
+                            title="Void Order"
+                        >
+                            <XCircle className="size-4 shrink-0" />
+                        </Button>
+                    </RequirePermission>
 
                     {order.status === 'PENDING' && (
-                        <Button
-                            size="sm"
-                            onClick={() => setPaymentOrder(order)}
-                            className="h-8.5 flex-1 gap-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
-                        >
-                            <CreditCard className="size-3.5 shrink-0" />
-                            Collect Payment
-                        </Button>
+                        <RequirePermission module="Point of Sale (POS)" action="create">
+                            <Button
+                                size="sm"
+                                onClick={() => setPaymentOrder(order)}
+                                className="h-8.5 flex-1 gap-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                            >
+                                <CreditCard className="size-3.5 shrink-0" />
+                                Collect Payment
+                            </Button>
+                        </RequirePermission>
                     )}
 
                     {order.status === 'PREPARING' && (
-                        <Button
-                            size="sm"
-                            disabled={updateStatusMutation.isPending}
-                            onClick={() => handleTransition(order.id, 'READY')}
-                            className="h-8.5 flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
-                        >
-                            <Check className="size-3.5 stroke-[2.5] shrink-0" />
-                            Mark Ready
-                        </Button>
+                        <RequirePermission module="Order Queue" action="update">
+                            <Button
+                                size="sm"
+                                disabled={updateStatusMutation.isPending}
+                                onClick={() => handleTransition(order.id, 'READY')}
+                                className="h-8.5 flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                            >
+                                <Check className="size-3.5 stroke-[2.5] shrink-0" />
+                                Mark Ready
+                            </Button>
+                        </RequirePermission>
                     )}
 
                     {order.status === 'READY' && (
-                        <Button
-                            size="sm"
-                            disabled={updateStatusMutation.isPending}
-                            onClick={() => handleTransition(order.id, 'COMPLETED')}
-                            className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
-                        >
-                            <CheckCircle2 className="size-3.5 shrink-0" />
-                            Complete Pick
-                        </Button>
+                        <RequirePermission module="Order Queue" action="update">
+                            <Button
+                                size="sm"
+                                disabled={updateStatusMutation.isPending}
+                                onClick={() => handleTransition(order.id, 'COMPLETED')}
+                                className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                            >
+                                <CheckCircle2 className="size-3.5 shrink-0" />
+                                Complete Pick
+                            </Button>
+                        </RequirePermission>
                     )}
                 </div>
             </div>

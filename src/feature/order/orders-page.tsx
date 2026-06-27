@@ -20,8 +20,15 @@ import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { useAuth } from '#/context/AuthContext.tsx';
+import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
+import { appModules, appPermissions } from '#/constants/rbac.ts';
 
 export default function OrdersPage() {
+    const { user } = useAuth();
+    const permissions = React.useMemo(() => getUserPermissions(user), [user]);
+    const canUpdateOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.UPDATE), [permissions]);
+
     const navigate = useNavigate({ from: '/admin/orders/' });
     const globalNavigate = useNavigate();
     const { page, pageSize, search, status, orderType, orderSource } = Route.useSearch();
@@ -224,16 +231,18 @@ export default function OrdersPage() {
                 header: 'Actions',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                            onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}/edit` })}
-                            title="Inspect details"
-                        >
-                            <Eye className="size-4" />
-                            <span className="sr-only">Inspect details</span>
-                        </Button>
+                        {canUpdateOrders && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}/edit` })}
+                                title="Inspect details"
+                            >
+                                <Eye className="size-4" />
+                                <span className="sr-only">Inspect details</span>
+                            </Button>
+                        )}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -268,7 +277,7 @@ export default function OrdersPage() {
                 )
             }
         ],
-        []
+        [canUpdateOrders, globalNavigate]
     );
 
     return (
