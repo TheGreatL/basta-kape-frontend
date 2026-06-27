@@ -1,7 +1,13 @@
 import { api } from './api';
 import { ApiError } from '../utils/error-handler';
 import type { IPaginatedResult } from '../types/base.types';
-import type { IGetUsersListParams, IUserListItem, ICreateUserPayload, IUpdateUserPayload } from '../feature/users/users.types';
+import type {
+    IGetUsersListParams,
+    IUserListItem,
+    ICreateUserPayload,
+    IUpdateUserPayload,
+    IUpdateMyProfilePayload
+} from '../feature/users/users.types';
 
 export const getUsersList = async (params: IGetUsersListParams): Promise<IPaginatedResult<IUserListItem>> => {
     const query = new URLSearchParams();
@@ -42,6 +48,15 @@ export const updateUser = async (id: string, payload: IUpdateUserPayload): Promi
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to update user profile', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const updateMyProfile = async (payload: IUpdateMyProfilePayload): Promise<IUserListItem> => {
+    const response = await api.put('/users/me', payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to update profile', response.status, errorData);
     }
     return response.json();
 };

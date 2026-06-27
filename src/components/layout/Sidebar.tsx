@@ -39,6 +39,7 @@ import {
 import { ChevronDown, LogOut, Users, ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible.tsx';
 import { cn } from '#/lib/utils.ts';
+import { getFileUrl } from '#/utils/helper';
 
 interface SidebarSubItem {
     title: string;
@@ -304,7 +305,6 @@ export default function AppSidebar() {
     // Profile variables
     const displayName = user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest';
     const initials = user?.firstName ? `${user.firstName[0]}${user.lastName[0]}` : 'GU';
-    const getStorageUrl = (url: string) => url;
     const handleLogout = async () => {
         await logout();
     };
@@ -347,7 +347,7 @@ export default function AppSidebar() {
                                 >
                                     <Avatar className="size-8 rounded-lg">
                                         <AvatarImage
-                                            src={(user as any)?.photo ? getStorageUrl((user as any).photo) : undefined}
+                                            src={user?.profilePhoto ? getFileUrl(user.profilePhoto) : undefined}
                                             alt={user?.firstName ? `${user.firstName} ${user.lastName}` : ''}
                                         />
                                         <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">

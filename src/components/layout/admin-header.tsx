@@ -4,7 +4,7 @@ import { LogOut, User as UserIcon, Settings, Home } from 'lucide-react';
 
 import { SidebarTrigger } from '#/components/ui/sidebar.tsx';
 import { useAuth } from '#/context/AuthContext.tsx';
-import { Avatar, AvatarFallback } from '#/components/ui/avatar.tsx';
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger
 } from '#/components/ui/dropdown-menu.tsx';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '#/components/ui/breadcrumb.tsx';
+import { getFileUrl } from '#/utils/helper';
 
 export default function AdminHeader() {
     const location = useLocation();
@@ -98,6 +99,7 @@ export default function AdminHeader() {
                         <DropdownMenuTrigger className="p-2 duration-300 outline-1 rounded-2xl hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                             <div className="flex items-center gap-2">
                                 <Avatar size="sm">
+                                    <AvatarImage src={getFileUrl(user.profilePhoto || undefined)} className="object-cover" />
                                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col space-y-1">

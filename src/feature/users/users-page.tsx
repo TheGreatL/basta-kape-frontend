@@ -21,6 +21,7 @@ import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import UserDeleteDialog from './components/user-delete-dialog.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 import UserRestoreDialog from './components/user-restore-dialog.tsx';
+import { useAuth } from '#/context/AuthContext.tsx';
 
 interface IUserSearchSchema {
     page: number;
@@ -32,7 +33,7 @@ interface IUserSearchSchema {
 
 export default function UsersPage() {
     const navigate = useNavigate({ from: '/admin/users/' });
-
+    const auth = useAuth();
     const searchParams = useSearch({ from: '/admin/users/' }) as unknown as IUserSearchSchema;
     const { page = 1, pageSize = 10, search = '', status = 'active', role = '' } = searchParams;
 
@@ -176,17 +177,19 @@ export default function UsersPage() {
                                         </Button>
                                     </RequirePermission>
                                 )}
-                                <RequirePermission module="Users Management" action="delete">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                        onClick={() => handleOpenDelete(row.original)}
-                                    >
-                                        <Trash2 className="size-4" />
-                                        <span className="sr-only">Delete User</span>
-                                    </Button>
-                                </RequirePermission>
+                                {auth.user?.id === row.original.id ? null : (
+                                    <RequirePermission module="Users Management" action="delete">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                            onClick={() => handleOpenDelete(row.original)}
+                                        >
+                                            <Trash2 className="size-4" />
+                                            <span className="sr-only">Delete User</span>
+                                        </Button>
+                                    </RequirePermission>
+                                )}
                             </>
                         )}
                     </div>

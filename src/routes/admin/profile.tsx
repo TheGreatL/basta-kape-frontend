@@ -1,16 +1,88 @@
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '#/context/AuthContext';
+import { updateMyProfile } from '#/api/users.api';
+import QUERY_KEYS from '#/constants/query-keys';
+import { toast } from 'sonner';
 import ChangePasswordForm from '#/feature/auth/components/change-password-form';
+import AdminEditProfileForm from '#/feature/admin/components/edit-profile-form';
 import { Badge } from '#/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card';
-import { Mail, User as UserIcon, Shield, Briefcase } from 'lucide-react';
+import { Mail, User as UserIcon, Shield, Briefcase, Phone } from 'lucide-react';
+import UserAvatarUpload from '#/feature/users/components/user-avatar-upload';
 
 export const Route = createFileRoute('/admin/profile')({
     component: AdminProfilePage
 });
 
 function AdminProfilePage() {
-    const { user } = useAuth();
+    const { user, accessToken } = useAuth();
+    const queryClient = useQueryClient();
+
+    // Form states
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [middleName, setMiddleName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+
+    // Prepopulate form from auth context
+    useEffect(() => {
+        if (user) {
+            setFirstName(user.firstName || '');
+            setLastName(user.lastName || '');
+            setMiddleName(user.middleName || '');
+            setPhoneNumber(user.phoneNumber || '');
+            setEmail(user.email || '');
+            setUsername(user.username || '');
+        }
+    }, [user]);
+
+    // Profile update mutation
+    const updateMutation = useMutation({
+        mutationFn: (payload: {
+            firstName: string;
+            lastName: string;
+            middleName?: string | null;
+            phoneNumber?: string | null;
+            email: string;
+            username: string;
+        }) => updateMyProfile(payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: [QUERY_KEYS.AUTH.ME, accessToken]
+            });
+            toast.success('Profile updated successfully');
+        },
+        onError: (err: Error) => {
+            toast.error(err.message || 'Failed to update profile');
+        }
+    });
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+
+        if (!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim()) {
+            toast.error('First name, last name, username, and email are required.');
+            return;
+        }
+
+        try {
+            await updateMutation.mutateAsync({
+                firstName,
+                lastName,
+                middleName: middleName.trim() || null,
+                phoneNumber: phoneNumber.trim() || null,
+                email,
+                username
+            });
+        } catch {
+            // Error already handled by mutation onError callback with toast
+        }
+    };
 
     if (!user) {
         return (
@@ -20,7 +92,11 @@ function AdminProfilePage() {
         );
     }
 
-    const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase() || 'A';
+    const handlePhotoUploadSuccess = () => {
+        queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.AUTH.ME, accessToken]
+        });
+    };
 
     return (
         <div className="space-y-6 w-full max-w-5xl mx-auto">
@@ -36,13 +112,19 @@ function AdminProfilePage() {
                 <div className="space-y-6">
                     <Card className="border-border/40 shadow-sm">
                         <CardHeader className="text-center pb-2">
-                            <div className="mx-auto size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold mb-4">
-                                {initials}
+                            <div className="mx-auto mb-4">
+                                <UserAvatarUpload
+                                    userId={user.id}
+                                    currentPhotoUrl={user.profilePhoto ?? null}
+                                    firstName={firstName || user.firstName}
+                                    lastName={lastName || user.lastName}
+                                    onUploadSuccess={handlePhotoUploadSuccess}
+                                />
                             </div>
                             <CardTitle className="text-lg font-bold">
-                                {user.firstName} {user.lastName}
+                                {firstName || user.firstName} {lastName || user.lastName}
                             </CardTitle>
-                            <CardDescription className="text-xs">@{user.username}</CardDescription>
+                            <CardDescription className="text-xs">@{username || user.username}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5 pt-4 border-t border-border/40">
                             {/* Email */}
@@ -50,7 +132,7 @@ function AdminProfilePage() {
                                 <Mail className="size-4 text-primary shrink-0" />
                                 <div className="space-y-0.5">
                                     <p className="text-xs font-semibold text-muted-foreground uppercase">Email Address</p>
-                                    <p className="text-foreground font-medium truncate">{user.email}</p>
+                                    <p className="text-foreground font-medium truncate">{email || user.email}</p>
                                 </div>
                             </div>
 
@@ -59,9 +141,20 @@ function AdminProfilePage() {
                                 <UserIcon className="size-4 text-primary shrink-0" />
                                 <div className="space-y-0.5">
                                     <p className="text-xs font-semibold text-muted-foreground uppercase">Username</p>
-                                    <p className="text-foreground font-medium">{user.username}</p>
+                                    <p className="text-foreground font-medium">{username || user.username}</p>
                                 </div>
                             </div>
+
+                            {/* Phone Number */}
+                            {(phoneNumber || user.phoneNumber) && (
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Phone className="size-4 text-primary shrink-0" />
+                                    <div className="space-y-0.5">
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase">Phone Number</p>
+                                        <p className="text-foreground font-medium">{phoneNumber || user.phoneNumber}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Roles Badge List */}
                             <div className="flex items-start gap-3 text-sm">
@@ -110,8 +203,35 @@ function AdminProfilePage() {
                     </Card>
                 </div>
 
-                {/* Change Password Panel */}
-                <div className="md:col-span-2">
+                {/* Edit Profile + Change Password Panel */}
+                <div className="md:col-span-2 space-y-6">
+                    {/* Edit Profile Form */}
+                    <Card className="border-border/40 shadow-sm">
+                        <CardHeader>
+                            <CardTitle className="text-base font-bold text-foreground">Edit Profile</CardTitle>
+                            <CardDescription>Update your personal information and account settings.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                            <AdminEditProfileForm
+                                firstName={firstName}
+                                setFirstName={setFirstName}
+                                lastName={lastName}
+                                setLastName={setLastName}
+                                middleName={middleName}
+                                setMiddleName={setMiddleName}
+                                phoneNumber={phoneNumber}
+                                setPhoneNumber={setPhoneNumber}
+                                username={username}
+                                setUsername={setUsername}
+                                email={email}
+                                setEmail={setEmail}
+                                onSubmit={handleSubmit}
+                                isPending={updateMutation.isPending}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Change Password */}
                     <Card className="border-border/40 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-base font-bold text-foreground">Change Account Password</CardTitle>

@@ -12,6 +12,10 @@ export interface User {
     username: string;
     firstName: string;
     lastName: string;
+    middleName?: string | null;
+    phoneNumber?: string | null;
+    profilePhoto?: string | null;
+    createdAt?: string;
     roles: Array<{
         name: string;
         permissions: Array<{

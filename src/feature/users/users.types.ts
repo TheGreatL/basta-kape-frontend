@@ -49,6 +49,15 @@ export interface IUpdateUserPayload {
     roleIds?: string[];
 }
 
+export interface IUpdateMyProfilePayload {
+    firstName?: string;
+    lastName?: string;
+    middleName?: string | null;
+    phoneNumber?: string | null;
+    email?: string;
+    username?: string;
+}
+
 export interface UsersTabProps {
     page: number;
     pageSize: number;
