@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import WasteLogPage from '#/feature/inventory/waste-log/waste-log-page.tsx';
+// import WasteLogPage from '#/feature/inventory/waste-log/waste-log-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -11,7 +11,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/inventory/waste-log')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: WasteLogPage,
+    // component: WasteLogPage,
+    component: () => {
+        return <div>Waste Log Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Inventory Management', 'read');
     }

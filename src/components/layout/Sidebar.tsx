@@ -69,24 +69,24 @@ const sidebarGroups: Array<{
         label: 'Overview',
         items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', public: true, exact: true }]
     },
-    {
-        label: 'Operations',
-        items: [
-            { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
-            {
-                title: 'Register Shifts',
-                icon: 'timer',
-                module: appModules.POINT_OF_SALE,
-                items: [
-                    { title: 'Shifts', path: '/admin/register-shifts', module: appModules.POINT_OF_SALE, exact: true },
-                    { title: 'Shift History', path: '/admin/register-shifts/history', module: appModules.POINT_OF_SALE }
-                ]
-            },
-            { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE, badge: '5' },
-            { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
-            { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
-        ]
-    },
+    // {
+    //     label: 'Operations',
+    //     items: [
+    //         { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
+    //         {
+    //             title: 'Register Shifts',
+    //             icon: 'timer',
+    //             module: appModules.POINT_OF_SALE,
+    //             items: [
+    //                 { title: 'Shifts', path: '/admin/register-shifts', module: appModules.POINT_OF_SALE, exact: true },
+    //                 { title: 'Shift History', path: '/admin/register-shifts/history', module: appModules.POINT_OF_SALE }
+    //             ]
+    //         },
+    //         { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE, badge: '5' },
+    //         { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
+    //         { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
+    //     ]
+    // },
     {
         label: 'Catalog & Menu',
         items: [
@@ -104,27 +104,27 @@ const sidebarGroups: Array<{
             }
         ]
     },
-    {
-        label: 'Inventory & Purchasing',
-        items: [
-            {
-                title: 'Inventory',
-                icon: 'archive',
-                module: appModules.INVENTORY_MANAGEMENT,
-                items: [
-                    { title: 'Dashboard', path: '/admin/inventory', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Projections', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Deliveries', path: '/admin/inventory/deliveries', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Waste Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
-                ]
-            },
-            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
-            { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
-        ]
-    },
+    // {
+    //     label: 'Inventory & Purchasing',
+    //     items: [
+    //         {
+    //             title: 'Inventory',
+    //             icon: 'archive',
+    //             module: appModules.INVENTORY_MANAGEMENT,
+    //             items: [
+    //                 { title: 'Dashboard', path: '/admin/inventory', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Projections', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Deliveries', path: '/admin/inventory/deliveries', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Waste Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+    //                 { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
+    //             ]
+    //         },
+    //         { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
+    //         { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
+    //     ]
+    // },
     {
         label: 'People & Security',
         items: [
@@ -141,16 +141,16 @@ const sidebarGroups: Array<{
                 ]
             }
         ]
-    },
-    {
-        label: 'System & Reports',
-        items: [
-            { title: 'Sales Management', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
-            { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
-            { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
-            { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
-        ]
     }
+    // {
+    //     label: 'System & Reports',
+    //     items: [
+    //         { title: 'Sales Management', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
+    //         { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
+    //         { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
+    //         { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
+    //     ]
+    // }
 ];
 
 function SidebarLinkItem({ item }: { item: SidebarItem }) {

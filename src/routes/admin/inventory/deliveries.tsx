@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import DeliveriesPage from '#/feature/inventory/deliveries/deliveries-page.tsx';
+// import DeliveriesPage from '#/feature/inventory/deliveries/deliveries-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -11,7 +11,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/inventory/deliveries')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: DeliveriesPage,
+    // component: DeliveriesPage,
+    component: () => {
+        return <div>Deliveries Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Inventory Management', 'read');
     }

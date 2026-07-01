@@ -16,8 +16,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     return (
         <Link
-            to="/products/$id"
-            params={{ id: product.id }}
+            to="/products"
+            // params={{ id: product.id }}
             className="group flex flex-col rounded-2xl border border-border/40 bg-card p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
         >
             {/* Image with fallback */}
@@ -51,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {/* Footer / Price info */}
                 <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/30">
                     <div className="text-sm font-bold text-foreground">{hasPriceRange ? `₱${minPrice} - ₱${maxPrice}` : `₱${minPrice}`}</div>
-                    <span className="text-xs font-bold text-primary group-hover:underline">Customize →</span>
+                    {/* <span className="text-xs font-bold text-primary group-hover:underline">Customize →</span> */}
                 </div>
             </div>
         </Link>

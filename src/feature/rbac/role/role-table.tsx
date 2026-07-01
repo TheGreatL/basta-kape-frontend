@@ -129,96 +129,96 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
                 accessorKey: 'createdAt',
                 header: 'Date Created',
                 cell: ({ row }) => format(new Date(row.getValue('createdAt')), 'MMM d, yyyy')
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => {
-                    const isCustomer = row.original.name.toLowerCase() === 'customer';
-
-                    return (
-                        <div className="flex items-center gap-2">
-                            <RequirePermission module="Roles and Permissions" action="read">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                    onClick={() => handleOpenView(row.original)}
-                                >
-                                    <Eye className="size-4" />
-                                    <span className="sr-only">View Role</span>
-                                </Button>
-                            </RequirePermission>
-                            {status === 'archive'
-                                ? !isCustomer && (
-                                      <RequirePermission module="Roles and Permissions" action="delete">
-                                          <AlertDialog>
-                                              <AlertDialogTrigger asChild>
-                                                  <Button
-                                                      variant="ghost"
-                                                      size="icon"
-                                                      className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
-                                                      title="Restore Role"
-                                                      disabled={restoreMutation.isPending}
-                                                  >
-                                                      <RotateCcw className="size-4" />
-                                                      <span className="sr-only">Restore Role</span>
-                                                  </Button>
-                                              </AlertDialogTrigger>
-                                              <AlertDialogContent>
-                                                  <AlertDialogHeader>
-                                                      <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
-                                                          <RotateCcw className="size-5 text-emerald-600" />
-                                                          Restore Role
-                                                      </AlertDialogTitle>
-                                                      <AlertDialogDescription>
-                                                          Are you sure you want to restore the role <strong>"{row.original.name}"</strong>? This will
-                                                          reactivate the role and restore its associated system access permissions.
-                                                      </AlertDialogDescription>
-                                                  </AlertDialogHeader>
-                                                  <AlertDialogFooter>
-                                                      <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
-                                                      <AlertDialogAction
-                                                          onClick={() => restoreMutation.mutate(row.original.id)}
-                                                          className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                                                      >
-                                                          Confirm Restore
-                                                      </AlertDialogAction>
-                                                  </AlertDialogFooter>
-                                              </AlertDialogContent>
-                                          </AlertDialog>
-                                      </RequirePermission>
-                                  )
-                                : !isCustomer && (
-                                      <>
-                                          <RequirePermission module="Roles and Permissions" action="update">
-                                              <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                                  onClick={() => handleOpenEdit(row.original)}
-                                              >
-                                                  <Edit className="size-4" />
-                                                  <span className="sr-only">Edit Role</span>
-                                              </Button>
-                                          </RequirePermission>
-                                          <RequirePermission module="Roles and Permissions" action="delete">
-                                              <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                                  onClick={() => handleOpenDelete(row.original)}
-                                              >
-                                                  <Trash2 className="size-4" />
-                                                  <span className="sr-only">Delete Role</span>
-                                              </Button>
-                                          </RequirePermission>
-                                      </>
-                                  )}
-                        </div>
-                    );
-                }
             }
+            // {
+            //     id: 'actions',
+            //     header: 'Actions',
+            //     cell: ({ row }) => {
+            //         const isCustomer = row.original.name.toLowerCase() === 'customer';
+
+            //         return (
+            //             <div className="flex items-center gap-2">
+            //                 <RequirePermission module="Roles and Permissions" action="read">
+            //                     <Button
+            //                         variant="ghost"
+            //                         size="icon"
+            //                         className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                         onClick={() => handleOpenView(row.original)}
+            //                     >
+            //                         <Eye className="size-4" />
+            //                         <span className="sr-only">View Role</span>
+            //                     </Button>
+            //                 </RequirePermission>
+            //                 {status === 'archive'
+            //                     ? !isCustomer && (
+            //                           <RequirePermission module="Roles and Permissions" action="delete">
+            //                               <AlertDialog>
+            //                                   <AlertDialogTrigger asChild>
+            //                                       <Button
+            //                                           variant="ghost"
+            //                                           size="icon"
+            //                                           className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+            //                                           title="Restore Role"
+            //                                           disabled={restoreMutation.isPending}
+            //                                       >
+            //                                           <RotateCcw className="size-4" />
+            //                                           <span className="sr-only">Restore Role</span>
+            //                                       </Button>
+            //                                   </AlertDialogTrigger>
+            //                                   <AlertDialogContent>
+            //                                       <AlertDialogHeader>
+            //                                           <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+            //                                               <RotateCcw className="size-5 text-emerald-600" />
+            //                                               Restore Role
+            //                                           </AlertDialogTitle>
+            //                                           <AlertDialogDescription>
+            //                                               Are you sure you want to restore the role <strong>"{row.original.name}"</strong>? This will
+            //                                               reactivate the role and restore its associated system access permissions.
+            //                                           </AlertDialogDescription>
+            //                                       </AlertDialogHeader>
+            //                                       <AlertDialogFooter>
+            //                                           <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+            //                                           <AlertDialogAction
+            //                                               onClick={() => restoreMutation.mutate(row.original.id)}
+            //                                               className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            //                                           >
+            //                                               Confirm Restore
+            //                                           </AlertDialogAction>
+            //                                       </AlertDialogFooter>
+            //                                   </AlertDialogContent>
+            //                               </AlertDialog>
+            //                           </RequirePermission>
+            //                       )
+            //                     : !isCustomer && (
+            //                           <>
+            //                               <RequirePermission module="Roles and Permissions" action="update">
+            //                                   <Button
+            //                                       variant="ghost"
+            //                                       size="icon"
+            //                                       className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                                       onClick={() => handleOpenEdit(row.original)}
+            //                                   >
+            //                                       <Edit className="size-4" />
+            //                                       <span className="sr-only">Edit Role</span>
+            //                                   </Button>
+            //                               </RequirePermission>
+            //                               <RequirePermission module="Roles and Permissions" action="delete">
+            //                                   <Button
+            //                                       variant="ghost"
+            //                                       size="icon"
+            //                                       className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+            //                                       onClick={() => handleOpenDelete(row.original)}
+            //                                   >
+            //                                       <Trash2 className="size-4" />
+            //                                       <span className="sr-only">Delete Role</span>
+            //                                   </Button>
+            //                               </RequirePermission>
+            //                           </>
+            //                       )}
+            //             </div>
+            //         );
+            //     }
+            // }
         ],
         [status, restoreMutation]
     );
@@ -234,14 +234,14 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {status === 'active' && (
+                    {/* {status === 'active' && (
                         <RequirePermission module="Roles and Permissions" action="create">
                             <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                                 <Plus className="size-4" />
                                 Create Role
                             </Button>
                         </RequirePermission>
-                    )}
+                    )} */}
                 </div>
             </div>
 

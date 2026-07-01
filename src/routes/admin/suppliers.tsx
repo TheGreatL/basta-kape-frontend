@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import SuppliersPage from '#/feature/suppliers/suppliers-page';
+// import SuppliersPage from '#/feature/suppliers/suppliers-page';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -12,7 +12,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/suppliers')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: SuppliersPage,
+    // component: SuppliersPage,
+    component: () => {
+        return <div>Suppliers Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Suppliers Management', 'read');
     }

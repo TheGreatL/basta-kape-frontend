@@ -115,12 +115,12 @@ export default function LoginPage() {
                                         <FormItem>
                                             <div className="flex items-center justify-between">
                                                 <FormLabel className="text-foreground/80">Password</FormLabel>
-                                                <Link
+                                                {/* <Link
                                                     to="/forgot-password"
                                                     className="text-xs font-semibold text-primary hover:underline transition-colors"
                                                 >
                                                     Forgot password?
-                                                </Link>
+                                                </Link> */}
                                             </div>
                                             <FormControl>
                                                 <div className="relative">
@@ -156,9 +156,9 @@ export default function LoginPage() {
                     <CardFooter className="flex justify-center border-t p-6">
                         <p className="text-sm text-muted-foreground">
                             Don't have an account?{' '}
-                            <Link to="/register" className="font-semibold text-primary hover:underline transition-colors">
+                            {/* <Link to="/register" className="font-semibold text-primary hover:underline transition-colors">
                                 Sign up
-                            </Link>
+                            </Link> */}
                         </p>
                     </CardFooter>
                 </Card>

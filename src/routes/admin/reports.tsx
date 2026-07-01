@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 
-import ReportsPage from '#/feature/reports/reports-page';
+// import ReportsPage from '#/feature/reports/reports-page';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import { requirePermission } from '#/utils/rbac.ts';
 
@@ -22,7 +22,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/reports')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ReportsPage,
+    // component: ReportsPage,
+    component: () => {
+        return <div>Reports Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, appModules.REPORTS_MANAGEMENT, appPermissions.READ);
     }

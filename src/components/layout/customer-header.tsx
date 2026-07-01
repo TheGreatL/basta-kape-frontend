@@ -92,7 +92,7 @@ export default function CustomerHeader() {
                     {user ? (
                         <>
                             {/* Cart Icon Link */}
-                            <Link
+                            {/* <Link
                                 to="/cart"
                                 className="relative p-2 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all"
                             >
@@ -102,7 +102,7 @@ export default function CustomerHeader() {
                                         {cartCount}
                                     </Badge>
                                 )}
-                            </Link>
+                            </Link> */}
 
                             {/* User Profile Dropdown */}
                             <DropdownMenu>
@@ -134,7 +134,7 @@ export default function CustomerHeader() {
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator className="bg-border/40" />
-                                    <DropdownMenuItem asChild>
+                                    {/* <DropdownMenuItem asChild>
                                         <Link
                                             to="/profile"
                                             className="w-full flex items-center cursor-pointer px-2.5 py-2 text-sm rounded-lg hover:bg-muted/80 transition-colors"
@@ -162,7 +162,7 @@ export default function CustomerHeader() {
                                                 <span>Admin Dashboard</span>
                                             </Link>
                                         </DropdownMenuItem>
-                                    )}
+                                    )} */}
                                     <DropdownMenuSeparator className="bg-border/40" />
                                     <DropdownMenuItem
                                         onClick={handleLogout}
@@ -235,7 +235,7 @@ export default function CustomerHeader() {
                                     </div>
                                 </div>
 
-                                <Link
+                                {/* <Link
                                     to="/cart"
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="flex items-center justify-between p-2 rounded-lg hover:bg-muted text-foreground font-medium"
@@ -247,25 +247,25 @@ export default function CustomerHeader() {
                                     {cartCount > 0 && (
                                         <Badge className="bg-rose-600 text-rose-50 px-2 py-0.5 rounded-full text-xs">{cartCount} Items</Badge>
                                     )}
-                                </Link>
+                                </Link> */}
 
-                                <Link
+                                {/* <Link
                                     to="/profile"
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-foreground font-medium"
                                 >
                                     <UserIcon className="size-5 text-muted-foreground" />
                                     Your Profile
-                                </Link>
+                                </Link> */}
 
-                                <Link
+                                {/* <Link
                                     to="/orders"
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-foreground font-medium"
                                 >
                                     <ClipboardList className="size-5 text-muted-foreground" />
                                     Your Orders
-                                </Link>
+                                </Link> */}
 
                                 {hasAdminAccess && (
                                     <Link

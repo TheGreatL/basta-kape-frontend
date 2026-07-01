@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import MenuPage from '#/feature/menu/menu-page.tsx';
+// import MenuPage from '#/feature/menu/menu-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -13,7 +13,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/menu')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: MenuPage,
+    // component: MenuPage,
+    component: () => {
+        return <div>Menu Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Menu', 'read');
     }

@@ -1,4 +1,4 @@
-import ModifiersPage from '#/feature/modifier/modifier-page';
+// import ModifiersPage from '#/feature/modifier/modifier-page';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import { requirePermission } from '#/utils/rbac.ts';
@@ -12,7 +12,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/products/modifiers')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ModifiersPage,
+    // component: ModifiersPage,
+    component: () => {
+        return <div>Modifiers Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Products Management', 'read');
     }

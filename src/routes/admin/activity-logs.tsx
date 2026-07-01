@@ -1,4 +1,4 @@
-import ActivityLogPage from '#/feature/activity-log/activity-log-page';
+// import ActivityLogPage from '#/feature/activity-log/activity-log-page';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import { requirePermission } from '#/utils/rbac.ts';
@@ -13,7 +13,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/activity-logs')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ActivityLogPage,
+    // component: ActivityLogPage,
+    component: () => {
+        return <div>Activity Log Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Activity Logs', 'read');
     }

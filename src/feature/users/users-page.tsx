@@ -143,58 +143,58 @@ export default function UsersPage() {
                 accessorKey: 'createdAt',
                 header: 'Date Configured',
                 cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(new Date(row.original.createdAt), 'MMM d, yyyy')}</span>
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-2">
-                        {row.original.deletedAt ? (
-                            <UserRestoreDialog user={row.original} />
-                        ) : (
-                            <>
-                                <RequirePermission module="Users Management" action="read">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                        onClick={() => handleOpenView(row.original)}
-                                    >
-                                        <Eye className="size-4" />
-                                        <span className="sr-only">View User</span>
-                                    </Button>
-                                </RequirePermission>
-                                {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
-                                    <RequirePermission module="Users Management" action="update">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                            onClick={() => handleOpenEdit(row.original)}
-                                        >
-                                            <Edit className="size-4" />
-                                            <span className="sr-only">Edit User</span>
-                                        </Button>
-                                    </RequirePermission>
-                                )}
-                                {auth.user?.id === row.original.id ? null : (
-                                    <RequirePermission module="Users Management" action="delete">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                            onClick={() => handleOpenDelete(row.original)}
-                                        >
-                                            <Trash2 className="size-4" />
-                                            <span className="sr-only">Delete User</span>
-                                        </Button>
-                                    </RequirePermission>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )
             }
+            // {
+            //     id: 'actions',
+            //     header: 'Actions',
+            //     cell: ({ row }) => (
+            //         <div className="flex items-center gap-2">
+            //             {row.original.deletedAt ? (
+            //                 <UserRestoreDialog user={row.original} />
+            //             ) : (
+            //                 <>
+            //                     <RequirePermission module="Users Management" action="read">
+            //                         <Button
+            //                             variant="ghost"
+            //                             size="icon"
+            //                             className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                             onClick={() => handleOpenView(row.original)}
+            //                         >
+            //                             <Eye className="size-4" />
+            //                             <span className="sr-only">View User</span>
+            //                         </Button>
+            //                     </RequirePermission>
+            //                     {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
+            //                         <RequirePermission module="Users Management" action="update">
+            //                             <Button
+            //                                 variant="ghost"
+            //                                 size="icon"
+            //                                 className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                                 onClick={() => handleOpenEdit(row.original)}
+            //                             >
+            //                                 <Edit className="size-4" />
+            //                                 <span className="sr-only">Edit User</span>
+            //                             </Button>
+            //                         </RequirePermission>
+            //                     )}
+            //                     {auth.user?.id === row.original.id ? null : (
+            //                         <RequirePermission module="Users Management" action="delete">
+            //                             <Button
+            //                                 variant="ghost"
+            //                                 size="icon"
+            //                                 className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+            //                                 onClick={() => handleOpenDelete(row.original)}
+            //                             >
+            //                                 <Trash2 className="size-4" />
+            //                                 <span className="sr-only">Delete User</span>
+            //                             </Button>
+            //                         </RequirePermission>
+            //                     )}
+            //                 </>
+            //             )}
+            //         </div>
+            //     )
+            // }
         ],
         []
     );
@@ -210,12 +210,12 @@ export default function UsersPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <RequirePermission module="Users Management" action="create">
+                    {/* <RequirePermission module="Users Management" action="create">
                         <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" />
                             Create User
                         </Button>
-                    </RequirePermission>
+                    </RequirePermission> */}
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-import RecipesPage from '#/feature/recipes/recipes-page';
+// import RecipesPage from '#/feature/recipes/recipes-page';
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
 import { requirePermission } from '#/utils/rbac.ts';
@@ -15,7 +15,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/products/recipes')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: RecipesPage,
+    // component: RecipesPage,
+    component: () => {
+        return <div>Recipes Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Products Management', 'read');
     }

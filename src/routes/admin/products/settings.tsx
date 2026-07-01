@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import ProductSettingsPage from '#/feature/product-settings/product-settings-page';
+// import ProductSettingsPage from '#/feature/product-settings/product-settings-page';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -27,7 +27,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/products/settings')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: ProductSettingsPage,
+    // component: ProductSettingsPage,
+    component: () => {
+        return <div>Product Settings Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Product Settings Management', 'read');
     }

@@ -209,90 +209,90 @@ export default function ProductsPage() {
                         {format(new Date(row.original.createdAt), 'MMM d, yyyy')}
                     </span>
                 )
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-2">
-                        <RequirePermission module="Products Management" action="read">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                onClick={() => handleOpenView(row.original)}
-                            >
-                                <Eye className="size-4" />
-                                <span className="sr-only">View Details / Variants</span>
-                            </Button>
-                        </RequirePermission>
-                        {status === 'archive' ? (
-                            <RequirePermission module="Products Management" action="delete">
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
-                                            title="Restore Product"
-                                            disabled={restoreMutation.isPending}
-                                        >
-                                            <RotateCcw className="size-4" />
-                                            <span className="sr-only">Restore Product</span>
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
-                                                <RotateCcw className="size-5 text-emerald-600" />
-                                                Restore Menu Product
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to restore the product <strong>"{row.original.name}"</strong>? This will restore
-                                                it to the active product catalog and POS listing.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={() => restoreMutation.mutate(row.original.id)}
-                                                className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                                            >
-                                                Confirm Restore
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </RequirePermission>
-                        ) : (
-                            <>
-                                <RequirePermission module="Products Management" action="update">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                        onClick={() => handleOpenEdit(row.original)}
-                                    >
-                                        <Edit className="size-4" />
-                                        <span className="sr-only">Edit Product</span>
-                                    </Button>
-                                </RequirePermission>
-                                <RequirePermission module="Products Management" action="delete">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                        onClick={() => handleOpenDelete(row.original)}
-                                    >
-                                        <Trash2 className="size-4" />
-                                        <span className="sr-only">Archive Product</span>
-                                    </Button>
-                                </RequirePermission>
-                            </>
-                        )}
-                    </div>
-                )
             }
+            // {
+            //     id: 'actions',
+            //     header: 'Actions',
+            //     cell: ({ row }) => (
+            //         <div className="flex items-center gap-2">
+            //             <RequirePermission module="Products Management" action="read">
+            //                 <Button
+            //                     variant="ghost"
+            //                     size="icon"
+            //                     className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                     onClick={() => handleOpenView(row.original)}
+            //                 >
+            //                     <Eye className="size-4" />
+            //                     <span className="sr-only">View Details / Variants</span>
+            //                 </Button>
+            //             </RequirePermission>
+            //             {status === 'archive' ? (
+            //                 <RequirePermission module="Products Management" action="delete">
+            //                     <AlertDialog>
+            //                         <AlertDialogTrigger asChild>
+            //                             <Button
+            //                                 variant="ghost"
+            //                                 size="icon"
+            //                                 className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
+            //                                 title="Restore Product"
+            //                                 disabled={restoreMutation.isPending}
+            //                             >
+            //                                 <RotateCcw className="size-4" />
+            //                                 <span className="sr-only">Restore Product</span>
+            //                             </Button>
+            //                         </AlertDialogTrigger>
+            //                         <AlertDialogContent>
+            //                             <AlertDialogHeader>
+            //                                 <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+            //                                     <RotateCcw className="size-5 text-emerald-600" />
+            //                                     Restore Menu Product
+            //                                 </AlertDialogTitle>
+            //                                 <AlertDialogDescription>
+            //                                     Are you sure you want to restore the product <strong>"{row.original.name}"</strong>? This will restore
+            //                                     it to the active product catalog and POS listing.
+            //                                 </AlertDialogDescription>
+            //                             </AlertDialogHeader>
+            //                             <AlertDialogFooter>
+            //                                 <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+            //                                 <AlertDialogAction
+            //                                     onClick={() => restoreMutation.mutate(row.original.id)}
+            //                                     className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            //                                 >
+            //                                     Confirm Restore
+            //                                 </AlertDialogAction>
+            //                             </AlertDialogFooter>
+            //                         </AlertDialogContent>
+            //                     </AlertDialog>
+            //                 </RequirePermission>
+            //             ) : (
+            //                 <>
+            //                     <RequirePermission module="Products Management" action="update">
+            //                         <Button
+            //                             variant="ghost"
+            //                             size="icon"
+            //                             className="size-8 text-muted-foreground hover:text-primary transition-colors"
+            //                             onClick={() => handleOpenEdit(row.original)}
+            //                         >
+            //                             <Edit className="size-4" />
+            //                             <span className="sr-only">Edit Product</span>
+            //                         </Button>
+            //                     </RequirePermission>
+            //                     <RequirePermission module="Products Management" action="delete">
+            //                         <Button
+            //                             variant="ghost"
+            //                             size="icon"
+            //                             className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+            //                             onClick={() => handleOpenDelete(row.original)}
+            //                         >
+            //                             <Trash2 className="size-4" />
+            //                             <span className="sr-only">Archive Product</span>
+            //                         </Button>
+            //                     </RequirePermission>
+            //                 </>
+            //             )}
+            //         </div>
+            //     )
+            // }
         ],
         [status, restoreMutation]
     );
@@ -313,12 +313,12 @@ export default function ProductsPage() {
                     </div>
                 </div>
 
-                <RequirePermission module="Products Management" action="create">
+                {/* <RequirePermission module="Products Management" action="create">
                     <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm self-start sm:self-auto">
                         <Plus className="size-4" />
                         Add Product
                     </Button>
-                </RequirePermission>
+                </RequirePermission> */}
             </div>
 
             {/* List Datatable */}

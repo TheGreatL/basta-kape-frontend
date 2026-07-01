@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import StockLevelsPage from '#/feature/inventory/levels/levels-page.tsx';
+// import StockLevelsPage from '#/feature/inventory/levels/levels-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -12,7 +12,10 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/inventory/stock-levels')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: StockLevelsPage,
+    // component: StockLevelsPage,
+    component: () => {
+        return <div>Stock Levels Page</div>;
+    },
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Inventory Management', 'read');
     }

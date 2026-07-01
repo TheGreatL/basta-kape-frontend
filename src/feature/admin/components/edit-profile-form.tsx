@@ -123,7 +123,7 @@ export default function AdminEditProfileForm({
             </div>
 
             <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isPending} className="rounded-xl h-10 px-6 gap-2 font-semibold shadow-xs">
+                {/* <Button type="submit" disabled={isPending} className="rounded-xl h-10 px-6 gap-2 font-semibold shadow-xs">
                     {isPending ? (
                         <>
                             <Loader2 className="size-4 animate-spin" />
@@ -135,7 +135,7 @@ export default function AdminEditProfileForm({
                             Save Changes
                         </>
                     )}
-                </Button>
+                </Button> */}
             </div>
         </form>
     );
