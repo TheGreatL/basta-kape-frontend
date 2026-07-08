@@ -14,10 +14,9 @@ import type { IOrder } from '../order.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
-import { Badge } from '#/components/ui/badge.tsx';
 import { getFileUrl } from '#/utils/helper';
 
 // Dynamic payment validation schema builder
@@ -275,7 +274,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                         } else if (method === 'PAYMAYA') {
                                             label = 'Maya';
                                             icon = <Landmark className="size-3.5 text-green-500" />;
-                                        } else if (method === 'CREDIT_CARD') {
+                                        } else {
                                             label = 'Card';
                                             icon = <CreditCard className="size-3.5 text-purple-500" />;
                                         }
