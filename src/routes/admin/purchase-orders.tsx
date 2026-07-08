@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-// import PurchaseOrdersPage from '#/feature/purchase-orders/purchase-orders-page';
+import PurchaseOrdersPage from '#/feature/purchase-orders/purchase-orders-page';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -13,10 +13,7 @@ const searchParamsSchema = z.object({
 
 export const Route = createFileRoute('/admin/purchase-orders')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    // component: PurchaseOrdersPage,
-    component: () => {
-        return <div>Purchase Orders Page</div>;
-    },
+    component: PurchaseOrdersPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Purchase Orders Management', 'read');
     }
