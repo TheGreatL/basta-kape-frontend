@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { env } from '#/env';
 import defaultProductImage from '#/assets/default.png';
 

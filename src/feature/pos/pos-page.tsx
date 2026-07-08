@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Monitor, CheckCircle2 } from 'lucide-react';
+import { Monitor } from 'lucide-react';
 
-import { useRegisterShiftStore } from '#/store/register-shift-store.ts';
-import { useAuth } from '#/context/AuthContext';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 
 import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
@@ -19,10 +17,9 @@ import type { IModifierOption } from '../modifier/modifier.types';
 import type { IDiscount } from '../store-settings/discounts.types';
 import type { IOrder } from '../order/order.types';
 
-import { Spinner } from '#/components/ui/spinner.tsx';
+
 
 // Import refactored POS components
-import ShiftLockOverlay from './components/shift-lock-overlay.tsx';
 import CatalogToolbar from './components/catalog-toolbar.tsx';
 import ProductsGrid from './components/products-grid.tsx';
 import CartSidebar from './components/cart-sidebar.tsx';
@@ -42,9 +39,6 @@ interface CartItem {
 }
 
 export default function PosPage() {
-    const { activeShift, isLoading, hasChecked, fetchActiveShift, openShift } = useRegisterShiftStore();
-    const { user: currentUser } = useAuth();
-
     // Catalog States
     const [search, setSearch] = React.useState('');
     const [productCategoryId, setProductCategoryId] = React.useState('');
@@ -88,13 +82,6 @@ export default function PosPage() {
     const [isReceiptOpen, setIsReceiptOpen] = React.useState(false);
     const [isReceiptLoading, setIsReceiptLoading] = React.useState(false);
     const iframeRef = React.useRef<HTMLIFrameElement | null>(null);
-
-    // Opening Shift Fetch
-    React.useEffect(() => {
-        if (!hasChecked) {
-            fetchActiveShift();
-        }
-    }, [hasChecked, fetchActiveShift]);
 
     // -------------------------------------------------------------
     // QUERIES FOR CATALOG & CONFIG
@@ -452,22 +439,6 @@ export default function PosPage() {
         }
     };
 
-    if (isLoading || !hasChecked) {
-        return (
-            <div className="flex min-h-[400px] items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                    <Spinner className="h-7 w-7 text-primary animate-spin" />
-                    <p className="text-sm text-muted-foreground font-medium">Validating register shift status...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!activeShift) {
-        // Drawer Lock Overlay
-        return <ShiftLockOverlay currentUser={currentUser} openShift={openShift} />;
-    }
-
     // MAIN POS WORKSPACE VIEW
     return (
         <div className="flex flex-col gap-5 h-[calc(100vh-100px)] overflow-hidden">
@@ -481,11 +452,6 @@ export default function PosPage() {
                         <h1 className="text-xl font-bold text-foreground leading-tight">POS Sales Checkout</h1>
                         <p className="text-xs text-muted-foreground">Process customer payments, beverage custom orders, and generate prints.</p>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-1 rounded-lg text-xs font-semibold">
-                    <CheckCircle2 className="size-4" />
-                    Active Balance: ₱{activeShift.startBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
             </div>
 

@@ -10,7 +10,6 @@ import {
     ShoppingBag,
     Clock,
     CheckCircle2,
-    AlertTriangle,
     ChevronRight,
     Users,
     Shield,
@@ -77,11 +76,6 @@ interface DashboardSummary {
             createdAt: string;
         }>;
     };
-    activeShift?: {
-        id: string;
-        openedAt: string;
-        startBalance: number;
-    } | null;
 }
 
 export default function DashboardPage() {
@@ -477,55 +471,7 @@ export default function DashboardPage() {
                 {/* Cash Drawer & Stock Alerts Sidebar (accessible depending on permissions) */}
                 <div className="space-y-6">
                     {/* Active Register Shift Info */}
-                    {canReadPOS && (
-                        <Card className="shadow-2xs border-border/60 rounded-2xl bg-gradient-to-br from-background via-background to-secondary/15">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-bold text-foreground">Cashier Register Drawer</CardTitle>
-                                <CardDescription className="text-xs text-muted-foreground">
-                                    Current session status for taking customer orders.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {summary.activeShift ? (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2.5 text-emerald-600 bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3">
-                                            <div className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold">Active Register Shift Open</span>
-                                                <span className="text-xs font-semibold text-emerald-600/80">
-                                                    Opened at {format(new Date(summary.activeShift.openedAt), 'h:mm a')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-center text-xs p-1 border-b border-border/50">
-                                            <span className="text-muted-foreground font-semibold">Opening Float:</span>
-                                            <span className="font-bold text-foreground">
-                                                ₱{summary.activeShift.startBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-                                        <Link to="/admin/pos" className="block w-full">
-                                            <Button className="w-full text-xs font-bold h-9">Go to Point of Sale</Button>
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2.5 text-amber-600 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
-                                            <AlertTriangle className="size-4 shrink-0" />
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold">Register Shift Closed</span>
-                                                <span className="text-xs font-semibold text-amber-600/80">Open drawer to start serving.</span>
-                                            </div>
-                                        </div>
-                                        <Link to="/admin/register-shifts" className="block w-full">
-                                            <Button variant="outline" className="w-full text-xs font-bold h-9">
-                                                Open Register Shift Drawer
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+
 
                     {/* Stock Alert Statuses */}
                     {canReadInventory && summary.inventorySummary && (

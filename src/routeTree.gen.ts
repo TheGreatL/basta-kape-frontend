@@ -32,14 +32,12 @@ import { Route as authRegisterRouteImport } from './routes/(auth)/register'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
-import { Route as AdminRegisterShiftsIndexRouteImport } from './routes/admin/register-shifts/index'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
 import { Route as AdminOrdersIndexRouteImport } from './routes/admin/orders/index'
 import { Route as AdminInventoryIndexRouteImport } from './routes/admin/inventory/index'
 import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
 import { Route as CustomerProductsIndexRouteImport } from './routes/_customer/products/index'
 import { Route as AdminUsersCreateRouteImport } from './routes/admin/users/create'
-import { Route as AdminRegisterShiftsHistoryRouteImport } from './routes/admin/register-shifts/history'
 import { Route as AdminProductsSettingsRouteImport } from './routes/admin/products/settings'
 import { Route as AdminProductsRecipesRouteImport } from './routes/admin/products/recipes'
 import { Route as AdminProductsModifiersRouteImport } from './routes/admin/products/modifiers'
@@ -185,12 +183,6 @@ const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminRegisterShiftsIndexRoute =
-  AdminRegisterShiftsIndexRouteImport.update({
-    id: '/register-shifts/',
-    path: '/register-shifts/',
-    getParentRoute: () => AdminRouteRoute,
-  } as any)
 const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
@@ -221,12 +213,6 @@ const AdminUsersCreateRoute = AdminUsersCreateRouteImport.update({
   path: '/users/create',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminRegisterShiftsHistoryRoute =
-  AdminRegisterShiftsHistoryRouteImport.update({
-    id: '/register-shifts/history',
-    path: '/register-shifts/history',
-    getParentRoute: () => AdminRouteRoute,
-  } as any)
 const AdminProductsSettingsRoute = AdminProductsSettingsRouteImport.update({
   id: '/products/settings',
   path: '/products/settings',
@@ -434,14 +420,12 @@ export interface FileRoutesByFullPath {
   '/admin/products/modifiers': typeof AdminProductsModifiersRoute
   '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
-  '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/products/': typeof CustomerProductsIndexRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/inventory/': typeof AdminInventoryIndexRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
-  '/admin/register-shifts/': typeof AdminRegisterShiftsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/orders/$id': typeof CustomerProtectedOrdersIdRoute
   '/admin/roles/create': typeof AdminrbacRolesCreateRoute
@@ -495,14 +479,12 @@ export interface FileRoutesByTo {
   '/admin/products/modifiers': typeof AdminProductsModifiersRoute
   '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
-  '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/products': typeof CustomerProductsIndexRoute
   '/admin/customers': typeof AdminCustomersIndexRoute
   '/admin/inventory': typeof AdminInventoryIndexRoute
   '/admin/orders': typeof AdminOrdersIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
-  '/admin/register-shifts': typeof AdminRegisterShiftsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/orders/$id': typeof CustomerProtectedOrdersIdRoute
   '/admin/roles/create': typeof AdminrbacRolesCreateRoute
@@ -561,14 +543,12 @@ export interface FileRoutesById {
   '/admin/products/modifiers': typeof AdminProductsModifiersRoute
   '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
-  '/admin/register-shifts/history': typeof AdminRegisterShiftsHistoryRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/_customer/products/': typeof CustomerProductsIndexRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/inventory/': typeof AdminInventoryIndexRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
-  '/admin/register-shifts/': typeof AdminRegisterShiftsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/_customer/_protected/orders/$id': typeof CustomerProtectedOrdersIdRoute
   '/admin/(rbac)/roles/create': typeof AdminrbacRolesCreateRoute
@@ -625,14 +605,12 @@ export interface FileRouteTypes {
     | '/admin/products/modifiers'
     | '/admin/products/recipes'
     | '/admin/products/settings'
-    | '/admin/register-shifts/history'
     | '/admin/users/create'
     | '/products/'
     | '/admin/customers/'
     | '/admin/inventory/'
     | '/admin/orders/'
     | '/admin/products/'
-    | '/admin/register-shifts/'
     | '/admin/users/'
     | '/orders/$id'
     | '/admin/roles/create'
@@ -686,14 +664,12 @@ export interface FileRouteTypes {
     | '/admin/products/modifiers'
     | '/admin/products/recipes'
     | '/admin/products/settings'
-    | '/admin/register-shifts/history'
     | '/admin/users/create'
     | '/products'
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/orders'
     | '/admin/products'
-    | '/admin/register-shifts'
     | '/admin/users'
     | '/orders/$id'
     | '/admin/roles/create'
@@ -751,14 +727,12 @@ export interface FileRouteTypes {
     | '/admin/products/modifiers'
     | '/admin/products/recipes'
     | '/admin/products/settings'
-    | '/admin/register-shifts/history'
     | '/admin/users/create'
     | '/_customer/products/'
     | '/admin/customers/'
     | '/admin/inventory/'
     | '/admin/orders/'
     | '/admin/products/'
-    | '/admin/register-shifts/'
     | '/admin/users/'
     | '/_customer/_protected/orders/$id'
     | '/admin/(rbac)/roles/create'
@@ -946,13 +920,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/register-shifts/': {
-      id: '/admin/register-shifts/'
-      path: '/register-shifts'
-      fullPath: '/admin/register-shifts/'
-      preLoaderRoute: typeof AdminRegisterShiftsIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/products/': {
       id: '/admin/products/'
       path: '/products'
@@ -993,13 +960,6 @@ declare module '@tanstack/react-router' {
       path: '/users/create'
       fullPath: '/admin/users/create'
       preLoaderRoute: typeof AdminUsersCreateRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/register-shifts/history': {
-      id: '/admin/register-shifts/history'
-      path: '/register-shifts/history'
-      fullPath: '/admin/register-shifts/history'
-      preLoaderRoute: typeof AdminRegisterShiftsHistoryRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/products/settings': {
@@ -1274,13 +1234,11 @@ interface AdminRouteRouteChildren {
   AdminProductsModifiersRoute: typeof AdminProductsModifiersRoute
   AdminProductsRecipesRoute: typeof AdminProductsRecipesRoute
   AdminProductsSettingsRoute: typeof AdminProductsSettingsRoute
-  AdminRegisterShiftsHistoryRoute: typeof AdminRegisterShiftsHistoryRoute
   AdminUsersCreateRoute: typeof AdminUsersCreateRoute
   AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
   AdminInventoryIndexRoute: typeof AdminInventoryIndexRoute
   AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
-  AdminRegisterShiftsIndexRoute: typeof AdminRegisterShiftsIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
   AdminrbacRolesCreateRoute: typeof AdminrbacRolesCreateRoute
   AdminCustomersSlugEditRoute: typeof AdminCustomersSlugEditRoute
@@ -1323,13 +1281,11 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminProductsModifiersRoute: AdminProductsModifiersRoute,
   AdminProductsRecipesRoute: AdminProductsRecipesRoute,
   AdminProductsSettingsRoute: AdminProductsSettingsRoute,
-  AdminRegisterShiftsHistoryRoute: AdminRegisterShiftsHistoryRoute,
   AdminUsersCreateRoute: AdminUsersCreateRoute,
   AdminCustomersIndexRoute: AdminCustomersIndexRoute,
   AdminInventoryIndexRoute: AdminInventoryIndexRoute,
   AdminOrdersIndexRoute: AdminOrdersIndexRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
-  AdminRegisterShiftsIndexRoute: AdminRegisterShiftsIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
   AdminrbacRolesCreateRoute: AdminrbacRolesCreateRoute,
   AdminCustomersSlugEditRoute: AdminCustomersSlugEditRoute,
