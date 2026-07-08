@@ -1,4 +1,4 @@
-import { Coffee, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { IMenuProduct } from '../menu.types';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { Badge } from '#/components/ui/badge.tsx';

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Coffee, ArrowLeft, Plus, Minus, ShoppingBag, ShieldAlert, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, ShoppingBag, ShieldAlert, ArrowRight } from 'lucide-react';
 import { useCheckoutStore } from '#/store/checkout-store.ts';
 
 import { getMenuProductById } from '#/api/menu.api.ts';

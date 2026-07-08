@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router';
-import { Coffee } from 'lucide-react';
 import type { IMenuProduct, IMenuProductVariant } from '#/feature/menu/menu.types.ts';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 
