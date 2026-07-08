@@ -9,7 +9,7 @@ const searchParamsSchema = z.object({
     search: z.string().catch(''),
     status: z.enum(['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED', '']).catch(''),
     orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY', '']).catch(''),
-    orderSource: z.enum(['POS', 'MOBILE_APP', 'WEBSITE', 'DELIVERY_PARTNER', '']).catch('')
+    orderSource: z.enum(['POS', 'WEBSITE', '']).catch('')
 });
 
 export const Route = createFileRoute('/admin/orders/')({

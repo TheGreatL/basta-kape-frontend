@@ -40,9 +40,7 @@ export type TAppPermission = (typeof appPermissions)[keyof typeof appPermissions
 
 export const AccessScope = {
     ALL: 'all',
-    OWN: 'own',
-    BRANCH: 'branch',
-    STORE: 'store'
+    OWN: 'own'
 } as const;
 
 export type TAccessScope = (typeof AccessScope)[keyof typeof AccessScope];

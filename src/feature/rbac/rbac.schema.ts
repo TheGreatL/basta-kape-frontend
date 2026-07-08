@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const SCOPES = ['ALL', 'STORE', 'OWN'] as const;
+const SCOPES = ['ALL', 'OWN'] as const;
 export type Scope = (typeof SCOPES)[number];
 
 export const rolePermissionSchema = z.object({

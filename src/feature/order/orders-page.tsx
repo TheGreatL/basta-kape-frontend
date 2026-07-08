@@ -99,7 +99,6 @@ export default function OrdersPage() {
         switch (src) {
             case 'POS':
                 return <Store className="size-3.5 shrink-0" />;
-            case 'MOBILE_APP':
             case 'WEBSITE':
                 return <Laptop className="size-3.5 shrink-0" />;
             default:
@@ -402,14 +401,8 @@ export default function OrdersPage() {
                                     <SelectItem value="POS" className="text-xs">
                                         POS Terminal
                                     </SelectItem>
-                                    <SelectItem value="MOBILE_APP" className="text-xs">
-                                        Mobile App
-                                    </SelectItem>
                                     <SelectItem value="WEBSITE" className="text-xs">
                                         Website
-                                    </SelectItem>
-                                    <SelectItem value="DELIVERY_PARTNER" className="text-xs">
-                                        Delivery Partner
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
