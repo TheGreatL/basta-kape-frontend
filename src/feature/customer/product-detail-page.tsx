@@ -12,7 +12,7 @@ import { useCart } from '#/feature/customer/use-cart.ts';
 import { useAuth } from '#/context/AuthContext';
 import type { IMenuProductVariant, IMenuRecipeIngredient, IMenuVariantAttribute } from '#/feature/menu/menu.types.ts';
 import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifier.types.ts';
-import { getFileUrl } from '#/utils/helper';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import { toast } from 'sonner';
 import { Badge } from '#/components/ui/badge';
 
@@ -330,15 +330,12 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
                 {/* Product Photo */}
                 <div className="aspect-square w-full rounded-2xl overflow-hidden bg-muted border border-border/40 flex items-center justify-center">
-                    {product.photo ? (
-                        <img
-                            src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <Coffee className="size-28 text-muted-foreground/30" />
-                    )}
+                    <img
+                        src={getProductPhotoUrl(product.photo)}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                        onError={handleProductImageError}
+                    />
                 </div>
 
                 {/* Product Configuration details */}

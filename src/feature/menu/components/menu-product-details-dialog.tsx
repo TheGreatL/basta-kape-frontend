@@ -5,7 +5,7 @@ import { BookOpen, Coffee, HelpCircle, ShieldAlert, Sparkles } from 'lucide-reac
 import { getMenuProductById } from '#/api/menu.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IMenuProduct, IMenuProductVariant } from '../menu.types';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -82,15 +82,12 @@ export default function MenuProductDetailsDialog({ open, onOpenChange, product }
                                 {/* Product Summary Card */}
                                 <div className="flex flex-col sm:flex-row gap-5 items-start bg-muted/20 p-4 rounded-xl border border-border/40">
                                     <div className="size-24 rounded-lg overflow-hidden border border-border shrink-0 bg-background/50 flex items-center justify-center">
-                                        {menuProduct.photo ? (
-                                            <img
-                                                src={menuProduct.photo.startsWith('http') ? menuProduct.photo : getFileUrl(menuProduct.photo)}
-                                                alt={menuProduct.name}
-                                                className="size-full object-cover"
-                                            />
-                                        ) : (
-                                            <Coffee className="size-8 stroke-[1.5] text-muted-foreground" />
-                                        )}
+                                        <img
+                                            src={getProductPhotoUrl(menuProduct.photo)}
+                                            onError={handleProductImageError}
+                                            alt={menuProduct.name}
+                                            className="size-full object-cover"
+                                        />
                                     </div>
                                     <div className="space-y-1.5 flex-1 min-w-0 w-full">
                                         <h3 className="text-lg font-bold text-foreground leading-tight truncate">{menuProduct.name}</h3>

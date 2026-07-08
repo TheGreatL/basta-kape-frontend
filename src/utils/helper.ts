@@ -1,8 +1,19 @@
+import React from 'react';
 import { env } from '#/env';
+import defaultProductImage from '#/assets/default.png';
 
-export function getFileUrl(path: string | undefined | null) {
-    if (!path) return undefined;
+export function getFileUrl(path: string | undefined | null, fallback?: string) {
+    if (!path) return fallback;
+    if (path.startsWith('http')) return path;
     return `${env.VITE_BUCKET_URL}${path}`;
+}
+
+export function getProductPhotoUrl(path: string | undefined | null) {
+    return getFileUrl(path, defaultProductImage);
+}
+
+export function handleProductImageError(e: React.SyntheticEvent<HTMLImageElement, Event>) {
+    e.currentTarget.src = defaultProductImage;
 }
 
 export const getFrontendReference = (createdAt: string | Date, queueNumber: string | null): string => {

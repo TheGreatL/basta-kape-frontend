@@ -52,13 +52,7 @@ export default function ProductsPage() {
         <div className="container mx-auto px-4 py-8 max-w-7xl min-h-screen">
             {/* Page Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">Our Coffee Menu</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Explore our curated selection of hot brews, cold refreshers, and artisanal treats.
-                    </p>
-                </div>
-
+                
                 {/* Search Bar */}
                 <div className="relative w-full md:w-80">
                     <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

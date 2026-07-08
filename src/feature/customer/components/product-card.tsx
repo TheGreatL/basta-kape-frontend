@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Coffee } from 'lucide-react';
 import type { IMenuProduct, IMenuProductVariant } from '#/feature/menu/menu.types.ts';
-import { getFileUrl } from '#/utils/helper';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 
 interface ProductCardProps {
     product: IMenuProduct;
@@ -22,15 +22,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         >
             {/* Image with fallback */}
             <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-muted flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-300">
-                {product.photo ? (
-                    <img
-                        src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                    />
-                ) : (
-                    <Coffee className="size-16 text-muted-foreground/40" />
-                )}
+                <img
+                    src={getProductPhotoUrl(product.photo)}
+                    onError={handleProductImageError}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                />
                 {product.type && (
                     <span className="absolute top-2 left-2 rounded-md bg-stone-900/80 backdrop-blur-xs px-2 py-0.5 text-xs font-semibold text-stone-200">
                         {product.type.name}

@@ -1,6 +1,6 @@
 import { Coffee, ArrowRight } from 'lucide-react';
 import type { IMenuProduct } from '../menu.types';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Button } from '#/components/ui/button.tsx';
 
@@ -34,15 +34,12 @@ export default function MenuProductCard({ product, onViewDetails }: MenuProductC
         <div className="group relative flex flex-col bg-card hover:bg-card/80 border border-border/40 hover:border-primary/20 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 h-full">
             {/* Photo Preview Section */}
             <div className="relative aspect-video w-full overflow-hidden bg-muted/40 flex items-center justify-center border-b border-border/20">
-                {product.photo ? (
-                    <img
-                        src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
-                        alt={product.name}
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <Coffee className="size-10 stroke-[1.25] text-muted-foreground/60 group-hover:scale-110 transition-transform duration-500" />
-                )}
+                <img
+                    src={getProductPhotoUrl(product.photo)}
+                    onError={handleProductImageError}
+                    alt={product.name}
+                    className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
 
                 {/* Categories & Type absolute tags */}
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">

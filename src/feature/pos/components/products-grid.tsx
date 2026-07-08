@@ -4,7 +4,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Card, CardDescription, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IMenuProduct } from '../../menu/menu.types';
 import type { IPaginatedResult } from '#/types/base.types';
 
@@ -62,15 +62,12 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                         >
                             {/* Image Container */}
                             <div className="aspect-video w-full bg-muted/20 relative flex items-center justify-center border-b overflow-hidden">
-                                {product.photo ? (
-                                    <img
-                                        src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
-                                        alt={product.name}
-                                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                ) : (
-                                    <Coffee className="size-8 stroke-[1.5] text-muted-foreground/70" />
-                                )}
+                                <img
+                                    src={getProductPhotoUrl(product.photo)}
+                                    onError={handleProductImageError}
+                                    alt={product.name}
+                                    className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
                                 {product.category && (
                                     <Badge variant="secondary" className="absolute top-2 left-2 text-xs py-0 px-1.5 font-bold leading-none">
                                         {product.category.name}

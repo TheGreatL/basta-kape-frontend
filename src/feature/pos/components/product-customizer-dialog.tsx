@@ -4,7 +4,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { toast } from 'sonner';
 import type { IMenuProduct, IMenuProductVariant } from '../../menu/menu.types';
 import type { IModifierGroup, IModifierOption } from '../../modifier/modifier.types';
@@ -175,15 +175,12 @@ export default function ProductCustomizerDialog({
                     {/* Product Info Summary */}
                     <div className="flex gap-4 items-center bg-muted/15 p-3 rounded-xl border border-border/45">
                         <div className="size-16 rounded-lg bg-background border flex items-center justify-center shrink-0 overflow-hidden">
-                            {configProduct.photo ? (
-                                <img
-                                    src={configProduct.photo.startsWith('http') ? configProduct.photo : getFileUrl(configProduct.photo)}
-                                    alt={configProduct.name}
-                                    className="size-full object-cover"
-                                />
-                            ) : (
-                                <Coffee className="size-6 text-muted-foreground/60" />
-                            )}
+                            <img
+                                src={getProductPhotoUrl(configProduct.photo)}
+                                onError={handleProductImageError}
+                                alt={configProduct.name}
+                                className="size-full object-cover"
+                            />
                         </div>
                         <div className="min-w-0 text-left flex-1">
                             <h4 className="text-sm font-bold text-foreground">{configProduct.name}</h4>
