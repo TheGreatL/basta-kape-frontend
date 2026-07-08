@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Coffee, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';

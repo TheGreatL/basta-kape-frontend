@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Coffee, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
+import { BookOpen, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
 
 import { getMenuProductById } from '#/api/menu.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
