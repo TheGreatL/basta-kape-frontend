@@ -4,10 +4,10 @@ import RoleListPage from '#/feature/rbac/role/role-list-page';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
-    page: z.number().catch(1),
-    pageSize: z.number().catch(10),
-    search: z.string().catch(''),
-    status: z.enum(['active', 'archive']).catch('active')
+    page: z.number().default(1).optional(),
+    pageSize: z.number().default(10).optional(),
+    search: z.string().default('').optional(),
+    status: z.enum(['active', 'archive']).default('active').optional()
 });
 
 export const Route = createFileRoute('/admin/(rbac)/roles/')({

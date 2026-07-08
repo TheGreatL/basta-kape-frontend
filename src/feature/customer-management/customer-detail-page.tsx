@@ -56,7 +56,7 @@ export default function CustomerDetailPage() {
     // Fetch customer details (matches UUID or username)
     const { data: customerDetails, isLoading: isDetailsLoading } = useQuery({
         queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMER_DETAILS, slug],
-        queryFn: () => getCustomerById(slug),
+        queryFn: () => getCustomerById(slug!),
         enabled: !!slug
     });
 
