@@ -130,16 +130,17 @@ const sidebarGroups: Array<{
         items: [
             { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
             { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
-            {
-                title: 'RBAC',
-                icon: 'shield',
-                module: appModules.ROLES_AND_PERMISSIONS,
-                items: [
-                    { title: 'Roles', path: '/admin/roles', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
-                    { title: 'Permissions', path: '/admin/permissions', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
-                    { title: 'Modules', path: '/admin/modules', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
-                ]
-            }
+            { title: 'Roles', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
+            // {
+            //     title: 'RBAC',
+            //     icon: 'shield',
+            //     module: appModules.ROLES_AND_PERMISSIONS,
+            //     items: [
+            //         { title: 'Roles', path: '/admin/roles', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
+            //         { title: 'Permissions', path: '/admin/permissions', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
+            //         { title: 'Modules', path: '/admin/modules', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
+            //     ]
+            // }
         ]
     },
     {
