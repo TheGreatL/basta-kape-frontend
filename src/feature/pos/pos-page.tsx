@@ -90,15 +90,13 @@ export default function PosPage() {
     // Query categories list
     const { data: categoriesData } = useQuery({
         queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
-        queryFn: getMenuCategories,
-        enabled: !!activeShift
+        queryFn: getMenuCategories
     });
 
     // Query product types list
     const { data: typesData } = useQuery({
         queryKey: [QUERY_KEY.MENU.TYPES_LIST],
-        queryFn: getMenuTypes,
-        enabled: !!activeShift
+        queryFn: getMenuTypes
     });
 
     // Query menu items catalog
@@ -115,8 +113,7 @@ export default function PosPage() {
                 search,
                 productCategoryId: productCategoryId || undefined,
                 productTypeId: productTypeId || undefined
-            }),
-        enabled: !!activeShift
+            })
     });
 
     // Query modifier groups for customizer modal
@@ -129,15 +126,13 @@ export default function PosPage() {
     // Query active discounts
     const { data: discountsData } = useQuery({
         queryKey: [QUERY_KEY.STORE_SETTINGS.DISCOUNTS_LIST],
-        queryFn: getDiscountsConfig,
-        enabled: !!activeShift
+        queryFn: getDiscountsConfig
     });
 
     // Query members list
     const { data: membersData } = useQuery({
         queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST, { limit: 50 }],
-        queryFn: () => getCustomers({ limit: 50 }),
-        enabled: !!activeShift
+        queryFn: () => getCustomers({ limit: 50 })
     });
 
     // Reset pagination to page 1 on filter/search change
