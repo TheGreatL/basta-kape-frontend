@@ -48,7 +48,19 @@ function CustomerLayout() {
         }
     }
 
-    const { storeName } = useStoreSettings();
+    const { settings, storeName } = useStoreSettings();
+
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return '';
+        const [hoursStr, minutesStr] = timeStr.split(':');
+        const hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+        if (isNaN(hours) || isNaN(minutes)) return timeStr;
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        return `${formattedHours}:${formattedMinutes} ${ampm}`;
+    };
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             {/* Nav Header */}
@@ -119,11 +131,11 @@ function CustomerLayout() {
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Phone className="size-4 text-primary" />
-                                    <span>+63 917 000 0000</span>
+                                    <span>{settings.contactNumber || '+63 917 000 0000'}</span>
                                 </li>
                                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <MapPin className="size-4 text-primary" />
-                                    <span>Manila, Philippines</span>
+                                    <span>{settings.address}</span>
                                 </li>
                             </ul>
                         </div>
@@ -132,13 +144,11 @@ function CustomerLayout() {
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-foreground uppercase">Opening Hours</h3>
                             <ul className="space-y-2 text-sm text-muted-foreground">
-                                <li className="flex justify-between">
-                                    <span>Monday - Friday</span>
-                                    <span className="font-medium text-foreground">7:00 AM - 8:00 PM</span>
-                                </li>
-                                <li className="flex justify-between">
-                                    <span>Saturday - Sunday</span>
-                                    <span className="font-medium text-foreground">8:00 AM - 9:00 PM</span>
+                                <li className="flex justify-between gap-4">
+                                    <span>Daily Operating Hours</span>
+                                    <span className="font-medium text-foreground">
+                                        {formatTime(settings.openingTime)} - {formatTime(settings.closingTime)}
+                                    </span>
                                 </li>
                             </ul>
                         </div>
