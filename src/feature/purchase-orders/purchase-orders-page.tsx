@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Badge } from '#/components/ui/badge.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
+import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import type { IPurchaseOrder, IPurchaseOrderItem } from '#/api/purchase-orders.api.ts';
 import type { ISupplierListItem } from '../suppliers/suppliers.types';
 import type { IIngredient } from '../inventory/inventory.types';
@@ -359,24 +360,29 @@ export default function PurchaseOrdersPage() {
                                 </SelectContent>
                             </Select>
 
-                            <Select
-                                value={supplierId || 'all'}
-                                onValueChange={(val) => setSearchParams({ supplierId: val === 'all' ? '' : val, page: 1 })}
-                            >
-                                <SelectTrigger className="h-9 min-w-[170px] bg-background/50 text-xs">
-                                    <SelectValue placeholder="All Suppliers" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all" className="text-xs">
-                                        All Suppliers
-                                    </SelectItem>
-                                    {suppliers.map((s: ISupplierListItem) => (
-                                        <SelectItem key={s.id} value={s.id} className="text-xs">
-                                            {s.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <InfiniteSelect<ISupplierListItem>
+                                queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST, 'filter']}
+                                fetchFn={async ({ pageParam, query }) => {
+                                    return getSuppliersList({
+                                        page: pageParam || 1,
+                                        limit: 20,
+                                        search: query,
+                                        status: 'active'
+                                    });
+                                }}
+                                getItems={(pageItem) => pageItem.data}
+                                getNextPageParam={(lastPage) => {
+                                    return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                }}
+                                value={supplierId || undefined}
+                                onChange={(val) => setSearchParams({ supplierId: val || '', page: 1 })}
+                                getOptionValue={(item) => item.id}
+                                getOptionLabel={(item) => `${item.name}`}
+                                selectedItem={suppliers.find((s) => s.id === supplierId)}
+                                placeholder="All Suppliers"
+                                searchPlaceholder="Search suppliers..."
+                                className="h-9 min-w-[170px] bg-background/50 text-xs md:w-[180px]"
+                            />
 
                             {(search || status || supplierId) && (
                                 <Button variant="ghost" onClick={handleClearFilters} className="h-9 text-xs px-2.5 gap-1.5">
@@ -390,7 +396,7 @@ export default function PurchaseOrdersPage() {
 
             {/* Create Purchase Order Dialog */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent className="max-w-2xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
+                <DialogContent className="sm:max-w-5xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
                     <DialogHeader className="shrink-0">
                         <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <ShoppingCart className="size-5 text-primary" />
@@ -405,18 +411,28 @@ export default function PurchaseOrdersPage() {
                         {/* Supplier */}
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold text-foreground">Supplier</label>
-                            <Select value={newPOSupplierId} onValueChange={setNewPOSupplierId}>
-                                <SelectTrigger className="h-9 text-xs bg-background/50">
-                                    <SelectValue placeholder="Select Supplier" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {suppliers.map((s: ISupplierListItem) => (
-                                        <SelectItem key={s.id} value={s.id} className="text-xs">
-                                            {s.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <InfiniteSelect<ISupplierListItem>
+                                queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST]}
+                                fetchFn={async ({ pageParam, query }) => {
+                                    return getSuppliersList({
+                                        page: pageParam || 1,
+                                        limit: 20,
+                                        search: query,
+                                        status: 'active'
+                                    });
+                                }}
+                                getItems={(pageItem) => pageItem.data}
+                                getNextPageParam={(lastPage) => {
+                                    return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                }}
+                                value={newPOSupplierId}
+                                onChange={(val) => setNewPOSupplierId(val || '')}
+                                getOptionValue={(item) => item.id}
+                                getOptionLabel={(item) => `${item.name}`}
+                                placeholder="Select Supplier"
+                                searchPlaceholder="Search suppliers..."
+                                className="h-9 text-xs bg-background/50"
+                            />
                         </div>
 
                         {/* Notes */}
@@ -445,30 +461,40 @@ export default function PurchaseOrdersPage() {
                                     const unitAbbrev = selectedIng?.defaultUnit?.abbreviation || '';
 
                                     return (
-                                        <div key={index} className="flex items-end gap-2 p-3 border border-border/40 rounded-xl bg-muted/20 relative">
+                                        <div key={index} className="flex items-end gap-3 p-3 border border-border/40 rounded-xl bg-muted/20 relative">
                                             {/* Ingredient Picker */}
                                             <div className="flex-1 space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground">Ingredient</span>
-                                                <Select
+                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap">
+                                                    Ingredient
+                                                </span>
+                                                <InfiniteSelect<IIngredient>
+                                                    queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST, 'po-item', index]}
+                                                    fetchFn={async ({ pageParam, query }) => {
+                                                        return getIngredients({
+                                                            page: pageParam || 1,
+                                                            limit: 20,
+                                                            search: query,
+                                                            status: 'active'
+                                                        });
+                                                    }}
+                                                    getItems={(pageItem) => pageItem.data}
+                                                    getNextPageParam={(lastPage) => {
+                                                        return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                    }}
                                                     value={item.ingredientId}
-                                                    onValueChange={(val) => handleItemChange(index, 'ingredientId', val)}
-                                                >
-                                                    <SelectTrigger className="h-8.5 text-xs bg-background/50">
-                                                        <SelectValue placeholder="Select Ingredient" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {ingredients.map((ing: IIngredient) => (
-                                                            <SelectItem key={ing.id} value={ing.id} className="text-xs">
-                                                                {ing.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                    onChange={(val) => handleItemChange(index, 'ingredientId', val || '')}
+                                                    getOptionValue={(i) => i.id}
+                                                    getOptionLabel={(i) => `${i.name}`}
+                                                    selectedItem={ingredients.find((i) => i.id === item.ingredientId)}
+                                                    placeholder="Select Ingredient"
+                                                    searchPlaceholder="Search ingredients..."
+                                                    className="h-8.5 text-xs bg-background/50"
+                                                />
                                             </div>
 
                                             {/* Quantity */}
                                             <div className="w-[110px] space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
+                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap flex justify-between">
                                                     Qty{' '}
                                                     {unitAbbrev && (
                                                         <span className="text-xs text-muted-foreground/80 font-normal">({unitAbbrev})</span>
@@ -486,7 +512,9 @@ export default function PurchaseOrdersPage() {
 
                                             {/* Unit Cost */}
                                             <div className="w-[120px] space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
+                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap">
+                                                    Unit Cost (₱)
+                                                </span>
                                                 <Input
                                                     type="number"
                                                     min="0"
@@ -499,7 +527,9 @@ export default function PurchaseOrdersPage() {
 
                                             {/* Total */}
                                             <div className="w-[100px] text-right pb-2 space-y-0.5 shrink-0">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
+                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap block">
+                                                    Subtotal
+                                                </span>
                                                 <span className="text-xs font-bold text-foreground block">
                                                     ₱
                                                     {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
@@ -559,7 +589,7 @@ export default function PurchaseOrdersPage() {
 
             {/* Inspect Detail Dialog */}
             <Dialog open={!!selectedPO} onOpenChange={(open) => !open && setSelectedPO(null)}>
-                <DialogContent className="max-w-xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
+                <DialogContent className="sm:max-w-2xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
                     <DialogHeader className="shrink-0">
                         <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <FileText className="size-5 text-primary" />
