@@ -341,14 +341,14 @@ export default function OrderViewPage() {
                                                 <span>Payment Status:</span>
                                                 <Badge
                                                     className={`text-xs uppercase font-bold py-0.5 px-2 ${
-                                                        payment.paymentStatus === 'PAID'
+                                                        orderDetails.paymentStatus === 'PAID'
                                                             ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20'
-                                                            : payment.paymentStatus === 'PENDING'
+                                                            : orderDetails.paymentStatus === 'PENDING'
                                                               ? 'bg-amber-600/10 text-amber-700 border-amber-600/20'
                                                               : 'bg-rose-600/10 text-rose-700 border-rose-600/20'
                                                     }`}
                                                 >
-                                                    {payment.paymentStatus}
+                                                    {orderDetails.paymentStatus}
                                                 </Badge>
                                             </div>
                                             <div className="flex justify-between">

@@ -95,6 +95,21 @@ export default function OrdersPage() {
         }
     };
 
+    const getPaymentStatusBadgeClass = (status: string) => {
+        switch (status) {
+            case 'PAID':
+                return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
+            case 'PENDING':
+                return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40';
+            case 'FAILED':
+                return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40';
+            case 'REFUNDED':
+                return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-900/40';
+            default:
+                return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-400';
+        }
+    };
+
     const getSourceIcon = (src: TOrderSource) => {
         switch (src) {
             case 'POS':
@@ -166,6 +181,7 @@ export default function OrdersPage() {
                     </Badge>
                 )
             },
+
             {
                 accessorKey: 'netTotal',
                 header: 'Net Total',
@@ -200,18 +216,24 @@ export default function OrdersPage() {
                 id: 'Payment',
                 header: 'Payment Details',
                 cell: ({ row }) => (
-                    <div className="flex flex-wrap gap-1 items-center">
-                        {row.original.payments?.map((payment) => (
-                            <Badge
-                                key={payment.id}
-                                variant="secondary"
-                                className="text-xs font-semibold  py-0 px-1.5 uppercase bg-primary/5 text-primary border border-primary/10"
-                            >
-                                {payment.paymentMethod.replace('_', ' ')}
-                                {payment.amount}
-                                {payment.paymentStatus}
-                            </Badge>
-                        ))}
+                    <div className="flex flex-col gap-1.5 items-start min-w-[120px]">
+                        <div className="flex flex-wrap gap-1 items-center">
+                            {row.original.payments?.map((payment) => (
+                                <Badge
+                                    key={payment.id}
+                                    variant="secondary"
+                                    className="text-xs font-semibold py-0 px-1.5 uppercase bg-primary/5 text-primary border border-primary/10"
+                                >
+                                    {payment.paymentMethod.replace('_', ' ')}: ₱{payment.amount}
+                                </Badge>
+                            ))}
+                        </div>
+                        <Badge
+                            variant="outline"
+                            className={`text-xs font-bold py-0 px-1.5 capitalize ${getPaymentStatusBadgeClass(row.original.paymentStatus)}`}
+                        >
+                            {row.original.paymentStatus.toLowerCase()}
+                        </Badge>
                     </div>
                 )
             },

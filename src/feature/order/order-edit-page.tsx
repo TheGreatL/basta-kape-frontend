@@ -255,6 +255,21 @@ export default function OrderEditPage() {
         }
     };
 
+    const getPaymentStatusBadgeClass = (status: string) => {
+        switch (status) {
+            case 'PAID':
+                return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
+            case 'PENDING':
+                return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40';
+            case 'FAILED':
+                return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40';
+            case 'REFUNDED':
+                return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-900/40';
+            default:
+                return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-400';
+        }
+    };
+
     const getStatusTimelineConfig = (s: string) => {
         switch (s) {
             case 'PENDING':
@@ -332,10 +347,16 @@ export default function OrderEditPage() {
                             <ArrowLeft className="size-4 text-muted-foreground hover:text-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold text-foreground leading-none flex items-center gap-2">
+                            <h1 className="text-2xl font-bold text-foreground leading-none flex flex-wrap items-center gap-2">
                                 Order Inspection Details
                                 <Badge variant="outline" className={`font-bold capitalize py-0.5 px-2.5 ${getStatusBadgeClass(orderDetails.status)}`}>
                                     {orderDetails.status.toLowerCase()}
+                                </Badge>
+                                <Badge
+                                    variant="outline"
+                                    className={`font-bold capitalize py-0.5 px-2.5 ${getPaymentStatusBadgeClass(orderDetails.paymentStatus)}`}
+                                >
+                                    {orderDetails.paymentStatus.toLowerCase()}
                                 </Badge>
                             </h1>
                             <p className="text-xs text-muted-foreground pt-1">
@@ -532,14 +553,14 @@ export default function OrderEditPage() {
                                                 <span>Payment Status:</span>
                                                 <Badge
                                                     className={`text-xs uppercase font-bold py-0.5 px-2 ${
-                                                        payment.paymentStatus === 'PAID'
+                                                        orderDetails.paymentStatus === 'PAID'
                                                             ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20'
-                                                            : payment.paymentStatus === 'PENDING'
+                                                            : orderDetails.paymentStatus === 'PENDING'
                                                               ? 'bg-amber-600/10 text-amber-700 border-amber-600/20'
                                                               : 'bg-rose-600/10 text-rose-700 border-rose-600/20'
                                                     }`}
                                                 >
-                                                    {payment.paymentStatus}
+                                                    {orderDetails.paymentStatus}
                                                 </Badge>
                                             </div>
                                             <div className="flex justify-between">
@@ -649,9 +670,7 @@ export default function OrderEditPage() {
                             </div>
                         ) : (
                             <div className="space-y-5">
-                                {orderDetails.status === 'PENDING' &&
-                                payments &&
-                                payments.some((p: IOrderPayment) => p.paymentStatus === 'PENDING') ? (
+                                {orderDetails.status === 'PENDING' && orderDetails.paymentStatus === 'PENDING' && payments && payments.length > 0 ? (
                                     <div className="space-y-4">
                                         <div className="space-y-1.5">
                                             <h4 className="font-bold text-foreground/75 border-b border-border/30 pb-2 uppercase text-2xs  flex items-center gap-1.5">
@@ -668,7 +687,12 @@ export default function OrderEditPage() {
                                             type="button"
                                             disabled={approvePaymentMutation.isPending}
                                             onClick={() => {
-                                                const pendingPayment = payments.find((p: IOrderPayment) => p.paymentStatus === 'PENDING');
+                                                const pendingPayment = payments.find(
+                                                    (p: IOrderPayment) =>
+                                                        p.paymentMethod === 'GCASH' ||
+                                                        p.paymentMethod === 'PAYMAYA' ||
+                                                        p.paymentMethod === 'CREDIT_CARD'
+                                                );
                                                 if (pendingPayment) {
                                                     approvePaymentMutation.mutate(pendingPayment.id);
                                                 }

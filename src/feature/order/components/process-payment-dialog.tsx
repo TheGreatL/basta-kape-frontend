@@ -215,7 +215,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                             <p className="text-xs text-muted-foreground mt-1 leading-normal">
                                                 Order has an existing reference request for{' '}
                                                 <span className="font-bold text-foreground">{pendingPayment.paymentMethod}</span>. Ref ID:{' '}
-                                                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs font-bold">
                                                     {pendingPayment.gcashReferenceNumber}
                                                 </span>
                                             </p>
@@ -289,7 +289,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                         paymentForm.setValue('amountTendered', netTotal);
                                                     }
                                                 }}
-                                                className={`flex flex-col items-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-bold border transition-all ${
+                                                className={`flex flex-col items-center gap-1 py-1.5 px-1 rounded-md text-xs font-bold border transition-all ${
                                                     active
                                                         ? 'bg-background border-border/80 text-foreground shadow-xs'
                                                         : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -335,13 +335,13 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
 
                                                 <div className="grid grid-cols-2 gap-3 p-3 bg-muted/20 border rounded-xl border-border/40">
                                                     <div className="flex flex-col text-left">
-                                                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                                                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                                                             Net Total
                                                         </span>
                                                         <span className="text-sm font-bold text-foreground mt-0.5">₱{netTotal.toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex flex-col text-right">
-                                                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                                                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                                                             Change Due
                                                         </span>
                                                         <span className="text-sm font-extrabold text-emerald-600 mt-0.5">
@@ -360,7 +360,9 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                     name="gcashReferenceNumber"
                                                     render={({ field }) => (
                                                         <FormItem>
-                                                            <FormLabel className="font-semibold text-foreground/80 text-xs">Reference Number</FormLabel>
+                                                            <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                                Reference Number
+                                                            </FormLabel>
                                                             <FormControl>
                                                                 <Input
                                                                     placeholder="Enter 13-digit Reference ID"
@@ -419,14 +421,14 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                                             {isUploading ? (
                                                                                 <>
                                                                                     <Spinner className="size-5 text-primary animate-spin" />
-                                                                                    <span className="text-[10px] text-muted-foreground font-bold">
+                                                                                    <span className="text-xs text-muted-foreground font-bold">
                                                                                         Uploading Receipt...
                                                                                     </span>
                                                                                 </>
                                                                             ) : (
                                                                                 <>
                                                                                     <Upload className="size-5 text-muted-foreground" />
-                                                                                    <span className="text-[10px] text-muted-foreground font-bold">
+                                                                                    <span className="text-xs text-muted-foreground font-bold">
                                                                                         Click to select image file
                                                                                     </span>
                                                                                 </>

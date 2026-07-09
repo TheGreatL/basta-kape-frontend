@@ -83,6 +83,8 @@ export interface IOrder {
     discounts?: IOrderDiscount[];
     voidLogs?: IVoidLog[];
     payments?: IOrderPayment[];
+    paymentStatus: TPaymentStatus;
+    totalPaid: number;
 }
 
 export interface ICreateOrderPayload {
@@ -115,7 +117,7 @@ export interface IOrderPayment {
     id: string;
     orderId: string;
     paymentMethod: TPaymentMethod;
-    paymentStatus: TPaymentStatus;
+
     amount: number;
     gcashReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;

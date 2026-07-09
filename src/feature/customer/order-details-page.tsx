@@ -387,9 +387,7 @@ export default function OrderDetailsPage() {
 
                         <div className="flex justify-between items-baseline pt-1">
                             <span className="font-bold text-base text-foreground">
-                                {order.payments && order.payments.some((p: IOrderPayment) => p.paymentStatus === 'PAID')
-                                    ? 'Total Paid'
-                                    : 'Total Amount Due'}
+                                {order.paymentStatus === 'PAID' ? 'Total Paid' : 'Total Amount Due'}
                             </span>
                             <span className="font-bold text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
                         </div>
@@ -417,14 +415,14 @@ export default function OrderDetailsPage() {
                                         <Badge
                                             variant="outline"
                                             className={`text-2xs font-bold py-0.5 px-2 capitalize ${
-                                                payment.paymentStatus === 'PAID'
+                                                order.paymentStatus === 'PAID'
                                                     ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
-                                                    : payment.paymentStatus === 'PENDING'
+                                                    : order.paymentStatus === 'PENDING'
                                                       ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40'
                                                       : 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40'
                                             }`}
                                         >
-                                            {payment.paymentStatus.toLowerCase()}
+                                            {order.paymentStatus.toLowerCase()}
                                         </Badge>
                                     </div>
                                     <div className="flex justify-between items-center pb-2 border-b border-border/30">
