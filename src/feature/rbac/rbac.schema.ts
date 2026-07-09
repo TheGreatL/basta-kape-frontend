@@ -1,11 +1,7 @@
 import { z } from 'zod';
 
-const SCOPES = ['ALL', 'OWN'] as const;
-export type Scope = (typeof SCOPES)[number];
-
 export const rolePermissionSchema = z.object({
-    modulePermissionId: z.string().uuid({ message: 'Invalid module permission selection' }),
-    scope: z.enum(SCOPES)
+    modulePermissionId: z.string().uuid({ message: 'Invalid module permission selection' })
 });
 
 export const roleFormSchema = z.object({

@@ -21,7 +21,6 @@ export interface User {
         permissions: Array<{
             module: string;
             permission: string;
-            scope: string;
         }>;
     }>;
 }

@@ -68,8 +68,7 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
     React.useEffect(() => {
         if (roleDetails) {
             const mappedPermissions = roleDetails.rolePermissions.map((rp: any) => ({
-                modulePermissionId: rp.modulePermission.id,
-                scope: rp.modulePermission.accessScope
+                modulePermissionId: rp.modulePermission.id
             }));
             form.reset({
                 name: roleDetails.name,
@@ -148,8 +147,8 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
                         </h1>
                         <p className="text-xs text-muted-foreground">
                             {isEditDisabled
-                                ? 'Detailed operational security scope mapping for this role.'
-                                : 'Define the name, functional description, and configure modular nested permission scopes.'}
+                                ? 'Detailed operational security mapping for this role.'
+                                : 'Define the name, functional description, and configure modular permission mappings.'}
                         </p>
                     </div>
                 </div>
@@ -212,9 +211,7 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
                                     <div className="flex items-center justify-between border-b pb-2">
                                         <h3 className="text-sm font-bold text-foreground/80">Access Control Selection Tree</h3>
                                         <span className="text-xs text-muted-foreground font-medium">
-                                            {isEditDisabled
-                                                ? 'View active permissions and access scope limits.'
-                                                : 'Toggle permissions and adjust access scope limits.'}
+                                            {isEditDisabled ? 'View active permission settings.' : 'Toggle and adjust active permission settings.'}
                                         </span>
                                     </div>
                                     <RolePermissionTree

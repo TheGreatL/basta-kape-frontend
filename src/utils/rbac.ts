@@ -1,11 +1,10 @@
 import { redirect } from '@tanstack/react-router';
 import type { User, useAuth } from '../context/AuthContext';
-import type { TAppModule, TAppPermission, TAccessScope } from '../constants/rbac';
+import type { TAppModule, TAppPermission } from '../constants/rbac';
 
 export type Permission = {
     module: string;
     permission: string;
-    scope: string;
 };
 
 export function getUserPermissions(user: User | null | undefined): Permission[] {
@@ -13,16 +12,11 @@ export function getUserPermissions(user: User | null | undefined): Permission[] 
     return user.roles.flatMap((role) => role.permissions);
 }
 
-export function hasPermission(permissions: Permission[], module: TAppModule, action: TAppPermission, scope?: TAccessScope): boolean {
-    return permissions.some(
-        (p) =>
-            p.module.toLowerCase() === module.toLowerCase() &&
-            p.permission.toLowerCase() === action.toLowerCase() &&
-            (!scope || p.scope.toLowerCase() === scope.toLowerCase())
-    );
+export function hasPermission(permissions: Permission[], module: TAppModule, action: TAppPermission): boolean {
+    return permissions.some((p) => p.module.toLowerCase() === module.toLowerCase() && p.permission.toLowerCase() === action.toLowerCase());
 }
 
-export function requirePermission(auth: ReturnType<typeof useAuth> | null, module: TAppModule, action: TAppPermission, scope?: TAccessScope) {
+export function requirePermission(auth: ReturnType<typeof useAuth> | null, module: TAppModule, action: TAppPermission) {
     if (auth?.isLoading) {
         return;
     }
@@ -42,7 +36,7 @@ export function requirePermission(auth: ReturnType<typeof useAuth> | null, modul
         throw redirect({ to: '/login' });
     }
 
-    if (!hasPermission(currentPermissions, module, action, scope)) {
+    if (!hasPermission(currentPermissions, module, action)) {
         console.log('[DEBUG] requirePermission redirecting to /not-found because permission check failed!');
         throw redirect({ to: '/not-found' });
     }

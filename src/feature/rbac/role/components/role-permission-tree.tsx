@@ -1,11 +1,8 @@
 import { Card, CardHeader, CardContent, CardDescription } from '#/components/ui/card.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import type { Scope } from '../../rbac.schema.ts';
 
 interface PermissionItem {
     modulePermissionId: string;
-    scope: Scope;
 }
 
 interface RolePermissionTreeProps {
@@ -16,19 +13,16 @@ interface RolePermissionTreeProps {
 }
 
 export function RolePermissionTree({ treeData, currentPermissions, onPermissionChange, readOnly = false }: RolePermissionTreeProps) {
-    const handlePermissionToggle = (checked: boolean, modulePermissions: { modulePermissionId: string; scope: Scope }[]) => {
+    const handlePermissionToggle = (checked: boolean, modulePermissionId: string) => {
         if (!onPermissionChange) return;
 
-        const idsToFilter = modulePermissions.map((mp) => mp.modulePermissionId);
-        const filtered = currentPermissions.filter((p) => !idsToFilter.includes(p.modulePermissionId));
+        const filtered = currentPermissions.filter((p) => p.modulePermissionId !== modulePermissionId);
 
         if (checked) {
-            const defaultScope = modulePermissions.find((mp) => mp.scope === 'ALL') || modulePermissions[0];
             onPermissionChange([
                 ...filtered,
                 {
-                    modulePermissionId: defaultScope.modulePermissionId,
-                    scope: defaultScope.scope
+                    modulePermissionId
                 }
             ]);
         } else {
@@ -36,35 +30,12 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
         }
     };
 
-    const handleScopeChange = (newScope: Scope, modulePermissions: { modulePermissionId: string; scope: Scope }[]) => {
-        if (!onPermissionChange) return;
-
-        const idsToFilter = modulePermissions.map((mp) => mp.modulePermissionId);
-        const filtered = currentPermissions.filter((p) => !idsToFilter.includes(p.modulePermissionId));
-
-        const matched = modulePermissions.find((mp) => mp.scope === newScope);
-        if (matched) {
-            onPermissionChange([
-                ...filtered,
-                {
-                    modulePermissionId: matched.modulePermissionId,
-                    scope: matched.scope
-                }
-            ]);
-        }
-    };
-
-    const getActiveNodeState = (modulePermissions: { modulePermissionId: string; scope: Scope }[]) => {
-        const ids = modulePermissions.map((mp) => mp.modulePermissionId);
-        const activeItem = currentPermissions.find((p) => ids.includes(p.modulePermissionId));
-        return {
-            checked: !!activeItem,
-            scope: activeItem ? activeItem.scope : undefined
-        };
+    const isPermissionChecked = (modulePermissionId: string) => {
+        return currentPermissions.some((p) => p.modulePermissionId === modulePermissionId);
     };
 
     const isModuleChecked = (module: any) => {
-        const allPermissionIds = module.permissions.flatMap((p: any) => p.modulePermissions.map((mp: any) => mp.modulePermissionId));
+        const allPermissionIds = module.permissions.map((p: any) => p.modulePermissionId);
         return currentPermissions.some((p) => allPermissionIds.includes(p.modulePermissionId));
     };
 
@@ -74,17 +45,13 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
         if (checked) {
             const readPerm = module.permissions.find((p: any) => p.permissionName === 'read');
             if (readPerm) {
-                const mpOptions = readPerm.modulePermissions.map((mp: any) => ({
-                    modulePermissionId: mp.modulePermissionId,
-                    scope: mp.scope
-                }));
-                const { checked: alreadyChecked } = getActiveNodeState(mpOptions);
+                const alreadyChecked = isPermissionChecked(readPerm.modulePermissionId);
                 if (!alreadyChecked) {
-                    handlePermissionToggle(true, mpOptions);
+                    onPermissionChange([...currentPermissions, { modulePermissionId: readPerm.modulePermissionId }]);
                 }
             }
         } else {
-            const allPermissionIds = module.permissions.flatMap((p: any) => p.modulePermissions.map((mp: any) => mp.modulePermissionId));
+            const allPermissionIds = module.permissions.map((p: any) => p.modulePermissionId);
             const filtered = currentPermissions.filter((p) => !allPermissionIds.includes(p.modulePermissionId));
             onPermissionChange(filtered);
         }
@@ -114,12 +81,7 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                     <CardContent className="px-4 pt-3 pb-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {module.permissions.map((perm: any) => {
-                                const mpOptions = perm.modulePermissions.map((mp: any) => ({
-                                    modulePermissionId: mp.modulePermissionId,
-                                    scope: mp.scope
-                                }));
-
-                                const { checked, scope } = getActiveNodeState(mpOptions);
+                                const checked = isPermissionChecked(perm.modulePermissionId);
 
                                 return (
                                     <div
@@ -130,7 +92,9 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                                             <Checkbox
                                                 id={perm.permissionId}
                                                 checked={checked}
-                                                onCheckedChange={(val: boolean | 'indeterminate') => handlePermissionToggle(!!val, mpOptions)}
+                                                onCheckedChange={(val: boolean | 'indeterminate') =>
+                                                    handlePermissionToggle(!!val, perm.modulePermissionId)
+                                                }
                                                 disabled={readOnly}
                                             />
                                             <label
@@ -140,25 +104,6 @@ export function RolePermissionTree({ treeData, currentPermissions, onPermissionC
                                                 {perm.permissionName}
                                             </label>
                                         </div>
-
-                                        {checked && (
-                                            <Select
-                                                value={scope}
-                                                onValueChange={(val: string) => handleScopeChange(val as Scope, mpOptions)}
-                                                disabled={readOnly}
-                                            >
-                                                <SelectTrigger className="h-7  text-xs font-semibold border-dashed py-0">
-                                                    <SelectValue placeholder="Scope" />
-                                                </SelectTrigger>
-                                                <SelectContent position="popper" align="end">
-                                                    {mpOptions.map((opt: any) => (
-                                                        <SelectItem key={opt.modulePermissionId} value={opt.scope} className="text-xs font-semibold">
-                                                            Scope: {opt.scope}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
                                     </div>
                                 );
                             })}

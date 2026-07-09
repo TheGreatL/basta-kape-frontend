@@ -48,7 +48,7 @@ export default function RoleCreatePage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.RBAC.ROLES_LIST] });
             toast.success('Custom Role Created', {
-                description: 'The new role and permission scopes have been successfully configured.'
+                description: 'The new role and permission mappings have been successfully configured.'
             });
             navigate({ to: '/admin/roles' });
         },
@@ -87,7 +87,7 @@ export default function RoleCreatePage() {
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">Configure New Custom Role</h1>
                         <p className="text-xs text-muted-foreground">
-                            Define the name, functional description, and configure modular nested permission scopes.
+                            Define the name, functional description, and configure modular permission mappings.
                         </p>
                     </div>
                 </div>
@@ -144,7 +144,7 @@ export default function RoleCreatePage() {
                                     <div className="flex items-center justify-between border-b pb-2">
                                         <h3 className="text-sm font-bold text-foreground/80">Access Control Selection Tree</h3>
                                         <span className="text-xs text-muted-foreground font-medium">
-                                            Toggle permissions and adjust access scope limits.
+                                            Toggle and adjust active permission settings.
                                         </span>
                                     </div>
                                     <RolePermissionTree

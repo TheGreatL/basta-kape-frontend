@@ -2,12 +2,10 @@ import type { IPaginationParams, UserAuditSelect } from '#/types/base.types';
 
 export interface ModulePermissionNode {
     modulePermissionId: string;
-    scope: 'ALL' | 'OWN';
 }
 
 export interface RolePermissionPayload {
     modulePermissionId: string;
-    scope: 'ALL' | 'OWN';
 }
 
 export interface CreateRolePayload {
