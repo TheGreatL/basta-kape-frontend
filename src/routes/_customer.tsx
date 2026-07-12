@@ -27,6 +27,7 @@ export const Route = createFileRoute('/_customer')({
 function CustomerLayout() {
     const { isLoading, isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
+    const { settings, storeName } = useStoreSettings();
 
     useEffect(() => {
         if (!isLoading && isAuthenticated && user) {
@@ -47,8 +48,6 @@ function CustomerLayout() {
             return <Navigate to="/admin" />;
         }
     }
-
-    const { settings, storeName } = useStoreSettings();
 
     const formatTime = (timeStr: string) => {
         if (!timeStr) return '';
