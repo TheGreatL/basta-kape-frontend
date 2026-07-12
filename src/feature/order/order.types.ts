@@ -95,7 +95,7 @@ export interface ICreateOrderPayload {
     customerName?: string;
     buzzerId?: string | null;
     paymentMethod?: 'CASH' | 'GCASH' | 'PAYMAYA' | null;
-    gcashReferenceNumber?: string | null;
+    paymentReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
     items: Array<{
         productVariantId: string;
@@ -119,7 +119,7 @@ export interface IOrderPayment {
     paymentMethod: TPaymentMethod;
 
     amount: number;
-    gcashReferenceNumber?: string | null;
+    paymentReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
     amountTendered?: number | null;
     amountChange?: number | null;
@@ -130,7 +130,7 @@ export interface IOrderPayment {
 export interface ICreatePaymentPayload {
     paymentMethod: TPaymentMethod;
     amountTendered?: number;
-    gcashReferenceNumber?: string;
+    paymentReferenceNumber?: string;
     paymentProofPhoto?: string;
 }
 

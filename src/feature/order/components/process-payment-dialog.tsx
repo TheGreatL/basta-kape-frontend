@@ -33,7 +33,7 @@ const createPaymentSchema = (netTotal: number) => {
             }),
         z.object({
             paymentMethod: z.enum(['GCASH', 'PAYMAYA', 'CREDIT_CARD']),
-            gcashReferenceNumber: z.string().min(5, 'Reference number must be at least 5 characters'),
+            paymentReferenceNumber: z.string().min(5, 'Reference number must be at least 5 characters'),
             paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional()
         })
     ]);
@@ -216,7 +216,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                 Order has an existing reference request for{' '}
                                                 <span className="font-bold text-foreground">{pendingPayment.paymentMethod}</span>. Ref ID:{' '}
                                                 <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs font-bold">
-                                                    {pendingPayment.gcashReferenceNumber}
+                                                    {pendingPayment.paymentReferenceNumber}
                                                 </span>
                                             </p>
                                         </div>
@@ -357,7 +357,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                             <div className="space-y-3">
                                                 <FormField
                                                     control={paymentForm.control}
-                                                    name="gcashReferenceNumber"
+                                                    name="paymentReferenceNumber"
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-semibold text-foreground/80 text-xs">

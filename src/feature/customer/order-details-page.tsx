@@ -446,11 +446,11 @@ export default function OrderDetailsPage() {
                                         </>
                                     ) : (
                                         <>
-                                            {payment.gcashReferenceNumber && (
+                                            {payment.paymentReferenceNumber && (
                                                 <div className="flex justify-between items-center pb-2 border-b border-border/30">
                                                     <span className="font-semibold text-muted-foreground">Reference ID</span>
                                                     <span className="font-mono text-xs bg-muted border border-border/40 px-2 py-0.5 rounded text-foreground font-bold">
-                                                        {payment.gcashReferenceNumber}
+                                                        {payment.paymentReferenceNumber}
                                                     </span>
                                                 </div>
                                             )}

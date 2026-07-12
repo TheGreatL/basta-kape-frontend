@@ -511,16 +511,16 @@ export default function TransactionsPage() {
                                             <span className="text-muted-foreground font-medium">GCash / Reference Number</span>
                                             <div className="flex items-center gap-1.5">
                                                 <span className="font-bold text-foreground font-mono">
-                                                    {selectedTx.gcashReferenceNumber || 'None'}
+                                                    {selectedTx.paymentReferenceNumber || 'None'}
                                                 </span>
-                                                {selectedTx.gcashReferenceNumber && (
-                                                    <CopyButton value={selectedTx.gcashReferenceNumber} description={`Reference number copied`} />
+                                                {selectedTx.paymentReferenceNumber && (
+                                                    <CopyButton value={selectedTx.paymentReferenceNumber} description={`Reference number copied`} />
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Reference input field if missing */}
-                                        {!selectedTx.gcashReferenceNumber && (
+                                        {!selectedTx.paymentReferenceNumber && (
                                             <div className="flex gap-2 items-center mt-1">
                                                 <Input
                                                     id="refNumInput"
@@ -532,7 +532,7 @@ export default function TransactionsPage() {
                                                             if (val) {
                                                                 updateReceiptMutation.mutate({
                                                                     paymentId: selectedTx.id,
-                                                                    payload: { gcashReferenceNumber: val }
+                                                                    payload: { paymentReferenceNumber: val }
                                                                 });
                                                             }
                                                         }
@@ -547,7 +547,7 @@ export default function TransactionsPage() {
                                                         if (val) {
                                                             updateReceiptMutation.mutate({
                                                                 paymentId: selectedTx.id,
-                                                                payload: { gcashReferenceNumber: val }
+                                                                payload: { paymentReferenceNumber: val }
                                                             });
                                                         }
                                                     }}

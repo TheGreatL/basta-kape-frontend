@@ -586,11 +586,11 @@ export default function OrderEditPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    {payment.gcashReferenceNumber && (
+                                                    {payment.paymentReferenceNumber && (
                                                         <div className="flex justify-between text-emerald-700 items-center">
                                                             <span>Reference ID:</span>
                                                             <span className="font-mono text-2xs font-semibold bg-emerald-500/10 px-2 py-0.5 rounded text-emerald-900 border border-emerald-500/20">
-                                                                {payment.gcashReferenceNumber}
+                                                                {payment.paymentReferenceNumber}
                                                             </span>
                                                         </div>
                                                     )}

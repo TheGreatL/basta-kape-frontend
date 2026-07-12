@@ -480,7 +480,7 @@ export default function OrderCreatePage() {
             const paymentPayload = {
                 paymentMethod: values.paymentMethod,
                 amountTendered: values.paymentMethod === 'CASH' ? values.amountTendered : undefined,
-                gcashReferenceNumber: values.paymentMethod !== 'CASH' ? values.referenceNumber?.trim() : undefined,
+                paymentReferenceNumber: values.paymentMethod !== 'CASH' ? values.referenceNumber?.trim() : undefined,
                 paymentProofPhoto: uploadedUrl || undefined
             };
 

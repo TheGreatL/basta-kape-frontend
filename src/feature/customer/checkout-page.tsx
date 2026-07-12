@@ -253,7 +253,7 @@ export default function CheckoutPage() {
                 customerId: customer.id,
                 customerName: customerName.trim() || 'Customer',
                 paymentMethod: paymentMethod,
-                gcashReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : null,
+                paymentReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : null,
                 paymentProofPhoto: paymentMethod !== 'CASH' ? uploadedUrl : null,
                 items: checkoutItems.map((item) => ({
                     productVariantId: item.productVariantId,

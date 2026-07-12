@@ -17,8 +17,6 @@ import type { IModifierOption } from '../modifier/modifier.types';
 import type { IDiscount } from '../store-settings/discounts.types';
 import type { IOrder } from '../order/order.types';
 
-
-
 // Import refactored POS components
 import CatalogToolbar from './components/catalog-toolbar.tsx';
 import ProductsGrid from './components/products-grid.tsx';
@@ -376,7 +374,7 @@ export default function PosPage() {
             await createOrderPayment(order.id, {
                 paymentMethod,
                 amountTendered: paymentMethod === 'CASH' ? Number(cashTendered) : order.netTotal,
-                gcashReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber : undefined,
+                paymentReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber : undefined,
                 paymentProofPhoto: paymentMethod !== 'CASH' ? paymentProofPhoto || undefined : undefined
             });
 

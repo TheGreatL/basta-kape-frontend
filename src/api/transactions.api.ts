@@ -7,7 +7,7 @@ export interface ITransaction {
     paymentMethod: 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD';
     paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
     amount: number;
-    gcashReferenceNumber: string | null;
+    paymentReferenceNumber: string | null;
     paymentProofPhoto: string | null;
     amountTendered: number | null;
     amountChange: number | null;
@@ -68,7 +68,7 @@ export const updateTransactionReceipt = async (
     paymentId: string,
     data: {
         paymentProofPhoto?: string;
-        gcashReferenceNumber?: string;
+        paymentReferenceNumber?: string;
     }
 ): Promise<ITransaction> => {
     const response = await api.patch(`/orders/payments/${paymentId}/receipt`, data);
