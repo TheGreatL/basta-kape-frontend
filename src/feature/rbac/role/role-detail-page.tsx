@@ -166,6 +166,22 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
                             </div>
                         ) : (
                             <>
+                                <div className="flex items-center justify-end gap-2 ">
+                                    <Button type="button" variant="outline" onClick={() => navigate({ to: '/admin/roles' })} className="h-9">
+                                        {isEditDisabled ? 'Back' : 'Cancel'}
+                                    </Button>
+                                    {!isEditDisabled && (
+                                        <Button type="submit" disabled={updateMutation.isPending || isLoading} className="h-9">
+                                            {updateMutation.isPending ? (
+                                                <div className="flex items-center gap-1">
+                                                    <Spinner className="h-4 w-4" /> Saving...
+                                                </div>
+                                            ) : (
+                                                'Save Changes'
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
@@ -175,7 +191,6 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
                                                 <FormLabel className="font-semibold text-foreground/80">Role Name</FormLabel>
                                                 <FormControl>
                                                     <Input
-                                                        disabled
                                                         placeholder="e.g. Cafe Manager, Senior Barista"
                                                         {...field}
                                                         className="h-9 bg-background/50"
@@ -224,23 +239,6 @@ export default function RoleDetailPage({ slug }: RoleDetailPageProps) {
                                                 : (newPermissions) => form.setValue('permissions', newPermissions, { shouldDirty: true })
                                         }
                                     />
-                                </div>
-
-                                <div className="flex items-center justify-end gap-2 border-t pt-4">
-                                    <Button type="button" variant="outline" onClick={() => navigate({ to: '/admin/roles' })} className="h-9">
-                                        {isEditDisabled ? 'Back' : 'Cancel'}
-                                    </Button>
-                                    {!isEditDisabled && (
-                                        <Button type="submit" disabled={updateMutation.isPending || isLoading} className="h-9">
-                                            {updateMutation.isPending ? (
-                                                <div className="flex items-center gap-1">
-                                                    <Spinner className="h-4 w-4" /> Saving...
-                                                </div>
-                                            ) : (
-                                                'Save Changes'
-                                            )}
-                                        </Button>
-                                    )}
                                 </div>
                             </>
                         )}
