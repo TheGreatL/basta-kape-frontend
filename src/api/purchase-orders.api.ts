@@ -112,3 +112,23 @@ export const updatePurchaseOrderStatus = async (id: string, status: 'DRAFT' | 'S
     }
     return response.json();
 };
+
+export const updatePurchaseOrder = async (
+    id: string,
+    data: {
+        supplierId?: string;
+        notes?: string | null;
+        items?: Array<{
+            ingredientId: string;
+            quantity: number;
+            unitCost: number;
+        }>;
+    }
+): Promise<IPurchaseOrder> => {
+    const response = await api.put(`/purchase-orders/${id}`, data);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to update purchase order', response.status, errorData);
+    }
+    return response.json();
+};

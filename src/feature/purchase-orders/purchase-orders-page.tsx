@@ -2,12 +2,18 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Eye, Search, X, Calendar, FileText, User, Truck, Trash2, CheckCircle, Send, XCircle, ShoppingCart } from 'lucide-react';
+import { Plus, Eye, Search, X, Calendar, User, Truck, Trash2, ShoppingCart, Send, XCircle, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/purchase-orders.tsx';
-import { getPurchaseOrders, getPurchaseOrderById, createPurchaseOrder, updatePurchaseOrderStatus } from '#/api/purchase-orders.api.ts';
+import {
+    getPurchaseOrders,
+    getPurchaseOrderById,
+    createPurchaseOrder,
+    updatePurchaseOrderStatus,
+    updatePurchaseOrder
+} from '#/api/purchase-orders.api.ts';
 import { getSuppliersList } from '#/api/suppliers.api.ts';
 import { getIngredients } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -20,11 +26,25 @@ import { Textarea } from '#/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '#/components/ui/alert-dialog.tsx';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import type { IPurchaseOrder, IPurchaseOrderItem } from '#/api/purchase-orders.api.ts';
 import type { ISupplierListItem } from '../suppliers/suppliers.types';
 import type { IIngredient } from '../inventory/inventory.types';
+import PurchaseOrderDetailDialog from './components/purchase-order-detail-dialog';
+import UpdatePurchaseOrderDialog from './components/update-purchase-order-dialog';
 
 interface ICreateItemInput {
     ingredientId: string;
@@ -48,6 +68,7 @@ export default function PurchaseOrdersPage() {
     const [newPOSupplierId, setNewPOSupplierId] = React.useState<string>('');
     const [newPONotes, setNewPONotes] = React.useState<string>('');
     const [newPOItems, setNewPOItems] = React.useState<ICreateItemInput[]>([{ ingredientId: '', quantity: 1, unitCost: 0 }]);
+    const [editingPOId, setEditingPOId] = React.useState<string | null>(null);
 
     const setSearchParams = (updates: Record<string, any>) => {
         navigate({
@@ -76,13 +97,6 @@ export default function PurchaseOrdersPage() {
                 status: status || undefined,
                 supplierId: supplierId || undefined
             })
-    });
-
-    // Fetch details for selected PO
-    const { data: selectedPODetails, isLoading: isDetailsLoading } = useQuery({
-        queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, selectedPO?.id],
-        queryFn: () => getPurchaseOrderById(selectedPO!.id),
-        enabled: !!selectedPO?.id
     });
 
     // Queries: Suppliers (for filters & create picker)
@@ -123,7 +137,6 @@ export default function PurchaseOrdersPage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] }); // Invalidate inventory stock levels
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, updatedPO.id] });
-            setSelectedPO(updatedPO);
             toast.success(`Purchase order status updated to ${updatedPO.status}`);
         },
         onError: (err) => {
@@ -193,7 +206,7 @@ export default function PurchaseOrdersPage() {
             return;
         }
 
-        createPOMutation.mutate({
+        const payload = {
             supplierId: newPOSupplierId,
             notes: newPONotes.trim() || undefined,
             items: validItems.map((item) => ({
@@ -201,7 +214,9 @@ export default function PurchaseOrdersPage() {
                 quantity: Number(item.quantity),
                 unitCost: Number(item.unitCost)
             }))
-        });
+        };
+
+        createPOMutation.mutate(payload);
     };
 
     const getStatusBadgeClass = (poStatus: string) => {
@@ -272,17 +287,138 @@ export default function PurchaseOrdersPage() {
             {
                 id: 'actions',
                 header: 'Actions',
-                cell: ({ row }) => (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                        onClick={() => setSelectedPO(row.original)}
-                    >
-                        <Eye className="size-4" />
-                        <span className="sr-only">Inspect Details</span>
-                    </Button>
-                )
+                cell: ({ row }) => {
+                    const po = row.original;
+                    return (
+                        <TooltipProvider>
+                            <div className="flex items-center gap-1">
+                                {/* Inspect Details Button */}
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                            onClick={() => setSelectedPO(po)}
+                                        >
+                                            <Eye className="size-4" />
+                                            <span className="sr-only">Inspect Details</span>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Inspect Details</TooltipContent>
+                                </Tooltip>
+
+                                {/* Edit PO (DRAFT only) */}
+                                {po.status === 'DRAFT' && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
+                                                    onClick={() => setEditingPOId(po.id)}
+                                                >
+                                                    <Pencil className="size-4 animate-in duration-100" />
+                                                    <span className="sr-only">Edit PO</span>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">Edit Draft PO</TooltipContent>
+                                        </Tooltip>
+                                    </RequirePermission>
+                                )}
+
+                                {/* Mark as Sent (DRAFT only) */}
+                                {po.status === 'DRAFT' && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <AlertDialog>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
+                                                            disabled={updateStatusMutation.isPending}
+                                                        >
+                                                            <Send className="size-4" />
+                                                            <span className="sr-only">Mark as Sent</span>
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top">Mark as Sent</TooltipContent>
+                                            </Tooltip>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-bold text-foreground">
+                                                        Mark Purchase Order as Sent
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to mark purchase order{' '}
+                                                        <strong className="font-mono text-foreground">{po.poNumber}</strong> as sent? This will change
+                                                        its status to SENT.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        className="h-9 bg-primary text-primary-foreground hover:bg-primary/95"
+                                                        onClick={() => updateStatusMutation.mutate({ id: po.id, status: 'SENT' })}
+                                                    >
+                                                        Mark as Sent
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </RequirePermission>
+                                )}
+
+                                {/* Cancel PO (DRAFT or SENT) */}
+                                {(po.status === 'DRAFT' || po.status === 'SENT') && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <AlertDialog>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                                                            disabled={updateStatusMutation.isPending}
+                                                        >
+                                                            <XCircle className="size-4" />
+                                                            <span className="sr-only">Cancel PO</span>
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top">Cancel PO</TooltipContent>
+                                            </Tooltip>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-bold text-foreground">Cancel Purchase Order</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to cancel purchase order{' '}
+                                                        <strong className="font-mono text-foreground">{po.poNumber}</strong>? This action is permanent
+                                                        and cannot be undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        className="h-9 bg-destructive text-destructive-foreground hover:bg-destructive/95"
+                                                        onClick={() => updateStatusMutation.mutate({ id: po.id, status: 'CANCELLED' })}
+                                                    >
+                                                        Cancel PO
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </RequirePermission>
+                                )}
+                            </div>
+                        </TooltipProvider>
+                    );
+                }
             }
         ],
         []
@@ -588,198 +724,10 @@ export default function PurchaseOrdersPage() {
             </Dialog>
 
             {/* Inspect Detail Dialog */}
-            <Dialog open={!!selectedPO} onOpenChange={(open) => !open && setSelectedPO(null)}>
-                <DialogContent className="sm:max-w-2xl w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
-                    <DialogHeader className="shrink-0">
-                        <DialogTitle className="font-bold text-foreground flex items-center gap-2">
-                            <FileText className="size-5 text-primary" />
-                            Purchase Order Details
-                        </DialogTitle>
-                        <DialogDescription className="text-xs">Review procurement items list and coordinate status updates.</DialogDescription>
-                    </DialogHeader>
+            <PurchaseOrderDetailDialog open={!!selectedPO} onOpenChange={(open) => !open && setSelectedPO(null)} poId={selectedPO?.id || null} />
 
-                    {isDetailsLoading ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 gap-2">
-                            <span className="animate-spin text-primary size-5 border-2 border-primary border-t-transparent rounded-full" />
-                            <span className="text-xs text-muted-foreground font-semibold">Loading details...</span>
-                        </div>
-                    ) : selectedPODetails ? (
-                        <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-1 my-2 min-h-0">
-                            {/* Summary Card */}
-                            <div className="p-4 bg-muted/30 border border-border/40 rounded-2xl grid grid-cols-2 gap-4">
-                                <div className="space-y-0.5">
-                                    <span className="text-xs uppercase font-bold text-muted-foreground">PO Number</span>
-                                    <h4 className="font-mono font-bold text-sm text-foreground">{selectedPODetails.poNumber}</h4>
-                                </div>
-                                <div className="space-y-0.5 flex flex-col items-end">
-                                    <span className="text-xs uppercase font-bold text-muted-foreground">Status</span>
-                                    <Badge
-                                        variant="outline"
-                                        className={`text-xs font-bold py-0.5 px-2 capitalize ${getStatusBadgeClass(selectedPODetails.status)}`}
-                                    >
-                                        {selectedPODetails.status.toLowerCase()}
-                                    </Badge>
-                                </div>
-                                <div className="space-y-0.5">
-                                    <span className="text-xs uppercase font-bold text-muted-foreground">Supplier</span>
-                                    <p className="text-xs font-bold text-foreground">{selectedPODetails.supplier.name}</p>
-                                </div>
-                                <div className="space-y-0.5 flex flex-col items-end">
-                                    <span className="text-xs uppercase font-bold text-muted-foreground">Total Amount</span>
-                                    <p className="text-sm font-bold text-foreground">
-                                        ₱{selectedPODetails.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Additional Metadata */}
-                            <div className="space-y-2 text-xs border-b border-border/30 pb-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground font-medium">Created By</span>
-                                    <span className="font-bold text-foreground">
-                                        {`${selectedPODetails.createdBy.firstName} ${selectedPODetails.createdBy.lastName} (@${selectedPODetails.createdBy.username})`}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground font-medium">Date Created</span>
-                                    <span className="font-bold text-foreground">
-                                        {format(new Date(selectedPODetails.createdAt), 'MMM dd, yyyy hh:mm a')}
-                                    </span>
-                                </div>
-                                {selectedPODetails.orderedAt && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground font-medium">Date Sent/Ordered</span>
-                                        <span className="font-bold text-foreground">
-                                            {format(new Date(selectedPODetails.orderedAt), 'MMM dd, yyyy hh:mm a')}
-                                        </span>
-                                    </div>
-                                )}
-                                {selectedPODetails.receivedAt && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground font-medium">Date Received</span>
-                                        <span className="font-bold text-emerald-600">
-                                            {format(new Date(selectedPODetails.receivedAt), 'MMM dd, yyyy hh:mm a')}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Notes */}
-                            {selectedPODetails.notes && (
-                                <div className="space-y-1">
-                                    <span className="text-xs uppercase font-bold text-muted-foreground">Notes</span>
-                                    <p className="text-xs p-3 bg-muted/40 border border-border/20 rounded-xl text-foreground/90 italic">
-                                        "{selectedPODetails.notes}"
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Items List */}
-                            <div className="space-y-2">
-                                <span className="text-xs uppercase font-bold text-muted-foreground">Procurement Line Items</span>
-                                <div className="border border-border/40 rounded-2xl overflow-hidden">
-                                    <table className="w-full text-left border-collapse text-xs">
-                                        <thead>
-                                            <tr className="bg-muted/40 border-b border-border/40 font-bold text-muted-foreground">
-                                                <th className="p-3">Ingredient</th>
-                                                <th className="p-3 text-right">Quantity</th>
-                                                <th className="p-3 text-right">Unit Cost</th>
-                                                <th className="p-3 text-right">Subtotal</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {selectedPODetails.items?.map((item: IPurchaseOrderItem) => {
-                                                const abbrev = item.ingredient.defaultUnit?.abbreviation || '';
-                                                return (
-                                                    <tr
-                                                        key={item.id}
-                                                        className="border-b border-border/30 last:border-0 hover:bg-muted/10 font-medium"
-                                                    >
-                                                        <td className="p-3 font-bold text-foreground">{item.ingredient.name}</td>
-                                                        <td className="p-3 text-right font-mono font-bold text-foreground">
-                                                            {item.quantity} {abbrev}
-                                                        </td>
-                                                        <td className="p-3 text-right font-mono text-muted-foreground">
-                                                            ₱{item.unitCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td className="p-3 text-right font-mono font-bold text-foreground">
-                                                            ₱{item.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-
-                    {selectedPODetails && (
-                        <DialogFooter className="shrink-0 pt-4 border-t border-border/40 flex flex-wrap gap-2 justify-between items-center">
-                            {/* Status transitions guard (DRAFT -> SENT -> RECEIVED) */}
-                            <div className="flex gap-1.5 w-full sm:w-auto">
-                                {selectedPODetails.status === 'DRAFT' && (
-                                    <>
-                                        <RequirePermission module="Purchase Orders Management" action="update">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => updateStatusMutation.mutate({ id: selectedPODetails.id, status: 'SENT' })}
-                                                disabled={updateStatusMutation.isPending}
-                                                className="h-9 text-xs border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-bold gap-1 text-blue-600 dark:border-blue-900/40 dark:hover:bg-blue-950/20"
-                                            >
-                                                <Send className="size-3.5" /> Mark as Sent
-                                            </Button>
-                                        </RequirePermission>
-                                        <RequirePermission module="Purchase Orders Management" action="update">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => updateStatusMutation.mutate({ id: selectedPODetails.id, status: 'CANCELLED' })}
-                                                disabled={updateStatusMutation.isPending}
-                                                className="h-9 text-xs border-rose-200 hover:bg-rose-50 hover:text-rose-700 font-bold gap-1 text-rose-600 dark:border-rose-900/40 dark:hover:bg-rose-950/20"
-                                            >
-                                                <XCircle className="size-3.5" /> Cancel PO
-                                            </Button>
-                                        </RequirePermission>
-                                    </>
-                                )}
-
-                                {selectedPODetails.status === 'SENT' && (
-                                    <>
-                                        <RequirePermission module="Purchase Orders Management" action="update">
-                                            <Button
-                                                size="sm"
-                                                onClick={() => updateStatusMutation.mutate({ id: selectedPODetails.id, status: 'RECEIVED' })}
-                                                disabled={updateStatusMutation.isPending}
-                                                className="h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 shadow-sm"
-                                            >
-                                                <CheckCircle className="size-3.5" /> Mark as Received
-                                            </Button>
-                                        </RequirePermission>
-                                        <RequirePermission module="Purchase Orders Management" action="update">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => updateStatusMutation.mutate({ id: selectedPODetails.id, status: 'CANCELLED' })}
-                                                disabled={updateStatusMutation.isPending}
-                                                className="h-9 text-xs border-rose-200 hover:bg-rose-50 hover:text-rose-700 font-bold gap-1 text-rose-600 dark:border-rose-900/40 dark:hover:bg-rose-950/20"
-                                            >
-                                                <XCircle className="size-3.5" /> Cancel PO
-                                            </Button>
-                                        </RequirePermission>
-                                    </>
-                                )}
-                            </div>
-
-                            <Button variant="secondary" onClick={() => setSelectedPO(null)} className="h-9 w-24 rounded-lg text-xs font-bold ml-auto">
-                                Close
-                            </Button>
-                        </DialogFooter>
-                    )}
-                </DialogContent>
-            </Dialog>
+            {/* Update Purchase Order Dialog */}
+            <UpdatePurchaseOrderDialog open={!!editingPOId} onOpenChange={(open) => !open && setEditingPOId(null)} poId={editingPOId} />
         </div>
     );
 }
