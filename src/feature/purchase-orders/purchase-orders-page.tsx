@@ -7,13 +7,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/purchase-orders.tsx';
-import {
-    getPurchaseOrders,
-    getPurchaseOrderById,
-    createPurchaseOrder,
-    updatePurchaseOrderStatus,
-    updatePurchaseOrder
-} from '#/api/purchase-orders.api.ts';
+import { getPurchaseOrders, createPurchaseOrder, updatePurchaseOrderStatus } from '#/api/purchase-orders.api.ts';
 import { getSuppliersList } from '#/api/suppliers.api.ts';
 import { getIngredients } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -40,7 +34,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
-import type { IPurchaseOrder, IPurchaseOrderItem } from '#/api/purchase-orders.api.ts';
+import type { IPurchaseOrder } from '#/api/purchase-orders.api.ts';
 import type { ISupplierListItem } from '../suppliers/suppliers.types';
 import type { IIngredient } from '../inventory/inventory.types';
 import PurchaseOrderDetailDialog from './components/purchase-order-detail-dialog';
@@ -316,7 +310,7 @@ export default function PurchaseOrdersPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="size-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
+                                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
                                                     onClick={() => setEditingPOId(po.id)}
                                                 >
                                                     <Pencil className="size-4 animate-in duration-100" />
@@ -338,7 +332,7 @@ export default function PurchaseOrdersPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="size-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
+                                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
                                                             disabled={updateStatusMutation.isPending}
                                                         >
                                                             <Send className="size-4" />
@@ -383,7 +377,7 @@ export default function PurchaseOrdersPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            className="size-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
                                                             disabled={updateStatusMutation.isPending}
                                                         >
                                                             <XCircle className="size-4" />

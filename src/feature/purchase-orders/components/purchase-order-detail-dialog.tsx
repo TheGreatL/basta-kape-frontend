@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -11,7 +10,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
-import type { IPurchaseOrder, IPurchaseOrderItem } from '#/api/purchase-orders.api.ts';
+import type { IPurchaseOrderItem } from '#/api/purchase-orders.api.ts';
 
 const getStatusBadgeClass = (poStatus: string) => {
     switch (poStatus) {
