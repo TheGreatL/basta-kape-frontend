@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Plus, Minus, ShoppingBag, ShieldAlert, ArrowRight } from 'lucide-react';
@@ -62,7 +62,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
         }
     }, [product]);
 
-    // Automatically select first option for required modifier groups
+    // Automatically select first available option for required modifier groups
     useEffect(() => {
         if (modifierGroups.length > 0) {
             setSelectedModifierOptionIds((prev) => {
@@ -71,7 +71,10 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     const groupOptionIds = group.options.map((opt: IModifierOption) => opt.id);
                     const hasSelection = groupOptionIds.some((id: string) => next.includes(id));
                     if (group.isRequired && !hasSelection && group.options.length > 0) {
-                        next.push(group.options[0].id);
+                        const firstAvailable = group.options.find((opt: IModifierOption) => opt.maxProduceable !== 0);
+                        if (firstAvailable) {
+                            next.push(firstAvailable.id);
+                        }
                     }
                 });
                 return next;
@@ -80,6 +83,15 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
     }, [modifierGroups]);
 
     const selectedVariant = product?.variants.find((v: IMenuProductVariant) => v.id === selectedVariantId);
+
+    const getOutOfStockIngredients = () => {
+        if (!selectedVariant?.recipe?.ingredients) return [];
+        return selectedVariant.recipe.ingredients.filter((ri: IMenuRecipeIngredient) => {
+            const currentQty = ri.ingredient.inventories?.[0]?.currentQuantity ?? 0;
+            return currentQty < ri.quantity;
+        });
+    };
+    const outOfStockIngredients = getOutOfStockIngredients();
 
     // Calculate price of selected modifiers
     const selectedModifiersPrice = selectedModifierOptionIds.reduce((sum: number, optId: string) => {
@@ -93,6 +105,165 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
     const price = selectedVariant ? selectedVariant.price : 0;
     const singleItemPrice = price + selectedModifiersPrice;
     const totalPrice = singleItemPrice * quantity;
+
+    const isAnySelectedModifierOutOfStock = selectedModifierOptionIds.some((id: string) => {
+        for (const group of modifierGroups) {
+            const opt = group.options.find((o) => o.id === id);
+            if (opt && opt.maxProduceable === 0) return true;
+        }
+        return false;
+    });
+
+    const hasUnfulfilledRequiredGroup = modifierGroups.some((group: IModifierGroup) => {
+        if (!group.isRequired) return false;
+        const groupOptionIds = group.options.map((opt) => opt.id);
+        const hasSelection = groupOptionIds.some((id) => selectedModifierOptionIds.includes(id));
+        return !hasSelection;
+    });
+
+    // Map of ingredientId -> currentQuantity
+    const ingredientInventoryMap = React.useMemo(() => {
+        const inventoryMap: { [ingredientId: string]: number } = {};
+
+        // 1. Load from base variant recipe
+        if (selectedVariant?.recipe?.ingredients) {
+            selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                const currentQty = ri.ingredient?.inventories?.[0]?.currentQuantity ?? 0;
+                inventoryMap[ri.ingredientId] = currentQty;
+            });
+        }
+
+        // 2. Load from all modifier options
+        modifierGroups.forEach((group: any) => {
+            group.options.forEach((opt: any) => {
+                if (opt.recipe?.ingredients) {
+                    opt.recipe.ingredients.forEach((ri: any) => {
+                        const currentQty = ri.ingredient?.inventories?.[0]?.currentQuantity ?? 0;
+                        inventoryMap[ri.ingredientId] = currentQty;
+                    });
+                }
+            });
+        });
+
+        return inventoryMap;
+    }, [selectedVariant, modifierGroups]);
+
+    // Map of ingredientId -> quantity required by base + selected modifiers (per single product unit)
+    const selectedRequirements = React.useMemo(() => {
+        const reqMap: { [ingredientId: string]: number } = {};
+
+        // 1. Add base variant requirements
+        if (selectedVariant?.recipe?.ingredients) {
+            selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+            });
+        }
+
+        // 2. Add currently selected modifiers requirements
+        selectedModifierOptionIds.forEach((optId) => {
+            for (const group of modifierGroups) {
+                const opt = group.options.find((o: IModifierOption) => o.id === optId);
+                if (opt?.recipe?.ingredients) {
+                    opt.recipe.ingredients.forEach((ri: any) => {
+                        reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+                    });
+                }
+            }
+        });
+
+        return reqMap;
+    }, [selectedVariant, selectedModifierOptionIds, modifierGroups]);
+
+    const isCurrentConfigExceeded = React.useMemo(() => {
+        for (const ingredientId in selectedRequirements) {
+            const required = selectedRequirements[ingredientId] * quantity;
+            const available = ingredientInventoryMap[ingredientId] || 0;
+            if (required > available) {
+                return true;
+            }
+        }
+        return false;
+    }, [selectedRequirements, quantity, ingredientInventoryMap]);
+
+    const checkOptionAvailability = (opt: any) => {
+        // If option has no recipe or no ingredients, it's available
+        if (!opt.recipe?.ingredients || opt.recipe.ingredients.length === 0) {
+            return true;
+        }
+
+        // If the option is already selected, it is available (so we can unselect it)
+        const isSelected = selectedModifierOptionIds.includes(opt.id);
+        if (isSelected) {
+            return true;
+        }
+
+        // Check if adding this option would exceed the available inventory for any ingredient
+        for (const ri of opt.recipe.ingredients) {
+            const currentTotal = selectedRequirements[ri.ingredientId] || 0;
+            const projectedTotal = (currentTotal + ri.quantity) * quantity;
+            const availableInventory = ingredientInventoryMap[ri.ingredientId] || 0;
+
+            if (projectedTotal > availableInventory) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    useEffect(() => {
+        if (!selectedVariantId) return;
+
+        setSelectedModifierOptionIds((prev) => {
+            const updated: string[] = [];
+            const reqMap: { [ingredientId: string]: number } = {};
+
+            if (selectedVariant?.recipe?.ingredients) {
+                selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                    reqMap[ri.ingredientId] = ri.quantity;
+                });
+            }
+
+            prev.forEach((optId) => {
+                let foundOpt: IModifierOption | null = null;
+                for (const group of modifierGroups) {
+                    const opt = group.options.find((o) => o.id === optId);
+                    if (opt) {
+                        foundOpt = opt;
+                        break;
+                    }
+                }
+
+                if (!foundOpt || foundOpt.maxProduceable === 0) {
+                    return;
+                }
+
+                let fits = true;
+                if (foundOpt.recipe?.ingredients) {
+                    for (const ri of foundOpt.recipe.ingredients) {
+                        const currentTotal = reqMap[ri.ingredientId] || 0;
+                        const projectedTotal = (currentTotal + ri.quantity) * quantity;
+                        const availableInventory = ingredientInventoryMap[ri.ingredientId] || 0;
+                        if (projectedTotal > availableInventory) {
+                            fits = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (fits) {
+                    updated.push(optId);
+                    if (foundOpt.recipe?.ingredients) {
+                        foundOpt.recipe.ingredients.forEach((ri) => {
+                            reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+                        });
+                    }
+                }
+            });
+
+            return updated;
+        });
+    }, [selectedVariantId, quantity, modifierGroups, ingredientInventoryMap]);
 
     useEffect(() => {
         if (selectedVariant) {
@@ -259,6 +430,30 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
         return Array.from(validValues);
     };
 
+    const checkAttributeValueInStock = (attrName: string, val: string) => {
+        const hypotheticalSelected = { ...selectedAttributes, [attrName]: val };
+
+        let matchingVariant = product.variants.find((v: IMenuProductVariant) =>
+            v.attributes.every(
+                (attr: IMenuVariantAttribute) => hypotheticalSelected[attr.attributeValue.attribute.name] === attr.attributeValue.value
+            )
+        );
+
+        if (!matchingVariant) {
+            matchingVariant = product.variants.find((v: IMenuProductVariant) =>
+                v.attributes.some(
+                    (attr: IMenuVariantAttribute) => attr.attributeValue.attribute.name === attrName && attr.attributeValue.value === val
+                )
+            );
+        }
+
+        if (matchingVariant) {
+            return matchingVariant.maxProduceable !== 0;
+        }
+
+        return false;
+    };
+
     const handleAttributeSelect = (attributeName: string, value: string) => {
         setSelectedAttributes((prev: { [name: string]: string }) => {
             const updated = { ...prev, [attributeName]: value };
@@ -357,14 +552,40 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                         <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/40">
                             <h3 className="text-xs font-bold text-foreground uppercase mb-2">Key Ingredients</h3>
                             <div className="flex flex-wrap gap-2">
-                                {selectedVariant.recipe.ingredients.map((ing: IMenuRecipeIngredient) => (
-                                    <span
-                                        key={ing.id}
-                                        className="text-xs px-2.5 py-1 rounded-md bg-background border border-border text-muted-foreground"
-                                    >
-                                        {ing.ingredient.name}
-                                    </span>
-                                ))}
+                                {selectedVariant.recipe.ingredients.map((ing: IMenuRecipeIngredient) => {
+                                    const currentQty = ing.ingredient.inventories?.[0]?.currentQuantity ?? 0;
+                                    const requiredQty = ing.quantity;
+                                    const isOutOfStock = currentQty < requiredQty;
+                                    const isLowStock = !isOutOfStock && (requiredQty > 0 ? currentQty / requiredQty <= 10 : false);
+
+                                    let badgeStyle = 'bg-background border-border text-muted-foreground';
+                                    if (isOutOfStock) {
+                                        badgeStyle =
+                                            'bg-rose-50 dark:bg-rose-950/20 border-rose-250 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 font-bold';
+                                    } else if (isLowStock) {
+                                        badgeStyle =
+                                            'bg-amber-50 dark:bg-amber-950/20 border-amber-250 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 font-semibold';
+                                    }
+
+                                    return (
+                                        <span
+                                            key={ing.id}
+                                            className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all duration-200 ${badgeStyle}`}
+                                        >
+                                            {ing.ingredient.name}
+                                            {isOutOfStock && (
+                                                <span className="text-xs font-bold text-rose-500/90 tracking-wide uppercase scale-95">
+                                                    (Out of stock)
+                                                </span>
+                                            )}
+                                            {isLowStock && (
+                                                <span className="text-xs font-semibold text-amber-500/90 tracking-wide uppercase scale-95">
+                                                    (Low stock)
+                                                </span>
+                                            )}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -388,7 +609,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                         <div className="grid grid-cols-2 gap-3">
                                             {attributeValuesByName[attrName].map((val: string) => {
                                                 const isSelected = currentValue === val;
-                                                const isAvailable = availableValues.includes(val);
+                                                const isAvailable = availableValues.includes(val) && checkAttributeValueInStock(attrName, val);
                                                 return (
                                                     <button
                                                         key={val}
@@ -448,10 +669,14 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                             {group.options.map((opt: IModifierOption) => {
                                                 const isSelected = selectedModifierOptionIds.includes(opt.id);
+                                                const isStockAvailable = opt.maxProduceable !== 0;
+                                                const isSelectionAllowed = checkOptionAvailability(opt);
+                                                const isAvailable = isStockAvailable && isSelectionAllowed;
                                                 return (
                                                     <button
                                                         key={opt.id}
                                                         type="button"
+                                                        disabled={!isAvailable && !isSelected}
                                                         onClick={() =>
                                                             handleToggleModifierOption(
                                                                 group.id,
@@ -464,12 +689,20 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                                         className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
                                                             isSelected
                                                                 ? 'border-primary bg-primary/5 text-primary font-bold shadow-xs'
-                                                                : 'border-border/60 bg-card hover:border-border-hover hover:bg-muted/10 text-foreground'
+                                                                : isAvailable
+                                                                  ? 'border-border/60 bg-card hover:border-border-hover hover:bg-muted/10 text-foreground font-medium'
+                                                                  : 'border-border/20 bg-muted/5 text-muted-foreground/30 cursor-not-allowed opacity-40'
                                                         }`}
                                                     >
                                                         <span className="text-xs truncate mr-2">{opt.name}</span>
                                                         <span className="text-xs font-bold shrink-0">
-                                                            {opt.price > 0 ? `+₱${opt.price.toFixed(2)}` : 'Free'}
+                                                            {isAvailable
+                                                                ? opt.price > 0
+                                                                    ? `+₱${opt.price.toFixed(2)}`
+                                                                    : 'Free'
+                                                                : !isStockAvailable
+                                                                  ? 'Out of Stock'
+                                                                  : 'Exceeds Stock'}
                                                         </span>
                                                     </button>
                                                 );
@@ -485,10 +718,23 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     {selectedVariant && (
                         <div className="mt-6 flex items-center gap-2">
                             {selectedVariant.maxProduceable === 0 ? (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-md border border-rose-500/20">
-                                    <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                    Out of Stock
-                                </span>
+                                <div className="w-full p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col gap-1.5 animate-in fade-in duration-200">
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                                        <span className="size-1.5 rounded-full bg-rose-500 animate-ping" />
+                                        Temporarily Out of Stock
+                                    </span>
+                                    {outOfStockIngredients.length > 0 ? (
+                                        <p className="text-xs text-muted-foreground leading-normal">
+                                            We cannot prepare this item right now due to insufficient stock of:{' '}
+                                            <strong className="text-rose-600/90 dark:text-rose-400/90 font-bold">
+                                                {outOfStockIngredients.map((i) => i.ingredient.name).join(', ')}
+                                            </strong>
+                                            .
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground leading-normal">This variant is currently unavailable.</p>
+                                    )}
+                                </div>
                             ) : selectedVariant.maxProduceable === 'Unlimited' ? (
                                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
                                     <span className="size-1.5 rounded-full bg-emerald-500" />
@@ -557,11 +803,22 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                             <Link to="/login" className="block w-full">
                                 <Button
                                     size="lg"
-                                    disabled={selectedVariant?.maxProduceable === 0}
+                                    disabled={
+                                        selectedVariant?.maxProduceable === 0 ||
+                                        isAnySelectedModifierOutOfStock ||
+                                        hasUnfulfilledRequiredGroup ||
+                                        isCurrentConfigExceeded
+                                    }
                                     className="w-full h-12 rounded-xl gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
                                 >
                                     <ShoppingBag className="size-5" />
-                                    {selectedVariant?.maxProduceable === 0 ? 'Out of Stock' : 'Sign In to Order'}
+                                    {selectedVariant?.maxProduceable === 0
+                                        ? 'Out of Stock'
+                                        : isAnySelectedModifierOutOfStock
+                                          ? 'Customization Out of Stock'
+                                          : isCurrentConfigExceeded
+                                            ? 'Exceeds Stock Limit'
+                                            : 'Sign In to Order'}
                                 </Button>
                             </Link>
                         ) : (
@@ -570,20 +827,36 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                     size="lg"
                                     variant="outline"
                                     onClick={handleAddToCart}
-                                    disabled={isAdding || !selectedVariantId || selectedVariant?.maxProduceable === 0 || quantity === 0}
+                                    disabled={
+                                        isAdding ||
+                                        !selectedVariantId ||
+                                        selectedVariant?.maxProduceable === 0 ||
+                                        quantity === 0 ||
+                                        isAnySelectedModifierOutOfStock ||
+                                        hasUnfulfilledRequiredGroup ||
+                                        isCurrentConfigExceeded
+                                    }
                                     className="w-full h-12 rounded-xl gap-2 font-bold shadow-3xs hover:bg-accent transition-all border-border/80"
                                 >
                                     <ShoppingBag className="size-5" />
-                                    {isAdding ? 'Adding...' : 'Add to Cart'}
+                                    {isAdding ? 'Adding...' : isCurrentConfigExceeded ? 'Exceeds Stock' : 'Add to Cart'}
                                 </Button>
                                 <Button
                                     size="lg"
                                     onClick={handleDirectCheckout}
-                                    disabled={isAdding || !selectedVariantId || selectedVariant?.maxProduceable === 0 || quantity === 0}
+                                    disabled={
+                                        isAdding ||
+                                        !selectedVariantId ||
+                                        selectedVariant?.maxProduceable === 0 ||
+                                        quantity === 0 ||
+                                        isAnySelectedModifierOutOfStock ||
+                                        hasUnfulfilledRequiredGroup ||
+                                        isCurrentConfigExceeded
+                                    }
                                     className="w-full h-12 rounded-xl gap-2 font-bold shadow-md shadow-primary/20 hover:shadow-lg transition-all"
                                 >
                                     <ArrowRight className="size-5" />
-                                    Buy Now
+                                    {isCurrentConfigExceeded ? 'Exceeds Stock' : 'Buy Now'}
                                 </Button>
                             </div>
                         )}

@@ -68,6 +68,7 @@ export interface IMenuRecipeIngredient {
     ingredient: {
         id: string;
         name: string;
+        inventories?: { currentQuantity: number }[];
     };
     unit: {
         id: string;

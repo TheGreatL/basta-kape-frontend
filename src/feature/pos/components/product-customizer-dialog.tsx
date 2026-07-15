@@ -47,6 +47,126 @@ export default function ProductCustomizerDialog({
 }: ProductCustomizerDialogProps) {
     const [selectedAttributes, setSelectedAttributes] = React.useState<{ [name: string]: string }>({});
 
+    // Flatten chosen modifiers to a single array of option IDs
+    const selectedModifierOptionIds = React.useMemo(() => {
+        return Object.values(chosenModifiers).flat().filter(Boolean) as string[];
+    }, [chosenModifiers]);
+
+    // Map of ingredientId -> currentQuantity
+    const ingredientInventoryMap = React.useMemo(() => {
+        const inventoryMap: { [ingredientId: string]: number } = {};
+
+        // 1. Load from selected variant recipe
+        if (selectedVariant?.recipe?.ingredients) {
+            selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                const currentQty = ri.ingredient?.inventories?.[0]?.currentQuantity ?? 0;
+                inventoryMap[ri.ingredientId] = currentQty;
+            });
+        }
+
+        // 2. Load from all modifier options
+        if (modifierGroupsData?.data) {
+            modifierGroupsData.data.forEach((group: any) => {
+                group.options.forEach((opt: any) => {
+                    if (opt.recipe?.ingredients) {
+                        opt.recipe.ingredients.forEach((ri: any) => {
+                            const currentQty = ri.ingredient?.inventories?.[0]?.currentQuantity ?? 0;
+                            inventoryMap[ri.ingredientId] = currentQty;
+                        });
+                    }
+                });
+            });
+        }
+
+        return inventoryMap;
+    }, [selectedVariant, modifierGroupsData]);
+
+    // Map of ingredientId -> quantity required by base + selected modifiers (per single product unit)
+    const selectedRequirements = React.useMemo(() => {
+        const reqMap: { [ingredientId: string]: number } = {};
+
+        // 1. Add base variant requirements
+        if (selectedVariant?.recipe?.ingredients) {
+            selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+            });
+        }
+
+        // 2. Add currently selected modifiers requirements
+        if (modifierGroupsData?.data) {
+            selectedModifierOptionIds.forEach((optId) => {
+                for (const group of modifierGroupsData.data) {
+                    const opt = group.options.find((o: IModifierOption) => o.id === optId);
+                    if (opt?.recipe?.ingredients) {
+                        opt.recipe.ingredients.forEach((ri: any) => {
+                            reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+                        });
+                    }
+                }
+            });
+        }
+
+        return reqMap;
+    }, [selectedVariant, selectedModifierOptionIds, modifierGroupsData]);
+
+    const isCurrentConfigExceeded = React.useMemo(() => {
+        for (const ingredientId in selectedRequirements) {
+            const required = selectedRequirements[ingredientId] * configQuantity;
+            const available = ingredientInventoryMap[ingredientId] || 0;
+            if (required > available) {
+                return true;
+            }
+        }
+        return false;
+    }, [selectedRequirements, configQuantity, ingredientInventoryMap]);
+
+    const checkOptionAvailability = (opt: any) => {
+        // If option has no recipe or no ingredients, it's available
+        if (!opt.recipe?.ingredients || opt.recipe.ingredients.length === 0) {
+            return true;
+        }
+
+        // If the option is already selected, it is available (so we can unselect it)
+        const isSelected = selectedModifierOptionIds.includes(opt.id);
+        if (isSelected) {
+            return true;
+        }
+
+        // Check if adding this option would exceed the available inventory for any ingredient
+        for (const ri of opt.recipe.ingredients) {
+            const currentTotal = selectedRequirements[ri.ingredientId] || 0;
+            const projectedTotal = (currentTotal + ri.quantity) * configQuantity;
+            const availableInventory = ingredientInventoryMap[ri.ingredientId] || 0;
+
+            if (projectedTotal > availableInventory) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    const checkAttributeValueInStock = (attrName: string, val: string) => {
+        if (!configProduct) return false;
+        const hypotheticalSelected = { ...selectedAttributes, [attrName]: val };
+
+        let matchingVariant = configProduct.variants.find((v: IMenuProductVariant) =>
+            v.attributes.every((attr: any) => hypotheticalSelected[attr.attributeValue.attribute.name] === attr.attributeValue.value)
+        );
+
+        if (!matchingVariant) {
+            matchingVariant = configProduct.variants.find((v: IMenuProductVariant) =>
+                v.attributes.some((attr: any) => attr.attributeValue.attribute.name === attrName && attr.attributeValue.value === val)
+            );
+        }
+
+        if (matchingVariant) {
+            return matchingVariant.maxProduceable !== 0;
+        }
+
+        return false;
+    };
+
     // Synchronize local attributes state with selectedVariant
     React.useEffect(() => {
         if (selectedVariant) {
@@ -59,6 +179,64 @@ export default function ProductCustomizerDialog({
             setSelectedAttributes({});
         }
     }, [selectedVariant]);
+
+    React.useEffect(() => {
+        if (!selectedVariant) return;
+
+        setChosenModifiers((prev) => {
+            const updated: Record<string, string[] | undefined> = {};
+            const reqMap: { [ingredientId: string]: number } = {};
+
+            if (selectedVariant.recipe?.ingredients) {
+                selectedVariant.recipe.ingredients.forEach((ri: any) => {
+                    reqMap[ri.ingredientId] = ri.quantity;
+                });
+            }
+
+            // Loop through each group in modifierGroupsData
+            if (modifierGroupsData?.data) {
+                modifierGroupsData.data.forEach((group: IModifierGroup) => {
+                    const selections = prev[group.id] || [];
+                    const updatedSelections: string[] = [];
+
+                    selections.forEach((optId) => {
+                        const opt = group.options.find((o) => o.id === optId);
+                        if (!opt || opt.maxProduceable === 0) {
+                            return; // discard
+                        }
+
+                        let fits = true;
+                        if (opt.recipe?.ingredients) {
+                            for (const ri of opt.recipe.ingredients) {
+                                const currentTotal = reqMap[ri.ingredientId] || 0;
+                                const projectedTotal = (currentTotal + ri.quantity) * configQuantity;
+                                const availableInventory = ingredientInventoryMap[ri.ingredientId] || 0;
+                                if (projectedTotal > availableInventory) {
+                                    fits = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (fits) {
+                            updatedSelections.push(optId);
+                            if (opt.recipe?.ingredients) {
+                                opt.recipe.ingredients.forEach((ri) => {
+                                    reqMap[ri.ingredientId] = (reqMap[ri.ingredientId] || 0) + ri.quantity;
+                                });
+                            }
+                        }
+                    });
+
+                    if (updatedSelections.length > 0) {
+                        updated[group.id] = updatedSelections;
+                    }
+                });
+            }
+
+            return updated;
+        });
+    }, [selectedVariant, configQuantity, modifierGroupsData, ingredientInventoryMap]);
 
     // Find all unique attributes (like "Milk Type", "Size") on the variants
     const attributeNames = React.useMemo(() => {
@@ -217,7 +395,7 @@ export default function ProductCustomizerDialog({
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                                             {attributeValuesByName[attrName].map((val: string) => {
                                                 const isSelected = currentValue === val;
-                                                const isAvailable = availableValues.includes(val);
+                                                const isAvailable = availableValues.includes(val) && checkAttributeValueInStock(attrName, val);
                                                 return (
                                                     <button
                                                         key={val}
@@ -297,20 +475,32 @@ export default function ProductCustomizerDialog({
                                             <div className="grid grid-cols-2 gap-2">
                                                 {group.options.map((option: IModifierOption) => {
                                                     const isChecked = selections.includes(option.id);
+                                                    const isStockAvailable = option.maxProduceable !== 0;
+                                                    const isSelectionAllowed = checkOptionAvailability(option);
+                                                    const isAvailable = isStockAvailable && isSelectionAllowed;
                                                     return (
                                                         <button
                                                             key={option.id}
                                                             type="button"
+                                                            disabled={!isAvailable && !isChecked}
                                                             onClick={() => handleSelectOption(option.id)}
                                                             className={`p-2.5 rounded-lg border text-left flex justify-between items-center text-xs transition-all cursor-pointer ${
                                                                 isChecked
                                                                     ? 'bg-primary/5 border-primary text-primary font-bold shadow-3xs'
-                                                                    : 'bg-background hover:bg-muted/10 border-border/80 text-muted-foreground hover:text-foreground'
+                                                                    : isAvailable
+                                                                      ? 'bg-background hover:bg-muted/10 border-border/80 text-muted-foreground hover:text-foreground font-medium'
+                                                                      : 'border-border/20 bg-muted/5 text-muted-foreground/30 cursor-not-allowed opacity-40'
                                                             }`}
                                                         >
                                                             <span>{option.name}</span>
                                                             <span className="font-mono text-2xs opacity-85">
-                                                                {option.price > 0 ? `+₱${option.price.toFixed(2)}` : 'Free'}
+                                                                {isAvailable
+                                                                    ? option.price > 0
+                                                                        ? `+₱${option.price.toFixed(2)}`
+                                                                        : 'Free'
+                                                                    : !isStockAvailable
+                                                                      ? 'Out of Stock'
+                                                                      : 'Exceeds Stock'}
                                                             </span>
                                                         </button>
                                                     );
@@ -367,8 +557,18 @@ export default function ProductCustomizerDialog({
                         <Button variant="ghost" onClick={() => onOpenChange(false)} className="h-8.5 text-xs font-semibold">
                             Cancel
                         </Button>
-                        <Button onClick={onAddToCart} className="h-8.5 text-xs font-bold px-5 bg-primary text-primary-foreground shadow-xs">
-                            {isEditing ? 'Update cart item' : 'Add configuration to cart'}
+                        <Button
+                            onClick={onAddToCart}
+                            disabled={selectedVariant?.maxProduceable === 0 || isCurrentConfigExceeded}
+                            className="h-8.5 text-xs font-bold px-5 bg-primary text-primary-foreground shadow-xs"
+                        >
+                            {selectedVariant?.maxProduceable === 0
+                                ? 'Variant Out of Stock'
+                                : isCurrentConfigExceeded
+                                  ? 'Exceeds Stock'
+                                  : isEditing
+                                    ? 'Update cart item'
+                                    : 'Add configuration to cart'}
                         </Button>
                     </div>
                 </DialogFooter>

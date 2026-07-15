@@ -13,6 +13,8 @@ export interface IModifierOption {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    maxProduceable?: number | 'Unlimited' | null;
+    recipe?: IModifierRecipe | null;
 }
 
 export interface IModifierGroup {
