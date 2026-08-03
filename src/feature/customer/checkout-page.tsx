@@ -671,7 +671,7 @@ export default function CheckoutPage() {
                                     Preparation & Tracking
                                 </h3>
                                 <p className="text-muted-foreground leading-relaxed">
-                                    Your order goes directly to our Kitchen Display queue. You can track real-time prep progress on your personal{' '}
+                                    Your order goes directly to our barista preparation queue. You can track real-time prep progress on your personal{' '}
                                     <strong>Orders</strong> tracking dashboard.
                                 </p>
                             </div>

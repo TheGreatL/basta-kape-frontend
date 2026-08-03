@@ -55,17 +55,15 @@ export default function ProjectionsPage() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Projections</h1>
-                        <p className="text-xs text-muted-foreground">Real-time estimates of maximum units you can produce from current stock.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Stock Forecasts</h1>
+                        <p className="text-xs text-muted-foreground">Estimated number of items you can make from your current stock.</p>
                     </div>
                 </div>
             </div>
 
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">
-                        Expected product yield projections based on current raw ingredient availability.
-                    </p>
+                    <p className="text-xs text-muted-foreground font-medium">Expected product yields based on current raw ingredient availability.</p>
                 </div>
                 <Input
                     placeholder="Filter forecasts by name or SKU..."
@@ -77,13 +75,13 @@ export default function ProjectionsPage() {
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
                         <Spinner className="h-6 w-6 text-primary animate-spin" />
-                        <span className="text-xs text-muted-foreground font-medium">Computing production capacity...</span>
+                        <span className="text-xs text-muted-foreground font-medium">Calculating expected stock...</span>
                     </div>
                 ) : filteredForecast.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-2 border border-dashed rounded-2xl bg-muted/5">
                         <TrendingUp className="size-8 text-muted-foreground/60 stroke-[1.25]" />
                         <p className="text-sm font-bold text-foreground">No forecast data available</p>
-                        <p className="text-xs text-muted-foreground">Ensure products have recipe configurations to see projections.</p>
+                        <p className="text-xs text-muted-foreground">Ensure products have recipes configured to see stock forecasts.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -251,10 +251,10 @@ export default function ProductEditPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Modifier customization updated');
+            toast.success('Customizations updated');
         },
         onError: (err) => {
-            toast.error('Failed to link modifier customization', { description: getErrorMessage(err) });
+            toast.error('Failed to update customizations', { description: getErrorMessage(err) });
         }
     });
 
@@ -263,10 +263,10 @@ export default function ProductEditPage() {
         mutationFn: (optionId: string) => deleteModifierOption(optionId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Modifier option deleted successfully');
+            toast.success('Customization choice deleted successfully');
         },
         onError: (err) => {
-            toast.error('Failed to delete modifier option', { description: getErrorMessage(err) });
+            toast.error('Failed to delete customization choice', { description: getErrorMessage(err) });
         }
     });
 
@@ -419,7 +419,7 @@ export default function ProductEditPage() {
                         <div className="min-w-0">
                             <h1 className="text-2xl font-bold text-foreground leading-tight truncate">{productDetails.name}</h1>
                             <p className="text-xs text-muted-foreground truncate">
-                                Edit product profile specifications, pricing variants, recipes, and modifiers.
+                                Edit product profile specifications, pricing variants, recipes, and customizations.
                             </p>
                         </div>
                     </div>
@@ -445,7 +445,7 @@ export default function ProductEditPage() {
                         value="modifiers"
                         className="flex items-center gap-1.5 py-2 px-4 rounded-lg text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-2xs"
                     >
-                        <SlidersHorizontal className="size-4" /> Modifiers & Customizations
+                        <SlidersHorizontal className="size-4" /> Customizations & Options
                     </TabsTrigger>
                 </TabsList>
 
@@ -662,7 +662,7 @@ export default function ProductEditPage() {
 
                                 {/* Checked attributes checklist */}
                                 <div className="md:col-span-2 space-y-3 bg-background p-4 rounded-xl border border-border/30">
-                                    <h5 className="text-xs font-bold text-foreground/80 uppercase">Select Matrix Modifiers</h5>
+                                    <h5 className="text-xs font-bold text-foreground/80 uppercase">Select Customization Options</h5>
                                     {isAttributesLoading ? (
                                         <div className="flex items-center gap-1.5 py-4">
                                             <Spinner className="size-4 animate-spin text-primary" />
@@ -670,7 +670,7 @@ export default function ProductEditPage() {
                                         </div>
                                     ) : !attributesData?.data || attributesData.data.length === 0 ? (
                                         <div className="text-xs text-muted-foreground italic py-4">
-                                            No custom options defined. Head to Product Settings to create custom attributes (e.g. Size, Milk Option).
+                                            No custom options defined. Head to Product Settings to create custom options (e.g., Size, Milk Type).
                                         </div>
                                     ) : (
                                         <div className="space-y-3 divide-y divide-border/20">
@@ -958,15 +958,15 @@ export default function ProductEditPage() {
                             <div>
                                 <h3 className="text-base font-bold text-foreground flex items-center gap-1.5">
                                     <SlidersHorizontal className="size-5 text-primary" />
-                                    Modifiers & Product Customizations
+                                    Product Customizations & Options
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    Link modifier choice groups (e.g. Milk Choice, Extra Toppings) and configure adjustment options recipes.
+                                    Link custom option groups (e.g., Milk Choice, Extra Toppings) and configure recipes for adjustments.
                                 </p>
                             </div>
 
                             <Input
-                                placeholder="Search modifiers..."
+                                placeholder="Search options..."
                                 value={modifierSearch}
                                 onChange={(e) => setModifierSearch(e.target.value)}
                                 className="h-8 text-xs w-full sm:w-[220px] bg-background/50"
@@ -976,10 +976,10 @@ export default function ProductEditPage() {
                         {isGroupsLoading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-2">
                                 <Spinner className="size-6 text-primary animate-spin" />
-                                <span className="text-xs text-muted-foreground font-semibold">Loading customization modifiers...</span>
+                                <span className="text-xs text-muted-foreground font-semibold">Loading customizations...</span>
                             </div>
                         ) : !modifierGroupsData?.data || modifierGroupsData.data.length === 0 ? (
-                            <div className="text-center py-12 text-xs text-muted-foreground italic">No modifier customization groups found.</div>
+                            <div className="text-center py-12 text-xs text-muted-foreground italic">No customization groups found.</div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {modifierGroupsData.data
@@ -1031,7 +1031,7 @@ export default function ProductEditPage() {
                                                     <div className="flex-1 space-y-3 min-h-0">
                                                         <div className="flex items-center justify-between border-b border-border/20 pb-1">
                                                             <span className="text-2xs font-bold text-muted-foreground block uppercase">
-                                                                Modifier Choices
+                                                                Option Choices
                                                             </span>
                                                             {isLinked && (
                                                                 <Button

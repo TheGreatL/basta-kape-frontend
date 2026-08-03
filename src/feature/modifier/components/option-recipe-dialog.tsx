@@ -222,10 +222,10 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                         <ChefHat className="size-5 text-primary" />
-                        Modifier Option Recipe Build Specs
+                        Customization Option Recipe
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Configure recipe details and raw ingredient bills of materials required when this modifier option is chosen.
+                        Configure recipe details and raw ingredient amounts required when this customization option is chosen.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -547,8 +547,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                             Restore Recipe
                                                         </AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            Are you sure you want to restore this modifier recipe build{' '}
-                                                            <strong>"{recipe.name}"</strong>?
+                                                            Are you sure you want to restore this option recipe <strong>"{recipe.name}"</strong>?
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>

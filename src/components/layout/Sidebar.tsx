@@ -88,7 +88,7 @@ const sidebarGroups: Array<{
                 module: appModules.PRODUCTS_MANAGEMENT,
                 items: [
                     { title: 'Products List', path: '/admin/products', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-                    { title: 'Modifiers', path: '/admin/products/modifiers', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
+                    { title: 'Customizations', path: '/admin/products/modifiers', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
                     { title: 'Recipes', path: '/admin/products/recipes', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
                     { title: 'Product Settings', path: '/admin/products/settings', module: appModules.PRODUCT_SETTINGS_MANAGEMENT, exact: true }
                 ]
@@ -105,7 +105,7 @@ const sidebarGroups: Array<{
                 items: [
                     { title: 'Dashboard', path: '/admin/inventory', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Projections', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Stock Forecasts', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Deliveries', path: '/admin/inventory/deliveries', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Waste Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },

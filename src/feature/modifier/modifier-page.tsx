@@ -77,10 +77,10 @@ export default function ModifiersPage() {
         mutationFn: (id: string) => deleteModifierGroup(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Modifier group deleted successfully');
+            toast.success('Customization group deleted successfully');
         },
         onError: (err) => {
-            toast.error('Failed to delete modifier group', { description: getErrorMessage(err) });
+            toast.error('Failed to delete customization group', { description: getErrorMessage(err) });
         }
     });
 
@@ -88,10 +88,10 @@ export default function ModifiersPage() {
         mutationFn: (id: string) => deleteModifierOption(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Modifier option deleted successfully');
+            toast.success('Customization choice deleted successfully');
         },
         onError: (err) => {
-            toast.error('Failed to delete modifier option', { description: getErrorMessage(err) });
+            toast.error('Failed to delete customization choice', { description: getErrorMessage(err) });
         }
     });
 
@@ -118,7 +118,7 @@ export default function ModifiersPage() {
     };
 
     const handleDeleteGroup = (group: IModifierGroup) => {
-        if (confirm(`Are you sure you want to delete the modifier group "${group.name}"? This cascades and deletes all options in this group.`)) {
+        if (confirm(`Are you sure you want to delete the customization group "${group.name}"? This will delete all options in this group.`)) {
             deleteGroupMutation.mutate(group.id);
         }
     };
@@ -149,15 +149,15 @@ export default function ModifiersPage() {
                         <SlidersHorizontal className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground ">Product Modifiers & Customizations</h1>
+                        <h1 className="text-2xl font-bold text-foreground ">Product Customizations</h1>
                         <p className="text-xs text-muted-foreground">
-                            Configure drink adjustments, milk alternatives, syrup additions, and map choices to inventory ingredients.
+                            Configure drink options, milk alternatives, syrup additions, and link choices to inventory ingredients.
                         </p>
                     </div>
                 </div>
                 <RequirePermission module="Products Management" action="create">
                     <Button onClick={handleOpenCreateGroup} className="h-9 gap-1.5 shadow-sm text-xs font-semibold shrink-0">
-                        <Plus className="size-4" /> Create Modifier Group
+                        <Plus className="size-4" /> Create Customization Group
                     </Button>
                 </RequirePermission>
             </div>
@@ -204,17 +204,17 @@ export default function ModifiersPage() {
             {isGroupsLoading ? (
                 <div className="flex flex-col items-center justify-center py-24 gap-3">
                     <Spinner className="h-8 w-8 text-primary animate-spin" />
-                    <span className="text-xs text-muted-foreground font-semibold">Fetching modifier groups...</span>
+                    <span className="text-xs text-muted-foreground font-semibold">Fetching customization groups...</span>
                 </div>
             ) : !groupsData?.data || groupsData.data.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 border border-dashed rounded-2xl bg-muted/5 gap-3">
                     <Info className="size-8 text-muted-foreground stroke-[1.5]" />
                     <div className="text-center">
-                        <h3 className="font-bold text-foreground">No Modifier Groups</h3>
+                        <h3 className="font-bold text-foreground">No Customization Groups</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
                             {hasActiveFilters
                                 ? 'No custom groups found matching your filter parameters.'
-                                : 'Configure your first modifier group to allow customized drinks on Checkout.'}
+                                : 'Configure your first customization group to allow customized drinks on checkout.'}
                         </p>
                     </div>
                     {hasActiveFilters ? (

@@ -308,7 +308,7 @@ export default function ProductsPage() {
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">Menu Products Directory</h1>
                         <p className="text-xs text-muted-foreground">
-                            Configure coffee recipes, beverages profiles, pricing modifiers, and custom attributes.
+                            Configure coffee recipes, beverage profiles, customization options, and custom choices.
                         </p>
                     </div>
                 </div>

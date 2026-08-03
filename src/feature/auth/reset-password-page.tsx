@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
                                                 <div className="relative">
                                                     <Input
                                                         className="h-11 bg-background pl-10 font-mono text-sm"
-                                                        placeholder="Enter reset token uuid"
+                                                        placeholder="Enter reset token"
                                                         {...field}
                                                     />
                                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

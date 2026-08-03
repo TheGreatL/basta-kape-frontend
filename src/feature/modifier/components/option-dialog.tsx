@@ -227,9 +227,11 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                 <DialogHeader className={hasRecipe ? 'px-6 pt-6 pb-2' : ''}>
                     <DialogTitle className="flex items-center gap-2 text-lg font-bold">
                         <PlusCircle className="size-5 text-primary" />
-                        {option ? 'Edit Modifier Option' : 'Add Modifier Option'}
+                        {option ? 'Edit Customization Option' : 'Add Customization Option'}
                     </DialogTitle>
-                    <DialogDescription className="text-xs">Configure modifier option name, price, and raw stock deduction rules.</DialogDescription>
+                    <DialogDescription className="text-xs">
+                        Configure customization option name, price, and raw stock deduction rules.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -352,7 +354,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                         {fields.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center py-8 text-xs text-muted-foreground font-medium border border-dashed rounded-xl bg-muted/5 gap-1.5">
                                                 <AlertTriangle className="size-5 text-muted-foreground" />
-                                                No ingredients added. Click "Add Ingredient" to deduct stocks when this modifier is selected.
+                                                No ingredients added. Click "Add Ingredient" to deduct stocks when this option is chosen.
                                             </div>
                                         ) : (
                                             <div className="space-y-3 pr-1 max-h-[30vh] overflow-y-auto">

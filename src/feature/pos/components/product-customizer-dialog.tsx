@@ -407,7 +407,7 @@ export default function ProductCustomizerDialog({
                                                                 ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary font-bold shadow-xs'
                                                                 : isAvailable
                                                                   ? 'border-border/60 bg-card hover:border-border-hover hover:bg-muted/10 text-foreground font-medium'
-                                                                  : 'border-border/20 bg-muted/5 text-muted-foreground/30 cursor-not-allowed opacity-30'
+                                                                  : 'border-border/70 bg-muted/70 text-muted-foreground/70 cursor-not-allowed opacity-70'
                                                         }`}
                                                     >
                                                         <span className="text-xs">{val}</span>

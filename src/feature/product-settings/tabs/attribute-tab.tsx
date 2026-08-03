@@ -220,15 +220,15 @@ export default function AttributeTab({ page, pageSize, search, status, onPaginat
         <div className="space-y-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-lg font-bold text-foreground/90 leading-tight">Product Attributes</h2>
-                    <p className="text-xs text-muted-foreground">Configure custom options (e.g. Size, Milk Option) and assign modifiers.</p>
+                    <h2 className="text-lg font-bold text-foreground/90 leading-tight">Product Options</h2>
+                    <p className="text-xs text-muted-foreground">Configure custom options (e.g., Size, Milk Type) and their choices.</p>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <RequirePermission module="Product Settings Management" action="create">
                         <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" />
-                            Create Attribute
+                            Create Option
                         </Button>
                     </RequirePermission>
                 </div>

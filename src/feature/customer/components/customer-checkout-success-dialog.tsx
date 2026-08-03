@@ -113,7 +113,7 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                                 className="h-9.5 text-xs font-bold gap-1.5 border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary cursor-pointer"
                             >
                                 <Printer className="size-4 shrink-0" />
-                                Thermal Print (HTML)
+                                Print Receipt
                             </Button>
                             <Button
                                 type="button"
@@ -132,7 +132,7 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                             className="w-full h-8 text-2xs text-muted-foreground hover:text-foreground font-semibold gap-1 cursor-pointer"
                         >
                             <Download className="size-3.5 shrink-0" />
-                            Download PDF Receipt File
+                            Download Receipt
                         </Button>
                     </div>
                 </div>

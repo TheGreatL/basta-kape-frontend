@@ -107,11 +107,11 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
         mutationFn: (payload: GroupFormValues) => createModifierGroup(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Modifier group created successfully');
+            toast.success('Customization group created successfully');
             onOpenChange(false);
         },
         onError: (err) => {
-            toast.error('Failed to create modifier group', { description: getErrorMessage(err) });
+            toast.error('Failed to create customization group', { description: getErrorMessage(err) });
         }
     });
 
@@ -121,11 +121,11 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUP_DETAILS, group?.id] });
-            toast.success('Modifier group updated successfully');
+            toast.success('Customization group updated successfully');
             onOpenChange(false);
         },
         onError: (err) => {
-            toast.error('Failed to update modifier group', { description: getErrorMessage(err) });
+            toast.error('Failed to update customization group', { description: getErrorMessage(err) });
         }
     });
 
@@ -143,12 +143,12 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                         <Settings2 className="size-5 text-primary" />
-                        {group ? 'Edit Modifier Group' : 'Create Modifier Group'}
+                        {group ? 'Edit Customization Group' : 'Create Customization Group'}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
                         {group
-                            ? 'Configure modifier settings, select options parameters, and map to products.'
-                            : 'Set up a new customization category (e.g. Milk Alternatives, Sweetness levels).'}
+                            ? 'Configure customization settings, select options parameters, and map to products.'
+                            : 'Configure options requirements parameters and link customized items.'}
                     </DialogDescription>
                 </DialogHeader>
 

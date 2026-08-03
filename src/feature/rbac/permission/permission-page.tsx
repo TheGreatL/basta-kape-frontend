@@ -27,9 +27,7 @@ export default function PermissionPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Configure role-based access control (RBAC) — manage roles, action permissions, and system modules.
-                        </p>
+                        <p className="text-xs text-muted-foreground">Manage employee roles, system access levels, and feature permissions.</p>
                     </div>
                 </div>
             </div>

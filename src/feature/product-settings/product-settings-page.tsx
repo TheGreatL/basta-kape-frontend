@@ -27,7 +27,7 @@ export default function ProductSettingsPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">Product Configurations</h1>
-                        <p className="text-xs text-muted-foreground">Configure category taxonomy, product preparation types, and option modifiers.</p>
+                        <p className="text-xs text-muted-foreground">Configure product categories, preparation types, and customization options.</p>
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@ export default function ProductSettingsPage() {
                     </TabsTrigger>
                     <TabsTrigger value="attributes" className="gap-1.5">
                         <Sparkles className="size-3.5" />
-                        Attributes / Modifiers
+                        Customizations & Options
                     </TabsTrigger>
                 </TabsList>
 

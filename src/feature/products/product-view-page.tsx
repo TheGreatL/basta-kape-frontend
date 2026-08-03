@@ -87,7 +87,7 @@ export default function ProductViewPage() {
                                 </Badge>
                             </h1>
                             <p className="text-xs text-muted-foreground pt-1">
-                                View only: Product basic profile, active categories, variations, and recipe modifiers.
+                                View only: Product basic profile, active categories, variations, and customizations.
                             </p>
                         </div>
                     </div>
@@ -238,7 +238,7 @@ export default function ProductViewPage() {
                         <div className="border-b border-border/40 pb-3">
                             <h3 className="text-sm font-bold text-foreground/80 uppercase text-2xs flex items-center gap-1.5">
                                 <SlidersHorizontal className="size-4 text-primary" />
-                                Modifiers & Customizations
+                                Customizations & Options
                             </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">View choices and option groups linked to this product.</p>
                         </div>
@@ -251,7 +251,7 @@ export default function ProductViewPage() {
                         ) : !modifierGroupsData?.data ||
                           modifierGroupsData.data.filter((group: IModifierGroup) => group.products.some((p) => p.id === id)).length === 0 ? (
                             <div className="text-center py-12 text-xs text-muted-foreground italic border border-dashed rounded-xl bg-muted/10">
-                                No custom modifier groups linked to this product.
+                                No custom option groups linked to this product.
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -272,7 +272,7 @@ export default function ProductViewPage() {
                                             </CardHeader>
                                             <CardContent className="p-4">
                                                 <div className="space-y-2">
-                                                    <span className="text-3xs font-bold text-muted-foreground block uppercase">Modifier Choices</span>
+                                                    <span className="text-3xs font-bold text-muted-foreground block uppercase">Option Choices</span>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
                                                         {group.options.map((option: IModifierOption) => (
                                                             <div
