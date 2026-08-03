@@ -427,9 +427,9 @@ export default function PurchaseOrdersPage() {
                         <Truck className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Purchase Orders Management</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Stock Buy Orders</h1>
                         <p className="text-xs text-muted-foreground">
-                            Manage procurement lists, track order status from suppliers, and reconcile ingredient delivery records.
+                            Order ingredients from suppliers, track order status, and check received stocks.
                         </p>
                     </div>
                 </div>
@@ -437,7 +437,7 @@ export default function PurchaseOrdersPage() {
                 <RequirePermission module="Purchase Orders Management" action="create">
                     <Button onClick={() => setIsCreateOpen(true)} className="h-9 gap-1.5 shadow-sm font-bold">
                         <Plus className="size-4" />
-                        Create Purchase Order
+                        New Buy Order
                     </Button>
                 </RequirePermission>
             </div>
@@ -530,11 +530,9 @@ export default function PurchaseOrdersPage() {
                     <DialogHeader className="shrink-0">
                         <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <ShoppingCart className="size-5 text-primary" />
-                            Create Purchase Order
+                            New Buy Order
                         </DialogTitle>
-                        <DialogDescription className="text-xs">
-                            Create a procurement request sheet. The order will start in the DRAFT state.
-                        </DialogDescription>
+                        <DialogDescription className="text-xs">Create an order request to send to your supplier.</DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSavePO} className="flex-1 flex flex-col gap-4 overflow-y-auto pr-1 my-2 min-h-0">

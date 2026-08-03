@@ -25,7 +25,7 @@ const ADJUSTMENT_LABEL: Record<TAdjustmentType, string> = {
     EXPIRED: 'Expired',
     THEFT: 'Theft',
     PROMOTIONAL_USE: 'Promotional Use',
-    PHYSICAL_COUNT_DISCREPANCY: 'Count Discrepancy'
+    PHYSICAL_COUNT_DISCREPANCY: 'Count Difference'
 };
 
 export default function WasteLogPage() {
@@ -125,8 +125,8 @@ export default function WasteLogPage() {
                         <Trash2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Waste Log</h1>
-                        <p className="text-xs text-muted-foreground">Track waste, spoilage, theft, and manual stock correction events.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Spoiled Items Log</h1>
+                        <p className="text-xs text-muted-foreground">Track wasted, spoiled, lost, or corrected items.</p>
                     </div>
                 </div>
             </div>

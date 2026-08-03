@@ -75,7 +75,7 @@ const sidebarGroups: Array<{
             { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
             { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE, badge: '5' },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
-            { title: 'Transactions', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
+            { title: 'Payment History', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
         ]
     },
     {
@@ -96,7 +96,7 @@ const sidebarGroups: Array<{
         ]
     },
     {
-        label: 'Inventory & Purchasing',
+        label: 'Stock & Purchasing',
         items: [
             {
                 title: 'Inventory',
@@ -107,40 +107,30 @@ const sidebarGroups: Array<{
                     { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Stock Forecasts', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Deliveries', path: '/admin/inventory/deliveries', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Waste Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Spoiled Items Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
                 ]
             },
-            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
+            { title: 'Stock Buy Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]
     },
     {
-        label: 'People & Security',
+        label: 'People & Access',
         items: [
             { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
             { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
             { title: 'Roles', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
-            // {
-            //     title: 'RBAC',
-            //     icon: 'shield',
-            //     module: appModules.ROLES_AND_PERMISSIONS,
-            //     items: [
-            //         { title: 'Roles', path: '/admin/roles', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
-            //         { title: 'Permissions', path: '/admin/permissions', module: appModules.ROLES_AND_PERMISSIONS, exact: true },
-            //         { title: 'Modules', path: '/admin/modules', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
-            //     ]
-            // }
         ]
     },
     {
-        label: 'System & Reports',
+        label: 'Reports & Settings',
         items: [
             { title: 'Sales Management', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
             { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
-            { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
-            { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
+            { title: 'System History', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
+            { title: 'Shop Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
         ]
     }
 ];

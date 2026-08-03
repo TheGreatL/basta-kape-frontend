@@ -25,8 +25,8 @@ export default function RoleListPage() {
                         <Shield className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
-                        <p className="text-xs text-muted-foreground">Manage employee roles, system access levels, and feature permissions.</p>
+                        <h1 className="text-2xl font-bold text-foreground">User Roles & Access</h1>
+                        <p className="text-xs text-muted-foreground">Manage employee roles and what each staff member can see or edit.</p>
                     </div>
                 </div>
             </div>

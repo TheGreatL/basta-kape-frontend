@@ -59,8 +59,8 @@ export default function SalesPage() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales Performance Dashboard</h1>
-                        <p className="text-xs text-muted-foreground">Analyze revenue growth, peak demand, payment streams, and top menu favorites.</p>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales Overview</h1>
+                        <p className="text-xs text-muted-foreground">See your total sales, popular items, and payment breakdown.</p>
                     </div>
                 </div>
 

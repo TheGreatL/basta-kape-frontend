@@ -26,8 +26,8 @@ export default function ProductSettingsPage() {
                         <Settings className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Product Configurations</h1>
-                        <p className="text-xs text-muted-foreground">Configure product categories, preparation types, and customization options.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Product Settings</h1>
+                        <p className="text-xs text-muted-foreground">Set up product categories, types, and custom choices.</p>
                     </div>
                 </div>
             </div>

@@ -85,7 +85,7 @@ export default function LoginPage() {
                             <img src={logo} alt={storeName} className="size-16 rounded-full object-cover border border-border/50 shadow-sm" />
                         </div>
                         <CardTitle className="text-3xl font-bold">Sign In</CardTitle>
-                        <CardDescription>Enter your credentials to access your account</CardDescription>
+                        <CardDescription>Enter your email and password to sign in</CardDescription>
                         {loginMutation.isError && (
                             <div className="rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive animate-in fade-in">
                                 {getErrorMessage(loginMutation.error, 'Invalid credentials or an error occurred.')}

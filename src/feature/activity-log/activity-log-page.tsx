@@ -55,7 +55,7 @@ export default function ActivityLogPage() {
         () => [
             {
                 accessorKey: 'createdAt',
-                header: 'Timestamp',
+                header: 'Date & Time',
                 cell: ({ row }) => (
                     <span className="text-xs text-muted-foreground font-medium">
                         {format(new Date(row.original.createdAt), 'MMM d, yyyy, hh:mm a')}
@@ -64,7 +64,7 @@ export default function ActivityLogPage() {
             },
             {
                 accessorKey: 'actor',
-                header: 'Actor / User',
+                header: 'User',
                 cell: ({ row }) => {
                     const actor = row.original.actor;
                     if (!actor) {
@@ -82,7 +82,7 @@ export default function ActivityLogPage() {
             },
             {
                 accessorKey: 'title',
-                header: 'Action Event',
+                header: 'Action',
                 cell: ({ row }) => (
                     <Badge
                         variant="secondary"
@@ -94,7 +94,7 @@ export default function ActivityLogPage() {
             },
             {
                 accessorKey: 'details',
-                header: 'Description Details',
+                header: 'Details',
                 cell: ({ row }) => (
                     <span className="text-xs text-muted-foreground font-normal whitespace-pre-wrap max-w-md block leading-relaxed">
                         {row.original.details}
@@ -121,10 +121,8 @@ export default function ActivityLogPage() {
                         <Activity className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Activity Logs</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Stream operational audits, deactivations, security logs, and system modifications.
-                        </p>
+                        <h1 className="text-2xl font-bold text-foreground">System History</h1>
+                        <p className="text-xs text-muted-foreground">View system actions, changes, and user activity history.</p>
                     </div>
                 </div>
             </div>

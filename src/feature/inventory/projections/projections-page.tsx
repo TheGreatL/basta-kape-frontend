@@ -63,10 +63,10 @@ export default function ProjectionsPage() {
 
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Expected product yields based on current raw ingredient availability.</p>
+                    <p className="text-xs text-muted-foreground font-medium">How many items you can make from the ingredients you have right now.</p>
                 </div>
                 <Input
-                    placeholder="Filter forecasts by name or SKU..."
+                    placeholder="Search forecasts by name or SKU..."
                     value={localSearch}
                     onChange={(e) => setLocalSearch(e.target.value)}
                     className="h-9 w-full sm:w-[300px] bg-background/50"
@@ -81,7 +81,7 @@ export default function ProjectionsPage() {
                     <div className="flex flex-col items-center justify-center py-20 gap-2 border border-dashed rounded-2xl bg-muted/5">
                         <TrendingUp className="size-8 text-muted-foreground/60 stroke-[1.25]" />
                         <p className="text-sm font-bold text-foreground">No forecast data available</p>
-                        <p className="text-xs text-muted-foreground">Ensure products have recipes configured to see stock forecasts.</p>
+                        <p className="text-xs text-muted-foreground">Ensure products have recipes set up to see stock forecasts.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -101,14 +101,15 @@ export default function ProjectionsPage() {
                                 </CardHeader>
                                 <CardContent className="p-4 flex-1 flex flex-col gap-3">
                                     {!item.hasRecipe ? (
-                                        <p className="text-xs text-muted-foreground italic py-1">No recipe configured.</p>
+                                        <p className="text-xs text-muted-foreground italic py-1">No recipe set up.</p>
                                     ) : (
                                         <>
                                             {item.bottleneck && (
                                                 <div className="flex items-center gap-1.5 p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
                                                     <AlertTriangle className="size-3.5 text-amber-600 shrink-0" />
                                                     <span className="text-xs text-amber-700 font-medium truncate">
-                                                        Bottleneck: {item.bottleneck.name} ({item.bottleneck.currentQuantity} {item.bottleneck.unit})
+                                                        Lowest Stock Item: {item.bottleneck.name} ({item.bottleneck.currentQuantity}{' '}
+                                                        {item.bottleneck.unit})
                                                     </span>
                                                 </div>
                                             )}

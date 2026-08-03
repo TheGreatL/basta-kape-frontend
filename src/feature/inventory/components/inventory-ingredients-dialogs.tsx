@@ -101,10 +101,10 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                         <Beef className="size-5 text-primary" />
-                        Register Raw Ingredient
+                        Add New Ingredient
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Configure name, measurement standards, and threshold alerts for a new ingredient.
+                        Enter the name, unit of measure, and low stock alert level for a new ingredient.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -171,7 +171,7 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="reorderPoint"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Reorder Threshold Point</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Low Stock Alert Level</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
@@ -374,7 +374,7 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="reorderPoint"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Reorder Threshold Point</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Low Stock Alert Level</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"

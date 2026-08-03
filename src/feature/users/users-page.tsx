@@ -141,7 +141,7 @@ export default function UsersPage() {
             },
             {
                 accessorKey: 'createdAt',
-                header: 'Date Configured',
+                header: 'Date Added',
                 cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(new Date(row.original.createdAt), 'MMM d, yyyy')}</span>
             },
             {
@@ -203,17 +203,15 @@ export default function UsersPage() {
         <div className="space-y-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-lg font-bold text-foreground/90 flex items-center gap-2">Users & Staff Directory</h2>
-                    <p className="text-xs text-muted-foreground">
-                        Manage employee profiles, credentials, role assignments, and check active system staff accounts.
-                    </p>
+                    <h2 className="text-lg font-bold text-foreground/90 flex items-center gap-2">Staff & Users List</h2>
+                    <p className="text-xs text-muted-foreground">Manage employee accounts, role assignments, and login permissions.</p>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <RequirePermission module="Users Management" action="create">
                         <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" />
-                            Create User
+                            Add New User
                         </Button>
                     </RequirePermission>
                 </div>

@@ -149,8 +149,8 @@ function VoidLogsAuditView() {
         <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-foreground">Void Logs Audit Trail</h2>
-                    <p className="text-xs text-muted-foreground">Detailed audit log tracking of supervisor/manager-authorized void overrides.</p>
+                    <h2 className="text-lg font-semibold text-foreground">Cancelled Orders History</h2>
+                    <p className="text-xs text-muted-foreground">List of orders cancelled by supervisors or managers with reasons.</p>
                 </div>
 
                 <div className="relative w-full sm:w-[240px]">
@@ -347,10 +347,8 @@ export default function ReportsPage() {
                         <FileBarChart className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Preview filtered datasets and export them as Excel or PDF for auditing and operations.
-                        </p>
+                        <h1 className="text-2xl font-bold text-foreground">Reports & Downloads</h1>
+                        <p className="text-xs text-muted-foreground">View and download business reports in Excel or PDF files.</p>
                     </div>
                 </div>
             </div>
@@ -364,7 +362,7 @@ export default function ReportsPage() {
                     ))}
                     <RequirePermission module={appModules.ORDERS_MANAGEMENT} action={appPermissions.READ}>
                         <TabsTrigger value="void-logs-audit" className="text-xs sm:text-sm">
-                            Void Logs Audit
+                            Cancelled Orders
                         </TabsTrigger>
                     </RequirePermission>
                 </TabsList>

@@ -153,7 +153,7 @@ export default function SuppliersPage() {
             },
             {
                 accessorKey: 'createdAt',
-                header: 'Date Configured',
+                header: 'Date Added',
                 cell: ({ row }) => (
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="size-3 text-muted-foreground" />
@@ -257,10 +257,8 @@ export default function SuppliersPage() {
                         <Truck className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-foreground/90 leading-tight">Suppliers Directory</h2>
-                        <p className="text-xs text-muted-foreground">
-                            Configure supplier profiles, contact details, address records, and procurement channels.
-                        </p>
+                        <h2 className="text-lg font-bold text-foreground/90 leading-tight">Suppliers List</h2>
+                        <p className="text-xs text-muted-foreground">Manage supplier profiles, contact numbers, and addresses for stock orders.</p>
                     </div>
                 </div>
 
@@ -268,7 +266,7 @@ export default function SuppliersPage() {
                     <RequirePermission module="Suppliers Management" action="create">
                         <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" />
-                            Create Supplier
+                            Add Supplier
                         </Button>
                     </RequirePermission>
                 </div>
