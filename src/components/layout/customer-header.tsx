@@ -38,7 +38,7 @@ export default function CustomerHeader() {
         enabled: !!customer?.id
     });
 
-    const cartCount = cartData?.items.reduce((total: number, item: { quantity: number }) => total + item.quantity, 0) || 0;
+    const cartCount = cartData?.items.length || 0;
 
     const handleLogout = async () => {
         try {

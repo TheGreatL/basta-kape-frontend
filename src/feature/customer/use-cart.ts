@@ -31,15 +31,18 @@ export function useCart() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: (payload: { cartItemId: string; quantity: number }) => {
+        mutationFn: (payload: { cartItemId: string; quantity?: number; modifierOptionIds?: string[] }) => {
             if (!customerId) throw new Error('No customer ID');
-            return updateCartItem(customerId, payload.cartItemId, { quantity: payload.quantity });
+            return updateCartItem(customerId, payload.cartItemId, {
+                quantity: payload.quantity,
+                modifierOptionIds: payload.modifierOptionIds
+            });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CART, customerId] });
         },
         onError: (err: any) => {
-            toast.error(err.message || 'Failed to update item quantity');
+            toast.error(err.message || 'Failed to update item');
         }
     });
 

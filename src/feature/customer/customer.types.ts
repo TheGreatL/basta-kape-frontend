@@ -62,7 +62,8 @@ export interface IAddCartItem {
 }
 
 export interface IUpdateCartItem {
-    quantity: number;
+    quantity?: number;
+    modifierOptionIds?: string[];
 }
 
 export interface IProductCategoryInfo {

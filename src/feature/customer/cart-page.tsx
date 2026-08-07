@@ -33,7 +33,7 @@ export default function CartPage() {
     // Modifiers selections state: key is cartItemId, value is object containing array of ids, names, and computed modifiers price
     const [selectedModifiers, setSelectedModifiers] = useState<Record<string, { ids: string[]; price: number; names: string[] } | undefined>>({});
 
-    const handleModifiersChange = (itemId: string, ids: string[], modifierGroups: any[]) => {
+    const handleModifiersChange = async (itemId: string, ids: string[], modifierGroups: any[]) => {
         let price = 0;
         const names: string[] = [];
         modifierGroups.forEach((group) => {
@@ -48,6 +48,11 @@ export default function CartPage() {
             ...prev,
             [itemId]: { ids, price, names }
         }));
+        try {
+            await updateItem({ cartItemId: itemId, modifierOptionIds: ids });
+        } catch {
+            // Error toast is handled by useMutation
+        }
     };
 
     const items = cart?.items || [];
@@ -73,15 +78,29 @@ export default function CartPage() {
             });
 
             setSelectedModifiers((prev) => {
-                const next = { ...prev };
+                const currentItemIds = new Set(cart.items.map((item: ICartItemResponse) => item.id));
+                const next: Record<string, { ids: string[]; price: number; names: string[] } | undefined> = {};
                 let changed = false;
+
+                for (const key of Object.keys(prev)) {
+                    if (!currentItemIds.has(key)) {
+                        changed = true;
+                    } else {
+                        next[key] = prev[key];
+                    }
+                }
+
                 for (const item of cart.items) {
-                    if (prev[item.id] === undefined && item.cartModifiers) {
+                    if (item.cartModifiers) {
                         const ids = item.cartModifiers.map((cm: ICartModifierResponse) => cm.modifierOptionId);
                         const names = item.cartModifiers.map((cm: ICartModifierResponse) => cm.modifierOption.name);
                         const price = item.cartModifiers.reduce((sum: number, cm: ICartModifierResponse) => sum + cm.modifierOption.price, 0);
-                        next[item.id] = { ids, price, names };
-                        changed = true;
+
+                        const prevItemMods = next[item.id];
+                        if (!prevItemMods || prevItemMods.ids.length !== ids.length || !ids.every((id) => prevItemMods.ids.includes(id))) {
+                            next[item.id] = { ids, price, names };
+                            changed = true;
+                        }
                     }
                 }
                 return changed ? next : prev;
