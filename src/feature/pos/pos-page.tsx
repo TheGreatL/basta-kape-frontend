@@ -217,6 +217,13 @@ export default function PosPage() {
         setIsConfigOpen(true);
     };
 
+    const areModifiersEqual = (modsA: IModifierOption[], modsB: IModifierOption[]) => {
+        if (modsA.length !== modsB.length) return false;
+        const idsA = modsA.map((m) => m.id).sort();
+        const idsB = modsB.map((m) => m.id).sort();
+        return idsA.every((id, index) => id === idsB[index]);
+    };
+
     const handleAddToCart = () => {
         if (!configProduct || !selectedVariant) return;
 
@@ -241,37 +248,83 @@ export default function PosPage() {
             }
         }
 
+        const trimmedNotes = configNotes.trim() || undefined;
+
         if (editingCartItemId) {
-            setCart((prev) =>
-                prev.map((item) =>
-                    item.id === editingCartItemId
-                        ? {
-                              ...item,
-                              product: configProduct,
-                              variant: selectedVariant,
-                              modifierOptions: chosenOptionsList,
-                              quantity: configQuantity,
-                              notes: configNotes.trim() || undefined
-                          }
-                        : item
-                )
-            );
+            setCart((prev) => {
+                // Check if modifying this item makes it identical to another existing item (other than editingCartItemId)
+                const matchingOtherIndex = prev.findIndex(
+                    (item) =>
+                        item.id !== editingCartItemId &&
+                        item.variant.id === selectedVariant.id &&
+                        (item.notes || '') === (trimmedNotes || '') &&
+                        areModifiersEqual(item.modifierOptions, chosenOptionsList)
+                );
+
+                if (matchingOtherIndex !== -1) {
+                    // Merge quantities into the matching item and remove editingCartItemId
+                    return prev
+                        .map((item, idx) => {
+                            if (idx === matchingOtherIndex) {
+                                return {
+                                    ...item,
+                                    quantity: item.quantity + configQuantity
+                                };
+                            }
+                            return item;
+                        })
+                        .filter((item) => item.id !== editingCartItemId);
+                } else {
+                    // Update item in place
+                    return prev.map((item) =>
+                        item.id === editingCartItemId
+                            ? {
+                                  ...item,
+                                  product: configProduct,
+                                  variant: selectedVariant,
+                                  modifierOptions: chosenOptionsList,
+                                  quantity: configQuantity,
+                                  notes: trimmedNotes
+                              }
+                            : item
+                    );
+                }
+            });
             setIsConfigOpen(false);
             toast.success(`Updated ${configProduct.name} in cart.`);
             setEditingCartItemId(null);
         } else {
-            const newCartItem: CartItem = {
-                id: crypto.randomUUID(),
-                product: configProduct,
-                variant: selectedVariant,
-                modifierOptions: chosenOptionsList,
-                quantity: configQuantity,
-                notes: configNotes.trim() || undefined
-            };
+            setCart((prev) => {
+                const existingIndex = prev.findIndex(
+                    (item) =>
+                        item.variant.id === selectedVariant.id &&
+                        (item.notes || '') === (trimmedNotes || '') &&
+                        areModifiersEqual(item.modifierOptions, chosenOptionsList)
+                );
 
-            setCart((prev) => [...prev, newCartItem]);
+                if (existingIndex !== -1) {
+                    const updated = [...prev];
+                    const newQty = updated[existingIndex].quantity + configQuantity;
+                    updated[existingIndex] = {
+                        ...updated[existingIndex],
+                        quantity: newQty
+                    };
+                    toast.success(`Updated ${configProduct.name} quantity to ${newQty}x.`);
+                    return updated;
+                } else {
+                    const newCartItem: CartItem = {
+                        id: crypto.randomUUID(),
+                        product: configProduct,
+                        variant: selectedVariant,
+                        modifierOptions: chosenOptionsList,
+                        quantity: configQuantity,
+                        notes: trimmedNotes
+                    };
+                    toast.success(`Added ${configQuantity}x ${configProduct.name} to checkout cart.`);
+                    return [...prev, newCartItem];
+                }
+            });
             setIsConfigOpen(false);
-            toast.success(`Added ${configQuantity}x ${configProduct.name} to checkout cart.`);
         }
     };
 
