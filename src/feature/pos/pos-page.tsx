@@ -1,7 +1,18 @@
 import * as React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Monitor } from 'lucide-react';
+import { Monitor, Trash2 } from 'lucide-react';
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '#/components/ui/alert-dialog.tsx';
 
 import { getErrorMessage } from '#/utils/error-handler.ts';
 
@@ -50,6 +61,10 @@ export default function PosPage() {
     const [discountRefId, setDiscountRefId] = React.useState('');
     const [discountRefName, setDiscountRefName] = React.useState('');
     const [editingCartItemId, setEditingCartItemId] = React.useState<string | null>(null);
+
+    // Delete / Clear Confirmation States
+    const [itemToRemove, setItemToRemove] = React.useState<CartItem | null>(null);
+    const [isClearCartOpen, setIsClearCartOpen] = React.useState(false);
 
     // Product Customizer Modal States
     const [configProduct, setConfigProduct] = React.useState<IMenuProduct | null>(null);
@@ -329,30 +344,32 @@ export default function PosPage() {
     };
 
     const updateCartQuantity = (rowId: string, delta: number) => {
+        const item = cart.find((i) => i.id === rowId);
+        if (item && item.quantity + delta <= 0) {
+            setItemToRemove(item);
+            return;
+        }
         setCart((prev) =>
-            prev
-                .map((item) => {
-                    if (item.id === rowId) {
-                        const newQty = item.quantity + delta;
-                        return { ...item, quantity: newQty };
-                    }
-                    return item;
-                })
-                .filter((item) => item.quantity > 0)
+            prev.map((item) => {
+                if (item.id === rowId) {
+                    const newQty = item.quantity + delta;
+                    return { ...item, quantity: newQty };
+                }
+                return item;
+            })
         );
     };
 
     const removeCartItem = (rowId: string) => {
-        setCart((prev) => prev.filter((item) => item.id !== rowId));
-        toast.info('Item removed from cart.');
+        const item = cart.find((i) => i.id === rowId);
+        if (item) {
+            setItemToRemove(item);
+        }
     };
 
     const clearCart = () => {
-        setCart([]);
-        setAppliedDiscount(null);
-        setDiscountRefId('');
-        setDiscountRefName('');
-        toast.info('Cart cleared.');
+        if (cart.length === 0) return;
+        setIsClearCartOpen(true);
     };
 
     // -------------------------------------------------------------
@@ -624,6 +641,81 @@ export default function PosPage() {
                 onPrint={handlePrintReceipt}
                 iframeRef={iframeRef}
             />
+
+            {/* Confirmation Dialog: Remove Single Item */}
+            <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+                <AlertDialogContent className="max-w-md rounded-2xl border-border/60">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                            <div className="p-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20">
+                                <Trash2 className="size-5" />
+                            </div>
+                            Remove Item from Cart?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs pt-2 text-muted-foreground leading-relaxed">
+                            Are you sure you want to remove <span className="font-bold text-foreground">{itemToRemove?.product.name}</span>
+                            {itemToRemove?.variant.attributes && itemToRemove.variant.attributes.length > 0 && (
+                                <span className="font-semibold text-foreground">
+                                    {' '}
+                                    ({itemToRemove.variant.attributes.map((a: any) => a.attributeValue.value).join(', ')})
+                                </span>
+                            )}{' '}
+                            from the cart?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="pt-2">
+                        <AlertDialogCancel className="h-9 text-xs font-semibold rounded-xl">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => {
+                                if (itemToRemove) {
+                                    setCart((prev) => prev.filter((i) => i.id !== itemToRemove.id));
+                                    toast.info(`Removed ${itemToRemove.product.name} from cart.`);
+                                    setItemToRemove(null);
+                                }
+                            }}
+                            className="h-9 text-xs font-bold rounded-xl shadow-xs"
+                        >
+                            Remove Item
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Confirmation Dialog: Clear Entire Cart */}
+            <AlertDialog open={isClearCartOpen} onOpenChange={setIsClearCartOpen}>
+                <AlertDialogContent className="max-w-md rounded-2xl border-border/60">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                            <div className="p-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20">
+                                <Trash2 className="size-5" />
+                            </div>
+                            Clear Entire Cart?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs pt-2 text-muted-foreground leading-relaxed">
+                            This will remove all <span className="font-bold text-foreground">{cart.length} item(s)</span> and active discounts from
+                            the current checkout session. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="pt-2">
+                        <AlertDialogCancel className="h-9 text-xs font-semibold rounded-xl">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => {
+                                setCart([]);
+                                setAppliedDiscount(null);
+                                setDiscountRefId('');
+                                setDiscountRefName('');
+                                setIsClearCartOpen(false);
+                                toast.info('Cart cleared.');
+                            }}
+                            className="h-9 text-xs font-bold rounded-xl shadow-xs"
+                        >
+                            Clear All Items
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
