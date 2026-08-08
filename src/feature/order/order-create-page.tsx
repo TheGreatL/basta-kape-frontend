@@ -419,8 +419,8 @@ export default function OrderCreatePage() {
         try {
             await applyDiscountToOrder(createdOrder.id, {
                 discountId: values.discountId,
-                referenceId: isSelectedBIR ? values.referenceId : undefined,
-                referenceName: isSelectedBIR ? values.referenceName : undefined
+                referenceId: values.referenceId?.trim() || undefined,
+                referenceName: values.referenceName?.trim() || undefined
             });
 
             const updatedOrder = await getOrderById(createdOrder.id);
@@ -1229,7 +1229,7 @@ export default function OrderCreatePage() {
                                                 )}
                                             />
 
-                                            {isSelectedBIR && (
+                                            {selectedDiscountId && (
                                                 <div className="grid grid-cols-2 gap-3.5 pt-1 animate-in slide-in-from-top-1 duration-150">
                                                     <FormField
                                                         control={discountForm.control}
@@ -1237,11 +1237,12 @@ export default function OrderCreatePage() {
                                                         render={({ field }) => (
                                                             <FormItem className="space-y-1.5">
                                                                 <FormLabel className="font-bold text-foreground/80">
-                                                                    Card ID / Ref <span className="text-rose-500">*</span>
+                                                                    Reference Number / Card ID{' '}
+                                                                    {isSelectedBIR && <span className="text-rose-500">*</span>}
                                                                 </FormLabel>
                                                                 <FormControl>
                                                                     <Input
-                                                                        placeholder="e.g. SC-12345"
+                                                                        placeholder="e.g. SC-12345 or Ref No."
                                                                         {...field}
                                                                         className="h-9.5 bg-background/50 rounded-lg text-xs font-semibold"
                                                                     />
@@ -1256,7 +1257,7 @@ export default function OrderCreatePage() {
                                                         render={({ field }) => (
                                                             <FormItem className="space-y-1.5">
                                                                 <FormLabel className="font-bold text-foreground/80">
-                                                                    Holder Name <span className="text-rose-500">*</span>
+                                                                    Holder / Customer Name {isSelectedBIR && <span className="text-rose-500">*</span>}
                                                                 </FormLabel>
                                                                 <FormControl>
                                                                     <Input

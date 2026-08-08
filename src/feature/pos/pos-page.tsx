@@ -376,15 +376,10 @@ export default function PosPage() {
     // DISCOUNTS HANDLERS
     // -------------------------------------------------------------
 
-    const handleApplyDiscount = (discount: IDiscount) => {
+    const handleApplyDiscount = (discount: IDiscount, refId?: string, refName?: string) => {
         setAppliedDiscount(discount);
-        // Prompt for senior/pwd reference if required
-        if (discount.name.toLowerCase().includes('senior') || discount.name.toLowerCase().includes('pwd')) {
-            setDiscountRefName(discount.name);
-        } else {
-            setDiscountRefId('');
-            setDiscountRefName('');
-        }
+        setDiscountRefId(refId || '');
+        setDiscountRefName(refName || '');
         setIsDiscountOpen(false);
         toast.success(`Discount "${discount.name}" applied to cart.`);
     };
@@ -598,6 +593,8 @@ export default function PosPage() {
                 onOpenChange={setIsDiscountOpen}
                 discountsData={discountsData}
                 onApplyDiscount={handleApplyDiscount}
+                initialRefId={discountRefId}
+                initialRefName={discountRefName}
             />
 
             <CheckoutPaymentDialog

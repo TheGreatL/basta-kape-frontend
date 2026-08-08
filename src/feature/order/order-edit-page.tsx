@@ -222,8 +222,8 @@ export default function OrderEditPage() {
         }
         applyDiscountMutation.mutate({
             discountId: values.discountId,
-            referenceId: isSelectedBIR ? values.referenceId : undefined,
-            referenceName: isSelectedBIR ? values.referenceName : undefined
+            referenceId: values.referenceId?.trim() || undefined,
+            referenceName: values.referenceName?.trim() || undefined
         });
     };
 
@@ -778,10 +778,12 @@ export default function OrderEditPage() {
                                                                 )}
                                                             />
 
-                                                            {isSelectedBIR && (
-                                                                <div className="space-y-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3.5 animate-in slide-in-from-top-2 duration-150">
-                                                                    <div className="text-xs text-amber-700 font-bold leading-normal">
-                                                                        BIR compliance: Enter card details to apply senior/PWD discount.
+                                                            {selectedDiscountId && (
+                                                                <div className="space-y-2.5 bg-primary/5 border border-primary/10 rounded-xl p-3.5 animate-in slide-in-from-top-2 duration-150">
+                                                                    <div className="text-xs text-primary font-bold leading-normal">
+                                                                        {isSelectedBIR
+                                                                            ? 'BIR compliance: Card ID and Holder Name are required for Senior/PWD.'
+                                                                            : 'Discount Reference Details (Optional)'}
                                                                     </div>
                                                                     <div className="space-y-2">
                                                                         <FormField
@@ -790,11 +792,11 @@ export default function OrderEditPage() {
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
                                                                                     <FormLabel className="text-xs font-bold text-foreground/75 block">
-                                                                                        Card ID Number
+                                                                                        Reference Number / Card ID
                                                                                     </FormLabel>
                                                                                     <FormControl>
                                                                                         <Input
-                                                                                            placeholder="e.g. SC-12345"
+                                                                                            placeholder="e.g. SC-12345 or Ref/Voucher No."
                                                                                             {...field}
                                                                                             className="h-8 text-2xs bg-background/50 font-mono rounded-lg"
                                                                                         />
@@ -810,7 +812,7 @@ export default function OrderEditPage() {
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
                                                                                     <FormLabel className="text-xs font-bold text-foreground/75 block">
-                                                                                        Cardholder Name
+                                                                                        Cardholder / Reference Name
                                                                                     </FormLabel>
                                                                                     <FormControl>
                                                                                         <Input
