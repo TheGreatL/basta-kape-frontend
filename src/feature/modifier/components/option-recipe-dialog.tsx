@@ -25,17 +25,16 @@ import {
     deleteModifierOptionRecipe,
     restoreModifierOptionRecipe
 } from '#/api/modifiers.api.ts';
-import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
+import { getIngredients } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type { IModifierOption, IModifierRecipe, IModifierRecipeIngredient } from '../modifier.types';
-import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
+import type { IIngredient } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
@@ -45,7 +44,8 @@ const recipeIngredientSchema = z.object({
     ingredientId: z.string().uuid('Please select a valid raw ingredient'),
     quantity: z.number().positive('Quantity must be greater than 0'),
     ingredientUnitId: z.string().uuid('Please select a valid unit'),
-    _ingredientName: z.string().optional()
+    _ingredientName: z.string().optional(),
+    _unitName: z.string().optional()
 });
 
 const recipeFormSchema = z.object({
@@ -93,15 +93,6 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
     const isNotFound = isError && error instanceof ApiError && error.status === 404;
     const isDataLoading = (isRecipeLoading && !isNotFound) || !isRendering || !option;
 
-    // Query: Measurement Units
-    const { data: unitsData } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { page: 1, limit: 50, status: 'active' }],
-        queryFn: () => getIngredientUnits({ page: 1, limit: 50, status: 'active' }),
-        enabled: open
-    });
-
-    const units = React.useMemo(() => unitsData?.data || [], [unitsData]);
-
     const form = useForm<RecipeFormValues>({
         resolver: zodResolver(recipeFormSchema),
         defaultValues: {
@@ -126,7 +117,8 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                     ingredientId: ing.ingredientId,
                     quantity: ing.quantity,
                     ingredientUnitId: ing.ingredientUnitId,
-                    _ingredientName: ing.ingredient.name
+                    _ingredientName: ing.ingredient.name,
+                    _unitName: ing.unit.abbreviation || ing.unit.name
                 }))
             });
         } else if (option) {
@@ -335,10 +327,14 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                                             value={selectField.value}
                                                                             onChange={(val, item) => {
                                                                                 selectField.onChange(val);
-                                                                                if (item?.defaultUnit?.id) {
+                                                                                if (item?.defaultUnit) {
                                                                                     form.setValue(
                                                                                         `ingredients.${index}.ingredientUnitId`,
                                                                                         item.defaultUnit.id
+                                                                                    );
+                                                                                    form.setValue(
+                                                                                        `ingredients.${index}._unitName`,
+                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name
                                                                                     );
                                                                                 }
                                                                             }}
@@ -390,31 +386,33 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                         />
                                                     </div>
 
-                                                    {/* Unit Select */}
+                                                    {/* Unit Display (Derived from selected ingredient) */}
                                                     <div className="sm:col-span-3">
                                                         <FormField
                                                             control={form.control}
                                                             name={`ingredients.${index}.ingredientUnitId`}
-                                                            render={({ field: unitField }) => (
-                                                                <FormItem>
-                                                                    <FormLabel className="text-xs font-semibold text-foreground/80">Unit</FormLabel>
-                                                                    <Select value={unitField.value} onValueChange={unitField.onChange}>
+                                                            render={({ field: unitField }) => {
+                                                                const unitName = form.watch(`ingredients.${index}._unitName`);
+                                                                return (
+                                                                    <FormItem>
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Unit
+                                                                        </FormLabel>
                                                                         <FormControl>
-                                                                            <SelectTrigger className="h-9 bg-background/50">
-                                                                                <SelectValue placeholder="Select unit..." />
-                                                                            </SelectTrigger>
+                                                                            <Input
+                                                                                type="text"
+                                                                                readOnly
+                                                                                disabled
+                                                                                value={
+                                                                                    unitName || (unitField.value ? 'Set Unit' : 'Select ingredient')
+                                                                                }
+                                                                                className="h-9 bg-muted/40 font-semibold text-xs text-foreground/75 border-border/50 cursor-not-allowed select-none"
+                                                                            />
                                                                         </FormControl>
-                                                                        <SelectContent>
-                                                                            {units.map((u: IIngredientUnit) => (
-                                                                                <SelectItem key={u.id} value={u.id}>
-                                                                                    {u.name} {u.abbreviation ? `(${u.abbreviation})` : ''}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                );
+                                                            }}
                                                         />
                                                     </div>
 

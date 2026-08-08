@@ -9,6 +9,8 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { getFrontendReference } from '#/utils/helper.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { TOrderStatus, IOrder } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
@@ -115,7 +117,7 @@ export default function OrdersPage() {
                     <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         type="text"
-                        placeholder="Search orders..."
+                        placeholder="Search by order ref, ticket #, item..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-9 h-10 w-full rounded-xl bg-card border-border/60 focus-visible:ring-primary/20 focus-visible:border-primary/50 text-sm"
@@ -186,135 +188,149 @@ export default function OrdersPage() {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {orders.map((order) => (
-                            <div
-                                key={order.id}
-                                className="group relative flex flex-col justify-between rounded-2xl border border-border/40 bg-card p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
-                            >
-                                <div>
-                                    {/* Card Top */}
-                                    <div className="flex justify-between items-start">
-                                        <div className="space-y-1">
-                                            <span className="text-xs font-semibold text-muted-foreground">Queue Ticket</span>
-                                            <h3 className="text-2xl font-bold text-foreground">{order.queueNumber}</h3>
-                                        </div>
-                                        <Badge
-                                            variant="outline"
-                                            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusStyle(order.status)}`}
-                                        >
-                                            {order.status}
-                                        </Badge>
-                                    </div>
-
-                                    {/* Order Details */}
-                                    <div className="mt-4 space-y-2 text-sm">
-                                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                                            <Clock className="size-4" />
-                                            <span>
-                                                {new Date(order.createdAt).toLocaleString(undefined, {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
-                                        </div>
-                                        {/* Order Items List */}
-                                        <div className="mt-3 space-y-2 pt-3 border-t border-dashed border-border/40">
-                                            {order.items?.map((item) => (
-                                                <div key={item.id} className="text-xs space-y-1">
-                                                    <div className="flex justify-between items-baseline text-foreground">
-                                                        <span className="font-semibold text-foreground">
-                                                            {item.quantity}x {item.variant.product.name}
-                                                            {item.variant.attributes && item.variant.attributes.length > 0 && (
-                                                                <span className="text-muted-foreground font-normal ml-1">
-                                                                    (
-                                                                    {item.variant.attributes
-                                                                        .map((attr: any) => attr.attributeValue?.value)
-                                                                        .join(' / ')}
-                                                                    )
-                                                                </span>
-                                                            )}
-                                                        </span>
-                                                        <span className="font-bold text-muted-foreground">₱{item.totalPrice.toFixed(2)}</span>
-                                                    </div>
-
-                                                    {/* Add-ons/Modifiers */}
-                                                    {item.modifiers.length > 0 && (
-                                                        <div className="pl-3 flex flex-wrap gap-1">
-                                                            {item.modifiers.map((mod) => (
-                                                                <span
-                                                                    key={mod.id}
-                                                                    className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
-                                                                >
-                                                                    + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        {order.notes && <p className="text-xs text-muted-foreground italic truncate">"{order.notes}"</p>}
-                                    </div>
-                                </div>
-
-                                {/* Card Footer */}
-                                <div className="flex justify-between items-center mt-5 pt-4 border-t border-border/30">
+                        {orders.map((order) => {
+                            const orderRef = order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber);
+                            return (
+                                <div
+                                    key={order.id}
+                                    className="group relative flex flex-col justify-between rounded-2xl border border-border/40 bg-card p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                                >
                                     <div>
-                                        <span className="text-xs text-muted-foreground">Total Amount</span>
-                                        <div className="text-lg font-bold text-foreground">₱{order.netTotal.toFixed(2)}</div>
+                                        {/* Card Top */}
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-xs font-semibold text-muted-foreground">Queue Ticket</span>
+                                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/60 text-xs font-mono border border-border/40">
+                                                        <span className="text-muted-foreground font-semibold">Ref:</span>
+                                                        <span className="font-bold text-foreground">{orderRef}</span>
+                                                        <CopyButton
+                                                            value={orderRef}
+                                                            className="h-3.5 w-3.5 p-0 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                                                            description={`Order Ref ${orderRef} copied`}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-2xl font-bold text-foreground">{order.queueNumber}</h3>
+                                            </div>
+                                            <Badge
+                                                variant="outline"
+                                                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusStyle(order.status)}`}
+                                            >
+                                                {order.status}
+                                            </Badge>
+                                        </div>
+
+                                        {/* Order Details */}
+                                        <div className="mt-4 space-y-2 text-sm">
+                                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                <Clock className="size-4" />
+                                                <span>
+                                                    {new Date(order.createdAt).toLocaleString(undefined, {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            {/* Order Items List */}
+                                            <div className="mt-3 space-y-2 pt-3 border-t border-dashed border-border/40">
+                                                {order.items?.map((item) => (
+                                                    <div key={item.id} className="text-xs space-y-1">
+                                                        <div className="flex justify-between items-baseline text-foreground">
+                                                            <span className="font-semibold text-foreground">
+                                                                {item.quantity}x {item.variant.product.name}
+                                                                {item.variant.attributes && item.variant.attributes.length > 0 && (
+                                                                    <span className="text-muted-foreground font-normal ml-1">
+                                                                        (
+                                                                        {item.variant.attributes
+                                                                            .map((attr: any) => attr.attributeValue?.value)
+                                                                            .join(' / ')}
+                                                                        )
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                            <span className="font-bold text-muted-foreground">₱{item.totalPrice.toFixed(2)}</span>
+                                                        </div>
+
+                                                        {/* Add-ons/Modifiers */}
+                                                        {item.modifiers.length > 0 && (
+                                                            <div className="pl-3 flex flex-wrap gap-1">
+                                                                {item.modifiers.map((mod) => (
+                                                                    <span
+                                                                        key={mod.id}
+                                                                        className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
+                                                                    >
+                                                                        + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {order.notes && <p className="text-xs text-muted-foreground italic truncate">"{order.notes}"</p>}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
+
+                                    {/* Card Footer */}
+                                    <div className="flex justify-between items-center mt-5 pt-4 border-t border-border/30">
+                                        <div>
+                                            <span className="text-xs text-muted-foreground">Total Amount</span>
+                                            <div className="text-lg font-bold text-foreground">₱{order.netTotal.toFixed(2)}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-9 w-9 p-0 rounded-xl hover:text-primary hover:border-primary/45 transition-all cursor-pointer"
+                                                        title="Print / View Receipt"
+                                                    >
+                                                        <Printer className="size-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent className="rounded-xl" align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={() => printReceiptHtml(order.id)}
+                                                        className="text-xs gap-2 font-semibold cursor-pointer"
+                                                    >
+                                                        <Printer className="size-3.5 text-muted-foreground" />
+                                                        Print Thermal (HTML)
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => openReceiptPdf(order.id)}
+                                                        className="text-xs gap-2 font-semibold cursor-pointer"
+                                                    >
+                                                        <FileText className="size-3.5 text-muted-foreground" />
+                                                        Open PDF Receipt
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
+                                                        className="text-xs gap-2 font-semibold cursor-pointer"
+                                                    >
+                                                        <Download className="size-3.5 text-muted-foreground" />
+                                                        Download PDF Receipt
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+
+                                            <Link to="/orders/$id" params={{ id: order.id }}>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    className="h-9 w-9 p-0 rounded-xl hover:text-primary hover:border-primary/45 transition-all cursor-pointer"
-                                                    title="Print / View Receipt"
+                                                    className="h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 font-semibold"
                                                 >
-                                                    <Printer className="size-4" />
+                                                    Track Order
                                                 </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="rounded-xl" align="end">
-                                                <DropdownMenuItem
-                                                    onClick={() => printReceiptHtml(order.id)}
-                                                    className="text-xs gap-2 font-semibold cursor-pointer"
-                                                >
-                                                    <Printer className="size-3.5 text-muted-foreground" />
-                                                    Print Thermal (HTML)
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => openReceiptPdf(order.id)}
-                                                    className="text-xs gap-2 font-semibold cursor-pointer"
-                                                >
-                                                    <FileText className="size-3.5 text-muted-foreground" />
-                                                    Open PDF Receipt
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
-                                                    className="text-xs gap-2 font-semibold cursor-pointer"
-                                                >
-                                                    <Download className="size-3.5 text-muted-foreground" />
-                                                    Download PDF Receipt
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-
-                                        <Link to="/orders/$id" params={{ id: order.id }}>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 font-semibold"
-                                            >
-                                                Track Order
-                                            </Button>
-                                        </Link>
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Pagination */}

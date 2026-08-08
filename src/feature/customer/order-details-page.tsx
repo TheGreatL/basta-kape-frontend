@@ -15,7 +15,8 @@ import {
     Store,
     Printer,
     FileText,
-    Download
+    Download,
+    CreditCard
 } from 'lucide-react';
 
 import { getOrderById } from '#/api/orders.api.ts';
@@ -395,7 +396,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {/* Payment Information Card */}
-                {order.payments && order.payments.length > 0 && (
+                {order.payments && order.payments.length > 0 ? (
                     <div className="p-6 rounded-2xl border border-border/40 bg-card shadow-sm space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <Receipt className="size-5 text-primary" />
@@ -473,6 +474,34 @@ export default function OrderDetailsPage() {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/15 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Receipt className="size-5 text-amber-600 dark:text-amber-400" />
+                                <h2 className="text-lg font-bold text-foreground">Payment Information</h2>
+                            </div>
+                            <Badge
+                                variant="outline"
+                                className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold text-xs uppercase px-2.5 py-0.5 rounded-full"
+                            >
+                                Unpaid / Pending Payment
+                            </Badge>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-4 p-5 rounded-xl border border-amber-500/20 bg-card/80 backdrop-blur-xs">
+                            <div className="size-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                <CreditCard className="size-6 text-amber-600 dark:text-amber-400 animate-pulse" />
+                            </div>
+                            <div className="space-y-1 text-center sm:text-left flex-1">
+                                <h3 className="font-bold text-base text-foreground">No Payment Recorded Yet</h3>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Payment has not been settled for this order yet. Please present your Queue Ticket at the store counter to complete
+                                    payment.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}

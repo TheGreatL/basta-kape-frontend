@@ -365,7 +365,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input
-                                                                    placeholder="Enter 13-digit Reference ID"
+                                                                    placeholder="Enter 11-digit Reference ID"
                                                                     value={field.value || ''}
                                                                     onChange={field.onChange}
                                                                     className="h-9 bg-background/50 text-xs font-semibold"

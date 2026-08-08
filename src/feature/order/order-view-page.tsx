@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, CheckCircle2, ArrowLeft, Printer, FileText, Download, Volume2 } from 'lucide-react';
+import { TrendingUp, CheckCircle2, ArrowLeft, Printer, FileText, Download, Volume2, CreditCard, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '#/lib/utils.ts';
 
@@ -328,13 +328,13 @@ export default function OrderViewPage() {
                         </div>
 
                         {/* Payment Settlement details card */}
-                        {payments && payments.length > 0 && (
+                        {payments && payments.length > 0 ? (
                             <div className="border border-emerald-500/20 p-5 rounded-2xl bg-emerald-500/5 shadow-3xs space-y-3.5">
-                                <h4 className="font-bold text-emerald-800 border-b border-emerald-500/20 pb-2 uppercase text-2xs  flex items-center gap-1.5">
-                                    <CheckCircle2 className="size-3.5 text-emerald-600" />
+                                <h4 className="font-bold text-emerald-800 dark:text-emerald-400 border-b border-emerald-500/20 pb-2 uppercase text-2xs flex items-center gap-1.5">
+                                    <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                                     Payment Settlement Details
                                 </h4>
-                                <div className="space-y-3 font-medium text-emerald-800 text-xs">
+                                <div className="space-y-3 font-medium text-emerald-800 dark:text-emerald-300 text-xs">
                                     {payments.map((payment: IOrderPayment) => (
                                         <div key={payment.id} className="space-y-2.5 border-b border-emerald-500/10 pb-2.5 last:border-0 last:pb-0">
                                             <div className="flex justify-between">
@@ -342,10 +342,10 @@ export default function OrderViewPage() {
                                                 <Badge
                                                     className={`text-xs uppercase font-bold py-0.5 px-2 ${
                                                         orderDetails.paymentStatus === 'PAID'
-                                                            ? 'bg-emerald-600/10 text-emerald-700 border-emerald-600/20'
+                                                            ? 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-600/20'
                                                             : orderDetails.paymentStatus === 'PENDING'
-                                                              ? 'bg-amber-600/10 text-amber-700 border-amber-600/20'
-                                                              : 'bg-rose-600/10 text-rose-700 border-rose-600/20'
+                                                              ? 'bg-amber-600/10 text-amber-700 dark:text-amber-400 border-amber-600/20'
+                                                              : 'bg-rose-600/10 text-rose-700 dark:text-rose-400 border-rose-600/20'
                                                     }`}
                                                 >
                                                     {orderDetails.paymentStatus}
@@ -353,21 +353,23 @@ export default function OrderViewPage() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Payment Method:</span>
-                                                <span className="font-bold text-emerald-900">{payment.paymentMethod}</span>
+                                                <span className="font-bold text-emerald-900 dark:text-emerald-200">{payment.paymentMethod}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Amount Settled:</span>
-                                                <span className="font-bold text-emerald-900 text-sm">₱{payment.amount.toFixed(2)}</span>
+                                                <span className="font-bold text-emerald-900 dark:text-emerald-200 text-sm">
+                                                    ₱{payment.amount.toFixed(2)}
+                                                </span>
                                             </div>
                                             {payment.paymentMethod === 'CASH' ? (
                                                 <>
-                                                    <div className="flex justify-between text-emerald-700">
+                                                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
                                                         <span>Tendered Cash:</span>
                                                         <span>₱{(payment.amountTendered || 0).toFixed(2)}</span>
                                                     </div>
-                                                    <div className="flex justify-between text-emerald-700">
+                                                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
                                                         <span>Change Given:</span>
-                                                        <span className="font-semibold text-emerald-900">
+                                                        <span className="font-semibold text-emerald-900 dark:text-emerald-200">
                                                             ₱{(payment.amountChange || 0).toFixed(2)}
                                                         </span>
                                                     </div>
@@ -375,16 +377,16 @@ export default function OrderViewPage() {
                                             ) : (
                                                 <>
                                                     {payment.paymentReferenceNumber && (
-                                                        <div className="flex justify-between text-emerald-700 items-center">
+                                                        <div className="flex justify-between text-emerald-700 dark:text-emerald-400 items-center">
                                                             <span>Reference ID:</span>
-                                                            <span className="font-mono text-2xs font-semibold bg-emerald-500/10 px-2 py-0.5 rounded text-emerald-900 border border-emerald-500/20">
+                                                            <span className="font-mono text-2xs font-semibold bg-emerald-500/10 px-2 py-0.5 rounded text-emerald-900 dark:text-emerald-200 border border-emerald-500/20">
                                                                 {payment.paymentReferenceNumber}
                                                             </span>
                                                         </div>
                                                     )}
                                                     {payment.paymentProofPhoto && (
                                                         <div className="mt-2.5 space-y-1">
-                                                            <span className="text-xs text-emerald-700 block uppercase font-bold">
+                                                            <span className="text-xs text-emerald-700 dark:text-emerald-400 block uppercase font-bold">
                                                                 Screenshot Receipt
                                                             </span>
                                                             <div className="border border-emerald-500/20 rounded-xl overflow-hidden bg-background max-h-[140px] flex items-center justify-center relative shadow-3xs">
@@ -399,11 +401,39 @@ export default function OrderViewPage() {
                                                     )}
                                                 </>
                                             )}
-                                            <div className="text-xs text-emerald-600 font-semibold pt-1 text-right">
+                                            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold pt-1 text-right">
                                                 Paid on {format(new Date(payment.createdAt), 'MMM dd, yyyy - hh:mm a')}
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="border border-amber-500/30 p-5 rounded-2xl bg-amber-500/5 dark:bg-amber-950/15 shadow-3xs space-y-3.5">
+                                <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                                    <h4 className="font-bold text-amber-800 dark:text-amber-400 uppercase text-2xs flex items-center gap-1.5">
+                                        <AlertCircle className="size-3.5 text-amber-600 dark:text-amber-400" />
+                                        Payment Settlement Details
+                                    </h4>
+                                    <Badge
+                                        variant="outline"
+                                        className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 text-2xs font-bold uppercase"
+                                    >
+                                        Unpaid / No Record
+                                    </Badge>
+                                </div>
+                                <div className="p-4 rounded-xl border border-amber-500/20 bg-background/60 backdrop-blur-xs space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                            <CreditCard className="size-5 text-amber-600 dark:text-amber-400 animate-pulse" />
+                                        </div>
+                                        <div>
+                                            <h5 className="font-bold text-sm text-foreground">No Payment Recorded</h5>
+                                            <p className="text-2xs text-muted-foreground mt-0.5 leading-relaxed">
+                                                No payment transactions or proof of payment have been recorded for this order yet.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -480,10 +480,10 @@ export default function CheckoutPage() {
                                         GCash Reference Number <span className="text-rose-500">*</span>
                                     </label>
                                     <Input
-                                        placeholder="Enter 13-digit GCash reference number"
+                                        placeholder="Enter 11-digit GCash reference number"
                                         value={referenceNumber}
                                         onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, ''))}
-                                        maxLength={13}
+                                        maxLength={11}
                                         className="h-10 text-xs rounded-xl bg-background/50 border-border/60 font-mono"
                                         required
                                     />
