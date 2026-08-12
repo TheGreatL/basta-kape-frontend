@@ -11,13 +11,14 @@ import { getIngredients, deleteIngredient, restoreIngredient } from '#/api/inven
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { IIngredient } from '../inventory.types';
+import type { IIngredient, TItemType } from '../inventory.types';
 
 import DataTable from '#/components/data-table/data-table.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 
 import {
     AlertDialog,
@@ -33,10 +34,25 @@ import {
 
 import { IngredientCreateDialog, IngredientEditDialog } from '../components/inventory-ingredients-dialogs.tsx';
 
+const ITEM_TYPE_CONFIG: Record<TItemType, { label: string; className: string }> = {
+    INGREDIENT: {
+        label: 'Raw Ingredient',
+        className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+    },
+    PACKAGING_MATERIAL: {
+        label: 'Packaging Material',
+        className: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
+    },
+    SUPPLY: {
+        label: 'General Supply',
+        className: 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20'
+    }
+};
+
 export default function IngredientsPage() {
     const navigate = useNavigate({ from: '/admin/inventory/ingredients' });
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status } = Route.useSearch();
+    const { page, pageSize, search, status, type } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -64,8 +80,8 @@ export default function IngredientsPage() {
 
     // Query: Ingredients
     const { data: ingredientsData, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST, { page, pageSize, search, status }],
-        queryFn: () => getIngredients({ page, limit: pageSize, search, status })
+        queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST, { page, pageSize, search, status, type }],
+        queryFn: () => getIngredients({ page, limit: pageSize, search, status, type: type || undefined })
     });
 
     // Delete & Restore Mutations
@@ -74,9 +90,9 @@ export default function IngredientsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Ingredient Archived');
+            toast.success('Item Archived');
         },
-        onError: (err) => toast.error('Failed to archive ingredient', { description: getErrorMessage(err) })
+        onError: (err) => toast.error('Failed to archive item', { description: getErrorMessage(err) })
     });
 
     const restoreIngredientMutation = useMutation({
@@ -84,16 +100,16 @@ export default function IngredientsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Ingredient Restored');
+            toast.success('Item Restored');
         },
-        onError: (err) => toast.error('Failed to restore ingredient', { description: getErrorMessage(err) })
+        onError: (err) => toast.error('Failed to restore item', { description: getErrorMessage(err) })
     });
 
     const columns = React.useMemo<ColumnDef<IIngredient>[]>(
         () => [
             {
                 accessorKey: 'name',
-                header: 'Ingredient Name',
+                header: 'Item Name',
                 cell: ({ row }) => (
                     <div className="flex flex-col gap-0.5">
                         <span className="font-semibold text-foreground/90">{row.original.name}</span>
@@ -102,6 +118,19 @@ export default function IngredientsPage() {
                         )}
                     </div>
                 )
+            },
+            {
+                accessorKey: 'type',
+                header: 'Category / Type',
+                cell: ({ row }) => {
+                    const itemType = row.original.type;
+                    const config = ITEM_TYPE_CONFIG[itemType];
+                    return (
+                        <Badge variant="outline" className={`font-medium ${config.className}`}>
+                            {config.label}
+                        </Badge>
+                    );
+                }
             },
             {
                 accessorKey: 'defaultUnit.name',
@@ -175,11 +204,11 @@ export default function IngredientsPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
                                                 <RotateCcw className="size-5 text-emerald-600" />
-                                                Restore Raw Ingredient
+                                                Restore Inventory Item
                                             </AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Are you sure you want to restore the raw ingredient <strong>"{row.original.name}"</strong>? This will
-                                                make it active, enabling stock tracking and recipe mapping.
+                                                Are you sure you want to restore the item <strong>"{row.original.name}"</strong>? This will make it
+                                                active, enabling stock tracking and recipe mapping.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
@@ -210,9 +239,9 @@ export default function IngredientsPage() {
                         <Beef className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Ingredients</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Inventory Items & Materials</h1>
                         <p className="text-xs text-muted-foreground">
-                            Manage raw material profiles, default measurement units, and alert thresholds.
+                            Manage raw ingredients, packaging materials, measurement units, and reorder thresholds.
                         </p>
                     </div>
                 </div>
@@ -220,10 +249,10 @@ export default function IngredientsPage() {
 
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Configure raw ingredient specifications.</p>
+                    <p className="text-xs text-muted-foreground font-medium">Configure item specifications and packaging materials.</p>
                     <RequirePermission module="Inventory Management" action="create">
                         <Button onClick={() => setIngredientCreateOpen(true)} className="h-9 gap-1.5 shadow-sm" size="sm">
-                            <Plus className="size-4" /> Register Ingredient
+                            <Plus className="size-4" /> Add Item / Material
                         </Button>
                     </RequirePermission>
                 </div>
@@ -241,11 +270,22 @@ export default function IngredientsPage() {
                     filterContent={
                         <>
                             <Input
-                                placeholder="Search ingredients..."
+                                placeholder="Search items & materials..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
                                 className="h-9 w-full sm:w-[250px] bg-background/50"
                             />
+                            <Select value={type || 'ALL'} onValueChange={(val) => setSearch({ type: val === 'ALL' ? '' : val, page: 1 })}>
+                                <SelectTrigger className="h-9 min-w-[170px] bg-background/50">
+                                    <SelectValue placeholder="All Categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Categories</SelectItem>
+                                    <SelectItem value="INGREDIENT">Raw Ingredients</SelectItem>
+                                    <SelectItem value="PACKAGING_MATERIAL">Packaging Materials</SelectItem>
+                                    <SelectItem value="SUPPLY">General Supplies</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Select value={status} onValueChange={(val: any) => setSearch({ status: val, page: 1 })}>
                                 <SelectTrigger className="h-9 min-w-[130px] bg-background/50 capitalize">
                                     <SelectValue placeholder="Status" />

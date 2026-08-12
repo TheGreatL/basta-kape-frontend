@@ -35,6 +35,7 @@ export const getIngredientUnits = async (params: IGetIngredientUnitsParams): Pro
     if (params.limit !== undefined) query.set('limit', String(params.limit));
     if (params.search) query.set('search', params.search);
     if (params.status) query.set('status', params.status);
+    if (params.category) query.set('category', params.category);
 
     const response = await api.get(`/inventory/units?${query.toString()}`);
     if (!response.ok) {
@@ -99,6 +100,7 @@ export const getIngredients = async (params: IGetIngredientsParams): Promise<IPa
     if (params.limit !== undefined) query.set('limit', String(params.limit));
     if (params.search) query.set('search', params.search);
     if (params.status) query.set('status', params.status);
+    if (params.type) query.set('type', params.type);
 
     const response = await api.get(`/inventory/ingredients?${query.toString()}`);
     if (!response.ok) {
@@ -164,6 +166,7 @@ export const getInventoryLevels = async (params: IGetInventoryLevelsParams): Pro
     if (params.search) query.set('search', params.search);
     if (params.status) query.set('status', params.status);
     if (params.recordStatus) query.set('recordStatus', params.recordStatus);
+    if (params.type) query.set('type', params.type);
 
     const response = await api.get(`/inventory/levels?${query.toString()}`);
     if (!response.ok) {

@@ -1,5 +1,8 @@
 import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 
+export type TItemType = 'INGREDIENT' | 'PACKAGING_MATERIAL' | 'SUPPLY';
+export type TUnitCategory = 'ALL' | 'INGREDIENT' | 'PACKAGING_MATERIAL' | 'SUPPLY';
+
 // =============================================================================
 // Measurement Units Configuration
 // =============================================================================
@@ -7,6 +10,7 @@ export interface IIngredientUnit {
     id: string;
     name: string;
     abbreviation: string;
+    category: TUnitCategory;
     status: 'active' | 'archive';
     createdAt: string;
     updatedAt: string;
@@ -17,16 +21,19 @@ export interface IIngredientUnit {
 export interface IGetIngredientUnitsParams extends IPaginationParams {
     search?: string;
     status?: 'active' | 'archive';
+    category?: TUnitCategory;
 }
 
 export interface ICreateIngredientUnitPayload {
     name: string;
     abbreviation?: string;
+    category?: TUnitCategory;
 }
 
 export interface IUpdateIngredientUnitPayload {
     name?: string;
     abbreviation?: string;
+    category?: TUnitCategory;
 }
 
 // =============================================================================
@@ -35,6 +42,7 @@ export interface IUpdateIngredientUnitPayload {
 export interface IIngredient {
     id: string;
     name: string;
+    type: TItemType;
     ingredientUnitId: string;
     reorderPoint: number;
     description: string | null;
@@ -49,10 +57,12 @@ export interface IIngredient {
 export interface IGetIngredientsParams extends IPaginationParams {
     search?: string;
     status?: 'active' | 'archive';
+    type?: TItemType | '';
 }
 
 export interface ICreateIngredientPayload {
     name: string;
+    type?: TItemType;
     ingredientUnitId: string;
     reorderPoint?: number;
     description?: string;
@@ -60,6 +70,7 @@ export interface ICreateIngredientPayload {
 
 export interface IUpdateIngredientPayload {
     name?: string;
+    type?: TItemType;
     ingredientUnitId?: string;
     reorderPoint?: number;
     description?: string;
@@ -88,6 +99,7 @@ export interface IIngredientInventory {
 export interface IGetInventoryLevelsParams extends IPaginationParams {
     search?: string;
     status?: TInventoryStatus | '';
+    type?: TItemType | '';
     recordStatus?: 'active' | 'archive';
 }
 

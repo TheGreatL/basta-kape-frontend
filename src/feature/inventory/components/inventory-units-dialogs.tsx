@@ -17,9 +17,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+
 const unitFormSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must not exceed 100 characters'),
-    abbreviation: z.string().max(20, 'Abbreviation must not exceed 20 characters').optional()
+    abbreviation: z.string().max(20, 'Abbreviation must not exceed 20 characters').optional(),
+    category: z.enum(['ALL', 'INGREDIENT', 'PACKAGING_MATERIAL', 'SUPPLY'])
 });
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
@@ -46,13 +49,14 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
         resolver: zodResolver(unitFormSchema),
         defaultValues: {
             name: '',
-            abbreviation: ''
+            abbreviation: '',
+            category: 'ALL'
         }
     });
 
     React.useEffect(() => {
         if (!open) {
-            form.reset({ name: '', abbreviation: '' });
+            form.reset({ name: '', abbreviation: '', category: 'ALL' });
         }
     }, [open, form]);
 
@@ -75,7 +79,8 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
     const onSubmit = (values: UnitFormValues) => {
         createMutation.mutate({
             name: values.name,
-            abbreviation: values.abbreviation || undefined
+            abbreviation: values.abbreviation || undefined,
+            category: values.category
         });
     };
 
@@ -90,7 +95,7 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
                         Create Measurement Unit
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Register standard inventory measurement metrics (e.g. Grams, Milliliters).
+                        Register standard inventory measurement metrics (e.g. Grams, Milliliters, Pieces).
                     </DialogDescription>
                 </DialogHeader>
 
@@ -127,6 +132,32 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
                                                 <FormControl>
                                                     <Input placeholder="e.g. g" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="category"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80">Applicable Category</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50">
+                                                            <SelectValue placeholder="Select category" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="ALL">Universal / All Items (e.g. pcs, box, pack)</SelectItem>
+                                                        <SelectItem value="INGREDIENT">Raw Ingredients Only (e.g. g, kg, ml, L)</SelectItem>
+                                                        <SelectItem value="PACKAGING_MATERIAL">
+                                                            Packaging Materials Only (e.g. sleeve, bundle)
+                                                        </SelectItem>
+                                                        <SelectItem value="SUPPLY">General Supplies Only</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -179,7 +210,8 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
         resolver: zodResolver(unitFormSchema),
         defaultValues: {
             name: '',
-            abbreviation: ''
+            abbreviation: '',
+            category: 'ALL'
         }
     });
 
@@ -187,7 +219,8 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
         if (open && unit) {
             form.reset({
                 name: unit.name,
-                abbreviation: unit.abbreviation || ''
+                abbreviation: unit.abbreviation || '',
+                category: unit.category
             });
         }
     }, [open, unit, form]);
@@ -214,7 +247,8 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
             id: unit.id,
             payload: {
                 name: values.name,
-                abbreviation: values.abbreviation || undefined
+                abbreviation: values.abbreviation || undefined,
+                category: values.category
             }
         });
     };
@@ -265,6 +299,32 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
                                                 <FormControl>
                                                     <Input placeholder="e.g. g" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="category"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80">Applicable Category</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50">
+                                                            <SelectValue placeholder="Select category" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="ALL">Universal / All Items (e.g. pcs, box, pack)</SelectItem>
+                                                        <SelectItem value="INGREDIENT">Raw Ingredients Only (e.g. g, kg, ml, L)</SelectItem>
+                                                        <SelectItem value="PACKAGING_MATERIAL">
+                                                            Packaging Materials Only (e.g. sleeve, bundle)
+                                                        </SelectItem>
+                                                        <SelectItem value="SUPPLY">General Supplies Only</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

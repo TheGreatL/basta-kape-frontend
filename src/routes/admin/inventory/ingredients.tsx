@@ -7,7 +7,8 @@ const searchParamsSchema = z.object({
     page: z.number().catch(1),
     pageSize: z.number().catch(10),
     search: z.string().catch(''),
-    status: z.enum(['active', 'archive']).catch('active')
+    status: z.enum(['active', 'archive']).catch('active'),
+    type: z.enum(['', 'INGREDIENT', 'PACKAGING_MATERIAL', 'SUPPLY']).catch('')
 });
 
 export const Route = createFileRoute('/admin/inventory/ingredients')({

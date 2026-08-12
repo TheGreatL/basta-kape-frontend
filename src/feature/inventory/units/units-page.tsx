@@ -11,7 +11,7 @@ import { getIngredientUnits, deleteIngredientUnit, restoreIngredientUnit } from 
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { IIngredientUnit } from '../inventory.types';
+import type { IIngredientUnit, TUnitCategory } from '../inventory.types';
 
 import DataTable from '#/components/data-table/data-table.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -34,10 +34,29 @@ import {
 
 import { UnitCreateDialog, UnitEditDialog } from '../components/inventory-units-dialogs.tsx';
 
+const UNIT_CATEGORY_CONFIG: Record<TUnitCategory, { label: string; className: string }> = {
+    ALL: {
+        label: 'Universal / All Items',
+        className: 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20'
+    },
+    INGREDIENT: {
+        label: 'Raw Ingredients',
+        className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+    },
+    PACKAGING_MATERIAL: {
+        label: 'Packaging Materials',
+        className: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
+    },
+    SUPPLY: {
+        label: 'General Supplies',
+        className: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/20'
+    }
+};
+
 export default function UnitsPage() {
     const navigate = useNavigate({ from: '/admin/inventory/units' });
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status } = Route.useSearch();
+    const { page, pageSize, search, status, category } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -65,8 +84,8 @@ export default function UnitsPage() {
 
     // Query: Units
     const { data: unitsData, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { page, pageSize, search, status }],
-        queryFn: () => getIngredientUnits({ page, limit: pageSize, search, status })
+        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { page, pageSize, search, status, category }],
+        queryFn: () => getIngredientUnits({ page, limit: pageSize, search, status, category: category || undefined })
     });
 
     // Delete & Restore Mutations
@@ -103,6 +122,19 @@ export default function UnitsPage() {
                         {row.original.abbreviation}
                     </Badge>
                 )
+            },
+            {
+                accessorKey: 'category',
+                header: 'Applicable Category',
+                cell: ({ row }) => {
+                    const cat = row.original.category;
+                    const config = UNIT_CATEGORY_CONFIG[cat];
+                    return (
+                        <Badge variant="outline" className={`font-medium ${config.className}`}>
+                            {config.label}
+                        </Badge>
+                    );
+                }
             },
             {
                 accessorKey: 'createdAt',
@@ -236,6 +268,21 @@ export default function UnitsPage() {
                                 onChange={(e) => setLocalSearch(e.target.value)}
                                 className="h-9 w-full sm:w-[250px] bg-background/50"
                             />
+                            <Select
+                                value={category || 'ALL_CATEGORIES'}
+                                onValueChange={(val) => setSearch({ category: val === 'ALL_CATEGORIES' ? '' : val, page: 1 })}
+                            >
+                                <SelectTrigger className="h-9 min-w-[170px] bg-background/50">
+                                    <SelectValue placeholder="All Categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL_CATEGORIES">All Categories</SelectItem>
+                                    <SelectItem value="ALL">Universal (All Items)</SelectItem>
+                                    <SelectItem value="INGREDIENT">Raw Ingredients</SelectItem>
+                                    <SelectItem value="PACKAGING_MATERIAL">Packaging Materials</SelectItem>
+                                    <SelectItem value="SUPPLY">General Supplies</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Select value={status} onValueChange={(val: any) => setSearch({ status: val, page: 1 })}>
                                 <SelectTrigger className="h-9 min-w-[130px] bg-background/50 capitalize">
                                     <SelectValue placeholder="Status" />

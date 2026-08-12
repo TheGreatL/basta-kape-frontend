@@ -19,8 +19,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+
 const ingredientFormSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must not exceed 100 characters'),
+    type: z.enum(['INGREDIENT', 'PACKAGING_MATERIAL', 'SUPPLY']),
     ingredientUnitId: z.string().uuid('Please select a valid measurement unit'),
     reorderPoint: z.number().min(0, 'Reorder point must be 0 or greater'),
     description: z.string().max(500, 'Description must not exceed 500 characters').optional()
@@ -50,16 +53,20 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
         resolver: zodResolver(ingredientFormSchema),
         defaultValues: {
             name: '',
+            type: 'INGREDIENT',
             ingredientUnitId: '',
             reorderPoint: 0,
             description: ''
         }
     });
 
+    const selectedType = form.watch('type');
+
     React.useEffect(() => {
         if (!open) {
             form.reset({
                 name: '',
+                type: 'INGREDIENT',
                 ingredientUnitId: '',
                 reorderPoint: 0,
                 description: ''
@@ -87,6 +94,7 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
     const onSubmit = (values: IngredientFormValues) => {
         createMutation.mutate({
             name: values.name,
+            type: values.type,
             ingredientUnitId: values.ingredientUnitId,
             reorderPoint: values.reorderPoint,
             description: values.description || undefined
@@ -101,10 +109,10 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                         <Beef className="size-5 text-primary" />
-                        Add New Ingredient
+                        Add New Item
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Enter the name, unit of measure, and low stock alert level for a new ingredient.
+                        Enter the name, item type, unit of measure, and low stock alert level for a new inventory item.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -123,10 +131,37 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Ingredient Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Item Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="e.g. Espresso Beans" {...field} className="h-9 bg-background/50" />
+                                                    <Input
+                                                        placeholder="e.g. Espresso Beans or 16oz Cold Cup"
+                                                        {...field}
+                                                        className="h-9 bg-background/50"
+                                                    />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="type"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80">Item Type / Category</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50">
+                                                            <SelectValue placeholder="Select item type" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="INGREDIENT">Raw Ingredient (Beans, Milk, Syrup, Powder)</SelectItem>
+                                                        <SelectItem value="PACKAGING_MATERIAL">Packaging Material (Cups, Lids, Straws)</SelectItem>
+                                                        <SelectItem value="SUPPLY">General Supply (Napkins, Cleaning, Misc)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -140,13 +175,14 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                                 <FormLabel className="font-semibold text-foreground/80">Default Measurement Unit</FormLabel>
                                                 <FormControl>
                                                     <InfiniteSelect<IIngredientUnit>
-                                                        queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST]}
+                                                        queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST, selectedType]}
                                                         fetchFn={async ({ pageParam, query }) => {
                                                             return getIngredientUnits({
                                                                 page: pageParam || 1,
                                                                 limit: 20,
                                                                 search: query,
-                                                                status: 'active'
+                                                                status: 'active',
+                                                                category: selectedType
                                                             });
                                                         }}
                                                         getItems={(page) => page.data}
@@ -193,7 +229,7 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                                 <FormLabel className="font-semibold text-foreground/80">Description</FormLabel>
                                                 <FormControl>
                                                     <Textarea
-                                                        placeholder="Flavor profile, shelf life instructions or storage requirements..."
+                                                        placeholder="Specs, storage instructions, or vendor notes..."
                                                         className="min-h-[90px] bg-background/50 resize-y"
                                                         {...field}
                                                     />
@@ -216,7 +252,7 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         <Spinner className="h-4 w-4" /> Registering...
                                     </div>
                                 ) : (
-                                    'Register Ingredient'
+                                    'Register Item'
                                 )}
                             </Button>
                         </DialogFooter>
@@ -250,16 +286,20 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
         resolver: zodResolver(ingredientFormSchema),
         defaultValues: {
             name: '',
+            type: 'INGREDIENT',
             ingredientUnitId: '',
             reorderPoint: 0,
             description: ''
         }
     });
 
+    const selectedType = form.watch('type');
+
     React.useEffect(() => {
         if (open && ingredient) {
             form.reset({
                 name: ingredient.name,
+                type: ingredient.type,
                 ingredientUnitId: ingredient.ingredientUnitId,
                 reorderPoint: ingredient.reorderPoint,
                 description: ingredient.description || ''
@@ -272,13 +312,13 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Ingredient Details Updated', {
-                description: 'The ingredient profile has been successfully modified.'
+            toast.success('Item Details Updated', {
+                description: 'The item profile has been successfully modified.'
             });
             onOpenChange(false);
         },
         onError: (error) => {
-            toast.error('Failed to update ingredient', {
+            toast.error('Failed to update item', {
                 description: getErrorMessage(error)
             });
         }
@@ -290,6 +330,7 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
             id: ingredient.id,
             payload: {
                 name: values.name,
+                type: values.type,
                 ingredientUnitId: values.ingredientUnitId,
                 reorderPoint: values.reorderPoint,
                 description: values.description || undefined
@@ -305,9 +346,9 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
                         <Beef className="size-5 text-primary" />
-                        Modify Ingredient Specs
+                        Modify Item Specs
                     </DialogTitle>
-                    <DialogDescription className="text-xs">Update configuration parameters for this raw material.</DialogDescription>
+                    <DialogDescription className="text-xs">Update configuration parameters for this item.</DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -325,10 +366,33 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Ingredient Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Item Name</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Espresso Beans" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="type"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80">Item Type / Category</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50">
+                                                            <SelectValue placeholder="Select item type" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="INGREDIENT">Raw Ingredient (Beans, Milk, Syrup, Powder)</SelectItem>
+                                                        <SelectItem value="PACKAGING_MATERIAL">Packaging Material (Cups, Lids, Straws)</SelectItem>
+                                                        <SelectItem value="SUPPLY">General Supply (Napkins, Cleaning, Misc)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -342,13 +406,14 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                                 <FormLabel className="font-semibold text-foreground/80">Default Measurement Unit</FormLabel>
                                                 <FormControl>
                                                     <InfiniteSelect<IIngredientUnit>
-                                                        queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST]}
+                                                        queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST, selectedType]}
                                                         fetchFn={async ({ pageParam, query }) => {
                                                             return getIngredientUnits({
                                                                 page: pageParam || 1,
                                                                 limit: 20,
                                                                 search: query,
-                                                                status: 'active'
+                                                                status: 'active',
+                                                                category: selectedType
                                                             });
                                                         }}
                                                         getItems={(page) => page.data}
