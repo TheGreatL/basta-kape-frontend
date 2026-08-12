@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Package, ArrowLeft, FileText, Layers, SlidersHorizontal } from 'lucide-react';
+import { Package, ArrowLeft, FileText, Layers, SlidersHorizontal, Pencil } from 'lucide-react';
 
 import { Route } from '#/routes/admin/products/$id/index.tsx';
 import { getProductById } from '#/api/products.api.ts';
@@ -11,6 +11,8 @@ import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifie
 
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { Button } from '#/components/ui/button.tsx';
+import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
@@ -41,10 +43,11 @@ export default function ProductViewPage() {
         enabled: !!id
     });
 
-    // Fetch modifier groups list
+    // Fetch modifier groups list for THIS product
     const { data: modifierGroupsData, isLoading: isGroupsLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, { limit: 50, page: 1 }],
-        queryFn: () => getModifierGroups({ limit: 50, page: 1 })
+        queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS, id, { limit: 50, page: 1 }],
+        queryFn: () => getModifierGroups({ limit: 50, page: 1, productId: id }),
+        enabled: !!id
     });
 
     if (isProductLoading || !product) {
@@ -92,6 +95,15 @@ export default function ProductViewPage() {
                         </div>
                     </div>
                 </div>
+
+                <RequirePermission module="Products Management" action="update">
+                    <Button
+                        onClick={() => navigate({ to: `/admin/products/${product.id}/edit` })}
+                        className="h-9 gap-1.5 font-semibold text-xs shadow-2xs shrink-0"
+                    >
+                        <Pencil className="size-3.5" /> Edit Product
+                    </Button>
+                </RequirePermission>
             </div>
 
             <Tabs defaultValue="profile" className="w-full">
@@ -112,7 +124,7 @@ export default function ProductViewPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                         <div className="md:col-span-2 space-y-6">
                             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
-                                <h3 className="text-sm font-bold text-foreground/80 border-b pb-2 uppercase text-2xs flex items-center gap-1.5">
+                                <h3 className="text-sm font-bold text-foreground/80 border-b pb-2 uppercase flex items-center gap-1.5">
                                     <FileText className="size-4 text-muted-foreground" />
                                     General Information
                                 </h3>
@@ -145,7 +157,7 @@ export default function ProductViewPage() {
 
                         <div className="space-y-6">
                             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4 flex flex-col items-center">
-                                <h3 className="text-sm font-bold text-foreground/80 border-b pb-2 w-full uppercase text-2xs flex items-center gap-1.5 self-start">
+                                <h3 className="text-sm font-bold text-foreground/80 border-b pb-2 w-full uppercase flex items-center gap-1.5 self-start">
                                     <Package className="size-4 text-muted-foreground" />
                                     Product Photo
                                 </h3>
@@ -159,7 +171,7 @@ export default function ProductViewPage() {
                                     ) : (
                                         <div className="w-full aspect-video flex flex-col items-center justify-center border border-dashed rounded-xl bg-muted/20 text-muted-foreground py-10">
                                             <Package className="size-10 stroke-[1.25]" />
-                                            <span className="text-3xs font-semibold mt-2">No photo available</span>
+                                            <span className="text-xs font-semibold mt-2">No photo available</span>
                                         </div>
                                     )}
                                 </div>
@@ -173,7 +185,7 @@ export default function ProductViewPage() {
                     <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
                         <div className="flex items-center justify-between border-b pb-2 border-border/40">
                             <div>
-                                <h3 className="text-sm font-bold text-foreground/80 uppercase text-2xs flex items-center gap-1.5">
+                                <h3 className="text-sm font-bold text-foreground/80 uppercase flex items-center gap-1.5">
                                     <Layers className="size-4 text-primary" />
                                     Active Variations List
                                 </h3>
@@ -207,13 +219,13 @@ export default function ProductViewPage() {
 
                                             return (
                                                 <TableRow key={v.id} className="hover:bg-muted/5">
-                                                    <TableCell className="font-mono text-2xs font-bold">{v.sku || '-'}</TableCell>
+                                                    <TableCell className="font-mono text-xs font-bold">{v.sku || '-'}</TableCell>
                                                     <TableCell className="font-semibold text-foreground/90">{comboText}</TableCell>
                                                     <TableCell className="font-bold text-foreground">₱{v.price.toFixed(2)}</TableCell>
                                                     <TableCell className="text-center">
                                                         <Badge
                                                             variant="outline"
-                                                            className={`text-3xs font-bold leading-none py-0.5 px-2 ${
+                                                            className={`text-xs font-bold leading-none py-0.5 px-2 ${
                                                                 v.recipe
                                                                     ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25'
                                                                     : 'bg-amber-500/10 text-amber-700 border-amber-500/25'
@@ -236,7 +248,7 @@ export default function ProductViewPage() {
                 <TabsContent value="modifiers" className="focus-visible:outline-none">
                     <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-6">
                         <div className="border-b border-border/40 pb-3">
-                            <h3 className="text-sm font-bold text-foreground/80 uppercase text-2xs flex items-center gap-1.5">
+                            <h3 className="text-sm font-bold text-foreground/80 uppercase flex items-center gap-1.5">
                                 <SlidersHorizontal className="size-4 text-primary" />
                                 Customizations & Options
                             </h3>
@@ -265,14 +277,14 @@ export default function ProductViewPage() {
                                             <CardHeader className="p-4 pb-3 border-b bg-muted/15">
                                                 <div>
                                                     <CardTitle className="text-sm font-bold text-foreground">{group.name}</CardTitle>
-                                                    <span className="text-3xs text-muted-foreground font-semibold block mt-0.5">
+                                                    <span className="text-xs text-muted-foreground font-semibold block mt-0.5">
                                                         {group.isRequired ? 'REQUIRED' : 'OPTIONAL'} • SELECT {group.minSelect}-{group.maxSelect}
                                                     </span>
                                                 </div>
                                             </CardHeader>
                                             <CardContent className="p-4">
                                                 <div className="space-y-2">
-                                                    <span className="text-3xs font-bold text-muted-foreground block uppercase">Option Choices</span>
+                                                    <span className="text-xs font-bold text-muted-foreground block uppercase">Option Choices</span>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
                                                         {group.options.map((option: IModifierOption) => (
                                                             <div

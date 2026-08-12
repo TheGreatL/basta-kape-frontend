@@ -138,8 +138,8 @@ export default function RecipeDialog({
         }
     };
 
-    const isNotFound = isLocal ? true : isError && error instanceof ApiError && error.status === 404;
-    const isDataLoading = isLocal ? !isRendering || !variant : (isRecipeLoading && !isNotFound) || !isRendering || !variant;
+    const isNotFound = isLocal || !variant?.id ? true : isError && error instanceof ApiError && error.status === 404;
+    const isDataLoading = isLocal || !variant?.id ? !isRendering : (isRecipeLoading && !isNotFound) || !isRendering;
 
     const form = useForm<RecipeFormValues>({
         resolver: zodResolver(recipeFormSchema),
@@ -301,7 +301,7 @@ export default function RecipeDialog({
                                     <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl space-y-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-xs font-semibold text-foreground/80">Copy Recipe Template</span>
-                                            <span className="text-2xs text-muted-foreground">Select a variant to copy its ingredient list.</span>
+                                            <span className="text-xs text-muted-foreground">Select a variant to copy its ingredient list.</span>
                                         </div>
                                         <Select onValueChange={handleCopyRecipe}>
                                             <SelectTrigger className="h-8 text-xs bg-background">
@@ -653,19 +653,39 @@ export default function RecipeDialog({
                                     ) : (
                                         <>
                                             <RequirePermission module="Products Management" action="delete">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        if (confirm('Are you sure you want to delete this recipe? This cannot be undone.')) {
-                                                            deleteRecipeMutation.mutate();
-                                                        }
-                                                    }}
-                                                    disabled={deleteRecipeMutation.isPending}
-                                                    className="h-9 border-destructive text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <Trash2 className="size-4 mr-1.5" /> Delete Recipe
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            disabled={deleteRecipeMutation.isPending}
+                                                            className="h-9 border-destructive text-destructive hover:bg-destructive/10"
+                                                        >
+                                                            <Trash2 className="size-4 mr-1.5" /> Delete Recipe
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                                <Trash2 className="size-5 text-rose-500" />
+                                                                Delete Recipe
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete this recipe? This action cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                variant="destructive"
+                                                                onClick={() => deleteRecipeMutation.mutate()}
+                                                                className="h-9 font-bold"
+                                                            >
+                                                                Delete Recipe
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </RequirePermission>
 
                                             <div className="flex-1" />

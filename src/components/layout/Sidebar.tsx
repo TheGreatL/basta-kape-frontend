@@ -88,8 +88,6 @@ const sidebarGroups: Array<{
                 module: appModules.PRODUCTS_MANAGEMENT,
                 items: [
                     { title: 'Products List', path: '/admin/products', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-                    { title: 'Customizations', path: '/admin/products/modifiers', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
-                    { title: 'Recipes', path: '/admin/products/recipes', module: appModules.PRODUCTS_MANAGEMENT, exact: true },
                     { title: 'Product Settings', path: '/admin/products/settings', module: appModules.PRODUCT_SETTINGS_MANAGEMENT, exact: true }
                 ]
             }

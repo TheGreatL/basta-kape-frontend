@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Package, Calendar, RotateCcw } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Calendar, RotateCcw, ChefHat } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -189,16 +189,37 @@ export default function ProductsPage() {
             {
                 id: 'variantsPrice',
                 header: 'Pricing & Variants',
-                cell: ({ row }) => (
-                    <div className="flex flex-col gap-0.5">
-                        {getPriceRange(row.original)}
-                        {row.original.variants.length > 0 && (
-                            <span className="text-xs text-muted-foreground font-medium">
-                                {row.original.variants.length} variant{row.original.variants.length === 1 ? '' : 's'} configured
-                            </span>
-                        )}
-                    </div>
-                )
+                cell: ({ row }) => {
+                    const variants = row.original.variants;
+                    const configuredCount = variants.filter((v) => !!v.recipe).length;
+                    const totalCount = variants.length;
+
+                    return (
+                        <div className="flex flex-col gap-1 items-start">
+                            {getPriceRange(row.original)}
+                            {totalCount > 0 && (
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                        {totalCount} variant{totalCount === 1 ? '' : 's'}
+                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className={`text-xs py-0 px-1 font-semibold ${
+                                            configuredCount === totalCount && totalCount > 0
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400'
+                                                : configuredCount > 0
+                                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400'
+                                                  : 'bg-muted text-muted-foreground border-muted-foreground/30'
+                                        }`}
+                                    >
+                                        <ChefHat className="size-2.5 mr-0.5 inline" />
+                                        {configuredCount}/{totalCount} recipes
+                                    </Badge>
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
             },
             {
                 accessorKey: 'createdAt',

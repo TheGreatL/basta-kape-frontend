@@ -563,19 +563,39 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                     ) : (
                                         <>
                                             <RequirePermission module="Products Management" action="delete">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        if (confirm('Are you sure you want to delete this recipe? This cannot be undone.')) {
-                                                            deleteRecipeMutation.mutate();
-                                                        }
-                                                    }}
-                                                    disabled={deleteRecipeMutation.isPending}
-                                                    className="h-9 border-destructive text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <Trash2 className="size-4 mr-1.5" /> Delete Recipe
-                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            disabled={deleteRecipeMutation.isPending}
+                                                            className="h-9 border-destructive text-destructive hover:bg-destructive/10"
+                                                        >
+                                                            <Trash2 className="size-4 mr-1.5" /> Delete Recipe
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
+                                                                <Trash2 className="size-5 text-rose-500" />
+                                                                Delete Recipe
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete this recipe? This action cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                variant="destructive"
+                                                                onClick={() => deleteRecipeMutation.mutate()}
+                                                                className="h-9 font-bold"
+                                                            >
+                                                                Delete Recipe
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </RequirePermission>
 
                                             <div className="flex-1" />

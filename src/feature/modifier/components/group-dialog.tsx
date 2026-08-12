@@ -33,9 +33,10 @@ interface GroupDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     group: IModifierGroup | null;
+    targetProductId?: string;
 }
 
-export default function GroupDialog({ open, onOpenChange, group }: GroupDialogProps) {
+export default function GroupDialog({ open, onOpenChange, group, targetProductId }: GroupDialogProps) {
     const queryClient = useQueryClient();
     const [productSearch, setProductSearch] = React.useState('');
 
@@ -82,12 +83,16 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
     React.useEffect(() => {
         if (open) {
             if (group) {
+                const existingProductIds = group.products.map((p) => p.id);
+                if (targetProductId && !existingProductIds.includes(targetProductId)) {
+                    existingProductIds.push(targetProductId);
+                }
                 form.reset({
                     name: group.name,
                     isRequired: group.isRequired,
                     minSelect: group.minSelect,
                     maxSelect: group.maxSelect,
-                    productIds: group.products.map((p) => p.id)
+                    productIds: existingProductIds
                 });
             } else {
                 form.reset({
@@ -95,12 +100,12 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                     isRequired: false,
                     minSelect: 0,
                     maxSelect: 1,
-                    productIds: []
+                    productIds: targetProductId ? [targetProductId] : []
                 });
             }
             setProductSearch('');
         }
-    }, [open, group, form]);
+    }, [open, group, targetProductId, form]);
 
     // Mutation: Create
     const createMutation = useMutation({
@@ -146,9 +151,11 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                         {group ? 'Edit Customization Group' : 'Create Customization Group'}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        {group
-                            ? 'Configure customization settings, select options parameters, and map to products.'
-                            : 'Configure options requirements parameters and link customized items.'}
+                        {targetProductId
+                            ? 'Configure customization parameters, selection rules, and options for this beverage.'
+                            : group
+                              ? 'Configure customization settings, select options parameters, and map to products.'
+                              : 'Configure options requirements parameters and link customized items.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -226,66 +233,70 @@ export default function GroupDialog({ open, onOpenChange, group }: GroupDialogPr
                                 />
                             </div>
 
-                            {/* Linked Products Checklist */}
-                            <div className="space-y-2.5">
-                                <div className="flex justify-between items-center">
-                                    <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
-                                        <Package className="size-4 text-primary" />
-                                        Map to Menu Products
-                                    </FormLabel>
-                                    <span className="text-xs text-muted-foreground font-semibold">{form.watch('productIds').length} selected</span>
-                                </div>
+                            {/* Linked Products Checklist (Only shown when not editing inside a specific product) */}
+                            {!targetProductId && (
+                                <div className="space-y-2.5">
+                                    <div className="flex justify-between items-center">
+                                        <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
+                                            <Package className="size-4 text-primary" />
+                                            Map to Menu Products
+                                        </FormLabel>
+                                        <span className="text-xs text-muted-foreground font-semibold">
+                                            {form.watch('productIds').length} selected
+                                        </span>
+                                    </div>
 
-                                <div className="relative">
-                                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search products..."
-                                        value={productSearch}
-                                        onChange={(e) => setProductSearch(e.target.value)}
-                                        className="h-9 pl-9 bg-background/50 text-xs"
-                                    />
-                                </div>
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search products..."
+                                            value={productSearch}
+                                            onChange={(e) => setProductSearch(e.target.value)}
+                                            className="h-9 pl-9 bg-background/50 text-xs"
+                                        />
+                                    </div>
 
-                                <div className="border border-border/40 rounded-xl p-2 overflow-hidden bg-background/20">
-                                    {filteredProducts.length === 0 ? (
-                                        <div className="text-center py-8 text-xs text-muted-foreground italic">
-                                            No products found matching search filter.
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            {filteredProducts.map((p: IProduct) => {
-                                                const isChecked = form.watch('productIds').includes(p.id);
-                                                return (
-                                                    <label
-                                                        key={p.id}
-                                                        className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
-                                                            isChecked
-                                                                ? 'bg-primary/5 border-primary/20 text-primary-foreground dark:text-primary-foreground'
-                                                                : 'bg-background hover:bg-muted/30 border-border/40 text-foreground/85'
-                                                        }`}
-                                                    >
-                                                        <Checkbox
-                                                            checked={isChecked}
-                                                            onCheckedChange={(checked) => {
-                                                                const currentIds = form.getValues('productIds');
-                                                                if (checked) {
-                                                                    form.setValue('productIds', [...currentIds, p.id]);
-                                                                } else {
-                                                                    form.setValue(
-                                                                        'productIds',
-                                                                        currentIds.filter((id) => id !== p.id)
-                                                                    );
-                                                                }
-                                                            }}
-                                                        />
-                                                        <span className="truncate">{p.name}</span>
-                                                    </label>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                    <div className="border border-border/40 rounded-xl p-2 overflow-hidden bg-background/20">
+                                        {filteredProducts.length === 0 ? (
+                                            <div className="text-center py-8 text-xs text-muted-foreground italic">
+                                                No products found matching search filter.
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {filteredProducts.map((p: IProduct) => {
+                                                    const isChecked = form.watch('productIds').includes(p.id);
+                                                    return (
+                                                        <label
+                                                            key={p.id}
+                                                            className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                                                                isChecked
+                                                                    ? 'bg-primary/5 border-primary/20 text-primary-foreground dark:text-primary-foreground'
+                                                                    : 'bg-background hover:bg-muted/30 border-border/40 text-foreground/85'
+                                                            }`}
+                                                        >
+                                                            <Checkbox
+                                                                checked={isChecked}
+                                                                onCheckedChange={(checked) => {
+                                                                    const currentIds = form.getValues('productIds');
+                                                                    if (checked) {
+                                                                        form.setValue('productIds', [...currentIds, p.id]);
+                                                                    } else {
+                                                                        form.setValue(
+                                                                            'productIds',
+                                                                            currentIds.filter((id) => id !== p.id)
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span className="truncate">{p.name}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <DialogFooter className="px-6 py-4 border-t bg-muted/30 mt-4">

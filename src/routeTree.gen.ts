@@ -39,8 +39,6 @@ import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customer
 import { Route as CustomerProductsIndexRouteImport } from './routes/_customer/products/index'
 import { Route as AdminUsersCreateRouteImport } from './routes/admin/users/create'
 import { Route as AdminProductsSettingsRouteImport } from './routes/admin/products/settings'
-import { Route as AdminProductsRecipesRouteImport } from './routes/admin/products/recipes'
-import { Route as AdminProductsModifiersRouteImport } from './routes/admin/products/modifiers'
 import { Route as AdminProductsCreateRouteImport } from './routes/admin/products/create'
 import { Route as AdminOrdersCreateRouteImport } from './routes/admin/orders/create'
 import { Route as AdminInventoryWasteLogRouteImport } from './routes/admin/inventory/waste-log'
@@ -216,16 +214,6 @@ const AdminUsersCreateRoute = AdminUsersCreateRouteImport.update({
 const AdminProductsSettingsRoute = AdminProductsSettingsRouteImport.update({
   id: '/products/settings',
   path: '/products/settings',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminProductsRecipesRoute = AdminProductsRecipesRouteImport.update({
-  id: '/products/recipes',
-  path: '/products/recipes',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminProductsModifiersRoute = AdminProductsModifiersRouteImport.update({
-  id: '/products/modifiers',
-  path: '/products/modifiers',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminProductsCreateRoute = AdminProductsCreateRouteImport.update({
@@ -417,8 +405,6 @@ export interface FileRoutesByFullPath {
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
   '/admin/products/create': typeof AdminProductsCreateRoute
-  '/admin/products/modifiers': typeof AdminProductsModifiersRoute
-  '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/products/': typeof CustomerProductsIndexRoute
@@ -476,8 +462,6 @@ export interface FileRoutesByTo {
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
   '/admin/products/create': typeof AdminProductsCreateRoute
-  '/admin/products/modifiers': typeof AdminProductsModifiersRoute
-  '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/products': typeof CustomerProductsIndexRoute
@@ -540,8 +524,6 @@ export interface FileRoutesById {
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
   '/admin/products/create': typeof AdminProductsCreateRoute
-  '/admin/products/modifiers': typeof AdminProductsModifiersRoute
-  '/admin/products/recipes': typeof AdminProductsRecipesRoute
   '/admin/products/settings': typeof AdminProductsSettingsRoute
   '/admin/users/create': typeof AdminUsersCreateRoute
   '/_customer/products/': typeof CustomerProductsIndexRoute
@@ -602,8 +584,6 @@ export interface FileRouteTypes {
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
     | '/admin/products/create'
-    | '/admin/products/modifiers'
-    | '/admin/products/recipes'
     | '/admin/products/settings'
     | '/admin/users/create'
     | '/products/'
@@ -661,8 +641,6 @@ export interface FileRouteTypes {
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
     | '/admin/products/create'
-    | '/admin/products/modifiers'
-    | '/admin/products/recipes'
     | '/admin/products/settings'
     | '/admin/users/create'
     | '/products'
@@ -724,8 +702,6 @@ export interface FileRouteTypes {
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
     | '/admin/products/create'
-    | '/admin/products/modifiers'
-    | '/admin/products/recipes'
     | '/admin/products/settings'
     | '/admin/users/create'
     | '/_customer/products/'
@@ -967,20 +943,6 @@ declare module '@tanstack/react-router' {
       path: '/products/settings'
       fullPath: '/admin/products/settings'
       preLoaderRoute: typeof AdminProductsSettingsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/products/recipes': {
-      id: '/admin/products/recipes'
-      path: '/products/recipes'
-      fullPath: '/admin/products/recipes'
-      preLoaderRoute: typeof AdminProductsRecipesRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/products/modifiers': {
-      id: '/admin/products/modifiers'
-      path: '/products/modifiers'
-      fullPath: '/admin/products/modifiers'
-      preLoaderRoute: typeof AdminProductsModifiersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/products/create': {
@@ -1231,8 +1193,6 @@ interface AdminRouteRouteChildren {
   AdminInventoryWasteLogRoute: typeof AdminInventoryWasteLogRoute
   AdminOrdersCreateRoute: typeof AdminOrdersCreateRoute
   AdminProductsCreateRoute: typeof AdminProductsCreateRoute
-  AdminProductsModifiersRoute: typeof AdminProductsModifiersRoute
-  AdminProductsRecipesRoute: typeof AdminProductsRecipesRoute
   AdminProductsSettingsRoute: typeof AdminProductsSettingsRoute
   AdminUsersCreateRoute: typeof AdminUsersCreateRoute
   AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
@@ -1278,8 +1238,6 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminInventoryWasteLogRoute: AdminInventoryWasteLogRoute,
   AdminOrdersCreateRoute: AdminOrdersCreateRoute,
   AdminProductsCreateRoute: AdminProductsCreateRoute,
-  AdminProductsModifiersRoute: AdminProductsModifiersRoute,
-  AdminProductsRecipesRoute: AdminProductsRecipesRoute,
   AdminProductsSettingsRoute: AdminProductsSettingsRoute,
   AdminUsersCreateRoute: AdminUsersCreateRoute,
   AdminCustomersIndexRoute: AdminCustomersIndexRoute,
