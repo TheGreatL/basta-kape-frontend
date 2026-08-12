@@ -67,7 +67,13 @@ export default function LoginPage() {
             <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-primary/5 border-r p-12">
                 <div className="max-w-md space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <div className="mx-auto mb-8 flex justify-center">
-                        <img src={logo} alt={storeName} className="size-28 rounded-full object-cover border border-border/50 shadow-md" />
+                        <Link to="/" title="Go to home">
+                            <img
+                                src={logo}
+                                alt={storeName}
+                                className="size-28 rounded-full object-cover border border-border/50 shadow-md hover:scale-105 transition-transform"
+                            />
+                        </Link>
                     </div>
                     <h1 className="text-4xl font-bold">Welcome to {storeName}</h1>
                     <p className="text-lg text-muted-foreground">
@@ -82,7 +88,13 @@ export default function LoginPage() {
                 <Card className="w-full max-w-[400px] shadow-lg border-primary/10">
                     <CardHeader className="space-y-2 text-center">
                         <div className="flex justify-center mb-4 lg:hidden">
-                            <img src={logo} alt={storeName} className="size-16 rounded-full object-cover border border-border/50 shadow-sm" />
+                            <Link to="/" title="Go to home">
+                                <img
+                                    src={logo}
+                                    alt={storeName}
+                                    className="size-16 rounded-full object-cover border border-border/50 shadow-sm hover:scale-105 transition-transform"
+                                />
+                            </Link>
                         </div>
                         <CardTitle className="text-3xl font-bold">Sign In</CardTitle>
                         <CardDescription>Enter your email and password to sign in</CardDescription>
