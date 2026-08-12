@@ -94,6 +94,17 @@ export default function EditVariantsTab({
         return duplicates;
     }, [gridVariants]);
 
+    // Track unconfigured row indices (missing selected attributes)
+    const invalidRowIndices = React.useMemo(() => {
+        const invalid = new Set<number>();
+        gridVariants.forEach((row, i) => {
+            if (row.attributeValueIds.length === 0) {
+                invalid.add(i);
+            }
+        });
+        return invalid;
+    }, [gridVariants]);
+
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-6">
             {/* Header & Quick Action */}
@@ -112,7 +123,7 @@ export default function EditVariantsTab({
                     <Button
                         type="button"
                         onClick={onSaveVariants}
-                        disabled={isSaving || duplicateRowIndices.size > 0}
+                        disabled={isSaving || duplicateRowIndices.size > 0 || invalidRowIndices.size > 0}
                         className="h-9 px-4 text-xs font-bold gap-1.5 shadow-sm"
                     >
                         {isSaving ? (
@@ -128,7 +139,17 @@ export default function EditVariantsTab({
                 </div>
             </div>
 
-            {/* Duplicate Combination Warning Callout */}
+            {/* Warning Callouts */}
+            {invalidRowIndices.size > 0 && (
+                <div className="bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/50 p-3 rounded-xl flex items-center gap-2.5 text-xs text-amber-700 dark:text-amber-400 font-semibold shadow-2xs">
+                    <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span>
+                        Variant row(s) missing attribute selection detected (highlighted in yellow). Every drink variant must have at least one
+                        attribute selected before saving.
+                    </span>
+                </div>
+            )}
+
             {duplicateRowIndices.size > 0 && (
                 <div className="bg-rose-50 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50 p-3 rounded-xl flex items-center gap-2.5 text-xs text-rose-700 dark:text-rose-400 font-semibold shadow-2xs">
                     <AlertTriangle className="size-4 shrink-0 text-rose-600 dark:text-rose-400" />
@@ -195,6 +216,7 @@ export default function EditVariantsTab({
                             ) : (
                                 gridVariants.map((row, idx) => {
                                     const isDuplicate = duplicateRowIndices.has(idx);
+                                    const isInvalid = row.attributeValueIds.length === 0;
 
                                     return (
                                         <TableRow
@@ -202,7 +224,9 @@ export default function EditVariantsTab({
                                             className={
                                                 isDuplicate
                                                     ? 'bg-rose-500/10 dark:bg-rose-950/20 hover:bg-rose-500/15 border-l-4 border-l-rose-500'
-                                                    : 'hover:bg-muted/10'
+                                                    : isInvalid
+                                                      ? 'bg-amber-500/10 dark:bg-amber-950/20 hover:bg-amber-500/15 border-l-4 border-l-amber-500'
+                                                      : 'hover:bg-muted/10'
                                             }
                                         >
                                             <TableCell className="font-semibold text-foreground/90">
@@ -219,7 +243,13 @@ export default function EditVariantsTab({
                                                                 </Badge>
                                                             ))
                                                         ) : (
-                                                            <span className="text-xs text-muted-foreground italic">Standard Drink</span>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="text-xs px-2 py-0.5 font-bold bg-amber-500/10 text-amber-700 border-amber-500/40 dark:text-amber-400"
+                                                            >
+                                                                <AlertTriangle className="size-3 mr-1 text-amber-600 dark:text-amber-400" />
+                                                                Select Attribute Required
+                                                            </Badge>
                                                         )}
 
                                                         {isDuplicate && (
@@ -230,10 +260,14 @@ export default function EditVariantsTab({
                                                     </div>
                                                     <Button
                                                         type="button"
-                                                        variant="ghost"
+                                                        variant={isInvalid ? 'default' : 'ghost'}
                                                         size="sm"
                                                         onClick={() => setEditingRowIdx(idx)}
-                                                        className="h-6 px-1.5 text-xs text-muted-foreground hover:text-primary gap-1"
+                                                        className={
+                                                            isInvalid
+                                                                ? 'h-7 px-2.5 text-xs font-bold gap-1 bg-amber-600 hover:bg-amber-700 text-white shadow-2xs animate-pulse'
+                                                                : 'h-6 px-1.5 text-xs text-muted-foreground hover:text-primary gap-1'
+                                                        }
                                                         title="Configure Row Attributes"
                                                     >
                                                         <Edit2 className="size-3" /> Select Attributes
@@ -315,7 +349,8 @@ export default function EditVariantsTab({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() =>
+                        onClick={() => {
+                            const newIdx = gridVariants.length;
                             setGridVariants((prev) => [
                                 ...prev,
                                 {
@@ -325,9 +360,10 @@ export default function EditVariantsTab({
                                     attributeValueLabels: [],
                                     recipeConfigured: false
                                 }
-                            ])
-                        }
-                        className="h-8 text-xs gap-1 border-dashed text-muted-foreground hover:text-foreground"
+                            ]);
+                            setEditingRowIdx(newIdx);
+                        }}
+                        className="h-8 text-xs gap-1 border-dashed text-muted-foreground hover:text-foreground font-semibold"
                     >
                         <Plus className="size-3.5" /> Add Manual Variant Row
                     </Button>
@@ -517,6 +553,12 @@ function ManualVariantAttributeModal({
 
     const handleConfirm = () => {
         const selected = Object.values(selectedAttributeMap);
+        if (selected.length === 0) {
+            toast.error('Attribute Required', {
+                description: 'You must select at least one attribute for this variant.'
+            });
+            return;
+        }
         onSave(selected);
         onOpenChange(false);
     };
@@ -564,7 +606,10 @@ function ManualVariantAttributeModal({
                     <span className="text-xs font-bold text-muted-foreground uppercase">Selected Combination:</span>
                     <div className="flex items-center gap-1 flex-wrap">
                         {selectedList.length === 0 ? (
-                            <span className="text-xs text-muted-foreground italic">None (Standard Drink)</span>
+                            <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                                <AlertTriangle className="size-3" />
+                                Please select at least 1 attribute value below
+                            </span>
                         ) : (
                             selectedList.map((item) => (
                                 <Badge key={item.id} variant="default" className="text-xs font-bold px-2 py-0.5">
@@ -579,7 +624,13 @@ function ManualVariantAttributeModal({
                     <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs font-semibold">
                         Cancel
                     </Button>
-                    <Button type="button" size="sm" onClick={handleConfirm} className="h-8 text-xs font-bold gap-1 px-4">
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleConfirm}
+                        disabled={selectedList.length === 0}
+                        className="h-8 text-xs font-bold gap-1 px-4"
+                    >
                         <Check className="size-3.5" /> Apply Attributes
                     </Button>
                 </DialogFooter>

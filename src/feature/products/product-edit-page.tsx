@@ -165,10 +165,13 @@ export default function ProductEditPage() {
                     const valId = a.productAttributeValueId;
                     const valText = a.attributeValue.value;
 
-                    activeAttrs[attrId] = true;
+                    if (attrId) {
+                        activeAttrs[attrId] = true;
 
-                    if (!selectedVals[attrId].some((x) => x.id === valId)) {
-                        selectedVals[attrId].push({ id: valId, value: valText });
+                        const list = (selectedVals[attrId] ??= []);
+                        if (!list.some((x) => x.id === valId)) {
+                            list.push({ id: valId, value: valText });
+                        }
                     }
                 });
             });

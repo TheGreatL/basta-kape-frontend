@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { getAttributesList, getAttributeValuesList } from '#/api/product-settings.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
@@ -43,6 +44,12 @@ export function VariantForm({
         e.preventDefault();
         // Collect all non-empty selected value IDs
         const attributeValueIds = Object.values(selectedValues).filter(Boolean);
+        if (attributeValueIds.length === 0) {
+            toast.error('Attribute Required', {
+                description: 'Please select at least one attribute for this variant.'
+            });
+            return;
+        }
         onSubmit({
             sku: sku.trim() || null,
             price: Number(price) || 0,
