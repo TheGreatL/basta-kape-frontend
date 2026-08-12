@@ -327,8 +327,8 @@ export default function OrdersPage() {
                     </div>
                 </div>
 
-                <RequirePermission module="Orders Management" action="create">
-                    <Button onClick={() => globalNavigate({ to: '/admin/orders/create' })} className="h-9 gap-1.5 font-bold shadow-sm">
+                <RequirePermission module="Point of Sale (POS)" action="create">
+                    <Button onClick={() => globalNavigate({ to: '/admin/pos' })} className="h-9 gap-1.5 font-bold shadow-sm">
                         <Plus className="size-4" />
                         Create POS Order
                     </Button>
