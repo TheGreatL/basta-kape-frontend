@@ -130,15 +130,6 @@ export default function AttributeViewDialog({ open, onOpenChange, attribute }: A
         }
     });
 
-    const handleAddValue = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!attribute || !newValue.trim()) return;
-        createValueMutation.mutate({
-            productAttributeId: attribute.id,
-            value: newValue.trim()
-        });
-    };
-
     const handleStartEdit = (val: IAttributeValue) => {
         setEditingValueId(val.id);
         setEditingValueText(val.value);
@@ -205,24 +196,44 @@ export default function AttributeViewDialog({ open, onOpenChange, attribute }: A
                                         <span className="text-xs text-muted-foreground font-medium">Customize modifier names.</span>
                                     </div>
 
-                                    {/* Inline Add Form */}
+                                    {/* Inline Add Section */}
                                     <RequirePermission module="Product Settings Management" action="update">
-                                        <form onSubmit={handleAddValue} className="flex gap-2 items-center">
+                                        <div className="flex gap-2 items-center">
                                             <Input
-                                                placeholder="Add new option value (e.g. Oat Milk)"
+                                                placeholder="Add new option value (e.g. 12oz, Oat Milk)"
                                                 value={newValue}
                                                 onChange={(e) => setNewValue(e.target.value)}
-                                                className="h-9 bg-background/50"
+                                                className="h-9 bg-background/50 text-xs"
                                                 disabled={createValueMutation.isPending}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (newValue.trim() && !createValueMutation.isPending) {
+                                                            createValueMutation.mutate({
+                                                                productAttributeId: attribute!.id,
+                                                                value: newValue.trim()
+                                                            });
+                                                        }
+                                                    }
+                                                }}
                                             />
                                             <Button
-                                                type="submit"
+                                                type="button"
+                                                onClick={() => {
+                                                    if (newValue.trim() && !createValueMutation.isPending) {
+                                                        createValueMutation.mutate({
+                                                            productAttributeId: attribute!.id,
+                                                            value: newValue.trim()
+                                                        });
+                                                    }
+                                                }}
                                                 disabled={!newValue.trim() || createValueMutation.isPending}
                                                 className="h-9 gap-1 shrink-0"
                                             >
-                                                <Plus className="size-4" /> Add
+                                                {createValueMutation.isPending ? <Spinner className="h-4 w-4" /> : <Plus className="size-4" />} Add
                                             </Button>
-                                        </form>
+                                        </div>
                                     </RequirePermission>
 
                                     {/* Values List Container */}

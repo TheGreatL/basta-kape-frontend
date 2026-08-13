@@ -179,6 +179,7 @@ export default function AttributeCreateDialog({ open, onOpenChange }: AttributeC
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
+                                                        e.stopPropagation();
                                                         handleAddValue();
                                                     }
                                                 }}
