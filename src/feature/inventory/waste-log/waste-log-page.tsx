@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Trash2, Plus, Calendar as CalendarIcon, RotateCcw, X } from 'lucide-react';
+import { Trash2, Plus, Calendar as CalendarIcon, RotateCcw, X, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
@@ -66,6 +66,7 @@ export default function WasteLogPage() {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [adjustmentOpen, setAdjustmentOpen] = React.useState(false);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
+    const [adjustmentToEdit, setAdjustmentToEdit] = React.useState<IAdjustment | null>(null);
 
     // Date range state for UI Popover Calendar
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>(() => {
@@ -189,22 +190,59 @@ export default function WasteLogPage() {
                 header: 'Logged By',
                 cell: ({ row }) => {
                     const user = row.original.createdBy;
-                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
                     return (
-                        <span className="text-xs font-semibold text-foreground/85" title={user.email}>
-                            {user.firstName} {user.lastName}
-                        </span>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-semibold text-foreground/85" title={user?.email}>
+                                {user ? `${user.firstName} ${user.lastName}` : '—'}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <CalendarIcon className="size-2.5" />
+                                {format(new Date(row.original.createdAt), 'MMM d, yyyy HH:mm')}
+                            </span>
+                        </div>
                     );
                 }
             },
             {
-                accessorKey: 'createdAt',
-                header: 'Logged At',
+                id: 'updatedBy',
+                header: 'Last Editor',
+                cell: ({ row }) => {
+                    const user = row.original.updatedBy;
+                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
+                    return (
+                        <div className="flex flex-col">
+                            <span className="text-xs font-semibold text-foreground/85" title={user.email}>
+                                {user.firstName} {user.lastName}
+                            </span>
+                            {row.original.updatedAt && (
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                    <CalendarIcon className="size-2.5" />
+                                    {format(new Date(row.original.updatedAt), 'MMM d, yyyy HH:mm')}
+                                </span>
+                            )}
+                        </div>
+                    );
+                }
+            },
+            {
+                id: 'actions',
+                header: 'Actions',
                 cell: ({ row }) => (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <CalendarIcon className="size-3" />
-                        {format(new Date(row.original.createdAt), 'MMM d, yyyy HH:mm')}
-                    </span>
+                    <RequirePermission module="Inventory Management" action="update">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setAdjustmentToEdit(row.original);
+                                setSelectedIngredient(null);
+                                setAdjustmentOpen(true);
+                            }}
+                            className="size-8 text-muted-foreground hover:text-foreground"
+                            title="Edit Adjustment Log"
+                        >
+                            <Pencil className="size-4" />
+                        </Button>
+                    </RequirePermission>
                 )
             }
         ],
@@ -231,6 +269,7 @@ export default function WasteLogPage() {
                     <RequirePermission module="Inventory Management" action="create">
                         <Button
                             onClick={() => {
+                                setAdjustmentToEdit(null);
                                 setSelectedIngredient(null);
                                 setAdjustmentOpen(true);
                             }}
@@ -330,7 +369,18 @@ export default function WasteLogPage() {
                 />
             </div>
 
-            <AdjustmentDialog open={adjustmentOpen} onOpenChange={setAdjustmentOpen} preselectedIngredient={selectedIngredient} />
+            <AdjustmentDialog
+                open={adjustmentOpen}
+                onOpenChange={(open) => {
+                    setAdjustmentOpen(open);
+                    if (!open) {
+                        setAdjustmentToEdit(null);
+                        setSelectedIngredient(null);
+                    }
+                }}
+                preselectedIngredient={selectedIngredient}
+                adjustmentToEdit={adjustmentToEdit}
+            />
         </div>
     );
 }

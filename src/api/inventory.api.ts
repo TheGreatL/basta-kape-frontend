@@ -18,6 +18,7 @@ import type {
     IAdjustment,
     IGetAdjustmentsParams,
     ICreateAdjustmentPayload,
+    IUpdateAdjustmentPayload,
     IForecast,
     IInventoryDashboardOverview,
     IDashboardDelivery,
@@ -245,6 +246,15 @@ export const createAdjustment = async (payload: ICreateAdjustmentPayload): Promi
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to log stock adjustment', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const updateAdjustment = async (id: string, payload: IUpdateAdjustmentPayload): Promise<IAdjustment> => {
+    const response = await api.put(`/inventory/adjustments/${id}`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to update stock adjustment', response.status, errorData);
     }
     return response.json();
 };

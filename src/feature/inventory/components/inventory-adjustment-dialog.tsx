@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 
-import { createAdjustment, getIngredients } from '#/api/inventory.api.ts';
+import { createAdjustment, updateAdjustment, getIngredients } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { IIngredient, TAdjustmentType } from '../inventory.types';
+import type { IAdjustment, IIngredient, TAdjustmentType } from '../inventory.types';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 import { Button } from '#/components/ui/button.tsx';
@@ -44,11 +44,13 @@ interface AdjustmentDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     preselectedIngredient?: IIngredient | null;
+    adjustmentToEdit?: IAdjustment | null;
 }
 
-export default function AdjustmentDialog({ open, onOpenChange, preselectedIngredient }: AdjustmentDialogProps) {
+export default function AdjustmentDialog({ open, onOpenChange, preselectedIngredient, adjustmentToEdit }: AdjustmentDialogProps) {
     const queryClient = useQueryClient();
     const [isRendering, setIsRendering] = React.useState(false);
+    const isEditMode = Boolean(adjustmentToEdit);
 
     React.useEffect(() => {
         if (open) {
@@ -72,21 +74,37 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
     const selectedType = form.watch('type');
     const isDiscrepancy = selectedType === 'PHYSICAL_COUNT_DISCREPANCY';
 
-    const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(preselectedIngredient || null);
+    const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(
+        adjustmentToEdit?.ingredient || preselectedIngredient || null
+    );
 
     React.useEffect(() => {
         if (open) {
-            setSelectedIngredient(preselectedIngredient || null);
-            form.reset({
-                ingredientId: preselectedIngredient?.id || '',
-                quantity: 0,
-                type: 'WASTE',
-                reason: ''
-            });
-        }
-    }, [open, preselectedIngredient, form]);
+            const initialIngredient = adjustmentToEdit?.ingredient || preselectedIngredient || null;
+            setSelectedIngredient(initialIngredient);
 
-    const adjustmentMutation = useMutation({
+            if (adjustmentToEdit) {
+                const initialQty =
+                    adjustmentToEdit.type === 'PHYSICAL_COUNT_DISCREPANCY' ? adjustmentToEdit.quantity : Math.abs(adjustmentToEdit.quantity);
+
+                form.reset({
+                    ingredientId: adjustmentToEdit.ingredientId,
+                    quantity: initialQty,
+                    type: adjustmentToEdit.type,
+                    reason: adjustmentToEdit.reason || ''
+                });
+            } else {
+                form.reset({
+                    ingredientId: preselectedIngredient?.id || '',
+                    quantity: 0,
+                    type: 'WASTE',
+                    reason: ''
+                });
+            }
+        }
+    }, [open, preselectedIngredient, adjustmentToEdit, form]);
+
+    const createMutation = useMutation({
         mutationFn: createAdjustment,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.ADJUSTMENTS_LIST] });
@@ -104,17 +122,47 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
         }
     });
 
+    const editMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof updateAdjustment>[1] }) => updateAdjustment(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.ADJUSTMENTS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
+            toast.success('Stock Adjustment Updated', {
+                description: 'The waste log entry has been updated and stock levels recalculated.'
+            });
+            onOpenChange(false);
+        },
+        onError: (error) => {
+            toast.error('Failed to update adjustment', {
+                description: getErrorMessage(error)
+            });
+        }
+    });
+
     const onSubmit = (values: AdjustmentFormValues) => {
         const adjustedQuantity = values.type === 'PHYSICAL_COUNT_DISCREPANCY' ? values.quantity : -Math.abs(values.quantity);
 
-        adjustmentMutation.mutate({
-            ingredientId: values.ingredientId,
-            quantity: adjustedQuantity,
-            type: values.type,
-            reason: values.reason || undefined
-        });
+        if (isEditMode && adjustmentToEdit) {
+            editMutation.mutate({
+                id: adjustmentToEdit.id,
+                payload: {
+                    quantity: adjustedQuantity,
+                    type: values.type,
+                    reason: values.reason || undefined
+                }
+            });
+        } else {
+            createMutation.mutate({
+                ingredientId: values.ingredientId,
+                quantity: adjustedQuantity,
+                type: values.type,
+                reason: values.reason || undefined
+            });
+        }
     };
 
+    const isPending = createMutation.isPending || editMutation.isPending;
     const isLoading = !isRendering;
 
     return (
@@ -122,11 +170,13 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
             <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 overflow-hidden bg-background">
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-                        <Trash2 className="size-5 text-primary" />
-                        Log Waste / Stock Adjustment
+                        {isEditMode ? <Edit className="size-5 text-primary" /> : <Trash2 className="size-5 text-primary" />}
+                        {isEditMode ? 'Edit Stock Adjustment' : 'Log Waste / Stock Adjustment'}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Record waste, spoilage, theft, or manual correction events that reduce or adjust stock levels.
+                        {isEditMode
+                            ? 'Update quantity, adjustment type, or notes. Live inventory levels will automatically recalculate.'
+                            : 'Record waste, spoilage, theft, or manual correction events that reduce or adjust stock levels.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -145,38 +195,54 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                         name="ingredientId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Select Raw Ingredient</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Raw Ingredient</FormLabel>
                                                 <FormControl>
-                                                    <InfiniteSelect<IIngredient>
-                                                        queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
-                                                        fetchFn={async ({ pageParam, query }) => {
-                                                            return getIngredients({
-                                                                page: pageParam || 1,
-                                                                limit: 20,
-                                                                search: query,
-                                                                status: 'active'
-                                                            });
-                                                        }}
-                                                        getItems={(page) => page.data}
-                                                        getNextPageParam={(lastPage) => {
-                                                            return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
-                                                        }}
-                                                        value={field.value}
-                                                        onChange={(val, item) => {
-                                                            field.onChange(val);
-                                                            setSelectedIngredient(item || null);
-                                                        }}
-                                                        getOptionValue={(item) => item.id}
-                                                        getOptionLabel={(item) => {
-                                                            const unitStr = item.defaultUnit
-                                                                ? ` (${item.defaultUnit.abbreviation || item.defaultUnit.name})`
-                                                                : '';
-                                                            return `${item.name}${unitStr}`;
-                                                        }}
-                                                        selectedItem={preselectedIngredient || undefined}
-                                                        placeholder="Choose ingredient..."
-                                                        searchPlaceholder="Search ingredients..."
-                                                    />
+                                                    {isEditMode ? (
+                                                        <Input
+                                                            disabled
+                                                            value={
+                                                                selectedIngredient
+                                                                    ? `${selectedIngredient.name}${
+                                                                          selectedIngredient.defaultUnit
+                                                                              ? ` (${selectedIngredient.defaultUnit.abbreviation || selectedIngredient.defaultUnit.name})`
+                                                                              : ''
+                                                                      }`
+                                                                    : 'Selected Ingredient'
+                                                            }
+                                                            className="h-9 bg-muted/40 font-medium"
+                                                        />
+                                                    ) : (
+                                                        <InfiniteSelect<IIngredient>
+                                                            queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
+                                                            fetchFn={async ({ pageParam, query }) => {
+                                                                return getIngredients({
+                                                                    page: pageParam || 1,
+                                                                    limit: 20,
+                                                                    search: query,
+                                                                    status: 'active'
+                                                                });
+                                                            }}
+                                                            getItems={(page) => page.data}
+                                                            getNextPageParam={(lastPage) => {
+                                                                return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                            }}
+                                                            value={field.value}
+                                                            onChange={(val, item) => {
+                                                                field.onChange(val);
+                                                                setSelectedIngredient(item || null);
+                                                            }}
+                                                            getOptionValue={(item) => item.id}
+                                                            getOptionLabel={(item) => {
+                                                                const unitStr = item.defaultUnit
+                                                                    ? ` (${item.defaultUnit.abbreviation || item.defaultUnit.name})`
+                                                                    : '';
+                                                                return `${item.name}${unitStr}`;
+                                                            }}
+                                                            selectedItem={preselectedIngredient || undefined}
+                                                            placeholder="Choose ingredient..."
+                                                            searchPlaceholder="Search ingredients..."
+                                                        />
+                                                    )}
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -278,11 +344,13 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={adjustmentMutation.isPending || isLoading} className="h-9">
-                                {adjustmentMutation.isPending ? (
+                            <Button type="submit" disabled={isPending || isLoading} className="h-9">
+                                {isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Logging...
+                                        <Spinner className="h-4 w-4" /> {isEditMode ? 'Saving...' : 'Logging...'}
                                     </div>
+                                ) : isEditMode ? (
+                                    'Save Changes'
                                 ) : (
                                     'Log Adjustment'
                                 )}

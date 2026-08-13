@@ -151,6 +151,7 @@ export interface IAdjustment {
     type: TAdjustmentType;
     reason: string | null;
     createdAt: string;
+    updatedAt?: string;
     ingredient?: IIngredient;
     createdBy?: IUserAudit;
     updatedBy?: IUserAudit;
@@ -167,6 +168,12 @@ export interface ICreateAdjustmentPayload {
     ingredientId: string;
     quantity: number;
     type: TAdjustmentType;
+    reason?: string;
+}
+
+export interface IUpdateAdjustmentPayload {
+    quantity?: number;
+    type?: TAdjustmentType;
     reason?: string;
 }
 
