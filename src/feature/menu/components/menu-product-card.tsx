@@ -75,7 +75,7 @@ export default function MenuProductCard({ product, onViewDetails }: MenuProductC
                         size="sm"
                         className="h-8 text-xs font-semibold gap-1 text-primary hover:text-primary hover:bg-primary/5 px-2.5 rounded-lg transition-all"
                     >
-                        View Recipe
+                        View Item
                         <ArrowRight className="size-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
                     </Button>
                 </div>
