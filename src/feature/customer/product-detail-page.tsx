@@ -548,47 +548,53 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     </p>
 
                     {/* Recipe Ingredients Preview (if available) */}
-                    {selectedVariant?.recipe?.ingredients && selectedVariant.recipe.ingredients.length > 0 && (
-                        <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/40">
-                            <h3 className="text-xs font-bold text-foreground uppercase mb-2">Key Ingredients</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {selectedVariant.recipe.ingredients.map((ing: IMenuRecipeIngredient) => {
-                                    const currentQty = ing.ingredient.inventories?.[0]?.currentQuantity ?? 0;
-                                    const requiredQty = ing.quantity;
-                                    const isOutOfStock = currentQty < requiredQty;
-                                    const isLowStock = !isOutOfStock && (requiredQty > 0 ? currentQty / requiredQty <= 10 : false);
+                    {(() => {
+                        const keyIngredients = (selectedVariant?.recipe?.ingredients || []).filter(
+                            (ing: IMenuRecipeIngredient) => !ing.ingredient.type || ing.ingredient.type === 'INGREDIENT'
+                        );
+                        if (keyIngredients.length === 0) return null;
+                        return (
+                            <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/40">
+                                <h3 className="text-xs font-bold text-foreground uppercase mb-2">Key Ingredients</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {keyIngredients.map((ing: IMenuRecipeIngredient) => {
+                                        const currentQty = ing.ingredient.inventories?.[0]?.currentQuantity ?? 0;
+                                        const requiredQty = ing.quantity;
+                                        const isOutOfStock = currentQty < requiredQty;
+                                        const isLowStock = !isOutOfStock && (requiredQty > 0 ? currentQty / requiredQty <= 10 : false);
 
-                                    let badgeStyle = 'bg-background border-border text-muted-foreground';
-                                    if (isOutOfStock) {
-                                        badgeStyle =
-                                            'bg-rose-50 dark:bg-rose-950/20 border-rose-250 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 font-bold';
-                                    } else if (isLowStock) {
-                                        badgeStyle =
-                                            'bg-amber-50 dark:bg-amber-950/20 border-amber-250 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 font-semibold';
-                                    }
+                                        let badgeStyle = 'bg-background border-border text-muted-foreground';
+                                        if (isOutOfStock) {
+                                            badgeStyle =
+                                                'bg-rose-50 dark:bg-rose-950/20 border-rose-250 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 font-bold';
+                                        } else if (isLowStock) {
+                                            badgeStyle =
+                                                'bg-amber-50 dark:bg-amber-950/20 border-amber-250 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 font-semibold';
+                                        }
 
-                                    return (
-                                        <span
-                                            key={ing.id}
-                                            className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all duration-200 ${badgeStyle}`}
-                                        >
-                                            {ing.ingredient.name}
-                                            {isOutOfStock && (
-                                                <span className="text-xs font-bold text-rose-500/90 tracking-wide uppercase scale-95">
-                                                    (Out of stock)
-                                                </span>
-                                            )}
-                                            {isLowStock && (
-                                                <span className="text-xs font-semibold text-amber-500/90 tracking-wide uppercase scale-95">
-                                                    (Low stock)
-                                                </span>
-                                            )}
-                                        </span>
-                                    );
-                                })}
+                                        return (
+                                            <span
+                                                key={ing.id}
+                                                className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all duration-200 ${badgeStyle}`}
+                                            >
+                                                {ing.ingredient.name}
+                                                {isOutOfStock && (
+                                                    <span className="text-xs font-bold text-rose-500/90 tracking-wide uppercase scale-95">
+                                                        (Out of stock)
+                                                    </span>
+                                                )}
+                                                {isLowStock && (
+                                                    <span className="text-xs font-semibold text-amber-500/90 tracking-wide uppercase scale-95">
+                                                        (Low stock)
+                                                    </span>
+                                                )}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* Attribute Selectors */}
                     {attributeNames.length > 0 && (
