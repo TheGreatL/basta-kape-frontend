@@ -24,6 +24,7 @@ import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 import DeliveryDialog from '../components/inventory-delivery-dialog.tsx';
 import DeliveryViewDialog from '../components/inventory-delivery-view-dialog.tsx';
+import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 
 export default function DeliveriesPage() {
     const navigate = useNavigate({ from: '/admin/inventory/deliveries' });
@@ -48,6 +49,7 @@ export default function DeliveriesPage() {
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [deliveryOpen, setDeliveryOpen] = React.useState(false);
+    const [unifiedOpen, setUnifiedOpen] = React.useState(false);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
     const [deliveryToEdit, setDeliveryToEdit] = React.useState<IDelivery | null>(null);
     const [deliveryToView, setDeliveryToView] = React.useState<IDelivery | null>(null);
@@ -268,9 +270,8 @@ export default function DeliveriesPage() {
                     <RequirePermission module="Inventory Management" action="create">
                         <Button
                             onClick={() => {
-                                setDeliveryToEdit(null);
                                 setSelectedIngredient(null);
-                                setDeliveryOpen(true);
+                                setUnifiedOpen(true);
                             }}
                             className="h-9 gap-1.5 shadow-sm"
                             size="sm"
@@ -379,6 +380,9 @@ export default function DeliveriesPage() {
                 />
             </div>
 
+            {/* Unified Stock Action Dialog */}
+            <UnifiedStockDialog open={unifiedOpen} onOpenChange={setUnifiedOpen} initialMode="ADD_STOCK" preselectedIngredient={selectedIngredient} />
+
             {/* View Details Dialog */}
             <DeliveryViewDialog
                 open={viewOpen}
@@ -392,7 +396,7 @@ export default function DeliveriesPage() {
                 }}
             />
 
-            {/* Create & Edit Delivery Dialog */}
+            {/* Edit Delivery Dialog */}
             <DeliveryDialog
                 open={deliveryOpen}
                 onOpenChange={(open) => {

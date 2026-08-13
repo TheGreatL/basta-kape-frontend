@@ -22,6 +22,7 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 
 import AdjustmentDialog from '../components/inventory-adjustment-dialog.tsx';
+import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 
 const ADJUSTMENT_LABEL: Record<TAdjustmentType, string> = {
     WASTE: 'Waste',
@@ -65,6 +66,7 @@ export default function WasteLogPage() {
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [adjustmentOpen, setAdjustmentOpen] = React.useState(false);
+    const [unifiedOpen, setUnifiedOpen] = React.useState(false);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
     const [adjustmentToEdit, setAdjustmentToEdit] = React.useState<IAdjustment | null>(null);
 
@@ -269,14 +271,13 @@ export default function WasteLogPage() {
                     <RequirePermission module="Inventory Management" action="create">
                         <Button
                             onClick={() => {
-                                setAdjustmentToEdit(null);
                                 setSelectedIngredient(null);
-                                setAdjustmentOpen(true);
+                                setUnifiedOpen(true);
                             }}
                             className="h-9 gap-1.5 shadow-sm"
                             size="sm"
                         >
-                            <Plus className="size-4" /> Log Adjustment
+                            <Plus className="size-4" /> Log Waste / Adjustment
                         </Button>
                     </RequirePermission>
                 </div>
@@ -369,6 +370,10 @@ export default function WasteLogPage() {
                 />
             </div>
 
+            {/* Unified Stock Action Dialog */}
+            <UnifiedStockDialog open={unifiedOpen} onOpenChange={setUnifiedOpen} initialMode="LOG_WASTE" preselectedIngredient={selectedIngredient} />
+
+            {/* Edit Adjustment Dialog */}
             <AdjustmentDialog
                 open={adjustmentOpen}
                 onOpenChange={(open) => {

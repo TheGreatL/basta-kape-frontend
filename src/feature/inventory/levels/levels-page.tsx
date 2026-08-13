@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, Link  } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Package, Truck, Trash2, ClipboardList, Eye } from 'lucide-react';
+import { Package, Sliders, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/inventory/stock-levels.tsx';
@@ -18,9 +18,8 @@ import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 
-import PhysicalCountDialog from '../components/inventory-physical-count-dialog.tsx';
-import DeliveryDialog from '../components/inventory-delivery-dialog.tsx';
-import AdjustmentDialog from '../components/inventory-adjustment-dialog.tsx';
+import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
+import type { TStockActionMode } from '../components/unified-stock-dialog.tsx';
 
 const STATUS_BADGE_MAP: Record<TInventoryStatus, { label: string; className: string }> = {
     SAFE: { label: 'Safe', className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' },
@@ -52,11 +51,12 @@ export default function StockLevelsPage() {
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
     // Dialog States
-    const [selectedInventory, setSelectedInventory] = React.useState<IIngredientInventory | null>(null);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
-    const [physicalCountOpen, setPhysicalCountOpen] = React.useState(false);
-    const [deliveryOpen, setDeliveryOpen] = React.useState(false);
-    const [adjustmentOpen, setAdjustmentOpen] = React.useState(false);
+    const [currentSystemStock, setCurrentSystemStock] = React.useState<number | undefined>(undefined);
+
+    // Unified Stock Action Dialog State
+    const [stockDialogOpen, setStockDialogOpen] = React.useState(false);
+    const [stockDialogMode, setStockDialogMode] = React.useState<TStockActionMode>('ADD_STOCK');
 
     // Query: Stock Levels
     const { data: levelsData, isLoading } = useQuery({
@@ -138,7 +138,7 @@ export default function StockLevelsPage() {
                         <RequirePermission module="Inventory Management" action="read">
                             <Link
                                 to="/admin/inventory/deliveries"
-                                title="Physical Count"
+                                title="View Delivery Intake Logs"
                                 className={buttonVariants({
                                     variant: 'ghost',
                                     size: 'icon',
@@ -146,50 +146,24 @@ export default function StockLevelsPage() {
                                 })}
                                 search={{ page: 1, pageSize: 10, search: row.original.ingredient.name }}
                             >
-                                <Eye />
+                                <Eye className="size-4" />
                             </Link>
                         </RequirePermission>
 
-                        <RequirePermission module="Inventory Management" action="update">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                title="Physical Count"
-                                onClick={() => {
-                                    setSelectedInventory(row.original);
-                                    setPhysicalCountOpen(true);
-                                }}
-                            >
-                                <ClipboardList className="size-4" />
-                            </Button>
-                        </RequirePermission>
                         <RequirePermission module="Inventory Management" action="create">
                             <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                title="Log Delivery"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs gap-1 shadow-2xs hover:border-primary/40 hover:text-primary"
+                                title="Manage Stock (Add Stock, Log Waste, or Count Sync)"
                                 onClick={() => {
                                     setSelectedIngredient(row.original.ingredient);
-                                    setDeliveryOpen(true);
+                                    setCurrentSystemStock(row.original.currentQuantity);
+                                    setStockDialogMode('ADD_STOCK');
+                                    setStockDialogOpen(true);
                                 }}
                             >
-                                <Truck className="size-4" />
-                            </Button>
-                        </RequirePermission>
-                        <RequirePermission module="Inventory Management" action="create">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                title="Log Waste"
-                                onClick={() => {
-                                    setSelectedIngredient(row.original.ingredient);
-                                    setAdjustmentOpen(true);
-                                }}
-                            >
-                                <Trash2 className="size-4" />
+                                <Sliders className="size-3.5" /> Manage Stock
                             </Button>
                         </RequirePermission>
                     </div>
@@ -216,33 +190,20 @@ export default function StockLevelsPage() {
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <p className="text-xs text-muted-foreground font-medium">Live stock levels across all registered raw ingredients.</p>
-                    <div className="flex items-center gap-2">
-                        <RequirePermission module="Inventory Management" action="create">
-                            <Button
-                                onClick={() => {
-                                    setSelectedIngredient(null);
-                                    setDeliveryOpen(true);
-                                }}
-                                className="h-9 gap-1.5 shadow-sm"
-                                size="sm"
-                            >
-                                <Truck className="size-4" /> Log Delivery
-                            </Button>
-                        </RequirePermission>
-                        <RequirePermission module="Inventory Management" action="create">
-                            <Button
-                                onClick={() => {
-                                    setSelectedIngredient(null);
-                                    setAdjustmentOpen(true);
-                                }}
-                                variant="outline"
-                                className="h-9 gap-1.5"
-                                size="sm"
-                            >
-                                <Trash2 className="size-4" /> Log Waste
-                            </Button>
-                        </RequirePermission>
-                    </div>
+                    <RequirePermission module="Inventory Management" action="create">
+                        <Button
+                            onClick={() => {
+                                setSelectedIngredient(null);
+                                setCurrentSystemStock(undefined);
+                                setStockDialogMode('ADD_STOCK');
+                                setStockDialogOpen(true);
+                            }}
+                            className="h-9 gap-1.5 shadow-sm"
+                            size="sm"
+                        >
+                            <Sliders className="size-4" /> Manage Stock
+                        </Button>
+                    </RequirePermission>
                 </div>
                 <DataTable
                     columns={columns}
@@ -261,10 +222,10 @@ export default function StockLevelsPage() {
                                 placeholder="Search ingredients..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className="h-9 w-full sm:w-[250px] bg-background/50"
+                                className="h-9 w-full sm:w-[250px] bg-background/50 text-xs"
                             />
                             <Select value={status || 'all'} onValueChange={(val) => setSearch({ status: val === 'all' ? '' : val, page: 1 })}>
-                                <SelectTrigger className="h-9 min-w-[160px] bg-background/50 capitalize">
+                                <SelectTrigger className="h-9 min-w-[160px] bg-background/50 capitalize text-xs">
                                     <SelectValue placeholder="All Statuses" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -279,9 +240,13 @@ export default function StockLevelsPage() {
                 />
             </div>
 
-            <PhysicalCountDialog open={physicalCountOpen} onOpenChange={setPhysicalCountOpen} inventory={selectedInventory} />
-            <DeliveryDialog open={deliveryOpen} onOpenChange={setDeliveryOpen} preselectedIngredient={selectedIngredient} />
-            <AdjustmentDialog open={adjustmentOpen} onOpenChange={setAdjustmentOpen} preselectedIngredient={selectedIngredient} />
+            <UnifiedStockDialog
+                open={stockDialogOpen}
+                onOpenChange={setStockDialogOpen}
+                initialMode={stockDialogMode}
+                preselectedIngredient={selectedIngredient}
+                currentSystemStock={currentSystemStock}
+            />
         </div>
     );
 }
