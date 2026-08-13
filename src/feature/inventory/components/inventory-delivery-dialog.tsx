@@ -4,14 +4,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { CalendarIcon, Truck } from 'lucide-react';
+import { CalendarIcon, Truck, Edit } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 
-import { createDelivery, getIngredients } from '#/api/inventory.api.ts';
+import { createDelivery, updateDelivery, getIngredients } from '#/api/inventory.api.ts';
 import { getSuppliersList } from '#/api/suppliers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { IIngredient } from '../inventory.types';
+import type { IDelivery, IIngredient } from '../inventory.types';
 import type { ISupplierListItem } from '#/feature/suppliers/suppliers.types';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
@@ -39,11 +39,13 @@ interface DeliveryDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     preselectedIngredient?: IIngredient | null;
+    deliveryToEdit?: IDelivery | null;
 }
 
-export default function DeliveryDialog({ open, onOpenChange, preselectedIngredient }: DeliveryDialogProps) {
+export default function DeliveryDialog({ open, onOpenChange, preselectedIngredient, deliveryToEdit }: DeliveryDialogProps) {
     const queryClient = useQueryClient();
     const [isRendering, setIsRendering] = React.useState(false);
+    const isEditMode = Boolean(deliveryToEdit);
 
     React.useEffect(() => {
         if (open) {
@@ -68,18 +70,29 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
 
     React.useEffect(() => {
         if (open) {
-            form.reset({
-                ingredientId: preselectedIngredient?.id || '',
-                supplierId: '',
-                quantityReceived: 0,
-                unitCost: 0,
-                batchNumber: '',
-                expiryDate: ''
-            });
+            if (deliveryToEdit) {
+                form.reset({
+                    ingredientId: deliveryToEdit.ingredientId,
+                    supplierId: deliveryToEdit.supplierId || '',
+                    quantityReceived: deliveryToEdit.quantityReceived,
+                    unitCost: deliveryToEdit.unitCost,
+                    batchNumber: deliveryToEdit.batchNumber || '',
+                    expiryDate: deliveryToEdit.expiryDate ? format(new Date(deliveryToEdit.expiryDate), 'yyyy-MM-dd') : ''
+                });
+            } else {
+                form.reset({
+                    ingredientId: preselectedIngredient?.id || '',
+                    supplierId: '',
+                    quantityReceived: 0,
+                    unitCost: 0,
+                    batchNumber: '',
+                    expiryDate: ''
+                });
+            }
         }
-    }, [open, preselectedIngredient, form]);
+    }, [open, preselectedIngredient, deliveryToEdit, form]);
 
-    const deliveryMutation = useMutation({
+    const createMutation = useMutation({
         mutationFn: createDelivery,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.DELIVERIES_LIST] });
@@ -97,17 +110,49 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
         }
     });
 
+    const editMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof updateDelivery>[1] }) => updateDelivery(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.DELIVERIES_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
+            toast.success('Replenishment Delivery Updated', {
+                description: 'Delivery record updated and active stock recalculated.'
+            });
+            onOpenChange(false);
+        },
+        onError: (error) => {
+            toast.error('Failed to update delivery', {
+                description: getErrorMessage(error)
+            });
+        }
+    });
+
     const onSubmit = (values: DeliveryFormValues) => {
-        deliveryMutation.mutate({
-            ingredientId: values.ingredientId,
-            supplierId: values.supplierId || null,
-            quantityReceived: values.quantityReceived,
-            unitCost: values.unitCost,
-            batchNumber: values.batchNumber || undefined,
-            expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null
-        });
+        if (isEditMode && deliveryToEdit) {
+            editMutation.mutate({
+                id: deliveryToEdit.id,
+                payload: {
+                    supplierId: values.supplierId || null,
+                    quantityReceived: values.quantityReceived,
+                    unitCost: values.unitCost,
+                    batchNumber: values.batchNumber || undefined,
+                    expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null
+                }
+            });
+        } else {
+            createMutation.mutate({
+                ingredientId: values.ingredientId,
+                supplierId: values.supplierId || null,
+                quantityReceived: values.quantityReceived,
+                unitCost: values.unitCost,
+                batchNumber: values.batchNumber || undefined,
+                expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null
+            });
+        }
     };
 
+    const isPending = createMutation.isPending || editMutation.isPending;
     const isLoading = !isRendering;
 
     return (
@@ -115,11 +160,13 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
             <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 overflow-hidden bg-background">
                 <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-                        <Truck className="size-5 text-primary" />
-                        Log Supplier Stock Delivery
+                        {isEditMode ? <Edit className="size-5 text-primary" /> : <Truck className="size-5 text-primary" />}
+                        {isEditMode ? 'Edit Supplier Delivery' : 'Log Supplier Stock Delivery'}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Log incoming materials to increment active stock counts and update financial unit values.
+                        {isEditMode
+                            ? 'Modify delivery details, cost values, or received counts. Active stock levels will automatically adjust.'
+                            : 'Log incoming materials to increment active stock counts and update financial unit values.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -138,30 +185,42 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                         name="ingredientId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Select Raw Ingredient</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">Raw Ingredient</FormLabel>
                                                 <FormControl>
-                                                    <InfiniteSelect<IIngredient>
-                                                        queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
-                                                        fetchFn={async ({ pageParam, query }) => {
-                                                            return getIngredients({
-                                                                page: pageParam || 1,
-                                                                limit: 20,
-                                                                search: query,
-                                                                status: 'active'
-                                                            });
-                                                        }}
-                                                        getItems={(page) => page.data}
-                                                        getNextPageParam={(lastPage) => {
-                                                            return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
-                                                        }}
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                        getOptionValue={(item) => item.id}
-                                                        getOptionLabel={(item) => `${item.name}`}
-                                                        selectedItem={preselectedIngredient || undefined}
-                                                        placeholder="Choose ingredient..."
-                                                        searchPlaceholder="Search ingredients..."
-                                                    />
+                                                    {isEditMode ? (
+                                                        <Input
+                                                            disabled
+                                                            value={
+                                                                deliveryToEdit?.ingredient?.name ||
+                                                                preselectedIngredient?.name ||
+                                                                'Selected Ingredient'
+                                                            }
+                                                            className="h-9 bg-muted/40 font-medium text-xs"
+                                                        />
+                                                    ) : (
+                                                        <InfiniteSelect<IIngredient>
+                                                            queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
+                                                            fetchFn={async ({ pageParam, query }) => {
+                                                                return getIngredients({
+                                                                    page: pageParam || 1,
+                                                                    limit: 20,
+                                                                    search: query,
+                                                                    status: 'active'
+                                                                });
+                                                            }}
+                                                            getItems={(page) => page.data}
+                                                            getNextPageParam={(lastPage) => {
+                                                                return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                            }}
+                                                            value={field.value}
+                                                            onChange={field.onChange}
+                                                            getOptionValue={(item) => item.id}
+                                                            getOptionLabel={(item) => `${item.name}`}
+                                                            selectedItem={preselectedIngredient || undefined}
+                                                            placeholder="Choose ingredient..."
+                                                            searchPlaceholder="Search ingredients..."
+                                                        />
+                                                    )}
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -193,6 +252,9 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                                         onChange={(val) => field.onChange(val || '')}
                                                         getOptionValue={(item) => item.id}
                                                         getOptionLabel={(item) => `${item.name}`}
+                                                        selectedItem={
+                                                            deliveryToEdit?.supplier ? (deliveryToEdit.supplier as ISupplierListItem) : undefined
+                                                        }
                                                         placeholder="Choose supplier profile..."
                                                         searchPlaceholder="Search suppliers..."
                                                     />
@@ -306,11 +368,13 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={deliveryMutation.isPending || isLoading} className="h-9">
-                                {deliveryMutation.isPending ? (
+                            <Button type="submit" disabled={isPending || isLoading} className="h-9">
+                                {isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Logging...
+                                        <Spinner className="h-4 w-4" /> {isEditMode ? 'Saving...' : 'Logging...'}
                                     </div>
+                                ) : isEditMode ? (
+                                    'Save Changes'
                                 ) : (
                                     'Log Delivery'
                                 )}

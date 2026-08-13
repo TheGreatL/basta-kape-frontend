@@ -117,6 +117,8 @@ export interface IDelivery {
     batchNumber: string | null;
     expiryDate: string | null;
     receivedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
     ingredient?: IIngredient;
     supplier?: {
         id: string;
@@ -128,6 +130,9 @@ export interface IDelivery {
 
 export interface IGetDeliveriesParams extends IPaginationParams {
     search?: string;
+    supplierId?: string;
+    startDate?: string;
+    endDate?: string;
 }
 
 export interface ICreateDeliveryPayload {
@@ -135,6 +140,14 @@ export interface ICreateDeliveryPayload {
     supplierId?: string | null;
     quantityReceived: number;
     unitCost: number;
+    batchNumber?: string;
+    expiryDate?: string | null;
+}
+
+export interface IUpdateDeliveryPayload {
+    supplierId?: string | null;
+    quantityReceived?: number;
+    unitCost?: number;
     batchNumber?: string;
     expiryDate?: string | null;
 }

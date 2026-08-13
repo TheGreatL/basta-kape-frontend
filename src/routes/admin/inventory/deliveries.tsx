@@ -6,7 +6,10 @@ import { requirePermission } from '#/utils/rbac.ts';
 const searchParamsSchema = z.object({
     page: z.number().optional().default(1),
     pageSize: z.number().optional().default(10),
-    search: z.string().optional().default('')
+    search: z.string().optional().default(''),
+    supplierId: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional()
 });
 
 export const Route = createFileRoute('/admin/inventory/deliveries')({

@@ -15,6 +15,7 @@ import type {
     IDelivery,
     IGetDeliveriesParams,
     ICreateDeliveryPayload,
+    IUpdateDeliveryPayload,
     IAdjustment,
     IGetAdjustmentsParams,
     ICreateAdjustmentPayload,
@@ -204,6 +205,9 @@ export const getDeliveries = async (params: IGetDeliveriesParams): Promise<IPagi
     if (params.page !== undefined) query.set('page', String(params.page));
     if (params.limit !== undefined) query.set('limit', String(params.limit));
     if (params.search) query.set('search', params.search);
+    if (params.supplierId) query.set('supplierId', params.supplierId);
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
 
     const response = await api.get(`/inventory/deliveries?${query.toString()}`);
     if (!response.ok) {
@@ -219,6 +223,15 @@ export const createDelivery = async (payload: ICreateDeliveryPayload): Promise<I
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to log supplier delivery', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const updateDelivery = async (id: string, payload: IUpdateDeliveryPayload): Promise<IDelivery> => {
+    const response = await api.put(`/inventory/deliveries/${id}`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to update supplier delivery', response.status, errorData);
     }
     return response.json();
 };
