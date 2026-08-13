@@ -6,7 +6,10 @@ import { requirePermission } from '#/utils/rbac.ts';
 const searchParamsSchema = z.object({
     page: z.number().catch(1),
     pageSize: z.number().catch(10),
-    search: z.string().catch('')
+    search: z.string().catch(''),
+    type: z.enum(['ALL', 'WASTE', 'SPOILED', 'EXPIRED', 'THEFT', 'PROMOTIONAL_USE', 'PHYSICAL_COUNT_DISCREPANCY']).catch('ALL'),
+    startDate: z.string().catch(''),
+    endDate: z.string().catch('')
 });
 
 export const Route = createFileRoute('/admin/inventory/waste-log')({

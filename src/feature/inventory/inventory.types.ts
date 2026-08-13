@@ -158,6 +158,9 @@ export interface IAdjustment {
 
 export interface IGetAdjustmentsParams extends IPaginationParams {
     search?: string;
+    type?: TAdjustmentType | 'ALL';
+    startDate?: string;
+    endDate?: string;
 }
 
 export interface ICreateAdjustmentPayload {
