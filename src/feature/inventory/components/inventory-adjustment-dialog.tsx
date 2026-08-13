@@ -72,8 +72,11 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
     const selectedType = form.watch('type');
     const isDiscrepancy = selectedType === 'PHYSICAL_COUNT_DISCREPANCY';
 
+    const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(preselectedIngredient || null);
+
     React.useEffect(() => {
         if (open) {
+            setSelectedIngredient(preselectedIngredient || null);
             form.reset({
                 ingredientId: preselectedIngredient?.id || '',
                 quantity: 0,
@@ -159,9 +162,17 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                                             return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
                                                         }}
                                                         value={field.value}
-                                                        onChange={field.onChange}
+                                                        onChange={(val, item) => {
+                                                            field.onChange(val);
+                                                            setSelectedIngredient(item || null);
+                                                        }}
                                                         getOptionValue={(item) => item.id}
-                                                        getOptionLabel={(item) => item.name}
+                                                        getOptionLabel={(item) => {
+                                                            const unitStr = item.defaultUnit
+                                                                ? ` (${item.defaultUnit.abbreviation || item.defaultUnit.name})`
+                                                                : '';
+                                                            return `${item.name}${unitStr}`;
+                                                        }}
                                                         selectedItem={preselectedIngredient || undefined}
                                                         placeholder="Choose ingredient..."
                                                         searchPlaceholder="Search ingredients..."
@@ -200,29 +211,46 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                     <FormField
                                         control={form.control}
                                         name="quantity"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">
-                                                    {isDiscrepancy ? 'Quantity Change' : 'Quantity'}
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="any"
-                                                        placeholder={isDiscrepancy ? 'e.g. -500' : 'e.g. 500'}
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                        className="h-9 bg-background/50"
-                                                    />
-                                                </FormControl>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {isDiscrepancy
-                                                        ? 'Use negative values for reductions, positive for corrections.'
-                                                        : 'Enter the quantity to deduct from stock.'}
-                                                </p>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+                                        render={({ field }) => {
+                                            const unitAbbr = selectedIngredient?.defaultUnit?.abbreviation || selectedIngredient?.defaultUnit?.name;
+                                            return (
+                                                <FormItem>
+                                                    <div className="flex items-center justify-between">
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            {isDiscrepancy ? 'Quantity Change' : 'Quantity'}
+                                                        </FormLabel>
+                                                        {unitAbbr && (
+                                                            <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                                                                Unit: {unitAbbr}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <FormControl>
+                                                        <div className="relative flex items-center">
+                                                            <Input
+                                                                type="number"
+                                                                step="any"
+                                                                placeholder={isDiscrepancy ? 'e.g. -500' : 'e.g. 500'}
+                                                                {...field}
+                                                                onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                                className={`h-9 bg-background/50 ${unitAbbr ? 'pr-14' : ''}`}
+                                                            />
+                                                            {unitAbbr && (
+                                                                <span className="absolute right-3 text-xs font-bold text-muted-foreground pointer-events-none uppercase">
+                                                                    {unitAbbr}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </FormControl>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {isDiscrepancy
+                                                            ? `Use negative values for reductions, positive for corrections${unitAbbr ? ` (in ${unitAbbr})` : ''}.`
+                                                            : `Enter the quantity${unitAbbr ? ` in ${unitAbbr}` : ''} to deduct from stock.`}
+                                                    </p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            );
+                                        }}
                                     />
 
                                     <FormField
