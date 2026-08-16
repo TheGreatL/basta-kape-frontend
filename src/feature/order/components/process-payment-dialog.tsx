@@ -195,7 +195,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                             Process Order Payment
                         </DialogTitle>
                         <DialogDescription className="text-xs text-muted-foreground">
-                            Record payment for Ticket **#{order.queueNumber}** (Customer: **{order.customerName || 'Walk-in'}**).
+                            Record payment for Ticket **{order.queueNumber}** (Customer: **{order.customerName || 'Walk-in'}**).
                         </DialogDescription>
                     </DialogHeader>
 

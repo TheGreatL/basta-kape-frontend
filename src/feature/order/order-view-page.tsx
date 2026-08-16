@@ -142,7 +142,7 @@ export default function OrderViewPage() {
                         </button>
                         <div>
                             <h1 className="text-2xl font-bold text-foreground leading-none flex items-center gap-2">
-                                Order #{orderDetails.queueNumber}
+                                Order {orderDetails.queueNumber}
                                 <Badge variant="outline" className={`font-bold capitalize py-0.5 px-2.5 ${getStatusBadgeClass(orderDetails.status)}`}>
                                     {orderDetails.status.toLowerCase()}
                                 </Badge>
@@ -194,7 +194,7 @@ export default function OrderViewPage() {
                                 <div className="text-xs uppercase font-bold  text-muted-foreground">Queue Ticket Number</div>
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-lg font-bold text-foreground">{orderDetails.queueNumber}</div>
-                                    <CopyButton value={orderDetails.queueNumber} description={`Queue number #${orderDetails.queueNumber} copied`} />
+                                    <CopyButton value={orderDetails.queueNumber} description={`Queue number ${orderDetails.queueNumber} copied`} />
                                 </div>
                             </div>
                             <div>

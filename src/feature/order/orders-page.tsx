@@ -95,8 +95,8 @@ export default function OrdersPage() {
         }
     };
 
-    const getPaymentStatusBadgeClass = (status: string) => {
-        switch (status) {
+    const getPaymentStatusBadgeClass = (payStatus: string) => {
+        switch (payStatus) {
             case 'PAID':
                 return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
             case 'PENDING':
@@ -133,7 +133,7 @@ export default function OrdersPage() {
                         <div className="flex flex-col gap-0.5 min-w-[100px]">
                             <div className="flex items-center gap-1">
                                 <span className="font-mono text-sm font-bold text-foreground">{row.original.queueNumber}</span>
-                                <CopyButton value={row.original.queueNumber} description={`Queue number #${row.original.queueNumber} copied`} />
+                                <CopyButton value={row.original.queueNumber} description={`Queue number ${row.original.queueNumber} copied`} />
                             </div>
                             <div className="flex flex-col text-muted-foreground font-mono leading-none">
                                 <span className="flex items-center gap-0.5">

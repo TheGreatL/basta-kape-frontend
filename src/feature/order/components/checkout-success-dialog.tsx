@@ -69,7 +69,7 @@ export default function CheckoutSuccessDialog({
                     {/* Queue Number Showcase */}
                     <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-center space-y-1">
                         <span className="text-xs uppercase font-bold text-muted-foreground  block">Queue Ticket Number</span>
-                        <span className="text-4xl font-bold text-primary font-mono block">#{order.queueNumber}</span>
+                        <span className="text-4xl font-bold text-primary font-mono block">{order.queueNumber}</span>
                         <div className="flex justify-center gap-1.5 pt-1.5">
                             <Badge
                                 variant="secondary"

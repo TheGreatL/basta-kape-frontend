@@ -106,7 +106,7 @@ function VoidLogsAuditView() {
                         {row.original.order?.queueNumber && (
                             <CopyButton
                                 value={row.original.order.queueNumber}
-                                description={`Queue number #${row.original.order.queueNumber} copied`}
+                                description={`Queue number ${row.original.order.queueNumber} copied`}
                             />
                         )}
                     </div>

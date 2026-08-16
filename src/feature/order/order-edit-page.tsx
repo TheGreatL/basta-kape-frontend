@@ -406,7 +406,7 @@ export default function OrderEditPage() {
                                 <div className="text-xs uppercase font-bold  text-muted-foreground">Queue Ticket Number</div>
                                 <div className="flex items-center gap-1.5">
                                     <div className="text-lg font-bold text-foreground">{orderDetails.queueNumber}</div>
-                                    <CopyButton value={orderDetails.queueNumber} description={`Queue number #${orderDetails.queueNumber} copied`} />
+                                    <CopyButton value={orderDetails.queueNumber} description={`Queue number ${orderDetails.queueNumber} copied`} />
                                 </div>
                             </div>
                             <div>

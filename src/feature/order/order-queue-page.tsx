@@ -56,7 +56,7 @@ export default function OrderQueuePage() {
             updateOrderStatus(orderId, payload),
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
-            toast.success(`Order #${updated.queueNumber} updated to ${updated.status}`);
+            toast.success(`Order ${updated.queueNumber} updated to ${updated.status}`);
         },
         onError: (err) => {
             toast.error('Failed to transition order status', { description: getErrorMessage(err) });
@@ -140,7 +140,7 @@ export default function OrderQueuePage() {
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-1">
                             <span className="font-mono text-base font-bold text-foreground">{order.queueNumber}</span>
-                            <CopyButton value={order.queueNumber} description={`Queue number #${order.queueNumber} copied`} />
+                            <CopyButton value={order.queueNumber} description={`Queue number ${order.queueNumber} copied`} />
                         </div>
                         <div className="text-muted-foreground font-mono leading-none pt-0.5 flex items-center gap-0.5">
                             <span>Ref: {order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber)}</span>
@@ -204,6 +204,12 @@ export default function OrderQueuePage() {
                                         {item.modifiers.map((mod) => (
                                             <span key={mod.id}>+ {mod.modifierOption.name}</span>
                                         ))}
+                                    </div>
+                                )}
+                                {/* Item Note */}
+                                {item.notes && (
+                                    <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1 italic leading-tight">
+                                        Note: {item.notes}
                                     </div>
                                 )}
                             </div>

@@ -394,7 +394,7 @@ export default function OrderCreatePage() {
             const detailedOrder = await getOrderById(order.id);
             setCreatedOrder(detailedOrder);
 
-            toast.success(`Order Queue #${order.queueNumber} placed successfully!`, {
+            toast.success(`Order Queue ${order.queueNumber} placed successfully!`, {
                 description: 'Order created. Please configure discounts or confirm the payment below.'
             });
 
@@ -893,7 +893,7 @@ export default function OrderCreatePage() {
     };
 
     const renderReceiptCard = (disabled: boolean) => {
-        const titleText = createdOrder ? `POS Order Queue #${createdOrder.queueNumber} Receipt` : 'Current Order Receipt';
+        const titleText = createdOrder ? `POS Order Queue ${createdOrder.queueNumber} Receipt` : 'Current Order Receipt';
         return (
             <div className="border border-border/60 p-5 rounded-2xl bg-card shadow-sm flex-1 flex flex-col min-h-[300px]">
                 <h3 className="font-bold text-xs uppercase text-muted-foreground pb-2 border-b border-border/30 shrink-0">{titleText}</h3>
@@ -1121,7 +1121,7 @@ export default function OrderCreatePage() {
                             <div className="flex items-center justify-between border border-emerald-500/20 bg-emerald-500/5 p-3.5 rounded-xl text-xs font-semibold text-emerald-700 gap-4">
                                 <span className="flex items-center gap-1.5 min-w-0 truncate">
                                     <CheckCircle2 className="size-4 shrink-0 text-emerald-600 animate-bounce" />
-                                    <span className="truncate">POS Order Queue #{createdOrder.queueNumber} Placed</span>
+                                    <span className="truncate">POS Order Queue {createdOrder.queueNumber} Placed</span>
                                 </span>
                                 <div className="flex items-center gap-2 shrink-0">
                                     <DropdownMenu>
