@@ -8,6 +8,7 @@ import { getMenuProductById } from '#/api/menu.api.ts';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
+import { Input } from '#/components/ui/input.tsx';
 import { useCart } from '#/feature/customer/use-cart.ts';
 import { useAuth } from '#/context/AuthContext';
 import type { IMenuProductVariant, IMenuRecipeIngredient, IMenuVariantAttribute } from '#/feature/menu/menu.types.ts';
@@ -29,6 +30,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
 
     const [selectedAttributes, setSelectedAttributes] = useState<{ [name: string]: string }>({});
     const [selectedModifierOptionIds, setSelectedModifierOptionIds] = useState<string[]>([]);
+    const [itemNotes, setItemNotes] = useState('');
 
     // Fetch product details
     const {
@@ -334,6 +336,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
             await addItem({
                 productVariantId: selectedVariantId,
                 quantity,
+                notes: itemNotes.trim() || undefined,
                 modifierOptionIds: selectedModifierOptionIds
             });
         } catch {
@@ -359,6 +362,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
             productVariantId: selectedVariantId,
             quantity,
             unitPrice: selectedVariant.price,
+            notes: itemNotes.trim() || undefined,
             productVariant: {
                 product: {
                     name: product.name,
@@ -767,8 +771,23 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                         </div>
                     )}
 
+                    {/* Item Custom Instructions / Notes */}
+                    <div className="space-y-1.5 pt-4">
+                        <label className="text-xs font-bold text-foreground/80 flex items-center justify-between">
+                            <span>Special Instructions / Item Notes</span>
+                            <span className="text-[11px] font-normal text-muted-foreground">Optional</span>
+                        </label>
+                        <Input
+                            placeholder="e.g. Extra hot, less ice, separate cup..."
+                            value={itemNotes}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setItemNotes(e.target.value)}
+                            maxLength={150}
+                            className="h-9 text-xs bg-background/50 border-border/60"
+                        />
+                    </div>
+
                     {/* Quantity and CTA */}
-                    <div className="mt-8 pt-8 border-t border-border/40 space-y-6">
+                    <div className="mt-8 pt-6 border-t border-border/40 space-y-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <span className="text-xs text-muted-foreground font-medium uppercase">Total Price</span>

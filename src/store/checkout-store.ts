@@ -17,6 +17,7 @@ export interface IDirectCheckoutItem {
         }[];
     };
     modifierOptionIds: string[];
+    notes?: string;
     selectedModifiersInfo: {
         ids: string[];
         price: number;

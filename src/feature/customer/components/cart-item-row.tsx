@@ -77,6 +77,11 @@ export default function CartItemRow({
                 <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5">{product.name || 'Unknown Item'}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{variantLabel}</p>
                 <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">₱{(item.unitPrice + modifiersPrice).toFixed(2)}</div>
+                {item.notes && (
+                    <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1.5 inline-block italic">
+                        Note: {item.notes}
+                    </div>
+                )}
 
                 {/* Customize Section */}
                 {modifierGroups.length > 0 && (

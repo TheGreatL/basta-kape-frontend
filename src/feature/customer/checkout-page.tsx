@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                 items: checkoutItems.map((item) => ({
                     productVariantId: item.productVariantId,
                     quantity: item.quantity,
-                    notes: undefined,
+                    notes: isDirectCheckout && directCheckoutItem ? directCheckoutItem.notes : item.notes || undefined,
                     modifierOptionIds:
                         isDirectCheckout && directCheckoutItem ? directCheckoutItem.modifierOptionIds : selectedModifiers[item.id]?.ids || []
                 }))
@@ -724,6 +724,11 @@ export default function CheckoutPage() {
                                                 <span>Size: {getVariantLabel(item)}</span>
                                                 {modifierNames.length > 0 && (
                                                     <span className="text-primary/80 italic">Add-ons: {modifierNames.join(', ')}</span>
+                                                )}
+                                                {((isDirectCheckout && directCheckoutItem?.notes) || item.notes) && (
+                                                    <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium italic block pt-0.5">
+                                                        Note: {isDirectCheckout && directCheckoutItem ? directCheckoutItem.notes : item.notes}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>

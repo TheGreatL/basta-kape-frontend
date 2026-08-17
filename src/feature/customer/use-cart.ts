@@ -17,7 +17,7 @@ export function useCart() {
     });
 
     const addMutation = useMutation({
-        mutationFn: (payload: { productVariantId: string; quantity: number; modifierOptionIds?: string[] }) => {
+        mutationFn: (payload: { productVariantId: string; quantity: number; notes?: string; modifierOptionIds?: string[] }) => {
             if (!customerId) throw new Error('No customer ID');
             return addCartItem(customerId, payload);
         },
@@ -31,10 +31,11 @@ export function useCart() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: (payload: { cartItemId: string; quantity?: number; modifierOptionIds?: string[] }) => {
+        mutationFn: (payload: { cartItemId: string; quantity?: number; notes?: string; modifierOptionIds?: string[] }) => {
             if (!customerId) throw new Error('No customer ID');
             return updateCartItem(customerId, payload.cartItemId, {
                 quantity: payload.quantity,
+                notes: payload.notes,
                 modifierOptionIds: payload.modifierOptionIds
             });
         },
