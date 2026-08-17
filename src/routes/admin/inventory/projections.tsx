@@ -4,6 +4,8 @@ import ProjectionsPage from '#/feature/inventory/projections/projections-page.ts
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
+    page: z.number().catch(1),
+    pageSize: z.number().catch(12),
     search: z.string().catch('')
 });
 

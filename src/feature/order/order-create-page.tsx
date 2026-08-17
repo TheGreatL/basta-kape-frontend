@@ -231,10 +231,11 @@ export default function OrderCreatePage() {
     });
 
     // Query: Fetch production forecast to get active stock levels and bottlenecks
-    const { data: forecastData } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.FORECAST],
-        queryFn: getProductionForecast
+    const { data: forecastRes } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.FORECAST, { limit: 500 }],
+        queryFn: () => getProductionForecast({ limit: 500 })
     });
+    const forecastData = forecastRes?.data;
 
     const handleToggleModifierOption = (groupId: string, optionId: string, maxSelect: number, isRequired: boolean, groupName: string) => {
         const group = modifierGroupsResponse?.data.find((g: IModifierGroup) => g.id === groupId);

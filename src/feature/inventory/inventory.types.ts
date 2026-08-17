@@ -190,9 +190,18 @@ export interface IUpdateAdjustmentPayload {
     reason?: string;
 }
 
-// =============================================================================
-// Production Projections & Forecasting
-// =============================================================================
+export interface IGetForecastParams extends IPaginationParams {
+    search?: string;
+    status?: 'all' | 'ready' | 'low' | 'out' | 'no_recipe';
+}
+
+export interface IForecastStats {
+    total: number;
+    ready: number;
+    low: number;
+    out: number;
+    noRecipe: number;
+}
 export interface IForecastIngredient {
     ingredientId: string;
     name: string;

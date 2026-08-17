@@ -20,6 +20,8 @@ import type {
     IGetAdjustmentsParams,
     ICreateAdjustmentPayload,
     IUpdateAdjustmentPayload,
+    IGetForecastParams,
+    IForecastStats,
     IForecast,
     IInventoryDashboardOverview,
     IDashboardDelivery,
@@ -275,13 +277,19 @@ export const updateAdjustment = async (id: string, payload: IUpdateAdjustmentPay
 // =============================================================================
 // Production Projections & Forecasting
 // =============================================================================
-export const getProductionForecast = async (): Promise<IForecast[]> => {
-    const response = await api.get('/inventory/forecast');
+export const getProductionForecast = async (params?: IGetForecastParams): Promise<IPaginatedResult<IForecast> & { stats: IForecastStats }> => {
+    const query = new URLSearchParams();
+    if (params?.page !== undefined) query.set('page', String(params.page));
+    if (params?.limit !== undefined) query.set('limit', String(params.limit));
+    if (params?.search) query.set('search', params.search);
+    if (params?.status && params.status !== 'all') query.set('status', params.status);
+
+    const response = await api.get(`/inventory/forecast?${query.toString()}`);
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to compute production forecasts', response.status, errorData);
     }
-    const data: IForecast[] = (await response.json()) || [];
+    const data = await response.json();
     return data;
 };
 

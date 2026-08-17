@@ -1,12 +1,29 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, AlertTriangle, CheckCircle2, XCircle, Info, Search, PackageCheck, Coffee, Sparkles, AlertCircle, Layers } from 'lucide-react';
+import {
+    TrendingUp,
+    AlertTriangle,
+    CheckCircle2,
+    XCircle,
+    Info,
+    Search,
+    PackageCheck,
+    Coffee,
+    Sparkles,
+    AlertCircle,
+    Layers,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight
+} from 'lucide-react';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Button } from '#/components/ui/button.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Route } from '#/routes/admin/inventory/projections.tsx';
 import { getProductionForecast } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -15,7 +32,9 @@ import type { IForecast } from '../inventory.types';
 
 export default function ProjectionsPage() {
     const navigate = useNavigate({ from: '/admin/inventory/projections' });
-    const { search } = Route.useSearch();
+    const { search, page: rawPage, pageSize: rawPageSize } = Route.useSearch();
+    const page = rawPage || 1;
+    const pageSize = rawPageSize || 12;
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -33,75 +52,31 @@ export default function ProjectionsPage() {
     }, [search]);
 
     React.useEffect(() => {
-        setSearch({ search: debouncedSearch });
+        setSearch({ search: debouncedSearch, page: 1 });
     }, [debouncedSearch]);
 
-    // Query: Production Forecast
-    const { data: forecastData, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.FORECAST],
-        queryFn: getProductionForecast
+    const handleStatusFilterChange = (newStatus: 'all' | 'ready' | 'low' | 'out' | 'no_recipe') => {
+        setStatusFilter(newStatus);
+        setSearch({ page: 1 });
+    };
+
+    // Query: Production Forecast with Server-Side Pagination
+    const { data: forecastResponse, isLoading } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.FORECAST, { page, limit: pageSize, search: debouncedSearch, status: statusFilter }],
+        queryFn: () => getProductionForecast({ page, limit: pageSize, search: debouncedSearch, status: statusFilter }),
+        placeholderData: (previousData) => previousData
     });
 
-    // Summary statistics
-    const stats = React.useMemo(() => {
-        if (!forecastData) return { total: 0, ready: 0, low: 0, out: 0, noRecipe: 0 };
-        let ready = 0;
-        let low = 0;
-        let out = 0;
-        let noRecipe = 0;
+    const forecastList = forecastResponse?.data || [];
+    const meta = forecastResponse?.meta || { total: 0, pageCount: 1, count: 0, currentPage: 1, hasMore: false };
+    const stats = forecastResponse?.stats || { total: 0, ready: 0, low: 0, out: 0, noRecipe: 0 };
 
-        forecastData.forEach((item: IForecast) => {
-            if (!item.hasRecipe) {
-                noRecipe++;
-            } else if (item.maxProduceable === 0) {
-                out++;
-            } else if (typeof item.maxProduceable === 'number' && item.maxProduceable <= 20) {
-                low++;
-            } else {
-                ready++;
-            }
-        });
+    const totalItems = meta.total;
+    const totalPages = meta.pageCount || 1;
+    const currentPage = meta.currentPage || 1;
 
-        return {
-            total: forecastData.length,
-            ready,
-            low,
-            out,
-            noRecipe
-        };
-    }, [forecastData]);
-
-    // Filtered forecast list
-    const filteredForecast = React.useMemo(() => {
-        if (!forecastData) return [];
-        return forecastData.filter((item: IForecast) => {
-            // Search filter
-            if (debouncedSearch) {
-                const q = debouncedSearch.toLowerCase();
-                const matchName = item.name.toLowerCase().includes(q);
-                const matchSku = item.sku ? item.sku.toLowerCase().includes(q) : false;
-                if (!matchName && !matchSku) return false;
-            }
-
-            // Status category filter
-            if (statusFilter === 'ready') {
-                return (
-                    item.hasRecipe && (item.maxProduceable === 'Unlimited' || (typeof item.maxProduceable === 'number' && item.maxProduceable > 20))
-                );
-            }
-            if (statusFilter === 'low') {
-                return item.hasRecipe && typeof item.maxProduceable === 'number' && item.maxProduceable > 0 && item.maxProduceable <= 20;
-            }
-            if (statusFilter === 'out') {
-                return item.hasRecipe && item.maxProduceable === 0;
-            }
-            if (statusFilter === 'no_recipe') {
-                return !item.hasRecipe;
-            }
-
-            return true;
-        });
-    }, [forecastData, debouncedSearch, statusFilter]);
+    const startIndex = totalItems > 0 ? (currentPage - 1) * pageSize : 0;
+    const endIndex = Math.min(startIndex + forecastList.length, totalItems);
 
     return (
         <div className="flex flex-col gap-6">
@@ -209,7 +184,7 @@ export default function ProjectionsPage() {
                     <Button
                         variant={statusFilter === 'all' ? 'default' : 'ghost'}
                         size="sm"
-                        onClick={() => setStatusFilter('all')}
+                        onClick={() => handleStatusFilterChange('all')}
                         className={`h-7 text-xs px-3 font-semibold rounded-lg ${
                             statusFilter === 'all' ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
                         }`}
@@ -219,7 +194,7 @@ export default function ProjectionsPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setStatusFilter('ready')}
+                        onClick={() => handleStatusFilterChange('ready')}
                         className={`h-7 text-xs px-3 font-semibold rounded-lg transition-colors ${
                             statusFilter === 'ready'
                                 ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
@@ -231,7 +206,7 @@ export default function ProjectionsPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setStatusFilter('low')}
+                        onClick={() => handleStatusFilterChange('low')}
                         className={`h-7 text-xs px-3 font-semibold rounded-lg transition-colors ${
                             statusFilter === 'low'
                                 ? 'bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30'
@@ -243,7 +218,7 @@ export default function ProjectionsPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setStatusFilter('out')}
+                        onClick={() => handleStatusFilterChange('out')}
                         className={`h-7 text-xs px-3 font-semibold rounded-lg transition-colors ${
                             statusFilter === 'out'
                                 ? 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30'
@@ -256,7 +231,7 @@ export default function ProjectionsPage() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setStatusFilter('no_recipe')}
+                            onClick={() => handleStatusFilterChange('no_recipe')}
                             className={`h-7 text-xs px-3 font-semibold rounded-lg transition-colors ${
                                 statusFilter === 'no_recipe'
                                     ? 'bg-muted text-foreground border border-border'
@@ -275,146 +250,233 @@ export default function ProjectionsPage() {
                     <Spinner className="h-6 w-6 text-primary animate-spin" />
                     <span className="text-xs text-muted-foreground font-medium">Calculating stock capacity forecasts...</span>
                 </div>
-            ) : filteredForecast.length === 0 ? (
+            ) : forecastList.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-2 border border-dashed rounded-2xl bg-card">
                     <TrendingUp className="size-8 text-muted-foreground/60 stroke-[1.25]" />
                     <p className="text-sm font-bold text-foreground">No matching forecasts found</p>
                     <p className="text-xs text-muted-foreground">Try adjusting your search query or status category filter.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredForecast.map((item: IForecast) => {
-                        const isModifier = item.name.startsWith('[Modifier]');
-                        const isOutOfStock = item.hasRecipe && item.maxProduceable === 0;
-                        const isLowStock =
-                            item.hasRecipe && typeof item.maxProduceable === 'number' && item.maxProduceable > 0 && item.maxProduceable <= 20;
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {forecastList.map((item: IForecast) => {
+                            const isModifier = item.name.startsWith('[Modifier]');
+                            const isOutOfStock = item.hasRecipe && item.maxProduceable === 0;
+                            const isLowStock =
+                                item.hasRecipe && typeof item.maxProduceable === 'number' && item.maxProduceable > 0 && item.maxProduceable <= 20;
 
-                        return (
-                            <Card
-                                key={item.variantId}
-                                className="border border-border/40 bg-card hover:border-border/80 hover:shadow-md transition-all duration-200 flex flex-col gap-0 overflow-hidden"
-                            >
-                                {/* Card Header */}
-                                <CardHeader className="p-4 flex flex-row items-start justify-between gap-3 border-b border-border/20 bg-muted/20">
-                                    <div className="space-y-1 min-w-0 flex-1">
-                                        <div className="flex items-center gap-1.5">
-                                            {isModifier ? (
-                                                <Sparkles className="size-3.5 text-primary shrink-0" />
+                            return (
+                                <Card
+                                    key={item.variantId}
+                                    className="border border-border/40 bg-card hover:border-border/80 hover:shadow-md transition-all duration-200 flex flex-col gap-0 overflow-hidden"
+                                >
+                                    {/* Card Header */}
+                                    <CardHeader className="p-4 flex flex-row items-start justify-between gap-3 border-b border-border/20 bg-muted/20">
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5">
+                                                {isModifier ? (
+                                                    <Sparkles className="size-3.5 text-primary shrink-0" />
+                                                ) : (
+                                                    <Coffee className="size-3.5 text-primary shrink-0" />
+                                                )}
+                                                <CardTitle className="text-sm font-bold text-foreground truncate leading-tight">
+                                                    {item.name}
+                                                </CardTitle>
+                                            </div>
+                                            {item.sku && (
+                                                <CardDescription className="text-xs text-muted-foreground font-mono pl-5">
+                                                    SKU: {item.sku}
+                                                </CardDescription>
+                                            )}
+                                        </div>
+
+                                        {/* Production Capacity Badge */}
+                                        <div className="shrink-0">
+                                            {!item.hasRecipe ? (
+                                                <Badge variant="outline" className="text-xs text-muted-foreground border-border">
+                                                    No Recipe
+                                                </Badge>
+                                            ) : item.maxProduceable === 'Unlimited' ? (
+                                                <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20 font-bold text-xs gap-1">
+                                                    <PackageCheck className="size-3" /> Unlimited
+                                                </Badge>
+                                            ) : isOutOfStock ? (
+                                                <Badge className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-bold text-xs gap-1">
+                                                    <XCircle className="size-3" /> 0 Servings
+                                                </Badge>
+                                            ) : isLowStock ? (
+                                                <Badge className="bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 font-bold text-xs gap-1">
+                                                    <AlertTriangle className="size-3" /> {item.maxProduceable} Left
+                                                </Badge>
                                             ) : (
-                                                <Coffee className="size-3.5 text-primary shrink-0" />
+                                                <Badge className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 font-bold text-xs gap-1">
+                                                    <CheckCircle2 className="size-3" /> {item.maxProduceable} Servings
+                                                </Badge>
                                             )}
-                                            <CardTitle className="text-sm font-bold text-foreground truncate leading-tight">{item.name}</CardTitle>
                                         </div>
-                                        {item.sku && (
-                                            <CardDescription className="text-xs text-muted-foreground font-mono pl-5">
-                                                SKU: {item.sku}
-                                            </CardDescription>
-                                        )}
-                                    </div>
+                                    </CardHeader>
 
-                                    {/* Production Capacity Badge */}
-                                    <div className="shrink-0">
+                                    {/* Card Content */}
+                                    <CardContent className="p-4 flex-1 flex flex-col gap-3">
                                         {!item.hasRecipe ? (
-                                            <Badge variant="outline" className="text-xs text-muted-foreground border-border">
-                                                No Recipe
-                                            </Badge>
-                                        ) : item.maxProduceable === 'Unlimited' ? (
-                                            <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20 font-bold text-xs gap-1">
-                                                <PackageCheck className="size-3" /> Unlimited
-                                            </Badge>
-                                        ) : isOutOfStock ? (
-                                            <Badge className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-bold text-xs gap-1">
-                                                <XCircle className="size-3" /> 0 Servings
-                                            </Badge>
-                                        ) : isLowStock ? (
-                                            <Badge className="bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 font-bold text-xs gap-1">
-                                                <AlertTriangle className="size-3" /> {item.maxProduceable} Left
-                                            </Badge>
+                                            <div className="py-4 text-center text-xs text-muted-foreground flex flex-col items-center gap-1.5">
+                                                <AlertCircle className="size-5 text-muted-foreground/60" />
+                                                <span>No recipe ingredients linked to this item yet.</span>
+                                            </div>
                                         ) : (
-                                            <Badge className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 font-bold text-xs gap-1">
-                                                <CheckCircle2 className="size-3" /> {item.maxProduceable} Servings
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </CardHeader>
-
-                                {/* Card Content */}
-                                <CardContent className="p-4 flex-1 flex flex-col gap-3">
-                                    {!item.hasRecipe ? (
-                                        <div className="py-4 text-center text-xs text-muted-foreground flex flex-col items-center gap-1.5">
-                                            <AlertCircle className="size-5 text-muted-foreground/60" />
-                                            <span>No recipe ingredients linked to this item yet.</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Bottleneck Alert Box */}
-                                            {item.bottleneck && (
-                                                <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-2.5">
-                                                    <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                                                    <div className="text-xs space-y-0.5 leading-snug">
-                                                        <span className="font-bold text-amber-900 dark:text-amber-200 block">
-                                                            Limiting Ingredient: {item.bottleneck.name}
-                                                        </span>
-                                                        <span className="text-amber-800/90 dark:text-amber-300/90 block">
-                                                            Stock: {item.bottleneck.currentQuantity} {item.bottleneck.unit} remaining (
-                                                            {item.bottleneck.requiredQuantity} {item.bottleneck.unit}/serving)
-                                                        </span>
+                                            <>
+                                                {/* Bottleneck Alert Box */}
+                                                {item.bottleneck && (
+                                                    <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-2.5">
+                                                        <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                                        <div className="text-xs space-y-0.5 leading-snug">
+                                                            <span className="font-bold text-amber-900 dark:text-amber-200 block">
+                                                                Limiting Ingredient: {item.bottleneck.name}
+                                                            </span>
+                                                            <span className="text-amber-800/90 dark:text-amber-300/90 block">
+                                                                Stock: {item.bottleneck.currentQuantity} {item.bottleneck.unit} remaining (
+                                                                {item.bottleneck.requiredQuantity} {item.bottleneck.unit}/serving)
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {/* Ingredient List Breakdown */}
-                                            <div className="space-y-2 pt-1">
-                                                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block border-b border-border/20 pb-1">
-                                                    Recipe Ingredients Breakdown
-                                                </span>
-                                                <div className="space-y-1.5">
-                                                    {item.ingredients.map((ing) => {
-                                                        const isBottleneck = item.bottleneck?.ingredientId === ing.ingredientId;
-                                                        const isUnlimited = typeof ing.canProduce === 'string' && ing.canProduce === 'Unlimited';
-                                                        const isZero = ing.canProduce === 0;
+                                                {/* Ingredient List Breakdown */}
+                                                <div className="space-y-2 pt-1">
+                                                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block border-b border-border/20 pb-1">
+                                                        Recipe Ingredients Breakdown
+                                                    </span>
+                                                    <div className="space-y-1.5">
+                                                        {item.ingredients.map((ing) => {
+                                                            const isBottleneck = item.bottleneck?.ingredientId === ing.ingredientId;
+                                                            const isUnlimited = typeof ing.canProduce === 'string' && ing.canProduce === 'Unlimited';
+                                                            const isZero = ing.canProduce === 0;
 
-                                                        return (
-                                                            <div
-                                                                key={ing.ingredientId}
-                                                                className={`p-2 rounded-lg border text-xs flex items-center justify-between gap-2 transition-colors ${
-                                                                    isBottleneck
-                                                                        ? 'bg-amber-500/10 border-amber-500/25 text-foreground font-semibold'
-                                                                        : 'bg-muted/20 border-border/20 text-foreground/90'
-                                                                }`}
-                                                            >
-                                                                <div className="min-w-0 flex-1 truncate">
-                                                                    <span className="truncate font-medium block text-foreground">{ing.name}</span>
-                                                                    <span className="text-[10px] text-muted-foreground block font-normal">
-                                                                        Needs {ing.requiredQuantity} {ing.unit} per serving (Stock:{' '}
-                                                                        {ing.currentQuantity} {ing.unit})
-                                                                    </span>
-                                                                </div>
-
-                                                                <span
-                                                                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold shrink-0 ${
-                                                                        isZero
-                                                                            ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20'
-                                                                            : isBottleneck
-                                                                              ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/20'
-                                                                              : isUnlimited
-                                                                                ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300'
-                                                                                : 'bg-muted text-muted-foreground'
+                                                            return (
+                                                                <div
+                                                                    key={ing.ingredientId}
+                                                                    className={`p-2 rounded-lg border text-xs flex items-center justify-between gap-2 transition-colors ${
+                                                                        isBottleneck
+                                                                            ? 'bg-amber-500/10 border-amber-500/25 text-foreground font-semibold'
+                                                                            : 'bg-muted/20 border-border/20 text-foreground/90'
                                                                     }`}
                                                                 >
-                                                                    {isUnlimited ? 'Unlimited' : `${ing.canProduce} servings`}
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    })}
+                                                                    <div className="min-w-0 flex-1 truncate">
+                                                                        <span className="truncate font-medium block text-foreground">{ing.name}</span>
+                                                                        <span className="text-[10px] text-muted-foreground block font-normal">
+                                                                            Needs {ing.requiredQuantity} {ing.unit} per serving (Stock:{' '}
+                                                                            {ing.currentQuantity} {ing.unit})
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <span
+                                                                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold shrink-0 ${
+                                                                            isZero
+                                                                                ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20'
+                                                                                : isBottleneck
+                                                                                  ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/20'
+                                                                                  : isUnlimited
+                                                                                    ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300'
+                                                                                    : 'bg-muted text-muted-foreground'
+                                                                        }`}
+                                                                    >
+                                                                        {isUnlimited ? 'Unlimited' : `${ing.canProduce} servings`}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination Bar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/40">
+                        <div className="text-xs text-muted-foreground font-medium">
+                            Showing <span className="font-bold text-foreground">{totalItems > 0 ? startIndex + 1 : 0}</span> to{' '}
+                            <span className="font-bold text-foreground">{endIndex}</span> of{' '}
+                            <span className="font-bold text-foreground">{totalItems}</span> forecasts
+                            {stats.total > totalItems && <span className="text-muted-foreground/80"> (filtered from {stats.total} total)</span>}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            {/* Page Size Selector */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">Per page:</span>
+                                <Select value={String(pageSize)} onValueChange={(val) => setSearch({ pageSize: Number(val), page: 1 })}>
+                                    <SelectTrigger className="h-8 w-[75px] text-xs bg-card border-border/60">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="6" className="text-xs">
+                                            6
+                                        </SelectItem>
+                                        <SelectItem value="12" className="text-xs">
+                                            12
+                                        </SelectItem>
+                                        <SelectItem value="24" className="text-xs">
+                                            24
+                                        </SelectItem>
+                                        <SelectItem value="48" className="text-xs">
+                                            48
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Page Navigation Buttons */}
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage <= 1}
+                                    onClick={() => setSearch({ page: 1 })}
+                                    className="size-8 rounded-lg border-border/60"
+                                    title="First Page"
+                                >
+                                    <ChevronsLeft className="size-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage <= 1}
+                                    onClick={() => setSearch({ page: currentPage - 1 })}
+                                    className="size-8 rounded-lg border-border/60"
+                                    title="Previous Page"
+                                >
+                                    <ChevronLeft className="size-4" />
+                                </Button>
+                                <span className="text-xs font-semibold px-2">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage >= totalPages}
+                                    onClick={() => setSearch({ page: currentPage + 1 })}
+                                    className="size-8 rounded-lg border-border/60"
+                                    title="Next Page"
+                                >
+                                    <ChevronRight className="size-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage >= totalPages}
+                                    onClick={() => setSearch({ page: totalPages })}
+                                    className="size-8 rounded-lg border-border/60"
+                                    title="Last Page"
+                                >
+                                    <ChevronsRight className="size-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
