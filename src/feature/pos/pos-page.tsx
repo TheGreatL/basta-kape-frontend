@@ -180,11 +180,6 @@ export default function PosPage() {
         return net > 0 ? net : 0;
     }, [cartSubtotal, discountAmount]);
 
-    const cartVatAmount = React.useMemo(() => {
-        // VAT-inclusive 12% calculation: netTotal * (12 / 112)
-        return Math.round(cartNetTotal * (12 / 112) * 100) / 100;
-    }, [cartNetTotal]);
-
     // Default cash tendered auto-filler & proof reset
     React.useEffect(() => {
         if (isCheckoutOpen) {
@@ -350,12 +345,12 @@ export default function PosPage() {
             return;
         }
         setCart((prev) =>
-            prev.map((item) => {
-                if (item.id === rowId) {
-                    const newQty = item.quantity + delta;
-                    return { ...item, quantity: newQty };
+            prev.map((cItem) => {
+                if (cItem.id === rowId) {
+                    const newQty = cItem.quantity + delta;
+                    return { ...cItem, quantity: newQty };
                 }
-                return item;
+                return cItem;
             })
         );
     };
@@ -550,7 +545,6 @@ export default function PosPage() {
                     handleRemoveDiscount={handleRemoveDiscount}
                     cartSubtotal={cartSubtotal}
                     discountAmount={discountAmount}
-                    cartVatAmount={cartVatAmount}
                     cartNetTotal={cartNetTotal}
                     onOpenDiscount={() => setIsDiscountOpen(true)}
                     onOpenCheckout={() => setIsCheckoutOpen(true)}

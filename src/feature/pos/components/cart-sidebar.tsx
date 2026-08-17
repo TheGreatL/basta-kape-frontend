@@ -23,7 +23,6 @@ interface CartSidebarProps {
     handleRemoveDiscount: () => void;
     cartSubtotal: number;
     discountAmount: number;
-    cartVatAmount: number;
     cartNetTotal: number;
     onOpenDiscount: () => void;
     onOpenCheckout: () => void;
@@ -40,7 +39,6 @@ export default function CartSidebar({
     handleRemoveDiscount,
     cartSubtotal,
     discountAmount,
-    cartVatAmount,
     cartNetTotal,
     onOpenDiscount,
     onOpenCheckout,
@@ -197,10 +195,7 @@ export default function CartSidebar({
                             <span className="font-mono">-₱{discountAmount.toFixed(2)}</span>
                         </div>
                     )}
-                    <div className="flex justify-between text-muted-foreground">
-                        <span>VAT (12% inclusive):</span>
-                        <span className="font-mono">₱{cartVatAmount.toFixed(2)}</span>
-                    </div>
+
                     <Separator className="my-1.5 bg-border/40" />
                     <div className="flex justify-between items-center text-sm font-bold text-foreground">
                         <span>Grand Total:</span>

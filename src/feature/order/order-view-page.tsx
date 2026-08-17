@@ -299,10 +299,7 @@ export default function OrderViewPage() {
                                     <span>Subtotal Amount:</span>
                                     <span className="text-foreground/80 font-semibold">₱{orderDetails.subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-muted-foreground">
-                                    <span>VAT (12% Included):</span>
-                                    <span className="text-foreground/80 font-semibold">₱{orderDetails.taxAmount.toFixed(2)}</span>
-                                </div>
+
                                 <div className="flex flex-col gap-1.5 text-muted-foreground border-b border-dashed border-border/20 pb-2">
                                     <div className="flex justify-between">
                                         <span>Applied Discounts:</span>

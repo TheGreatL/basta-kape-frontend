@@ -743,10 +743,6 @@ export default function CheckoutPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-foreground">₱{subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-muted-foreground">
-                                <span>Shipping & Handling</span>
-                                <span className="font-bold text-emerald-600">Free</span>
-                            </div>
                             <div className="border-t border-dashed border-border/40 pt-3 flex justify-between text-sm font-bold">
                                 <span className="text-foreground">Total Amount Due</span>
                                 <span className="text-primary font-bold">₱{subtotal.toFixed(2)}</span>
