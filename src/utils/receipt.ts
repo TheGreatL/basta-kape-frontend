@@ -10,11 +10,11 @@ export const getOrderReceipt = async (orderId: string, format: 'html' | 'text' |
     return response;
 };
 
-export const downloadReceiptPdf = async (orderId: string, queueNumber?: string) => {
+export const downloadReceiptPdf = async (orderId: string, customFileName?: string) => {
     try {
         const response = await getOrderReceipt(orderId, 'pdf');
         const blob = await response.blob();
-        const filename = queueNumber ? `receipt-q${queueNumber}.pdf` : `receipt-${orderId.slice(0, 8)}.pdf`;
+        const filename = customFileName || `Receipt-${orderId.slice(0, 8).toUpperCase()}.pdf`;
         downloadBlob(blob, filename);
         toast.success('PDF Receipt downloaded successfully');
     } catch (error) {
@@ -22,6 +22,12 @@ export const downloadReceiptPdf = async (orderId: string, queueNumber?: string) 
             description: error instanceof Error ? error.message : 'Could not download PDF receipt.'
         });
     }
+};
+
+export const getReceiptPdfBlobUrl = async (orderId: string): Promise<string> => {
+    const response = await getOrderReceipt(orderId, 'pdf');
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 };
 
 export const openReceiptPdf = async (orderId: string) => {

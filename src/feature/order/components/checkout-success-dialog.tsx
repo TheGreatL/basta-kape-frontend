@@ -1,8 +1,10 @@
-import { CheckCircle2, Printer, FileText, Download, ArrowRight, Wallet, CreditCard, Coins, Landmark } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Wallet, CreditCard, Coins, Landmark, Eye } from 'lucide-react';
 import type { IOrder } from '../order.types';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Button } from '#/components/ui/button.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt';
+import { useState } from 'react';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 
 interface CheckoutSuccessDialogProps {
@@ -24,6 +26,7 @@ export default function CheckoutSuccessDialog({
     changeDue = 0,
     onClose
 }: CheckoutSuccessDialogProps) {
+    const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
     if (!order) return null;
 
     const getMethodIcon = (method: string) => {
@@ -131,31 +134,25 @@ export default function CheckoutSuccessDialog({
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => printReceiptHtml(order.id)}
+                                onClick={async () => {
+                                    const blobUrl = await getReceiptPdfBlobUrl(order.id);
+                                    setViewingFileUrl(blobUrl);
+                                }}
                                 className="h-9.5 text-xs font-bold gap-1.5 border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary"
                             >
-                                <Printer className="size-4 shrink-0" />
-                                Thermal Print (HTML)
+                                <Eye className="size-4 shrink-0" />
+                                View Receipt
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => openReceiptPdf(order.id)}
+                                onClick={() => downloadReceiptPdf(order.id, `Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`)}
                                 className="h-9.5 text-xs font-bold gap-1.5 border-border/60"
                             >
-                                <FileText className="size-4 shrink-0" />
-                                Open PDF
+                                <Download className="size-4 shrink-0" />
+                                Download Receipt
                             </Button>
                         </div>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
-                            className="w-full h-8 text-2xs text-muted-foreground hover:text-foreground font-semibold gap-1"
-                        >
-                            <Download className="size-3.5 shrink-0" />
-                            Download PDF Receipt File
-                        </Button>
                     </div>
                 </div>
 
@@ -170,6 +167,15 @@ export default function CheckoutSuccessDialog({
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(isOpen) => !isOpen && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={`Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`}
+                title="Order Receipt PDF Preview"
+            />
         </Dialog>
     );
 }

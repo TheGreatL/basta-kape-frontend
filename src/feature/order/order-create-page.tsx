@@ -33,6 +33,7 @@ import type { IForecast } from '#/feature/inventory/inventory.types';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
 import CheckoutSuccessDialog from './components/checkout-success-dialog.tsx';
 import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 export default function OrderCreatePage() {
     const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function OrderCreatePage() {
     // Two-Step checkout wizard state
     const [createdOrder, setCreatedOrder] = React.useState<IOrder | null>(null);
     const [receiptPreview, setReceiptPreview] = React.useState<string>('');
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const [isUploading, setIsUploading] = React.useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
     const [selectedCustomer, setSelectedCustomer] = React.useState<ICustomerResponse | null>(null);
@@ -1403,7 +1405,7 @@ export default function OrderCreatePage() {
                                                                                     src={receiptPreview}
                                                                                     alt="Receipt Preview"
                                                                                     className="size-9 rounded-lg object-cover shrink-0 cursor-pointer"
-                                                                                    onClick={() => window.open(receiptPreview, '_blank')}
+                                                                                    onClick={() => setViewingFileUrl(receiptPreview)}
                                                                                 />
                                                                                 <span className="truncate font-semibold text-muted-foreground">
                                                                                     {field.value?.name}
@@ -1525,6 +1527,15 @@ export default function OrderCreatePage() {
                     onClose={handleBack}
                 />
             )}
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName="Payment Receipt Attachment"
+                title="Payment Receipt Screenshot"
+            />
         </div>
     );
 }

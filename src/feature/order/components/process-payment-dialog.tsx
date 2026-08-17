@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { getFileUrl } from '#/utils/helper';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 // Dynamic payment validation schema builder
 const createPaymentSchema = (netTotal: number) => {
@@ -32,7 +33,12 @@ const createPaymentSchema = (netTotal: number) => {
                 path: ['amountTendered']
             }),
         z.object({
-            paymentMethod: z.enum(['GCASH', 'PAYMAYA', 'CREDIT_CARD']),
+            paymentMethod: z.literal('GCASH'),
+            paymentReferenceNumber: z.string().regex(/^\d{11}$/, 'GCash reference number must be exactly 11 digits'),
+            paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional()
+        }),
+        z.object({
+            paymentMethod: z.enum(['PAYMAYA', 'CREDIT_CARD']),
             paymentReferenceNumber: z.string().min(5, 'Reference number must be at least 5 characters'),
             paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional()
         })
@@ -51,7 +57,22 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
 
     const [overridePending, setOverridePending] = React.useState(false);
     const [isUploading, setIsUploading] = React.useState(false);
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = React.useState<string | undefined>(undefined);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const netTotal = order?.netTotal || 0;
+    const paymentSchema = React.useMemo(() => createPaymentSchema(netTotal), [netTotal]);
+
+    type PaymentFormValues = z.infer<ReturnType<typeof createPaymentSchema>>;
+
+    const paymentForm = useForm<PaymentFormValues>({
+        resolver: zodResolver(paymentSchema),
+        defaultValues: {
+            paymentMethod: 'CASH',
+            amountTendered: netTotal || 0
+        }
+    });
 
     // Query: Fetch payments for this order
     const { data: payments, isLoading: isPaymentsLoading } = useQuery({
@@ -67,12 +88,18 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
         );
     }, [payments]);
 
-    // Reset override when dialog closes
+    // Reset override and form when dialog closes
     React.useEffect(() => {
         if (!open) {
             setOverridePending(false);
+            paymentForm.reset({
+                paymentMethod: 'CASH',
+                amountTendered: netTotal || 0,
+                paymentReferenceNumber: '',
+                paymentProofPhoto: undefined
+            } as any);
         }
-    }, [open]);
+    }, [open, netTotal, paymentForm]);
 
     // Mutation: Approve Pending Digital Payment
     const approvePaymentMutation = useMutation({
@@ -120,19 +147,6 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
             fileInputRef.current.value = '';
         }
     };
-
-    const netTotal = order?.netTotal || 0;
-    const paymentSchema = React.useMemo(() => createPaymentSchema(netTotal), [netTotal]);
-
-    type PaymentFormValues = z.infer<ReturnType<typeof createPaymentSchema>>;
-
-    const paymentForm = useForm<PaymentFormValues>({
-        resolver: zodResolver(paymentSchema),
-        defaultValues: {
-            paymentMethod: 'CASH',
-            amountTendered: netTotal || 0
-        }
-    });
 
     const paymentMethodValue = paymentForm.watch('paymentMethod');
     const cashAmountTendered = paymentForm.watch('amountTendered' as any);
@@ -223,11 +237,15 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                     </div>
 
                                     {pendingPayment.paymentProofPhoto && (
-                                        <div className="rounded-lg overflow-hidden border border-border/40 aspect-video max-h-32 bg-muted flex items-center justify-center relative group">
+                                        <div className="rounded-lg overflow-hidden border border-border/40 aspect-video max-h-32 bg-muted flex items-center justify-center relative group cursor-pointer hover:opacity-95 transition-opacity">
                                             <img
                                                 src={getFileUrl(pendingPayment.paymentProofPhoto)}
                                                 alt="Proof of Payment"
                                                 className="size-full object-contain"
+                                                onClick={() => {
+                                                    setViewingFileUrl(pendingPayment.paymentProofPhoto || null);
+                                                    setViewingFileName(`Payment-Proof-${pendingPayment.id.slice(0, 8)}`);
+                                                }}
                                             />
                                         </div>
                                     )}
@@ -361,14 +379,29 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                                Reference Number
+                                                                {paymentMethodValue === 'GCASH'
+                                                                    ? 'GCash Reference Number (11 Digits)'
+                                                                    : paymentMethodValue === 'PAYMAYA'
+                                                                      ? 'Maya Reference Number'
+                                                                      : 'Card Reference Number'}
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input
-                                                                    placeholder="Enter 11-digit Reference ID"
+                                                                    placeholder={
+                                                                        paymentMethodValue === 'GCASH'
+                                                                            ? 'Enter 11-digit GCash reference number'
+                                                                            : 'Enter reference number'
+                                                                    }
                                                                     value={field.value || ''}
-                                                                    onChange={field.onChange}
-                                                                    className="h-9 bg-background/50 text-xs font-semibold"
+                                                                    onChange={(e) => {
+                                                                        if (paymentMethodValue === 'GCASH') {
+                                                                            field.onChange(e.target.value.replace(/\D/g, ''));
+                                                                        } else {
+                                                                            field.onChange(e.target.value);
+                                                                        }
+                                                                    }}
+                                                                    maxLength={paymentMethodValue === 'GCASH' ? 11 : undefined}
+                                                                    className="h-9 bg-background/50 text-xs font-semibold font-mono"
                                                                 />
                                                             </FormControl>
                                                             <FormMessage />
@@ -398,7 +431,11 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                                             <img
                                                                                 src={getFileUrl(field.value)}
                                                                                 alt="Uploaded receipt"
-                                                                                className="size-full object-contain"
+                                                                                className="size-full object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                                                                                onClick={() => {
+                                                                                    setViewingFileUrl(field.value || null);
+                                                                                    setViewingFileName('Payment-Receipt-Screenshot');
+                                                                                }}
                                                                             />
                                                                             <Button
                                                                                 type="button"
@@ -473,6 +510,15 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(isOpen) => !isOpen && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Payment Receipt Screenshot"
+            />
         </Dialog>
     );
 }

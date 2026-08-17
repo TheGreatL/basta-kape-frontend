@@ -22,6 +22,7 @@ import { getCustomers } from '#/api/customer.api.ts';
 import { createOrder, createOrderPayment, updateOrderStatus } from '#/api/orders.api.ts';
 import { getDiscountsConfig, applyDiscountToOrder } from '#/api/discounts.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
+import { downloadReceiptPdf } from '#/utils/receipt.ts';
 
 import type { IMenuProduct, IMenuProductVariant } from '../menu/menu.types';
 import type { IModifierOption } from '../modifier/modifier.types';
@@ -90,11 +91,23 @@ export default function PosPage() {
     const [paymentProofPhoto, setPaymentProofPhoto] = React.useState('');
 
     // Receipt Modal States
-    const [, setPlacedOrder] = React.useState<IOrder | null>(null);
+    const [placedOrder, setPlacedOrder] = React.useState<IOrder | null>(null);
     const [receiptHtml, setReceiptHtml] = React.useState<string | null>(null);
     const [isReceiptOpen, setIsReceiptOpen] = React.useState(false);
     const [isReceiptLoading, setIsReceiptLoading] = React.useState(false);
     const iframeRef = React.useRef<HTMLIFrameElement | null>(null);
+
+    const resetCheckoutFields = React.useCallback(() => {
+        setCustomerType('GUEST');
+        setGuestName('Walk-in Customer');
+        setSelectedCustomerId('');
+        setBuzzerId('');
+        setOrderType('DINE_IN');
+        setPaymentMethod('CASH');
+        setCashTendered('');
+        setReferenceNumber('');
+        setPaymentProofPhoto('');
+    }, []);
 
     // -------------------------------------------------------------
     // QUERIES FOR CATALOG & CONFIG
@@ -449,6 +462,7 @@ export default function PosPage() {
         onSuccess: async (order) => {
             setPlacedOrder(order);
             setIsCheckoutOpen(false);
+            resetCheckoutFields();
             setCart([]);
             setAppliedDiscount(null);
             setDiscountRefId('');
@@ -486,7 +500,9 @@ export default function PosPage() {
     });
 
     const handlePrintReceipt = () => {
-        if (iframeRef.current?.contentWindow) {
+        if (placedOrder?.id) {
+            downloadReceiptPdf(placedOrder.id, `Receipt-${placedOrder.id.slice(0, 8).toUpperCase()}.pdf`);
+        } else if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.focus();
             iframeRef.current.contentWindow.print();
         }
@@ -593,7 +609,12 @@ export default function PosPage() {
 
             <CheckoutPaymentDialog
                 open={isCheckoutOpen}
-                onOpenChange={setIsCheckoutOpen}
+                onOpenChange={(open) => {
+                    setIsCheckoutOpen(open);
+                    if (!open) {
+                        resetCheckoutFields();
+                    }
+                }}
                 cartNetTotal={cartNetTotal}
                 cart={cart}
                 membersData={membersData}

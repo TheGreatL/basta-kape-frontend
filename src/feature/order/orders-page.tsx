@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, FileText, Download, Volume2, Pencil } from 'lucide-react';
+import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, Download, Volume2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Route } from '#/routes/admin/orders/index.tsx';
@@ -12,7 +12,8 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderSource } from './order.types';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -32,6 +33,8 @@ export default function OrdersPage() {
     const navigate = useNavigate({ from: '/admin/orders/' });
     const globalNavigate = useNavigate();
     const { page, pageSize, search, status, orderType, orderSource } = Route.useSearch();
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = React.useState<string | undefined>(undefined);
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -287,20 +290,23 @@ export default function OrdersPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="rounded-xl" align="end">
-                                <DropdownMenuItem onClick={() => printReceiptHtml(row.original.id)} className="text-xs gap-2 font-semibold">
-                                    <Printer className="size-3.5 text-muted-foreground" />
-                                    Print Thermal (HTML)
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => openReceiptPdf(row.original.id)} className="text-xs gap-2 font-semibold">
-                                    <FileText className="size-3.5 text-muted-foreground" />
-                                    Open PDF Receipt
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        const blobUrl = await getReceiptPdfBlobUrl(row.original.id);
+                                        setViewingFileUrl(blobUrl);
+                                        setViewingFileName(`Receipt-${row.original.id.slice(0, 8).toUpperCase()}.pdf`);
+                                    }}
+                                    className="text-xs gap-2 font-semibold"
+                                >
+                                    <Eye className="size-3.5 text-muted-foreground" />
+                                    View Receipt
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => downloadReceiptPdf(row.original.id, row.original.queueNumber)}
+                                    onClick={() => downloadReceiptPdf(row.original.id, `Receipt-${row.original.id.slice(0, 8).toUpperCase()}.pdf`)}
                                     className="text-xs gap-2 font-semibold"
                                 >
                                     <Download className="size-3.5 text-muted-foreground" />
-                                    Download PDF Receipt
+                                    Download Receipt
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -438,6 +444,15 @@ export default function OrdersPage() {
                     }
                 />
             </div>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(isOpen) => !isOpen && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Order Receipt PDF Preview"
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, CheckCircle2, ArrowLeft, Printer, FileText, Download, Volume2, CreditCard, AlertCircle } from 'lucide-react';
+import { TrendingUp, CheckCircle2, ArrowLeft, Printer, Download, Volume2, CreditCard, AlertCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '#/lib/utils.ts';
 
@@ -15,11 +16,14 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 export default function OrderViewPage() {
     const { id: orderId } = Route.useParams();
     const navigate = useNavigate();
+    const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = useState<string | undefined>(undefined);
 
     const handleBack = () => {
         navigate({
@@ -163,20 +167,23 @@ export default function OrderViewPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-xl font-medium" align="end">
-                            <DropdownMenuItem onClick={() => printReceiptHtml(orderDetails.id)} className="text-xs gap-2 font-semibold">
-                                <Printer className="size-3.5 text-muted-foreground" />
-                                Print Thermal (HTML)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openReceiptPdf(orderDetails.id)} className="text-xs gap-2 font-semibold">
-                                <FileText className="size-3.5 text-muted-foreground" />
-                                Open PDF Receipt
+                            <DropdownMenuItem
+                                onClick={async () => {
+                                    const blobUrl = await getReceiptPdfBlobUrl(orderDetails.id);
+                                    setViewingFileUrl(blobUrl);
+                                    setViewingFileName(`Receipt-${orderDetails.id.slice(0, 8).toUpperCase()}.pdf`);
+                                }}
+                                className="text-xs gap-2 font-semibold"
+                            >
+                                <Eye className="size-3.5 text-muted-foreground" />
+                                View Receipt
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => downloadReceiptPdf(orderDetails.id, orderDetails.queueNumber)}
+                                onClick={() => downloadReceiptPdf(orderDetails.id, `Receipt-${orderDetails.id.slice(0, 8).toUpperCase()}.pdf`)}
                                 className="text-xs gap-2 font-semibold"
                             >
                                 <Download className="size-3.5 text-muted-foreground" />
-                                Download PDF Receipt
+                                Download Receipt
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -391,7 +398,10 @@ export default function OrderViewPage() {
                                                                     src={getFileUrl(payment.paymentProofPhoto)}
                                                                     alt="Proof of Payment"
                                                                     className="w-full max-h-[130px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
-                                                                    onClick={() => window.open(getFileUrl(payment.paymentProofPhoto), '_blank')}
+                                                                    onClick={() => {
+                                                                        setViewingFileUrl(payment.paymentProofPhoto || null);
+                                                                        setViewingFileName(`Payment-Proof-${payment.id.slice(0, 8)}`);
+                                                                    }}
                                                                 />
                                                             </div>
                                                         </div>
@@ -505,6 +515,15 @@ export default function OrderViewPage() {
                     )}
                 </div>
             </div>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Payment Proof Attachment"
+            />
         </div>
     );
 }

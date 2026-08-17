@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { uploadImageFile } from '#/api/transactions.api.ts';
 import { getFileUrl } from '#/utils/helper.ts';
 import { toast } from 'sonner';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import type { IDiscount } from '../../store-settings/discounts.types';
 
 interface CheckoutPaymentDialogProps {
@@ -85,6 +86,7 @@ export default function CheckoutPaymentDialog({
     }, [paymentMethod, cashTendered, cartNetTotal]);
 
     const [isUploading, setIsUploading] = React.useState(false);
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,16 +343,36 @@ export default function CheckoutPaymentDialog({
                             <div className="space-y-3.5 p-3 rounded-xl border border-primary/15 bg-primary/5 animate-fade-in">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-primary uppercase flex items-center gap-1">
-                                        Digital Payment Reference ID <span className="text-destructive">*</span>
+                                        {paymentMethod === 'GCASH'
+                                            ? 'GCash Reference Number (11 Digits)'
+                                            : paymentMethod === 'PAYMAYA'
+                                              ? 'Maya Reference Number'
+                                              : 'Card Reference Number'}{' '}
+                                        <span className="text-destructive">*</span>
                                     </label>
                                     <Input
-                                        placeholder="GCash or Card reference number..."
+                                        placeholder={
+                                            paymentMethod === 'GCASH'
+                                                ? 'Enter 11-digit GCash reference number'
+                                                : paymentMethod === 'PAYMAYA'
+                                                  ? 'Enter Maya reference number...'
+                                                  : 'Enter Card reference number...'
+                                        }
                                         value={referenceNumber}
-                                        onChange={(e) => setReferenceNumber(e.target.value)}
+                                        onChange={(e) => {
+                                            if (paymentMethod === 'GCASH') {
+                                                setReferenceNumber(e.target.value.replace(/\D/g, ''));
+                                            } else {
+                                                setReferenceNumber(e.target.value);
+                                            }
+                                        }}
+                                        maxLength={paymentMethod === 'GCASH' ? 11 : undefined}
                                         className="h-8.5 text-xs bg-background font-mono border-primary/20"
                                     />
                                     <span className="text-xs text-muted-foreground block mt-1 leading-tight">
-                                        Provide the reference number printed on the customer's payment screen.
+                                        {paymentMethod === 'GCASH'
+                                            ? 'Provide the 11-digit GCash reference number printed on customer receipt screen.'
+                                            : "Provide the reference number printed on the customer's payment screen."}
                                     </span>
                                 </div>
 
@@ -358,26 +380,46 @@ export default function CheckoutPaymentDialog({
                                     <label className="text-xs font-bold text-primary uppercase block">Payment Proof Receipt / Screenshot</label>
 
                                     {paymentProofPhoto ? (
-                                        <div className="relative rounded-lg border border-border bg-background p-2 flex items-center gap-3">
-                                            <div className="size-12 rounded bg-muted overflow-hidden flex items-center justify-center border shrink-0">
+                                        <div
+                                            onClick={() => {
+                                                const url =
+                                                    paymentProofPhoto.startsWith('http') ||
+                                                    paymentProofPhoto.startsWith('blob:') ||
+                                                    paymentProofPhoto.startsWith('data:')
+                                                        ? paymentProofPhoto
+                                                        : getFileUrl(paymentProofPhoto);
+                                                setViewingFileUrl(url || null);
+                                            }}
+                                            className="relative rounded-lg border border-border bg-background hover:bg-muted/10 p-2 flex items-center gap-3 cursor-pointer transition-colors group"
+                                        >
+                                            <div className="size-12 rounded bg-muted overflow-hidden flex items-center justify-center border shrink-0 group-hover:scale-105 transition-transform">
                                                 <img
-                                                    src={paymentProofPhoto.startsWith('http') ? paymentProofPhoto : getFileUrl(paymentProofPhoto)}
+                                                    src={
+                                                        paymentProofPhoto.startsWith('http') ||
+                                                        paymentProofPhoto.startsWith('blob:') ||
+                                                        paymentProofPhoto.startsWith('data:')
+                                                            ? paymentProofPhoto
+                                                            : getFileUrl(paymentProofPhoto)
+                                                    }
                                                     alt="Receipt Proof"
                                                     className="size-full object-cover"
                                                 />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <span className="text-2xs font-semibold text-foreground block truncate">
+                                                <span className="text-2xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
                                                     Proof Screenshot Uploaded
                                                 </span>
                                                 <span className="text-3xs text-muted-foreground font-mono truncate block">
-                                                    {paymentProofPhoto.split('/').pop() || 'screenshot.png'}
+                                                    {paymentProofPhoto.split('/').pop() || 'screenshot.png'} • Click to view
                                                 </span>
                                             </div>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setPaymentProofPhoto('')}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPaymentProofPhoto('');
+                                                }}
                                                 className="size-7 hover:bg-destructive/10 hover:text-destructive text-muted-foreground rounded-lg"
                                             >
                                                 <X className="size-3.5" />
@@ -426,7 +468,8 @@ export default function CheckoutPaymentDialog({
                         disabled={
                             isPending ||
                             (paymentMethod === 'CASH' && (cashTendered === '' || cashTendered < cartNetTotal)) ||
-                            (paymentMethod !== 'CASH' && !referenceNumber.trim())
+                            (paymentMethod !== 'CASH' && !referenceNumber.trim()) ||
+                            (paymentMethod === 'GCASH' && referenceNumber.trim().length !== 11)
                         }
                         className="h-8.5 text-xs font-bold px-5 bg-primary text-primary-foreground shadow-xs gap-1"
                     >
@@ -444,6 +487,15 @@ export default function CheckoutPaymentDialog({
                     </Button>
                 </DialogFooter>
             </DialogContent>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(isOpen) => !isOpen && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={paymentProofPhoto.split('/').pop() || 'Payment Proof Screenshot'}
+                title="Payment Proof Screenshot"
+            />
         </Dialog>
     );
 }

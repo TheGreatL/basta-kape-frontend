@@ -28,6 +28,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import { createOrder } from '#/api/orders.api.ts';
 import { uploadImageFile } from '#/api/transactions.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
@@ -76,6 +77,7 @@ export default function CheckoutPage() {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [createdOrder, setCreatedOrder] = useState<IOrder | null>(null);
+    const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -495,18 +497,22 @@ export default function CheckoutPage() {
                                         <label className="font-bold text-foreground/80 block text-xs">
                                             Payment Receipt Screenshot <span className="text-rose-500">*</span>
                                         </label>
-                                        <div className="relative border border-blue-500/10 rounded-xl overflow-hidden bg-background/50 p-2 flex items-center justify-between gap-3">
+                                        <div
+                                            onClick={() => setViewingFileUrl(receiptPreview)}
+                                            className="relative border border-blue-500/10 hover:border-blue-500/30 rounded-xl overflow-hidden bg-background/50 hover:bg-blue-500/5 p-2 flex items-center justify-between gap-3 cursor-pointer transition-colors group"
+                                        >
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <img
                                                     src={receiptPreview}
                                                     alt="Receipt preview"
-                                                    className="size-12 rounded-lg object-cover border border-border/40 shrink-0 cursor-pointer hover:opacity-90"
-                                                    onClick={() => window.open(receiptPreview, '_blank')}
+                                                    className="size-12 rounded-lg object-cover border border-border/40 shrink-0 group-hover:scale-105 transition-transform"
                                                 />
                                                 <div className="min-w-0 text-xs">
-                                                    <p className="font-bold text-foreground truncate">{receiptFile?.name}</p>
+                                                    <p className="font-bold text-foreground truncate group-hover:text-blue-600 transition-colors">
+                                                        {receiptFile?.name}
+                                                    </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB
+                                                        {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB • Click to view
                                                     </p>
                                                 </div>
                                             </div>
@@ -514,7 +520,10 @@ export default function CheckoutPage() {
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={handleRemoveReceipt}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveReceipt();
+                                                }}
                                                 className="size-8 text-muted-foreground hover:text-rose-500 shrink-0"
                                             >
                                                 <Trash2 className="size-4" />
@@ -579,18 +588,22 @@ export default function CheckoutPage() {
                                         <label className="font-bold text-foreground/80 block text-xs">
                                             Payment Receipt Screenshot <span className="text-rose-500">*</span>
                                         </label>
-                                        <div className="relative border border-emerald-500/10 rounded-xl overflow-hidden bg-background/50 p-2 flex items-center justify-between gap-3">
+                                        <div
+                                            onClick={() => setViewingFileUrl(receiptPreview)}
+                                            className="relative border border-emerald-500/10 hover:border-emerald-500/30 rounded-xl overflow-hidden bg-background/50 hover:bg-emerald-500/5 p-2 flex items-center justify-between gap-3 cursor-pointer transition-colors group"
+                                        >
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <img
                                                     src={receiptPreview}
                                                     alt="Receipt preview"
-                                                    className="size-12 rounded-lg object-cover border border-border/40 shrink-0 cursor-pointer hover:opacity-90"
-                                                    onClick={() => window.open(receiptPreview, '_blank')}
+                                                    className="size-12 rounded-lg object-cover border border-border/40 shrink-0 group-hover:scale-105 transition-transform"
                                                 />
                                                 <div className="min-w-0 text-xs">
-                                                    <p className="font-bold text-foreground truncate">{receiptFile?.name}</p>
+                                                    <p className="font-bold text-foreground truncate group-hover:text-emerald-600 transition-colors">
+                                                        {receiptFile?.name}
+                                                    </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB
+                                                        {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB • Click to view
                                                     </p>
                                                 </div>
                                             </div>
@@ -598,7 +611,10 @@ export default function CheckoutPage() {
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={handleRemoveReceipt}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveReceipt();
+                                                }}
                                                 className="size-8 text-muted-foreground hover:text-rose-500 shrink-0"
                                             >
                                                 <Trash2 className="size-4" />
@@ -797,6 +813,15 @@ export default function CheckoutPage() {
                         navigate({ to: '/orders' });
                     }
                 }}
+            />
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={receiptFile?.name || 'Payment Receipt Screenshot'}
+                title="Payment Receipt Screenshot"
             />
         </div>
     );

@@ -38,6 +38,7 @@ import { CopyButton } from '#/components/ui/copy-button.tsx';
 
 import type { ITransaction } from '#/api/transactions.api.ts';
 import { getFileUrl, getFrontendReference } from '#/utils/helper';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 export default function TransactionsPage() {
     const navigate = useNavigate({ from: '/admin/transactions' });
@@ -50,6 +51,7 @@ export default function TransactionsPage() {
 
     const [selectedTx, setSelectedTx] = React.useState<ITransaction | null>(null);
     const [isUploadPending, setIsUploadPending] = React.useState(false);
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const setSearchParams = (updates: Record<string, any>) => {
@@ -591,7 +593,7 @@ export default function TransactionsPage() {
                                                 src={getFileUrl(selectedTx.paymentProofPhoto)}
                                                 alt="Payment Proof Screenshot"
                                                 className="w-full max-h-[260px] object-contain cursor-pointer"
-                                                onClick={() => window.open(getFileUrl(selectedTx.paymentProofPhoto), '_blank')}
+                                                onClick={() => setViewingFileUrl(selectedTx.paymentProofPhoto)}
                                             />
                                         ) : (
                                             <div className="text-center p-4">
@@ -616,6 +618,15 @@ export default function TransactionsPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={selectedTx?.id ? `Payment-Proof-${selectedTx.id.slice(0, 8)}` : 'Payment Receipt Screenshot'}
+                title="Transaction Payment Receipt Attachment"
+            />
         </div>
     );
 }

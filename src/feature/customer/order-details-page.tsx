@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -14,9 +15,9 @@ import {
     User,
     Store,
     Printer,
-    FileText,
     Download,
-    CreditCard
+    CreditCard,
+    Eye
 } from 'lucide-react';
 
 import { getOrderById } from '#/api/orders.api.ts';
@@ -27,12 +28,16 @@ import { Separator } from '#/components/ui/separator.tsx';
 import { getFileUrl, getFrontendReference } from '#/utils/helper';
 import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 export default function OrderDetailsPage() {
     const { id } = useParams({
         from: '/_customer/_protected/orders/$id'
     });
+
+    const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = useState<string | undefined>(undefined);
 
     // Fetch order details with 5-second polling interval for real-time tracking
     const {
@@ -157,20 +162,23 @@ export default function OrderDetailsPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="rounded-xl animate-in slide-in-from-top-2 duration-150" align="end">
-                        <DropdownMenuItem onClick={() => printReceiptHtml(order.id)} className="text-xs gap-2 font-semibold cursor-pointer">
-                            <Printer className="size-3.5 text-muted-foreground" />
-                            Print Thermal (HTML)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openReceiptPdf(order.id)} className="text-xs gap-2 font-semibold cursor-pointer">
-                            <FileText className="size-3.5 text-muted-foreground" />
-                            Open PDF Receipt
+                        <DropdownMenuItem
+                            onClick={async () => {
+                                const blobUrl = await getReceiptPdfBlobUrl(order.id);
+                                setViewingFileUrl(blobUrl);
+                                setViewingFileName(`Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`);
+                            }}
+                            className="text-xs gap-2 font-semibold cursor-pointer"
+                        >
+                            <Eye className="size-3.5 text-muted-foreground" />
+                            View Receipt
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
+                            onClick={() => downloadReceiptPdf(order.id, `Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`)}
                             className="text-xs gap-2 font-semibold cursor-pointer"
                         >
                             <Download className="size-3.5 text-muted-foreground" />
-                            Download PDF Receipt
+                            Download Receipt
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -458,7 +466,10 @@ export default function OrderDetailsPage() {
                                                             src={getFileUrl(payment.paymentProofPhoto)}
                                                             alt="Receipt Screenshot"
                                                             className="w-full max-h-[150px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
-                                                            onClick={() => window.open(getFileUrl(payment.paymentProofPhoto), '_blank')}
+                                                            onClick={() => {
+                                                                setViewingFileUrl(payment.paymentProofPhoto || null);
+                                                                setViewingFileName(`Payment-Proof-${payment.id.slice(0, 8)}`);
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>
@@ -550,6 +561,15 @@ export default function OrderDetailsPage() {
                     </div>
                 )}
             </div>
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Payment Proof Attachment"
+            />
         </div>
     );
 }

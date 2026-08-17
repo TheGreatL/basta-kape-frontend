@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Search, Coffee, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Printer, FileText, Download } from 'lucide-react';
+import { Search, Coffee, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Printer, Download, Eye } from 'lucide-react';
 
 import { getCustomerOrders } from '#/api/customer.api.ts';
 import { useCurrentCustomer } from '#/feature/customer/use-current-customer.ts';
@@ -14,7 +14,8 @@ import { getFrontendReference } from '#/utils/helper.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { TOrderStatus, IOrder } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 const STATUS_FILTERS: Array<{ label: string; value: TOrderStatus | 'ALL' }> = [
     { label: 'All Orders', value: 'ALL' },
@@ -29,6 +30,8 @@ export default function OrdersPage() {
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 300);
     const [selectedStatus, setSelectedStatus] = useState<TOrderStatus | 'ALL'>('ALL');
+    const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = useState<string | undefined>(undefined);
     const [page, setPage] = useState(1);
     const limit = 6;
 
@@ -294,25 +297,24 @@ export default function OrdersPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent className="rounded-xl" align="end">
                                                     <DropdownMenuItem
-                                                        onClick={() => printReceiptHtml(order.id)}
+                                                        onClick={async () => {
+                                                            const blobUrl = await getReceiptPdfBlobUrl(order.id);
+                                                            setViewingFileUrl(blobUrl);
+                                                            setViewingFileName(`Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`);
+                                                        }}
                                                         className="text-xs gap-2 font-semibold cursor-pointer"
                                                     >
-                                                        <Printer className="size-3.5 text-muted-foreground" />
-                                                        Print Thermal (HTML)
+                                                        <Eye className="size-3.5 text-muted-foreground" />
+                                                        View Receipt
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        onClick={() => openReceiptPdf(order.id)}
-                                                        className="text-xs gap-2 font-semibold cursor-pointer"
-                                                    >
-                                                        <FileText className="size-3.5 text-muted-foreground" />
-                                                        Open PDF Receipt
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => downloadReceiptPdf(order.id, order.queueNumber)}
+                                                        onClick={() =>
+                                                            downloadReceiptPdf(order.id, `Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`)
+                                                        }
                                                         className="text-xs gap-2 font-semibold cursor-pointer"
                                                     >
                                                         <Download className="size-3.5 text-muted-foreground" />
-                                                        Download PDF Receipt
+                                                        Download Receipt
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -361,6 +363,15 @@ export default function OrdersPage() {
                     )}
                 </>
             )}
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(isOpen) => !isOpen && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Order Receipt PDF Preview"
+            />
         </div>
     );
 }

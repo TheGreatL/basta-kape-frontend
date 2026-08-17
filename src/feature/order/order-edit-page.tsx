@@ -12,12 +12,12 @@ import {
     AlertTriangle,
     ArrowLeft,
     Printer,
-    FileText,
     Download,
     Volume2,
     Clock,
     XCircle,
-    ChefHat
+    ChefHat,
+    Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -28,6 +28,8 @@ import { cn } from '#/lib/utils.ts';
 
 import { Route } from '#/routes/admin/orders/$id/edit.tsx';
 import { getOrderById, updateOrderStatus, getOrderPayments } from '#/api/orders.api.ts';
+import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
+import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import { getFileUrl, getFrontendReference } from '#/utils/helper';
 import { getDiscountsConfig, applyDiscountToOrder, removeDiscountFromOrder } from '#/api/discounts.api.ts';
 import { updateTransactionReceipt } from '#/api/transactions.api.ts';
@@ -47,7 +49,6 @@ import ProcessPaymentDialog from './components/process-payment-dialog.tsx';
 import VoidOrderDialog from './components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
-import { printReceiptHtml, openReceiptPdf, downloadReceiptPdf } from '#/utils/receipt.ts';
 
 const discountFormSchema = z.object({
     discountId: z.string().min(1, 'Please select a discount'),
@@ -64,6 +65,8 @@ export default function OrderEditPage() {
     const { id: orderId } = Route.useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
+    const [viewingFileName, setViewingFileName] = React.useState<string | undefined>(undefined);
 
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = React.useState(false);
     const [isVoidDialogOpen, setIsVoidDialogOpen] = React.useState(false);
@@ -375,20 +378,23 @@ export default function OrderEditPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-xl font-medium" align="end">
-                            <DropdownMenuItem onClick={() => printReceiptHtml(orderDetails.id)} className="text-xs gap-2 font-semibold">
-                                <Printer className="size-3.5 text-muted-foreground" />
-                                Print Thermal (HTML)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openReceiptPdf(orderDetails.id)} className="text-xs gap-2 font-semibold">
-                                <FileText className="size-3.5 text-muted-foreground" />
-                                Open PDF Receipt
+                            <DropdownMenuItem
+                                onClick={async () => {
+                                    const blobUrl = await getReceiptPdfBlobUrl(orderDetails.id);
+                                    setViewingFileUrl(blobUrl);
+                                    setViewingFileName(`Receipt-${orderDetails.id.slice(0, 8).toUpperCase()}.pdf`);
+                                }}
+                                className="text-xs gap-2 font-semibold"
+                            >
+                                <Eye className="size-3.5 text-muted-foreground" />
+                                View Receipt
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => downloadReceiptPdf(orderDetails.id, orderDetails.queueNumber)}
+                                onClick={() => downloadReceiptPdf(orderDetails.id, `Receipt-${orderDetails.id.slice(0, 8).toUpperCase()}.pdf`)}
                                 className="text-xs gap-2 font-semibold"
                             >
                                 <Download className="size-3.5 text-muted-foreground" />
-                                Download PDF Receipt
+                                Download Receipt
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -601,7 +607,10 @@ export default function OrderEditPage() {
                                                                     src={getFileUrl(payment.paymentProofPhoto)}
                                                                     alt="Proof of Payment"
                                                                     className="w-full max-h-[130px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
-                                                                    onClick={() => window.open(getFileUrl(payment.paymentProofPhoto), '_blank')}
+                                                                    onClick={() => {
+                                                                        setViewingFileUrl(payment.paymentProofPhoto || null);
+                                                                        setViewingFileName(`Payment-Proof-${payment.id.slice(0, 8)}`);
+                                                                    }}
                                                                 />
                                                             </div>
                                                         </div>
@@ -1042,6 +1051,15 @@ export default function OrderEditPage() {
                 orderId={orderDetails.id}
                 orderNumber={orderDetails.queueNumber}
                 onSuccess={handleBack}
+            />
+
+            {/* File Viewer Modal */}
+            <FileViewerDialog
+                open={!!viewingFileUrl}
+                onOpenChange={(open) => !open && setViewingFileUrl(null)}
+                fileUrl={viewingFileUrl}
+                fileName={viewingFileName}
+                title="Payment Proof Attachment"
             />
         </div>
     );

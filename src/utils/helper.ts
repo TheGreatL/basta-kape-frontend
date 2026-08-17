@@ -4,7 +4,7 @@ import defaultProductImage from '#/assets/default.png';
 
 export function getFileUrl(path: string | undefined | null, fallback?: string) {
     if (!path) return fallback;
-    if (path.startsWith('http')) return path;
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
     return `${env.VITE_BUCKET_URL}${path}`;
 }
 
