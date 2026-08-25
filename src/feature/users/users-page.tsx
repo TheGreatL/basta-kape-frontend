@@ -118,21 +118,25 @@ export default function UsersPage() {
                 }
             },
             {
-                accessorKey: 'userRoles',
-                header: 'Role Assignments',
-                cell: ({ row }) => (
-                    <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {row.original.userRoles.map((ur) => (
-                            <span
-                                key={ur.role.id}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
-                            >
-                                {ur.role.name}
-                            </span>
-                        ))}
-                        {row.original.userRoles.length === 0 && <span className="text-xs text-muted-foreground font-normal italic">No Roles</span>}
-                    </div>
-                )
+                accessorKey: 'role',
+                header: 'Role',
+                cell: ({ row }) => {
+                    const role = row.original.role;
+                    return (
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {role ? (
+                                <span
+                                    key={role.id}
+                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
+                                >
+                                    {role.name}
+                                </span>
+                            ) : (
+                                <span className="text-xs text-muted-foreground font-normal italic">No Role</span>
+                            )}
+                        </div>
+                    );
+                }
             },
             {
                 accessorKey: 'phoneNumber',
@@ -164,7 +168,7 @@ export default function UsersPage() {
                                         <span className="sr-only">View User</span>
                                     </Button>
                                 </RequirePermission>
-                                {row.original.userRoles.find((rl) => rl.role.name.toLowerCase() === 'customer') ? null : (
+                                {row.original.role?.name.toLowerCase() === 'customer' ? null : (
                                     <RequirePermission module="Users Management" action="update">
                                         <Button
                                             variant="ghost"

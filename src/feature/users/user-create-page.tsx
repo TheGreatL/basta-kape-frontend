@@ -14,9 +14,10 @@ import type { TCreateUserSchema } from './users.schema.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import { Checkbox } from '#/components/ui/checkbox.tsx';
+import { RadioGroup, RadioGroupItem } from '#/components/ui/radio-group.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { cn } from '#/lib/utils.ts';
 import type { IRoleListItem } from '../rbac/rbac.types.ts';
 
 type CreateUserFormValues = TCreateUserSchema;
@@ -28,7 +29,8 @@ export default function UserCreatePage() {
     // Fetch roles list for assignment checkboxes
     const { data: rolesData, isLoading: isRolesLoading } = useQuery({
         queryKey: [QUERY_KEY.RBAC.ROLES_LIST, { limit: 50, page: 1, status: 'active' }],
-        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' })
+        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' }),
+        staleTime: 30 * 1000
     });
 
     const form = useForm({
@@ -41,7 +43,7 @@ export default function UserCreatePage() {
             lastName: '',
             middleName: '',
             phoneNumber: '',
-            roleIds: []
+            roleId: ''
         }
     });
 
@@ -72,22 +74,8 @@ export default function UserCreatePage() {
             lastName: values.lastName,
             middleName: values.middleName || null,
             phoneNumber: values.phoneNumber || null,
-            roleIds: values.roleIds
+            roleId: values.roleId
         });
-    };
-
-    const assignedRoles = form.watch('roleIds') ?? [];
-
-    const handleRoleToggle = (checked: boolean, roleId: string) => {
-        if (checked) {
-            form.setValue('roleIds', [...assignedRoles, roleId], { shouldDirty: true });
-        } else {
-            form.setValue(
-                'roleIds',
-                assignedRoles.filter((id) => id !== roleId),
-                { shouldDirty: true }
-            );
-        }
     };
 
     return (
@@ -238,7 +226,7 @@ export default function UserCreatePage() {
                                     <Shield className="size-4 text-primary" />
                                     Security Role Assignment
                                 </h2>
-                                <span className="text-xs text-muted-foreground font-medium">Assign one or more roles.</span>
+                                <span className="text-xs text-muted-foreground font-medium">Select a security role.</span>
                             </div>
                             {isRolesLoading ? (
                                 <div className="flex items-center gap-2 py-4">
@@ -246,38 +234,50 @@ export default function UserCreatePage() {
                                     <span className="text-xs text-muted-foreground">Loading active roles...</span>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {rolesData?.data
-                                        .filter((role: IRoleListItem) => role.name.toLowerCase() !== 'customer')
-                                        .map((role: IRoleListItem) => (
-                                            <div
-                                                key={role.id}
-                                                className="flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 hover:bg-background/55 transition-colors border-border/40"
-                                            >
-                                                <Checkbox
-                                                    id={`role-${role.id}`}
-                                                    checked={assignedRoles.includes(role.id)}
-                                                    onCheckedChange={(val) => handleRoleToggle(!!val, role.id)}
-                                                />
-                                                <label
-                                                    htmlFor={`role-${role.id}`}
-                                                    className="text-xs font-semibold capitalize cursor-pointer select-none text-foreground/90 flex-1"
+                                <FormField
+                                    control={form.control}
+                                    name="roleId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                    className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                                                 >
-                                                    {role.name}
-                                                    {role.isSystem && (
-                                                        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
-                                                            System
-                                                        </span>
-                                                    )}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    {rolesData?.data.length === 0 && (
-                                        <div className="text-center text-xs text-muted-foreground py-2 col-span-2">
-                                            No active security roles found in database.
-                                        </div>
+                                                    {rolesData?.data
+                                                        .filter((role: IRoleListItem) => role.name.toLowerCase() !== 'customer')
+                                                        .map((role: IRoleListItem) => (
+                                                            <label
+                                                                key={role.id}
+                                                                htmlFor={`role-${role.id}`}
+                                                                className={cn(
+                                                                    'flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 hover:bg-background/55 transition-colors border-border/40 cursor-pointer',
+                                                                    field.value === role.id && 'border-primary/50 bg-primary/5'
+                                                                )}
+                                                            >
+                                                                <RadioGroupItem value={role.id} id={`role-${role.id}`} />
+                                                                <span className="text-xs font-semibold capitalize select-none text-foreground/90 flex-1">
+                                                                    {role.name}
+                                                                    {role.isSystem && (
+                                                                        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
+                                                                            System
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            </label>
+                                                        ))}
+                                                </RadioGroup>
+                                            </FormControl>
+                                            {rolesData?.data.length === 0 && (
+                                                <div className="text-center text-xs text-muted-foreground py-2 col-span-2">
+                                                    No active security roles found in database.
+                                                </div>
+                                            )}
+                                            <FormMessage />
+                                        </FormItem>
                                     )}
-                                </div>
+                                />
                             )}
                         </div>
 

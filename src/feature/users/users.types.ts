@@ -11,10 +11,6 @@ export interface IRoleInfo {
     name: string;
 }
 
-export interface IUserRoleRelation {
-    role: IRoleInfo;
-}
-
 export interface IUserListItem {
     id: string;
     email: string;
@@ -27,7 +23,7 @@ export interface IUserListItem {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
-    userRoles: IUserRoleRelation[];
+    role?: IRoleInfo | null;
 }
 
 export interface ICreateUserPayload {
@@ -38,7 +34,7 @@ export interface ICreateUserPayload {
     lastName: string;
     middleName?: string | null;
     phoneNumber?: string | null;
-    roleIds?: string[];
+    roleId: string;
 }
 
 export interface IUpdateUserPayload {
@@ -46,7 +42,7 @@ export interface IUpdateUserPayload {
     lastName?: string;
     middleName?: string | null;
     phoneNumber?: string | null;
-    roleIds?: string[];
+    roleId?: string;
 }
 
 export interface IUpdateMyProfilePayload {

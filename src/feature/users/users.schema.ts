@@ -12,7 +12,7 @@ export const createUserSchema = z.object({
     lastName: z.string().min(2, 'Last name must be at least 2 characters'),
     middleName: z.string().default(''),
     phoneNumber: z.string().default(''),
-    roleIds: z.array(z.string().uuid()).default([])
+    roleId: z.string().uuid('Please select a role')
 });
 
 export type TCreateUserSchema = z.infer<typeof createUserSchema>;
@@ -22,7 +22,7 @@ export const updateUserSchema = z.object({
     lastName: z.string().min(2, 'Last name must be at least 2 characters'),
     middleName: z.string().default(''),
     phoneNumber: z.string().default(''),
-    roleIds: z.array(z.string().uuid()).default([])
+    roleId: z.string().uuid().optional()
 });
 
 export type TUpdateUserSchema = z.infer<typeof updateUserSchema>;

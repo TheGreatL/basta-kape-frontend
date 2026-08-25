@@ -20,9 +20,10 @@ import UserAvatarUpload from './components/user-avatar-upload.tsx';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import { Checkbox } from '#/components/ui/checkbox.tsx';
+import { RadioGroup, RadioGroupItem } from '#/components/ui/radio-group.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { cn } from '#/lib/utils.ts';
 import type { IRoleListItem } from '../rbac/rbac.types.ts';
 
 type EditUserFormValues = TUpdateUserSchema;
@@ -40,13 +41,15 @@ export default function UserDetailPage() {
     const { data: userDetails, isLoading: isUserDetailsLoading } = useQuery({
         queryKey: [QUERY_KEY.USERS.USER_DETAILS, slug],
         queryFn: () => getUserById(slug as string),
-        enabled: !!slug
+        enabled: !!slug,
+        staleTime: 30 * 1000
     });
 
     // Fetch active roles list
     const { data: rolesData, isLoading: isRolesLoading } = useQuery({
         queryKey: [QUERY_KEY.RBAC.ROLES_LIST, { limit: 50, page: 1, status: 'active' }],
-        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' })
+        queryFn: () => getRolesList({ limit: 50, page: 1, status: 'active' }),
+        staleTime: 30 * 1000
     });
 
     const form = useForm({
@@ -56,7 +59,7 @@ export default function UserDetailPage() {
             lastName: '',
             middleName: '',
             phoneNumber: '',
-            roleIds: [] as string[]
+            roleId: ''
         }
     });
 
@@ -67,10 +70,10 @@ export default function UserDetailPage() {
                 lastName: userDetails.lastName,
                 middleName: userDetails.middleName || '',
                 phoneNumber: userDetails.phoneNumber || '',
-                roleIds: userDetails.userRoles.map((ur: any) => ur.role.id)
+                roleId: userDetails.role?.id || ''
             });
         }
-    }, [userDetails, form]);
+    }, [userDetails?.id, form]);
 
     const updateMutation = useMutation({
         mutationFn: ({ id, payload }: { id: string; payload: IUpdateUserPayload }) => updateUser(id, payload),
@@ -98,25 +101,12 @@ export default function UserDetailPage() {
                 lastName: values.lastName,
                 middleName: values.middleName || null,
                 phoneNumber: values.phoneNumber || null,
-                roleIds: values.roleIds
+                roleId: values.roleId
             }
         });
     };
 
-    const assignedRoles = form.watch('roleIds') ?? [];
     const isLoading = isUserDetailsLoading || isRolesLoading;
-
-    const handleRoleToggle = (checked: boolean, roleId: string) => {
-        if (checked) {
-            form.setValue('roleIds', [...assignedRoles, roleId], { shouldDirty: true });
-        } else {
-            form.setValue(
-                'roleIds',
-                assignedRoles.filter((id) => id !== roleId),
-                { shouldDirty: true }
-            );
-        }
-    };
 
     const handleAvatarSuccess = () => {
         queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
@@ -283,42 +273,67 @@ export default function UserDetailPage() {
                                                 Security Role Assignment
                                             </h2>
                                             <span className="text-xs text-muted-foreground font-medium">
-                                                {hasUpdatePermission ? 'Select active authorization scope.' : 'Currently assigned security roles.'}
+                                                {hasUpdatePermission ? 'Select active authorization scope.' : 'Currently assigned security role.'}
                                             </span>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {rolesData?.data
-                                                .filter((role: IRoleListItem) => role.name.toLowerCase() !== 'customer')
-                                                .map((role: IRoleListItem) => (
-                                                    <div
-                                                        key={role.id}
-                                                        className="flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 border-border/40"
-                                                    >
-                                                        <Checkbox
-                                                            id={`role-${role.id}`}
-                                                            checked={assignedRoles.includes(role.id)}
-                                                            disabled={!hasUpdatePermission}
-                                                            onCheckedChange={(val) => handleRoleToggle(!!val, role.id)}
-                                                        />
-                                                        <label
-                                                            htmlFor={`role-${role.id}`}
-                                                            className="text-xs font-semibold capitalize cursor-pointer select-none text-foreground/90 flex-1"
-                                                        >
-                                                            {role.name}
-                                                            {role.isSystem && (
-                                                                <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
-                                                                    System
-                                                                </span>
-                                                            )}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            {rolesData?.data.length === 0 && (
-                                                <div className="text-center text-xs text-muted-foreground py-2 col-span-2">
-                                                    No active security roles found in database.
-                                                </div>
-                                            )}
-                                        </div>
+                                        {rolesData?.data.length === 0 ? (
+                                            <div className="text-center text-xs text-muted-foreground py-2 col-span-2">
+                                                No active security roles found in database.
+                                            </div>
+                                        ) : (
+                                            <FormField
+                                                control={form.control}
+                                                name="roleId"
+                                                render={({ field }) => (
+                                                    <FormItem className="space-y-3">
+                                                        <FormControl>
+                                                            <RadioGroup
+                                                                onValueChange={field.onChange}
+                                                                value={field.value}
+                                                                disabled={!hasUpdatePermission}
+                                                                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                                                            >
+                                                                {rolesData?.data
+                                                                    .filter((role: IRoleListItem) => role.name.toLowerCase() !== 'customer')
+                                                                    .map((role: IRoleListItem) => (
+                                                                        <label
+                                                                            key={role.id}
+                                                                            htmlFor={`role-${role.id}`}
+                                                                            className={cn(
+                                                                                'flex items-center gap-2.5 p-3 rounded-lg border bg-background/30 transition-colors border-border/40',
+                                                                                hasUpdatePermission
+                                                                                    ? 'hover:bg-background/55 cursor-pointer'
+                                                                                    : 'cursor-not-allowed opacity-80',
+                                                                                field.value === role.id && 'border-primary/50 bg-primary/5'
+                                                                            )}
+                                                                        >
+                                                                            <RadioGroupItem
+                                                                                value={role.id}
+                                                                                id={`role-${role.id}`}
+                                                                                disabled={!hasUpdatePermission}
+                                                                            />
+                                                                            <span
+                                                                                className={cn(
+                                                                                    'text-xs font-semibold capitalize select-none text-foreground/90 flex-1',
+                                                                                    hasUpdatePermission ? 'cursor-pointer' : 'cursor-default'
+                                                                                )}
+                                                                            >
+                                                                                {role.name}
+                                                                                {role.isSystem && (
+                                                                                    <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 scale-95">
+                                                                                        System
+                                                                                    </span>
+                                                                                )}
+                                                                            </span>
+                                                                        </label>
+                                                                    ))}
+                                                            </RadioGroup>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Audit Information */}
