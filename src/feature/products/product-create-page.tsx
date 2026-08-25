@@ -25,6 +25,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
+import { cn } from '#/lib/utils.ts';
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
@@ -175,6 +176,20 @@ export default function ProductCreatePage() {
         saveMutation.mutate(values);
     };
 
+    const onInvalid = (errors: any) => {
+        if (errors.name) {
+            setActiveTab('profile');
+            toast.error('Product Name Required', {
+                description: errors.name.message || 'Please enter a valid product name.'
+            });
+            return;
+        }
+        setActiveTab('profile');
+        toast.error('Validation Error', {
+            description: 'Please review the required fields in the General Info tab.'
+        });
+    };
+
     const handleAddVariant = (data: { sku: string | null; price: number; attributeValueIds: string[] }) => {
         const newVariant: LocalVariant = {
             tempId: generateId(),
@@ -280,9 +295,9 @@ export default function ProductCreatePage() {
                 </TabsList>
 
                 {/* Tab 1: Profile Details */}
-                <TabsContent value="profile" className="focus-visible:outline-none">
+                <TabsContent value="profile" forceMount className={cn('focus-visible:outline-none', activeTab !== 'profile' && 'hidden')}>
                     <Form {...form}>
-                        <form id="product-create-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <form id="product-create-form" onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
                             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs">
                                 {isDataLoading ? (
                                     <div className="flex flex-col items-center justify-center py-24 gap-3">
@@ -426,7 +441,7 @@ export default function ProductCreatePage() {
                 </TabsContent>
 
                 {/* Tab 2: Variants & Recipes Management */}
-                <TabsContent value="variants" className="focus-visible:outline-none">
+                <TabsContent value="variants" forceMount className={cn('focus-visible:outline-none', activeTab !== 'variants' && 'hidden')}>
                     <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-6">
                         <div className="flex items-center justify-between border-b border-border/40 pb-3">
                             <div>
