@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Store, Clock, Coins, Percent, MapPin, Phone, Save, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Store, Clock, MapPin, Phone, Save, RotateCcw, ShieldAlert } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '#/components/ui/tabs.tsx';
 import DiscountManager from './components/discount-manager.tsx';
 
@@ -158,7 +158,7 @@ export default function StoreSettingsPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Store Settings</h1>
-                        <p className="text-xs text-muted-foreground">Configure physical store details, business hours, and payment taxation rates.</p>
+                        <p className="text-xs text-muted-foreground">Configure physical store details and business hours.</p>
                     </div>
                 </div>
 
@@ -304,8 +304,8 @@ export default function StoreSettingsPage() {
                                         </CardContent>
                                     </Card>
 
-                                    {/* Card 3: Billing & Taxes */}
-                                    <Card className="shadow-xs border-border/60 bg-card/40">
+                                    {/* Card 3: Billing & Taxes (Commented out for now as tax/service charges are not utilized) */}
+                                    {/* <Card className="shadow-xs border-border/60 bg-card/40">
                                         <CardHeader className="border-b border-border/40 pb-4">
                                             <CardTitle className="text-lg font-bold flex items-center gap-2">
                                                 <Coins className="size-5 text-primary" />
@@ -370,7 +370,7 @@ export default function StoreSettingsPage() {
                                                 )}
                                             />
                                         </CardContent>
-                                    </Card>
+                                    </Card> */}
                                 </div>
                             </div>
 

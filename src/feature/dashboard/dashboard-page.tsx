@@ -472,7 +472,6 @@ export default function DashboardPage() {
                 <div className="space-y-6">
                     {/* Active Register Shift Info */}
 
-
                     {/* Stock Alert Statuses */}
                     {canReadInventory && summary.inventorySummary && (
                         <Card className="shadow-2xs border-border/60 rounded-2xl">
