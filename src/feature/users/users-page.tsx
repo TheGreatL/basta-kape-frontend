@@ -121,15 +121,15 @@ export default function UsersPage() {
                 accessorKey: 'role',
                 header: 'Role',
                 cell: ({ row }) => {
-                    const role = row.original.role;
+                    const roleRow = row.original.role;
                     return (
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
-                            {role ? (
+                            {roleRow ? (
                                 <span
-                                    key={role.id}
+                                    key={roleRow.id}
                                     className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 capitalize"
                                 >
-                                    {role.name}
+                                    {roleRow.name}
                                 </span>
                             ) : (
                                 <span className="text-xs text-muted-foreground font-normal italic">No Role</span>
