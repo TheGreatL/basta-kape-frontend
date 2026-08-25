@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Link, useMatchRoute } from '@tanstack/react-router';
 
 import type { IconName } from 'lucide-react/dynamic';
@@ -5,6 +6,7 @@ import { DynamicIcon } from 'lucide-react/dynamic';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 import type { TAppModule } from '#/constants/rbac.ts';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
+import { useOrderQueueCount } from '#/hooks/use-order-queue-count.ts';
 import { useAuth } from '#/context/AuthContext.tsx';
 import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 
@@ -61,10 +63,12 @@ interface SidebarItem {
     items?: SidebarSubItem[];
 }
 
-const sidebarGroups: Array<{
+const getSidebarGroups = (
+    orderQueueCount: number
+): Array<{
     label: string;
     items: SidebarItem[];
-}> = [
+}> => [
     {
         label: 'Overview',
         items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', public: true, exact: true }]
@@ -73,7 +77,13 @@ const sidebarGroups: Array<{
         label: 'Operations',
         items: [
             { title: 'POS', path: '/admin/pos', icon: 'monitor-play', module: appModules.POINT_OF_SALE },
-            { title: 'Order Queue', path: '/admin/order-queue', icon: 'list-ordered', module: appModules.ORDER_QUEUE, badge: '5' },
+            {
+                title: 'Order Queue',
+                path: '/admin/order-queue',
+                icon: 'list-ordered',
+                module: appModules.ORDER_QUEUE,
+                badge: orderQueueCount > 0 ? (orderQueueCount > 99 ? '99+' : String(orderQueueCount)) : undefined
+            },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
             { title: 'Payment History', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
         ]
@@ -203,7 +213,14 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                                             <Link to={subItem.path}>
                                                 <span>{subItem.title}</span>
                                                 {subItem.badge && (
-                                                    <span className="ml-auto bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                                                    <span
+                                                        className={cn(
+                                                            'ml-auto font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden',
+                                                            isSubActive
+                                                                ? 'bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground'
+                                                                : 'bg-primary/10 text-primary'
+                                                        )}
+                                                    >
                                                         {subItem.badge}
                                                     </span>
                                                 )}
@@ -233,7 +250,12 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
                     <DynamicIcon name={item.icon} />
                     <span>{item.title}</span>
                     {item.badge && (
-                        <span className="ml-auto bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                        <span
+                            className={cn(
+                                'ml-auto font-medium text-xs px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden',
+                                isActive ? 'bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground' : 'bg-primary/10 text-primary'
+                            )}
+                        >
                             {item.badge}
                         </span>
                     )}
@@ -247,40 +269,44 @@ export default function AppSidebar() {
     const { user, logout } = useAuth();
     const permissions = getUserPermissions(user);
     const { storeName } = useStoreSettings();
+    const { count: orderQueueCount } = useOrderQueueCount();
 
-    const authorizedGroups = sidebarGroups
-        .map((group) => {
-            const filteredItems = group.items
-                .map((item) => {
-                    if (item.items) {
-                        const filteredSubItems = item.items.filter((subItem) => {
-                            if (subItem.public) return true;
-                            if (!subItem.module) return false;
-                            return hasPermission(permissions, subItem.module, appPermissions.READ);
-                        });
+    const authorizedGroups = React.useMemo(() => {
+        const groups = getSidebarGroups(orderQueueCount);
+        return groups
+            .map((group) => {
+                const filteredItems = group.items
+                    .map((item) => {
+                        if (item.items) {
+                            const filteredSubItems = item.items.filter((subItem) => {
+                                if (subItem.public) return true;
+                                if (!subItem.module) return false;
+                                return hasPermission(permissions, subItem.module, appPermissions.READ);
+                            });
 
-                        if (filteredSubItems.length === 0) {
-                            return null;
+                            if (filteredSubItems.length === 0) {
+                                return null;
+                            }
+
+                            return {
+                                ...item,
+                                items: filteredSubItems
+                            };
                         }
 
-                        return {
-                            ...item,
-                            items: filteredSubItems
-                        };
-                    }
+                        if (item.public) return item;
+                        if (!item.module) return null;
+                        return hasPermission(permissions, item.module, appPermissions.READ) ? item : null;
+                    })
+                    .filter((item): item is SidebarItem => item !== null);
 
-                    if (item.public) return item;
-                    if (!item.module) return null;
-                    return hasPermission(permissions, item.module, appPermissions.READ) ? item : null;
-                })
-                .filter((item): item is SidebarItem => item !== null);
-
-            return {
-                ...group,
-                items: filteredItems
-            };
-        })
-        .filter((group) => group.items.length > 0);
+                return {
+                    ...group,
+                    items: filteredItems
+                };
+            })
+            .filter((group) => group.items.length > 0);
+    }, [permissions, orderQueueCount]);
 
     // Profile variables
     const displayName = user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest';

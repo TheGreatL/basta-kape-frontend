@@ -69,7 +69,8 @@ const QUERY_KEY = {
         ORDERS_LIST: 'orders:orders_list',
         ORDER_DETAILS: 'orders:order_details',
         ORDER_PAYMENTS: 'orders:order_payments',
-        VOID_LOGS: 'orders:void_logs'
+        VOID_LOGS: 'orders:void_logs',
+        QUEUE_COUNT: 'orders:queue_count'
     },
     ACTIVITY_LOGS: {
         LOGS_LIST: 'activity_logs:logs_list'

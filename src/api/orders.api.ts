@@ -93,3 +93,19 @@ export const getVoidLogs = async (): Promise<any[]> => {
     }
     return response.json();
 };
+
+export interface IOrderQueueCountResponse {
+    count: number;
+    pending: number;
+    preparing: number;
+    ready: number;
+}
+
+export const getOrderQueueCount = async (): Promise<IOrderQueueCountResponse> => {
+    const response = await api.get('/orders/queue-count');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch order queue count', response.status, errorData);
+    }
+    return response.json();
+};

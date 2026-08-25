@@ -402,6 +402,7 @@ export default function OrderCreatePage() {
             });
 
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
         } catch (err) {
             toast.error('Failed to create order', {
                 description: getErrorMessage(err)
@@ -495,6 +496,7 @@ export default function OrderCreatePage() {
             });
             setShowSuccessDialog(true);
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
         } catch (err) {
             toast.error('Failed to process payment', {
                 description: getErrorMessage(err)

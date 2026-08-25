@@ -56,6 +56,7 @@ export default function OrderQueuePage() {
             updateOrderStatus(orderId, payload),
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
             toast.success(`Order ${updated.queueNumber} updated to ${updated.status}`);
         },
         onError: (err) => {

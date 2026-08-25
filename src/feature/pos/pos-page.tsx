@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Monitor, Trash2 } from 'lucide-react';
 
@@ -49,6 +49,8 @@ interface CartItem {
 }
 
 export default function PosPage() {
+    const queryClient = useQueryClient();
+
     // Catalog States
     const [search, setSearch] = React.useState('');
     const [productCategoryId, setProductCategoryId] = React.useState('');
@@ -460,6 +462,8 @@ export default function PosPage() {
             return finalOrder;
         },
         onSuccess: async (order) => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
             setPlacedOrder(order);
             setIsCheckoutOpen(false);
             resetCheckoutFields();
