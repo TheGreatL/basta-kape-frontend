@@ -146,7 +146,7 @@ export default function WasteLogPage() {
                     <div className="flex flex-col">
                         <span className="font-semibold text-foreground/90 text-sm">{row.original.ingredient?.name || '—'}</span>
                         {row.original.ingredient?.defaultUnit && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                                 Unit: {row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}
                             </span>
                         )}
@@ -197,7 +197,7 @@ export default function WasteLogPage() {
                             <span className="text-xs font-semibold text-foreground/85" title={user?.email}>
                                 {user ? `${user.firstName} ${user.lastName}` : '—'}
                             </span>
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
                                 <CalendarIcon className="size-2.5" />
                                 {format(new Date(row.original.createdAt), 'MMM d, yyyy HH:mm')}
                             </span>
@@ -217,7 +217,7 @@ export default function WasteLogPage() {
                                 {user.firstName} {user.lastName}
                             </span>
                             {row.original.updatedAt && (
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
                                     <CalendarIcon className="size-2.5" />
                                     {format(new Date(row.original.updatedAt), 'MMM d, yyyy HH:mm')}
                                 </span>

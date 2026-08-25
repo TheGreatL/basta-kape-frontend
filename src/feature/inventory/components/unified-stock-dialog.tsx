@@ -490,7 +490,7 @@ export default function UnifiedStockDialog({
                                                         className="h-9 bg-background/50"
                                                     />
                                                 </FormControl>
-                                                <p className="text-[11px] text-muted-foreground">Enter amount to deduct from active stock count.</p>
+                                                <p className="text-xs text-muted-foreground">Enter amount to deduct from active stock count.</p>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

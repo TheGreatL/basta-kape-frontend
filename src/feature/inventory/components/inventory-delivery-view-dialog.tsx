@@ -66,7 +66,7 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                     {/* Stock Metrics Grid */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <PackageCheck className="size-3 text-emerald-600" /> Qty Received
                             </span>
                             <p className="text-lg font-bold text-emerald-600">
@@ -76,7 +76,7 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                         </div>
 
                         <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <ShieldCheck className="size-3 text-primary" /> Remaining Stock
                             </span>
                             <p className="text-lg font-bold text-foreground">
@@ -100,14 +100,14 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                         </div>
 
                         <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="size-3 text-primary" /> Unit Cost
                             </span>
                             <p className="text-base font-bold text-foreground">₱{delivery.unitCost.toFixed(2)}</p>
                         </div>
 
                         <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
-                            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="size-3 text-primary" /> Total Cost
                             </span>
                             <p className="text-base font-bold text-foreground">₱{delivery.totalCost.toFixed(2)}</p>
@@ -123,15 +123,15 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                             <div className="flex items-center justify-between pt-0.5">
                                 <span className="text-sm font-semibold text-foreground">{format(expiryDate, 'MMMM d, yyyy')}</span>
                                 {isExpired ? (
-                                    <Badge variant="destructive" className="gap-1 text-[11px]">
+                                    <Badge variant="destructive" className="gap-1 text-xs">
                                         <AlertTriangle className="size-3" /> Expired
                                     </Badge>
                                 ) : isExpiringSoon ? (
-                                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1 text-[11px]">
+                                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1 text-xs">
                                         <AlertTriangle className="size-3" /> Expiring Soon
                                     </Badge>
                                 ) : (
-                                    <Badge variant="outline" className="text-[11px] font-semibold text-emerald-600 border-emerald-500/30">
+                                    <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30">
                                         Active / Safe
                                     </Badge>
                                 )}
@@ -143,32 +143,32 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
 
                     {/* Audit Trail Card */}
                     <div className="rounded-lg border bg-muted/30 p-3.5 space-y-2.5">
-                        <h4 className="text-xs font-semibold text-foreground/90 uppercase tracking-wider">Audit Information</h4>
+                        <h4 className="text-xs font-semibold text-foreground/90 uppercase">Audit Information</h4>
 
                         <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="space-y-0.5">
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
                                     <User className="size-3" /> Logged By
                                 </span>
                                 <p className="font-semibold text-foreground">
                                     {delivery.createdBy ? `${delivery.createdBy.firstName} ${delivery.createdBy.lastName}` : 'System'}
                                 </p>
                                 {delivery.receivedAt && (
-                                    <p className="text-[10px] text-muted-foreground">{format(new Date(delivery.receivedAt), 'MMM d, yyyy HH:mm')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(new Date(delivery.receivedAt), 'MMM d, yyyy HH:mm')}</p>
                                 )}
                             </div>
 
                             <div className="space-y-0.5">
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
                                     <User className="size-3" /> Last Editor
                                 </span>
                                 <p className="font-semibold text-foreground">
                                     {delivery.updatedBy ? `${delivery.updatedBy.firstName} ${delivery.updatedBy.lastName}` : '—'}
                                 </p>
                                 {delivery.updatedAt ? (
-                                    <p className="text-[10px] text-muted-foreground">{format(new Date(delivery.updatedAt), 'MMM d, yyyy HH:mm')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(new Date(delivery.updatedAt), 'MMM d, yyyy HH:mm')}</p>
                                 ) : (
-                                    <p className="text-[10px] text-muted-foreground">Never modified</p>
+                                    <p className="text-xs text-muted-foreground">Never modified</p>
                                 )}
                             </div>
                         </div>

@@ -742,7 +742,7 @@ export default function CheckoutPage() {
                                                     <span className="text-primary/80 italic">Add-ons: {modifierNames.join(', ')}</span>
                                                 )}
                                                 {((isDirectCheckout && directCheckoutItem?.notes) || item.notes) && (
-                                                    <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium italic block pt-0.5">
+                                                    <span className="text-xs text-amber-700 dark:text-amber-400 font-medium italic block pt-0.5">
                                                         Note: {isDirectCheckout && directCheckoutItem ? directCheckoutItem.notes : item.notes}
                                                     </span>
                                                 )}

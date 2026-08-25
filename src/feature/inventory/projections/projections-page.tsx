@@ -124,7 +124,7 @@ export default function ProjectionsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Card className="p-3.5 border-border/40 bg-card flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between text-muted-foreground">
-                        <span className="text-xs font-semibold uppercase tracking-wider">Tracked Products</span>
+                        <span className="text-xs font-semibold uppercase">Tracked Products</span>
                         <Layers className="size-4 text-primary" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -135,7 +135,7 @@ export default function ProjectionsPage() {
 
                 <Card className="p-3.5 border-border/40 bg-card flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">High Stock (&gt;20)</span>
+                        <span className="text-xs font-semibold uppercase text-muted-foreground">High Stock (&gt;20)</span>
                         <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -146,7 +146,7 @@ export default function ProjectionsPage() {
 
                 <Card className="p-3.5 border-border/40 bg-card flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between text-amber-700 dark:text-amber-400">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Low Capacity (1–20)</span>
+                        <span className="text-xs font-semibold uppercase text-muted-foreground">Low Capacity (1–20)</span>
                         <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -157,7 +157,7 @@ export default function ProjectionsPage() {
 
                 <Card className="p-3.5 border-border/40 bg-card flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between text-rose-700 dark:text-rose-400">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Out of Stock (0)</span>
+                        <span className="text-xs font-semibold uppercase text-muted-foreground">Out of Stock (0)</span>
                         <XCircle className="size-4 text-rose-600 dark:text-rose-400" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
@@ -343,7 +343,7 @@ export default function ProjectionsPage() {
 
                                                 {/* Ingredient List Breakdown */}
                                                 <div className="space-y-2 pt-1">
-                                                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block border-b border-border/20 pb-1">
+                                                    <span className="text-xs font-bold text-muted-foreground uppercase block border-b border-border/20 pb-1">
                                                         Recipe Ingredients Breakdown
                                                     </span>
                                                     <div className="space-y-1.5">
@@ -363,14 +363,14 @@ export default function ProjectionsPage() {
                                                                 >
                                                                     <div className="min-w-0 flex-1 truncate">
                                                                         <span className="truncate font-medium block text-foreground">{ing.name}</span>
-                                                                        <span className="text-[10px] text-muted-foreground block font-normal">
+                                                                        <span className="text-xs text-muted-foreground block font-normal">
                                                                             Needs {ing.requiredQuantity} {ing.unit} per serving (Stock:{' '}
                                                                             {ing.currentQuantity} {ing.unit})
                                                                         </span>
                                                                     </div>
 
                                                                     <span
-                                                                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold shrink-0 ${
+                                                                        className={`px-2 py-0.5 rounded-md text-xs font-bold shrink-0 ${
                                                                             isZero
                                                                                 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20'
                                                                                 : isBottleneck

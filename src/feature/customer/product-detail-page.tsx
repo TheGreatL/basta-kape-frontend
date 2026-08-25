@@ -583,14 +583,10 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                             >
                                                 {ing.ingredient.name}
                                                 {isOutOfStock && (
-                                                    <span className="text-xs font-bold text-rose-500/90 tracking-wide uppercase scale-95">
-                                                        (Out of stock)
-                                                    </span>
+                                                    <span className="text-xs font-bold text-rose-500/90 uppercase scale-95">(Out of stock)</span>
                                                 )}
                                                 {isLowStock && (
-                                                    <span className="text-xs font-semibold text-amber-500/90 tracking-wide uppercase scale-95">
-                                                        (Low stock)
-                                                    </span>
+                                                    <span className="text-xs font-semibold text-amber-500/90 uppercase scale-95">(Low stock)</span>
                                                 )}
                                             </span>
                                         );
@@ -729,7 +725,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                         <div className="mt-6 flex items-center gap-2">
                             {selectedVariant.maxProduceable === 0 ? (
                                 <div className="w-full p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col gap-1.5 animate-in fade-in duration-200">
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 uppercase">
                                         <span className="size-1.5 rounded-full bg-rose-500 animate-ping" />
                                         Temporarily Out of Stock
                                     </span>
@@ -775,7 +771,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     <div className="space-y-1.5 pt-4">
                         <label className="text-xs font-bold text-foreground/80 flex items-center justify-between">
                             <span>Special Instructions / Item Notes</span>
-                            <span className="text-[11px] font-normal text-muted-foreground">Optional</span>
+                            <span className="text-xs font-normal text-muted-foreground">Optional</span>
                         </label>
                         <Input
                             placeholder="e.g. Extra hot, less ice, separate cup..."

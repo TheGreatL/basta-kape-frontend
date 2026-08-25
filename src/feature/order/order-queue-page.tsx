@@ -208,7 +208,7 @@ export default function OrderQueuePage() {
                                 )}
                                 {/* Item Note */}
                                 {item.notes && (
-                                    <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1 italic leading-tight">
+                                    <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1 italic leading-tight">
                                         Note: {item.notes}
                                     </div>
                                 )}

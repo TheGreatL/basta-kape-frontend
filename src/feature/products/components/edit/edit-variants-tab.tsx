@@ -734,7 +734,7 @@ function AttributeValuePills({
                     >
                         {isSelected && <Check className="size-3 mr-1" />}
                         {val.value}
-                        {isTaken && <span className="ml-1 text-[10px] text-muted-foreground font-normal">(Taken)</span>}
+                        {isTaken && <span className="ml-1 text-xs text-muted-foreground font-normal">(Taken)</span>}
                     </Button>
                 );
             })}

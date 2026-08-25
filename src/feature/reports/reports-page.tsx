@@ -493,11 +493,11 @@ export default function ReportsPage() {
 
                                 return (
                                     <SelectGroup key={category.id}>
-                                        <SelectLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5 bg-muted/30">
+                                        <SelectLabel className="text-xs font-bold text-muted-foreground uppercase px-2 py-1.5 bg-muted/30">
                                             {category.name}
                                         </SelectLabel>
                                         {availableItems.map((item) => {
-                                            const ItemIcon = MODULE_ICONS[item.id];
+                                            const ItemIcon = MODULE_ICONS[item.id] ?? FileText;
                                             return (
                                                 <SelectItem key={item.id} value={item.id} className="text-xs py-2">
                                                     <div className="flex items-center gap-2">
@@ -545,11 +545,11 @@ export default function ReportsPage() {
                             {categorizedModules.map((category) => (
                                 <div key={category.id} className="space-y-1.5">
                                     <div className="flex items-center justify-between px-2 py-0.5">
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <span className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5">
                                             <category.icon className="size-3.5 text-primary/80" />
                                             {category.name}
                                         </span>
-                                        <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-semibold text-muted-foreground">
+                                        <Badge variant="outline" className="text-xs h-4.5 px-1.5 font-semibold text-muted-foreground">
                                             {category.items.length}
                                         </Badge>
                                     </div>
@@ -557,7 +557,7 @@ export default function ReportsPage() {
                                     <div className="space-y-1">
                                         {category.items.map((item) => {
                                             const isActive = item.id === currentActiveModuleId;
-                                            const ItemIcon = MODULE_ICONS[item.id];
+                                            const ItemIcon = MODULE_ICONS[item.id] ?? FileText;
 
                                             return (
                                                 <button
@@ -594,7 +594,7 @@ export default function ReportsPage() {
                             {categorizedModules.length === 0 && (
                                 <div className="text-center py-6 px-3 space-y-1">
                                     <p className="text-xs font-semibold text-muted-foreground">No matching reports</p>
-                                    <p className="text-[11px] text-muted-foreground/70">Try a different search keyword</p>
+                                    <p className="text-xs text-muted-foreground/70">Try a different search keyword</p>
                                 </div>
                             )}
                         </div>
@@ -616,7 +616,7 @@ export default function ReportsPage() {
                                             {previewData?.title ?? activeItemMetadata?.label ?? 'Report Workspace'}
                                         </h2>
                                         {activeItemMetadata?.sourceModule && (
-                                            <Badge variant="secondary" className="text-[11px] font-semibold">
+                                            <Badge variant="secondary" className="text-xs font-semibold">
                                                 {activeItemMetadata.sourceModule}
                                             </Badge>
                                         )}

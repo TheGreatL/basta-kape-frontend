@@ -353,15 +353,11 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
 
                                                 <div className="grid grid-cols-2 gap-3 p-3 bg-muted/20 border rounded-xl border-border/40">
                                                     <div className="flex flex-col text-left">
-                                                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                                                            Net Total
-                                                        </span>
+                                                        <span className="text-xs text-muted-foreground font-bold uppercase">Net Total</span>
                                                         <span className="text-sm font-bold text-foreground mt-0.5">₱{netTotal.toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex flex-col text-right">
-                                                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                                                            Change Due
-                                                        </span>
+                                                        <span className="text-xs text-muted-foreground font-bold uppercase">Change Due</span>
                                                         <span className="text-sm font-extrabold text-emerald-600 mt-0.5">
                                                             ₱{changeDue.toFixed(2)}
                                                         </span>

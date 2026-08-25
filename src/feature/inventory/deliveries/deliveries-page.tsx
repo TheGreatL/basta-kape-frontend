@@ -132,7 +132,7 @@ export default function DeliveriesPage() {
                     <div className="flex flex-col">
                         <span className="font-semibold text-foreground/90 text-sm">{row.original.ingredient?.name || '—'}</span>
                         {row.original.ingredient?.defaultUnit && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                                 Unit: {row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}
                             </span>
                         )}
