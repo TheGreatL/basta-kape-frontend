@@ -41,6 +41,11 @@ const ORDER_TYPE_OPTIONS = [
     { value: 'DELIVERY', label: 'Delivery' }
 ];
 
+const GROUP_BY_OPTIONS = [
+    { value: 'daily', label: 'Daily Summary' },
+    { value: 'transaction', label: 'Per Transaction' }
+];
+
 function getSelectOptions(filter: IReportFilterField) {
     if (filter.options?.length) {
         return filter.options;
@@ -56,6 +61,10 @@ function getSelectOptions(filter: IReportFilterField) {
 
     if (filter.key === 'orderType') {
         return ORDER_TYPE_OPTIONS;
+    }
+
+    if (filter.key === 'groupBy') {
+        return GROUP_BY_OPTIONS;
     }
 
     if (filter.key === 'productCategoryId' || filter.key === 'productTypeId') {
@@ -77,6 +86,7 @@ export function buildReportFilters(searchParams: TReportsSearchSchema): ReportFi
     if (searchParams.inventoryStatus) filters.inventoryStatus = searchParams.inventoryStatus;
     if (searchParams.orderStatus) filters.orderStatus = searchParams.orderStatus;
     if (searchParams.orderType) filters.orderType = searchParams.orderType;
+    if (searchParams.groupBy) filters.groupBy = searchParams.groupBy;
 
     return filters;
 }
@@ -168,6 +178,7 @@ export default function ReportFiltersBar({ moduleDefinition, searchParams, onSea
             inventoryStatus: '',
             orderStatus: '',
             orderType: '',
+            groupBy: '',
             page: 1
         });
     };
@@ -249,25 +260,25 @@ export default function ReportFiltersBar({ moduleDefinition, searchParams, onSea
 
         const rawValue = searchParams[filter.key as keyof TReportsSearchSchema];
         const value = typeof rawValue === 'string' ? rawValue : '';
-
+        const isGroupBy = filter.key === 'groupBy';
         const options = getSelectOptions(filter);
 
         return (
             <Select
                 key={filter.key}
-                value={value || 'all'}
+                value={value || (isGroupBy ? 'daily' : 'all')}
                 onValueChange={(nextValue) =>
                     onSearchParamsChange({
-                        [filter.key]: nextValue === 'all' ? (filter.key === 'status' ? 'active' : '') : nextValue,
+                        [filter.key]: nextValue === 'all' ? (filter.key === 'status' ? 'active' : isGroupBy ? 'daily' : '') : nextValue,
                         page: 1
                     })
                 }
             >
-                <SelectTrigger className="h-9 w-full sm:w-[160px] bg-background/50">
+                <SelectTrigger className={`h-9 w-full ${isGroupBy ? 'sm:w-[220px]' : 'sm:w-[160px]'} bg-background/50`}>
                     <SelectValue placeholder={filter.label} />
                 </SelectTrigger>
                 <SelectContent>
-                    {filter.key !== 'status' && <SelectItem value="all">All</SelectItem>}
+                    {filter.key !== 'status' && !isGroupBy && <SelectItem value="all">All</SelectItem>}
                     {options.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                             {option.label}

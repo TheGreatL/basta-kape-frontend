@@ -17,7 +17,8 @@ const searchParamsSchema = z.object({
     productTypeId: z.string().catch(''),
     inventoryStatus: z.enum(['SAFE', 'CRITICAL', 'OUT_OF_STOCK', '']).catch(''),
     orderStatus: z.enum(['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED', '']).catch(''),
-    orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY', '']).catch('')
+    orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY', '']).catch(''),
+    groupBy: z.enum(['daily', 'transaction', '']).catch('')
 });
 
 export const Route = createFileRoute('/admin/reports')({

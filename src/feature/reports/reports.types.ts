@@ -22,6 +22,7 @@ export type ReportFilters = {
     inventoryStatus?: 'SAFE' | 'CRITICAL' | 'OUT_OF_STOCK';
     orderStatus?: 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
     orderType?: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
+    groupBy?: 'daily' | 'transaction';
 };
 
 export type ReportFilterType = 'text' | 'select' | 'date';
