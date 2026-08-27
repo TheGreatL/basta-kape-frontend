@@ -6,6 +6,7 @@ import { Textarea } from '#/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Switch } from '#/components/ui/switch.tsx';
 import ProductPhotoUpload from '../product-photo-upload.tsx';
 import type { ICategory, IProductType } from '#/feature/product-settings/product-settings-types.ts';
 
@@ -156,6 +157,47 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                     </FormItem>
                                 )}
                             />
+
+                            {/* Promotional Badges & Highlights */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                                <FormField
+                                    control={form.control}
+                                    name="isBestSeller"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-amber-500/25 bg-amber-500/5 p-3.5 shadow-2xs">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 cursor-pointer">
+                                                    ⭐ Best Seller Badge
+                                                </FormLabel>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Feature this item as a customer favorite and top seller.
+                                                </p>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="isMustTry"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-orange-500/25 bg-orange-500/5 p-3.5 shadow-2xs">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-xs font-bold text-orange-700 dark:text-orange-400 flex items-center gap-1.5 cursor-pointer">
+                                                    🔥 Must Try Badge
+                                                </FormLabel>
+                                                <p className="text-xs text-muted-foreground">Highlight this item as a recommended signature item.</p>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
                 </form>

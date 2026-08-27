@@ -2,6 +2,7 @@ import { ArrowLeft, Package, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { ProductBadges } from '#/components/products/product-badges.tsx';
 import type { IProduct } from '../../products.types.ts';
 
 interface EditProductHeaderProps {
@@ -29,7 +30,7 @@ export default function EditProductHeader({ product, onBack }: EditProductHeader
                         <Package className="h-5 w-5 text-primary" />
                     </div>
                     <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <h1 className="text-2xl font-bold text-foreground leading-tight truncate">{product.name}</h1>
                             <Badge
                                 variant="outline"
@@ -41,6 +42,7 @@ export default function EditProductHeader({ product, onBack }: EditProductHeader
                             >
                                 {product.deletedAt ? 'Archived' : 'Active'}
                             </Badge>
+                            <ProductBadges product={product} variant="inline" />
                         </div>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">
                             Manage profile details, pricing variants, ingredient recipes, and customization choices.

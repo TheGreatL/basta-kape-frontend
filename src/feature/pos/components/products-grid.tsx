@@ -4,6 +4,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Card, CardDescription, CardHeader, CardTitle } from '#/components/ui/card.tsx';
+import { ProductBadges } from '#/components/products/product-badges.tsx';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IMenuProduct } from '../../menu/menu.types';
 import type { IPaginatedResult } from '#/types/base.types';
@@ -73,6 +74,7 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                                         {product.category.name}
                                     </Badge>
                                 )}
+                                <ProductBadges product={product} variant="floating" className="absolute top-2 right-2" />
                             </div>
                             {/* Card Body */}
                             <CardHeader className="p-3 pb-1.5 flex-1 min-w-0">
@@ -101,7 +103,7 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                         size="sm"
                         onClick={() => setPage((p) => p - 1)}
                         disabled={page <= 1}
-                        className="h-7 px-2.5 text-2xs font-semibold"
+                        className="h-7 px-2.5 text-xs font-semibold"
                     >
                         <ChevronLeft className="size-3.5 mr-0.5" /> Previous
                     </Button>
@@ -110,7 +112,7 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                         size="sm"
                         onClick={() => setPage((p) => p + 1)}
                         disabled={!menuData.meta.hasMore}
-                        className="h-7 px-2.5 text-2xs font-semibold"
+                        className="h-7 px-2.5 text-xs font-semibold"
                     >
                         Next <ChevronRight className="size-3.5 ml-0.5" />
                     </Button>

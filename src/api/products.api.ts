@@ -24,6 +24,8 @@ export const getProductsList = async (params: IGetProductsParams): Promise<IPagi
     if (params.search) query.set('search', params.search);
     if (params.productCategoryId) query.set('productCategoryId', params.productCategoryId);
     if (params.productTypeId) query.set('productTypeId', params.productTypeId);
+    if (params.isMustTry !== undefined) query.set('isMustTry', String(params.isMustTry));
+    if (params.isBestSeller !== undefined) query.set('isBestSeller', String(params.isBestSeller));
     if (params.status) query.set('status', params.status);
 
     const response = await api.get(`/products?${query.toString()}`);

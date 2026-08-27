@@ -128,6 +128,8 @@ export default function ProductEditPage() {
             name: '',
             photo: '',
             description: '',
+            isMustTry: false,
+            isBestSeller: false,
             productCategoryId: '',
             productTypeId: ''
         }
@@ -140,6 +142,8 @@ export default function ProductEditPage() {
                 name: productDetails.name,
                 photo: productDetails.photo || '',
                 description: productDetails.description || '',
+                isMustTry: !!productDetails.isMustTry,
+                isBestSeller: !!productDetails.isBestSeller,
                 productCategoryId: productDetails.productCategoryId || '',
                 productTypeId: productDetails.productTypeId || ''
             });
@@ -245,6 +249,8 @@ export default function ProductEditPage() {
             name: values.name,
             photo: values.photo || null,
             description: values.description || null,
+            isMustTry: values.isMustTry,
+            isBestSeller: values.isBestSeller,
             productCategoryId: values.productCategoryId || null,
             productTypeId: values.productTypeId || null
         });

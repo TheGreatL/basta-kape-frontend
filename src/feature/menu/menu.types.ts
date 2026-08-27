@@ -4,6 +4,8 @@ export interface IGetMenuCatalogParams extends IPaginationParams {
     search?: string;
     productCategoryId?: string;
     productTypeId?: string;
+    isMustTry?: boolean;
+    isBestSeller?: boolean;
 }
 
 export interface IMenuCategory {
@@ -23,6 +25,8 @@ export interface IMenuProduct {
     name: string;
     photo: string | null;
     description: string | null;
+    isMustTry: boolean;
+    isBestSeller: boolean;
     productCategoryId: string | null;
     productTypeId: string | null;
     category: IMenuCategory | null;

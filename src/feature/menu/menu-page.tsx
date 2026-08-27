@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { BookOpen, Coffee, SlidersHorizontal, Search } from 'lucide-react';
+import { BookOpen, Coffee, Search, X, Sparkles, Flame, Layers, RotateCcw, ChevronDown } from 'lucide-react';
 
 import { Route } from '#/routes/admin/menu.tsx';
 import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
@@ -11,22 +11,48 @@ import type { IMenuCategory, IMenuProduct, IMenuProductType } from './menu.types
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible.tsx';
+import { cn } from '#/lib/utils.ts';
 import MenuProductCard from './components/menu-product-card.tsx';
 import MenuProductDetailsDialog from './components/menu-product-details-dialog.tsx';
 
 export default function MenuPage() {
     const navigate = useNavigate({ from: '/admin/menu' });
-    const { page, pageSize, search, productCategoryId, productTypeId } = Route.useSearch();
+    const { page, pageSize, search, productCategoryId, productTypeId, isMustTry, isBestSeller } = Route.useSearch();
 
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const [selectedProduct, setSelectedProduct] = React.useState<IMenuProduct | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
+    const [isCategoriesOpen, setIsCategoriesOpen] = React.useState(true);
 
     const setSearchParams = (updates: Partial<ReturnType<typeof Route.useSearch>>) => {
         navigate({
             search: (prev) => ({ ...prev, ...updates })
         });
     };
+
+    // Query categories list
+    const { data: categoriesData } = useQuery({
+        queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
+        queryFn: getMenuCategories
+    });
+
+    // Query product types list
+    const { data: typesData } = useQuery({
+        queryKey: [QUERY_KEY.MENU.TYPES_LIST],
+        queryFn: getMenuTypes
+    });
+
+    const hasActiveFilters = !!localSearch || !!productCategoryId || !!productTypeId || isMustTry !== undefined || isBestSeller !== undefined;
+
+    const selectedCategoryName = React.useMemo(() => {
+        if (isBestSeller) return '⭐ Best Sellers';
+        if (isMustTry) return '🔥 Must Try';
+        if (productCategoryId) {
+            return categoriesData?.find((c) => c.id === productCategoryId)?.name || 'Filtered';
+        }
+        return 'All Menu';
+    }, [isBestSeller, isMustTry, productCategoryId, categoriesData]);
 
     // Debounce query search input
     React.useEffect(() => {
@@ -44,32 +70,22 @@ export default function MenuPage() {
         setLocalSearch(search || '');
     }, [search]);
 
-    // Query categories list
-    const { data: categoriesData } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
-        queryFn: getMenuCategories
-    });
-
-    // Query product types list
-    const { data: typesData } = useQuery({
-        queryKey: [QUERY_KEY.MENU.TYPES_LIST],
-        queryFn: getMenuTypes
-    });
-
     // Query menu items catalog
     const {
         data: menuData,
         isLoading: isMenuLoading,
         error
     } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATALOG, { page, pageSize, search, productCategoryId, productTypeId }],
+        queryKey: [QUERY_KEY.MENU.CATALOG, { page, pageSize, search, productCategoryId, productTypeId, isMustTry, isBestSeller }],
         queryFn: () =>
             getMenuCatalog({
                 page,
                 limit: pageSize,
                 search,
                 productCategoryId: productCategoryId || undefined,
-                productTypeId: productTypeId || undefined
+                productTypeId: productTypeId || undefined,
+                isMustTry: isMustTry !== undefined ? isMustTry : undefined,
+                isBestSeller: isBestSeller !== undefined ? isBestSeller : undefined
             })
     });
 
@@ -94,89 +110,231 @@ export default function MenuPage() {
             </div>
 
             {/* Filter controls toolbar */}
-            <div className="flex flex-col gap-4 bg-muted/10 p-4 border border-border/40 rounded-2xl">
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <Collapsible
+                open={isCategoriesOpen}
+                onOpenChange={setIsCategoriesOpen}
+                className="flex flex-col gap-3 bg-card p-4 border border-border/60 rounded-2xl shadow-xs"
+            >
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     {/* Search Field */}
-                    <div className="relative w-full sm:w-[260px]">
+                    <div className="relative w-full sm:w-[280px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                         <Input
                             placeholder="Search drink menu..."
                             value={localSearch}
                             onChange={(e) => setLocalSearch(e.target.value)}
-                            className="h-9 pl-9 bg-background"
+                            className="h-9 pl-9 pr-8 bg-muted/20 text-xs rounded-xl border-border/60 focus-visible:ring-primary/20"
                         />
+                        {localSearch && (
+                            <button
+                                type="button"
+                                onClick={() => setLocalSearch('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
                     </div>
 
-                    {/* Product Type pills */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-xs font-semibold text-muted-foreground mr-1.5 flex items-center gap-1">
-                            <SlidersHorizontal className="size-3" /> Filters:
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => setSearchParams({ productTypeId: '', page: 1 })}
-                            className={`text-xs font-semibold py-1 px-3 rounded-lg border transition-all cursor-pointer ${
-                                !productTypeId
-                                    ? 'bg-primary border-primary text-primary-foreground'
-                                    : 'bg-background hover:bg-muted/50 border-border text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            All Types
-                        </button>
-                        {typesData?.map((type: IMenuProductType) => {
-                            const isSelected = type.id === productTypeId;
-                            return (
+                    {/* Controls Group */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Types Filter */}
+                        {typesData && typesData.length > 0 && (
+                            <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl border border-border/40 overflow-x-auto no-scrollbar">
                                 <button
-                                    key={type.id}
                                     type="button"
-                                    onClick={() => setSearchParams({ productTypeId: type.id, page: 1 })}
-                                    className={`text-xs font-semibold py-1 px-3 rounded-lg border transition-all cursor-pointer ${
-                                        isSelected
-                                            ? 'bg-primary border-primary text-primary-foreground'
-                                            : 'bg-background hover:bg-muted/50 border-border text-muted-foreground hover:text-foreground'
-                                    }`}
+                                    onClick={() => setSearchParams({ productTypeId: '', page: 1 })}
+                                    className={cn(
+                                        'text-xs font-semibold py-1 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap',
+                                        !productTypeId
+                                            ? 'bg-background shadow-xs text-foreground font-bold border border-border/60'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    )}
                                 >
-                                    {type.name}
+                                    All Types
                                 </button>
-                            );
-                        })}
+                                {typesData.map((type: IMenuProductType) => (
+                                    <button
+                                        key={type.id}
+                                        type="button"
+                                        onClick={() => setSearchParams({ productTypeId: type.id === productTypeId ? '' : type.id, page: 1 })}
+                                        className={cn(
+                                            'text-xs font-semibold py-1 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap',
+                                            type.id === productTypeId
+                                                ? 'bg-background shadow-xs text-foreground font-bold border border-border/60'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                        )}
+                                    >
+                                        {type.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Categories Accordion Trigger Button */}
+                        <CollapsibleTrigger asChild>
+                            <button
+                                type="button"
+                                className={cn(
+                                    'text-xs font-semibold py-1.5 px-3 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-2xs',
+                                    isCategoriesOpen
+                                        ? 'bg-muted/50 border-border/60 text-foreground'
+                                        : productCategoryId || isBestSeller || isMustTry
+                                          ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
+                                          : 'bg-background hover:bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground'
+                                )}
+                            >
+                                <Layers className="size-3.5" />
+                                <span>
+                                    {!isCategoriesOpen && (productCategoryId || isBestSeller || isMustTry)
+                                        ? selectedCategoryName
+                                        : `Categories (${(categoriesData?.length || 0) + 3})`}
+                                </span>
+                                <ChevronDown className={cn('size-3.5 transition-transform duration-200', isCategoriesOpen && 'rotate-180')} />
+                            </button>
+                        </CollapsibleTrigger>
+
+                        {/* Reset Button */}
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setLocalSearch('');
+                                    setSearchParams({
+                                        search: '',
+                                        productCategoryId: '',
+                                        productTypeId: '',
+                                        isMustTry: undefined,
+                                        isBestSeller: undefined,
+                                        page: 1
+                                    });
+                                }}
+                                className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-muted/50 cursor-pointer shrink-0"
+                            >
+                                <RotateCcw className="size-3.5" />
+                                Reset
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {/* Category filtering tabs bar */}
-                <div className="border-t border-border/20 pt-3 flex items-center min-w-0">
-                    <div className="flex gap-1 overflow-x-auto no-scrollbar py-0.5 w-full">
+                {/* Accordion Content: Category & Collection Filter Cards */}
+                <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-2 border-t border-border/30 pt-3">
+                        {/* All Menu Card */}
                         <button
                             type="button"
-                            onClick={() => setSearchParams({ productCategoryId: '', page: 1 })}
-                            className={`text-xs font-semibold py-1.5 px-3 rounded-lg border shrink-0 transition-all cursor-pointer ${
-                                !productCategoryId
-                                    ? 'bg-primary/10 border-primary/20 text-primary'
-                                    : 'bg-transparent border-transparent hover:bg-muted/50 text-muted-foreground hover:text-foreground'
-                            }`}
+                            onClick={() => setSearchParams({ productCategoryId: '', isBestSeller: undefined, isMustTry: undefined, page: 1 })}
+                            className={cn(
+                                'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
+                                !productCategoryId && !isBestSeller && !isMustTry
+                                    ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold'
+                                    : 'bg-background hover:bg-muted/40 border-border/60 hover:border-primary/30 text-foreground'
+                            )}
                         >
-                            All Categories
+                            <div
+                                className={cn(
+                                    'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                                    !productCategoryId && !isBestSeller && !isMustTry
+                                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                                        : 'bg-primary/10 text-primary'
+                                )}
+                            >
+                                <Layers className="size-3.5" />
+                            </div>
+                            <span className="text-xs font-semibold">All Menu</span>
                         </button>
+
+                        {/* Best Sellers Card */}
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setSearchParams({
+                                    isBestSeller: isBestSeller ? undefined : true,
+                                    isMustTry: undefined,
+                                    productCategoryId: '',
+                                    page: 1
+                                })
+                            }
+                            className={cn(
+                                'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
+                                isBestSeller
+                                    ? 'bg-amber-500 text-white border-amber-500 shadow-xs font-bold'
+                                    : 'bg-background hover:bg-amber-500/5 border-border/60 hover:border-amber-500/40 text-foreground'
+                            )}
+                        >
+                            <div
+                                className={cn(
+                                    'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                                    isBestSeller ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                )}
+                            >
+                                <Sparkles className="size-3.5" />
+                            </div>
+                            <span className="text-xs font-semibold">⭐ Best Sellers</span>
+                        </button>
+
+                        {/* Must Try Card */}
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setSearchParams({ isMustTry: isMustTry ? undefined : true, isBestSeller: undefined, productCategoryId: '', page: 1 })
+                            }
+                            className={cn(
+                                'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
+                                isMustTry
+                                    ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold'
+                                    : 'bg-background hover:bg-orange-500/5 border-border/60 hover:border-orange-500/40 text-foreground'
+                            )}
+                        >
+                            <div
+                                className={cn(
+                                    'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                                    isMustTry ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                                )}
+                            >
+                                <Flame className="size-3.5" />
+                            </div>
+                            <span className="text-xs font-semibold">🔥 Must Try</span>
+                        </button>
+
+                        {/* Dynamic Category Cards */}
                         {categoriesData?.map((cat: IMenuCategory) => {
-                            const isSelected = cat.id === productCategoryId;
+                            const isSelected = cat.id === productCategoryId && !isBestSeller && !isMustTry;
                             return (
                                 <button
                                     key={cat.id}
                                     type="button"
-                                    onClick={() => setSearchParams({ productCategoryId: cat.id, page: 1 })}
-                                    className={`text-xs font-semibold py-1.5 px-3 rounded-lg border shrink-0 transition-all cursor-pointer ${
+                                    onClick={() =>
+                                        setSearchParams({
+                                            productCategoryId: cat.id === productCategoryId ? '' : cat.id,
+                                            isBestSeller: undefined,
+                                            isMustTry: undefined,
+                                            page: 1
+                                        })
+                                    }
+                                    className={cn(
+                                        'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
                                         isSelected
-                                            ? 'bg-primary/10 border-primary/20 text-primary'
-                                            : 'bg-transparent border-transparent hover:bg-muted/50 text-muted-foreground hover:text-foreground'
-                                    }`}
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold'
+                                            : 'bg-background hover:bg-muted/40 border-border/60 hover:border-primary/30 text-foreground'
+                                    )}
                                 >
-                                    {cat.name}
+                                    <div
+                                        className={cn(
+                                            'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                                            isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground'
+                                        )}
+                                    >
+                                        <Coffee className="size-3.5" />
+                                    </div>
+                                    <span className="text-xs font-semibold">{cat.name}</span>
                                 </button>
                             );
                         })}
                     </div>
-                </div>
-            </div>
+                </CollapsibleContent>
+            </Collapsible>
 
             {/* Menu Grid and Catalog Results */}
             <div className="flex-1 min-h-0 flex flex-col justify-between">

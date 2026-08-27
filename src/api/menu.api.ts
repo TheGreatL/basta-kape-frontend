@@ -10,6 +10,8 @@ export const getMenuCatalog = async (params: IGetMenuCatalogParams): Promise<IPa
     if (params.search) query.set('search', params.search);
     if (params.productCategoryId) query.set('productCategoryId', params.productCategoryId);
     if (params.productTypeId) query.set('productTypeId', params.productTypeId);
+    if (params.isMustTry !== undefined) query.set('isMustTry', String(params.isMustTry));
+    if (params.isBestSeller !== undefined) query.set('isBestSeller', String(params.isBestSeller));
 
     const response = await api.get(`/menu?${query.toString()}`);
     if (!response.ok) {

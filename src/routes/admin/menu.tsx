@@ -8,7 +8,9 @@ const searchParamsSchema = z.object({
     pageSize: z.number().catch(12),
     search: z.string().catch(''),
     productCategoryId: z.string().catch(''),
-    productTypeId: z.string().catch('')
+    productTypeId: z.string().catch(''),
+    isMustTry: z.boolean().optional(),
+    isBestSeller: z.boolean().optional()
 });
 
 export const Route = createFileRoute('/admin/menu')({
