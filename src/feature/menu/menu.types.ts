@@ -12,12 +12,18 @@ export interface IMenuCategory {
     id: string;
     name: string;
     description: string | null;
+    productTypeId?: string | null;
+    type?: {
+        id: string;
+        name: string;
+    } | null;
 }
 
 export interface IMenuProductType {
     id: string;
     name: string;
     description: string | null;
+    categories?: IMenuCategory[];
 }
 
 export interface IMenuProduct {

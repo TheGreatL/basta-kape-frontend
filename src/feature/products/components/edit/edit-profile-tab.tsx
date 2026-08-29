@@ -3,7 +3,7 @@ import { Save, FileText } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Switch } from '#/components/ui/switch.tsx';
@@ -16,9 +16,11 @@ interface EditProfileTabProps {
     categoriesData?: { data: ICategory[] };
     typesData?: { data: IProductType[] };
     isSaving: boolean;
+    currentCategory?: { id: string; name: string } | null;
 }
 
-export default function EditProfileTab({ form, onSubmit, categoriesData, typesData, isSaving }: EditProfileTabProps) {
+export default function EditProfileTab({ form, onSubmit, categoriesData, typesData, isSaving, currentCategory }: EditProfileTabProps) {
+    console.log(categoriesData);
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs">
             <Form {...form}>
@@ -86,60 +88,92 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                 )}
                             />
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="productCategoryId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Category</FormLabel>
-                                            <Select value={field.value || 'none'} onValueChange={(val) => field.onChange(val === 'none' ? '' : val)}>
-                                                <FormControl>
-                                                    <SelectTrigger className="h-9 bg-background/50 rounded-xl">
-                                                        <SelectValue placeholder="Select Category" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="none">No Category Assigned</SelectItem>
-                                                    {categoriesData?.data.map((cat: ICategory) => (
-                                                        <SelectItem key={cat.id} value={cat.id}>
-                                                            {cat.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            {/* Category */}
+                            <FormField
+                                control={form.control}
+                                name="productCategoryId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-semibold text-foreground/80">Category</FormLabel>
+                                        <Select
+                                            key={`${field.value || 'none'}-${categoriesData?.data.length || 0}`}
+                                            value={field.value || 'none'}
+                                            onValueChange={(val) => {
+                                                const nextVal = val === 'none' ? '' : val;
+                                                field.onChange(nextVal);
+                                                const cat = categoriesData?.data.find((c: ICategory) => c.id === nextVal);
+                                                form.setValue('productTypeId', cat?.productTypeId || cat?.type?.id || '');
+                                            }}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="h-9 bg-background/50 rounded-xl">
+                                                    <SelectValue placeholder="Select Category (e.g. Espresso, Waffles, Matcha)" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="none">No Category Assigned</SelectItem>
+                                                {(() => {
+                                                    const renderedIds = new Set<string>();
+                                                    const allCategories = categoriesData?.data || [];
 
-                                <FormField
-                                    control={form.control}
-                                    name="productTypeId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Product Type</FormLabel>
-                                            <Select value={field.value || 'none'} onValueChange={(val) => field.onChange(val === 'none' ? '' : val)}>
-                                                <FormControl>
-                                                    <SelectTrigger className="h-9 bg-background/50 rounded-xl">
-                                                        <SelectValue placeholder="Select Product Type" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="none">No Product Type Assigned</SelectItem>
-                                                    {typesData?.data.map((t: IProductType) => (
-                                                        <SelectItem key={t.id} value={t.id}>
-                                                            {t.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+                                                    const typeGroups = (typesData?.data || []).map((type: IProductType) => {
+                                                        const typeCategories = allCategories.filter((c: any) => {
+                                                            const catTypeId =
+                                                                c.productTypeId || c.type?.id || c.product_type_id || c.typeId || c.productType?.id;
+                                                            return catTypeId === type.id;
+                                                        });
+                                                        typeCategories.forEach((c: any) => renderedIds.add(c.id));
 
+                                                        if (typeCategories.length === 0) return null;
+                                                        return (
+                                                            <SelectGroup key={type.id}>
+                                                                <SelectLabel className="font-bold text-foreground/70 text-xs">
+                                                                    {type.name}
+                                                                </SelectLabel>
+                                                                {typeCategories.map((cat: any) => (
+                                                                    <SelectItem key={cat.id} value={cat.id}>
+                                                                        {cat.name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        );
+                                                    });
+
+                                                    const otherCategories = allCategories.filter((c: any) => !renderedIds.has(c.id));
+                                                    otherCategories.forEach((c: any) => renderedIds.add(c.id));
+
+                                                    return (
+                                                        <>
+                                                            {/* Fallback for current category if not already rendered */}
+                                                            {currentCategory && currentCategory.id && !renderedIds.has(currentCategory.id) && (
+                                                                <SelectItem key={currentCategory.id} value={currentCategory.id}>
+                                                                    {currentCategory.name}
+                                                                </SelectItem>
+                                                            )}
+                                                            {typeGroups}
+                                                            {otherCategories.length > 0 && (
+                                                                <SelectGroup>
+                                                                    <SelectLabel className="font-bold text-foreground/70 text-xs">
+                                                                        Other Categories
+                                                                    </SelectLabel>
+                                                                    {otherCategories.map((cat: any) => (
+                                                                        <SelectItem key={cat.id} value={cat.id}>
+                                                                            {cat.name}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectGroup>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* Description */}
                             <FormField
                                 control={form.control}
                                 name="description"

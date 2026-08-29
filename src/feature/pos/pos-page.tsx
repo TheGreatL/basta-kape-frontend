@@ -24,7 +24,7 @@ import { getDiscountsConfig, applyDiscountToOrder } from '#/api/discounts.api.ts
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { downloadReceiptPdf } from '#/utils/receipt.ts';
 
-import type { IMenuProduct, IMenuProductVariant } from '../menu/menu.types';
+import type { IMenuCategory, IMenuProduct, IMenuProductType, IMenuProductVariant } from '../menu/menu.types';
 import type { IModifierOption } from '../modifier/modifier.types';
 import type { IDiscount } from '../store-settings/discounts.types';
 import type { IOrder } from '../order/order.types';
@@ -118,15 +118,15 @@ export default function PosPage() {
     // -------------------------------------------------------------
 
     // Query categories list
-    const { data: categoriesData } = useQuery({
+    const { data: categoriesData = [] } = useQuery<IMenuCategory[]>({
         queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
-        queryFn: getMenuCategories
+        queryFn: () => getMenuCategories()
     });
 
     // Query product types list
-    const { data: typesData } = useQuery({
+    const { data: typesData = [] } = useQuery<IMenuProductType[]>({
         queryKey: [QUERY_KEY.MENU.TYPES_LIST],
-        queryFn: getMenuTypes
+        queryFn: () => getMenuTypes()
     });
 
     // Query menu items catalog

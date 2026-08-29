@@ -38,6 +38,12 @@ export default function CatalogToolbar({
 
     const hasActiveFilters = !!search || !!productCategoryId || !!productTypeId || isMustTry !== undefined || isBestSeller !== undefined;
 
+    const filteredCategories = React.useMemo(() => {
+        if (!categoriesData) return [];
+        if (!productTypeId) return categoriesData;
+        return categoriesData.filter((cat) => cat.productTypeId === productTypeId || cat.type?.id === productTypeId);
+    }, [categoriesData, productTypeId]);
+
     const selectedCategoryName = React.useMemo(() => {
         if (isBestSeller) return '⭐ Best Sellers';
         if (isMustTry) return '🔥 Must Try';
@@ -46,6 +52,17 @@ export default function CatalogToolbar({
         }
         return 'All Menu';
     }, [isBestSeller, isMustTry, productCategoryId, categoriesData]);
+
+    const handleProductTypeChange = (typeId: string) => {
+        const nextTypeId = typeId === productTypeId ? '' : typeId;
+        setProductTypeId(nextTypeId);
+        if (nextTypeId && productCategoryId) {
+            const currentCat = categoriesData?.find((c) => c.id === productCategoryId);
+            if (currentCat && (currentCat.productTypeId || currentCat.type?.id) !== nextTypeId) {
+                setProductCategoryId('');
+            }
+        }
+    };
 
     const handleResetAll = () => {
         setSearch('');
@@ -90,7 +107,7 @@ export default function CatalogToolbar({
                         <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl border border-border/40 overflow-x-auto no-scrollbar">
                             <button
                                 type="button"
-                                onClick={() => setProductTypeId('')}
+                                onClick={() => handleProductTypeChange('')}
                                 className={cn(
                                     'text-xs font-semibold py-1 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap',
                                     !productTypeId
@@ -104,7 +121,7 @@ export default function CatalogToolbar({
                                 <button
                                     key={type.id}
                                     type="button"
-                                    onClick={() => setProductTypeId(type.id === productTypeId ? '' : type.id)}
+                                    onClick={() => handleProductTypeChange(type.id)}
                                     className={cn(
                                         'text-xs font-semibold py-1 px-3 rounded-lg transition-all cursor-pointer whitespace-nowrap',
                                         type.id === productTypeId
@@ -135,7 +152,7 @@ export default function CatalogToolbar({
                             <span>
                                 {!isCategoriesOpen && (productCategoryId || isBestSeller || isMustTry)
                                     ? selectedCategoryName
-                                    : `Categories (${(categoriesData?.length || 0) + 3})`}
+                                    : `Categories (${filteredCategories.length + 3})`}
                             </span>
                             <ChevronDown className={cn('size-3.5 transition-transform duration-200', isCategoriesOpen && 'rotate-180')} />
                         </button>
@@ -239,7 +256,7 @@ export default function CatalogToolbar({
                     </button>
 
                     {/* Dynamic Category Cards */}
-                    {categoriesData?.map((cat) => {
+                    {filteredCategories.map((cat) => {
                         const isSelected = productCategoryId === cat.id && !isBestSeller && !isMustTry;
                         return (
                             <button

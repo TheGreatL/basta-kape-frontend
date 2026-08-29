@@ -3,6 +3,7 @@ import type { IPaginationParams, IUserAudit } from '#/types/base.types';
 export interface IGetProductSettingsListParams extends IPaginationParams {
     search?: string;
     status?: 'active' | 'archive';
+    productTypeId?: string;
 }
 
 // 1. Categories
@@ -10,6 +11,11 @@ export interface ICategory {
     id: string;
     name: string;
     description: string | null;
+    productTypeId?: string | null;
+    type?: {
+        id: string;
+        name: string;
+    } | null;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -20,11 +26,13 @@ export interface ICategory {
 export interface ICreateCategoryPayload {
     name: string;
     description?: string | null;
+    productTypeId?: string | null;
 }
 
 export interface IUpdateCategoryPayload {
     name?: string;
     description?: string | null;
+    productTypeId?: string | null;
 }
 
 export interface CategoryTabProps {
@@ -32,9 +40,11 @@ export interface CategoryTabProps {
     pageSize: number;
     search: string;
     status: 'active' | 'archive';
+    productTypeId?: string;
     onPaginationChange: (page: number, pageSize: number) => void;
     onSearchChange: (search: string) => void;
     onStatusChange: (status: 'active' | 'archive') => void;
+    onProductTypeChange?: (productTypeId: string) => void;
 }
 
 // 2. Product Types
@@ -42,6 +52,7 @@ export interface IProductType {
     id: string;
     name: string;
     description: string | null;
+    categories?: ICategory[];
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;

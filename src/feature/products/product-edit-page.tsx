@@ -122,8 +122,36 @@ export default function ProductEditPage() {
         enabled: !!id
     });
 
+    const categoryId =
+        productDetails?.productCategoryId ||
+        (productDetails as any)?.categoryId ||
+        (productDetails as any)?.product_category_id ||
+        (productDetails as any)?.category_id ||
+        productDetails?.category?.id ||
+        (productDetails as any)?.productCategory?.id ||
+        '';
+    const typeId =
+        productDetails?.productTypeId ||
+        (productDetails as any)?.typeId ||
+        (productDetails as any)?.product_type_id ||
+        (productDetails as any)?.type_id ||
+        productDetails?.type?.id ||
+        (productDetails as any)?.productType?.id ||
+        '';
+
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productSchema),
+        values: productDetails
+            ? {
+                  name: productDetails.name,
+                  photo: productDetails.photo || '',
+                  description: productDetails.description || '',
+                  isMustTry: !!productDetails.isMustTry,
+                  isBestSeller: !!productDetails.isBestSeller,
+                  productCategoryId: categoryId,
+                  productTypeId: typeId
+              }
+            : undefined,
         defaultValues: {
             name: '',
             photo: '',
@@ -135,19 +163,9 @@ export default function ProductEditPage() {
         }
     });
 
-    // Sync form values and grid variants on details load
+    // Sync grid variants on details load
     React.useEffect(() => {
         if (productDetails) {
-            form.reset({
-                name: productDetails.name,
-                photo: productDetails.photo || '',
-                description: productDetails.description || '',
-                isMustTry: !!productDetails.isMustTry,
-                isBestSeller: !!productDetails.isBestSeller,
-                productCategoryId: productDetails.productCategoryId || '',
-                productTypeId: productDetails.productTypeId || ''
-            });
-
             setGridVariants(
                 productDetails.variants.map((v: IProductVariant) => ({
                     id: v.id,
@@ -245,6 +263,9 @@ export default function ProductEditPage() {
     });
 
     const onSubmitProfile = (values: ProductFormValues) => {
+        const selectedCat = categoriesData?.data.find((c: any) => c.id === values.productCategoryId);
+        const inferredTypeId = selectedCat?.productTypeId || selectedCat?.type?.id || values.productTypeId || null;
+
         updateMutation.mutate({
             name: values.name,
             photo: values.photo || null,
@@ -252,7 +273,7 @@ export default function ProductEditPage() {
             isMustTry: values.isMustTry,
             isBestSeller: values.isBestSeller,
             productCategoryId: values.productCategoryId || null,
-            productTypeId: values.productTypeId || null
+            productTypeId: inferredTypeId
         });
     };
 
@@ -388,6 +409,13 @@ export default function ProductEditPage() {
                         categoriesData={categoriesData}
                         typesData={typesData}
                         isSaving={updateMutation.isPending}
+                        currentCategory={
+                            productDetails.category ||
+                            (productDetails as any).productCategory ||
+                            (productDetails.productCategoryId
+                                ? { id: productDetails.productCategoryId, name: (productDetails as any).categoryName || 'Assigned Category' }
+                                : null)
+                        }
                     />
                 </TabsContent>
 

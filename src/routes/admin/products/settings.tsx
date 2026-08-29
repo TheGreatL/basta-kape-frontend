@@ -11,6 +11,7 @@ const searchParamsSchema = z.object({
     cPageSize: z.number().catch(10),
     cSearch: z.string().catch(''),
     cStatus: z.enum(['active', 'archive']).catch('active'),
+    cProductTypeId: z.string().catch(''),
 
     // Product Types parameters
     tPage: z.number().catch(1),

@@ -68,6 +68,11 @@ export default function CategoryViewDialog({ open, onOpenChange, category }: Cat
                                 </div>
 
                                 <div className="space-y-2">
+                                    <Label className="font-semibold text-foreground/80 flex items-center gap-1.5">Parent Product Type</Label>
+                                    <Input disabled value={categoryDetails.type?.name || 'Unassigned (None)'} className="h-9 bg-background/50" />
+                                </div>
+
+                                <div className="space-y-2">
                                     <Label className="font-semibold text-foreground/80 flex items-center gap-1.5">
                                         <FileText className="size-3.5 text-muted-foreground" />
                                         Description

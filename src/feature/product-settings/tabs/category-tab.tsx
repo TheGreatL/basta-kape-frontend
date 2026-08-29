@@ -17,7 +17,7 @@ import {
     AlertDialogTrigger
 } from '#/components/ui/alert-dialog.tsx';
 
-import { getCategoriesList, restoreCategory } from '#/api/product-settings.ts';
+import { getCategoriesList, getProductTypesList, restoreCategory } from '#/api/product-settings.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { CategoryTabProps, ICategory } from '../product-settings-types';
@@ -33,7 +33,17 @@ import CategoryEditDialog from '../components/category-edit-dialog.tsx';
 import CategoryViewDialog from '../components/category-view-dialog.tsx';
 import CategoryDeleteDialog from '../components/category-delete-dialog.tsx';
 
-export default function CategoryTab({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: CategoryTabProps) {
+export default function CategoryTab({
+    page,
+    pageSize,
+    search,
+    status,
+    productTypeId,
+    onPaginationChange,
+    onSearchChange,
+    onStatusChange,
+    onProductTypeChange
+}: CategoryTabProps) {
     const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -60,6 +70,12 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
         onSearchChange(debouncedSearch);
     }, [debouncedSearch, onSearchChange]);
 
+    // Fetch Product Types for filter dropdown
+    const { data: typesData } = useQuery({
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST, { limit: 100, status: 'active' }],
+        queryFn: () => getProductTypesList({ limit: 100, status: 'active' })
+    });
+
     // Dialog States
     const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);
     const [selectedCategory, setSelectedCategory] = React.useState<ICategory | null>(null);
@@ -70,13 +86,14 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
 
     // Fetch Categories
     const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST, { page, pageSize, search, status }],
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST, { page, pageSize, search, status, productTypeId }],
         queryFn: () =>
             getCategoriesList({
                 page,
                 limit: pageSize,
                 search,
-                status
+                status,
+                productTypeId: productTypeId || undefined
             })
     });
 
@@ -111,6 +128,20 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
                         <span className="font-semibold text-foreground/90">{row.original.name}</span>
                     </div>
                 )
+            },
+            {
+                id: 'productType',
+                header: 'Product Type',
+                cell: ({ row }) => {
+                    const typeName = row.original.type?.name;
+                    return typeName ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                            {typeName}
+                        </span>
+                    ) : (
+                        <span className="text-xs text-muted-foreground italic">Unassigned</span>
+                    );
+                }
             },
             {
                 accessorKey: 'description',
@@ -253,10 +284,25 @@ export default function CategoryTab({ page, pageSize, search, status, onPaginati
                             placeholder="Search categories..."
                             value={localSearch}
                             onChange={(e) => setLocalSearch(e.target.value)}
-                            className="h-9 w-full sm:w-[250px] bg-background/50"
+                            className="h-9 w-full sm:w-[220px] bg-background/50"
                         />
+                        {typesData?.data && typesData.data.length > 0 && onProductTypeChange && (
+                            <Select value={productTypeId || 'all'} onValueChange={(val) => onProductTypeChange(val === 'all' ? '' : val)}>
+                                <SelectTrigger className="h-9 min-w-[150px] bg-background/50 hover:bg-background/80">
+                                    <SelectValue placeholder="All Product Types" />
+                                </SelectTrigger>
+                                <SelectContent position="popper" align="start">
+                                    <SelectItem value="all">All Product Types</SelectItem>
+                                    {typesData.data.map((type) => (
+                                        <SelectItem key={type.id} value={type.id}>
+                                            {type.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                         <Select value={status} onValueChange={(val) => onStatusChange(val as 'active' | 'archive')}>
-                            <SelectTrigger className="h-9 min-w-[130px] bg-background/50 hover:bg-background/80 capitalize">
+                            <SelectTrigger className="h-9 min-w-[120px] bg-background/50 hover:bg-background/80 capitalize">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent position="popper" align="start" className="capitalize">

@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { FolderPen } from 'lucide-react';
 
-import { updateCategory } from '#/api/product-settings.ts';
+import { getProductTypesList, updateCategory } from '#/api/product-settings.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { categorySchema } from '../product-settings.schema.ts';
@@ -16,6 +16,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 
 interface CategoryEditDialogProps {
@@ -27,6 +28,7 @@ interface CategoryEditDialogProps {
 interface EditCategoryFormValues {
     name: string;
     description?: string;
+    productTypeId?: string | null;
 }
 
 export default function CategoryEditDialog({ open, onOpenChange, category }: CategoryEditDialogProps) {
@@ -42,11 +44,18 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
         }
     }, [open]);
 
+    const { data: typesData } = useQuery({
+        queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST, { limit: 100, status: 'active' }],
+        queryFn: () => getProductTypesList({ limit: 100, status: 'active' }),
+        enabled: open
+    });
+
     const form = useForm<EditCategoryFormValues>({
         resolver: zodResolver(categorySchema),
         defaultValues: {
             name: '',
-            description: ''
+            description: '',
+            productTypeId: ''
         }
     });
 
@@ -54,7 +63,8 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
         if (open && category) {
             form.reset({
                 name: category.name,
-                description: category.description || ''
+                description: category.description || '',
+                productTypeId: category.productTypeId || category.type?.id || ''
             });
         }
     }, [open, category, form]);
@@ -63,6 +73,8 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
         mutationFn: ({ id, payload }: { id: string; payload: IUpdateCategoryPayload }) => updateCategory(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.MENU.TYPES_LIST] });
             if (category) {
                 queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORY_DETAILS, category.id] });
             }
@@ -84,7 +96,8 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
             id: category.id,
             payload: {
                 name: values.name,
-                description: values.description || null
+                description: values.description || null,
+                productTypeId: values.productTypeId || null
             }
         });
     };
@@ -99,7 +112,7 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
                         <FolderPen className="size-5 text-primary" />
                         Modify Category details
                     </DialogTitle>
-                    <DialogDescription className="text-xs">Update the product category name and description details.</DialogDescription>
+                    <DialogDescription className="text-xs">Update the product category name, parent type, and description details.</DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -121,6 +134,35 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
                                                 <FormControl>
                                                     <Input placeholder="e.g. Espresso Drinks" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="productTypeId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80">Parent Product Type</FormLabel>
+                                                <Select
+                                                    value={field.value || 'none'}
+                                                    onValueChange={(val) => field.onChange(val === 'none' ? null : val)}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50">
+                                                            <SelectValue placeholder="Select a Product Type (e.g. Beverage, Food)" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">None (Unassigned)</SelectItem>
+                                                        {typesData?.data.map((type) => (
+                                                            <SelectItem key={type.id} value={type.id}>
+                                                                {type.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

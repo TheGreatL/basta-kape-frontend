@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Coffee, ChevronLeft, ChevronRight, Sparkles, Flame, Layers, RotateCcw } from 'lucide-react';
+import { Search, Coffee, ChevronLeft, ChevronRight, Sparkles, Flame, Layers, RotateCcw, Utensils } from 'lucide-react';
 
-import { getMenuCatalog, getMenuCategories } from '#/api/menu.api.ts';
+import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
 import type { IMenuCategory, IMenuProduct } from '#/feature/menu/menu.types.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
@@ -14,6 +14,7 @@ import ProductCard from './components/product-card.tsx';
 export default function ProductsPage() {
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 300);
+    const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [badgeFilter, setBadgeFilter] = useState<'all' | 'best_seller' | 'must_try'>('all');
     const [page, setPage] = useState(1);
@@ -24,20 +25,39 @@ export default function ProductsPage() {
         setPage(1);
     }, [debouncedSearch]);
 
-    // Fetch categories
+    // Fetch product types with nested categories
+    const { data: types = [], isLoading: isTypesLoading } = useQuery({
+        queryKey: [QUERY_KEY.MENU.TYPES_LIST],
+        queryFn: getMenuTypes
+    });
+
+    // Fetch all categories
     const { data: categories = [], isLoading: isCategoriesLoading } = useQuery({
         queryKey: [QUERY_KEY.MENU.CATEGORIES_LIST],
-        queryFn: getMenuCategories
+        queryFn: () => getMenuCategories()
     });
+
+    // Determine visible categories based on selected Type
+    const visibleCategories = useMemo<IMenuCategory[]>(() => {
+        if (!selectedTypeId) {
+            return categories;
+        }
+        const activeType = types.find((t) => t.id === selectedTypeId);
+        if (activeType?.categories && activeType.categories.length > 0) {
+            return activeType.categories;
+        }
+        return categories.filter((c) => c.productTypeId === selectedTypeId || c.type?.id === selectedTypeId);
+    }, [selectedTypeId, types, categories]);
 
     // Fetch products list
     const { data: menuData, isLoading: isProductsLoading } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATALOG, page, debouncedSearch, selectedCategory, badgeFilter],
+        queryKey: [QUERY_KEY.MENU.CATALOG, page, debouncedSearch, selectedTypeId, selectedCategory, badgeFilter],
         queryFn: () =>
             getMenuCatalog({
                 page,
                 limit,
                 search: debouncedSearch || undefined,
+                productTypeId: selectedTypeId || undefined,
                 productCategoryId: selectedCategory || undefined,
                 isBestSeller: badgeFilter === 'best_seller' ? true : undefined,
                 isMustTry: badgeFilter === 'must_try' ? true : undefined
@@ -46,6 +66,12 @@ export default function ProductsPage() {
 
     const products = menuData?.data || [];
     const meta = menuData?.meta;
+
+    const handleTypeSelect = (typeId: string | null) => {
+        setSelectedTypeId(typeId);
+        setSelectedCategory(null);
+        setPage(1);
+    };
 
     const handleCategorySelect = (categoryId: string | null) => {
         setSelectedCategory(categoryId);
@@ -57,14 +83,17 @@ export default function ProductsPage() {
         setPage(1);
     };
 
-    const hasActiveFilters = selectedCategory !== null || badgeFilter !== 'all' || !!search;
+    const hasActiveFilters = selectedTypeId !== null || selectedCategory !== null || badgeFilter !== 'all' || !!search;
 
     const handleClearFilters = () => {
         setSearch('');
+        setSelectedTypeId(null);
         setSelectedCategory(null);
         setBadgeFilter('all');
         setPage(1);
     };
+
+    const activeType = types.find((t) => t.id === selectedTypeId);
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl min-h-screen">
@@ -89,15 +118,96 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {/* Category & Collection Filter Cards */}
-            <div className="mb-10">
-                <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase text-muted-foreground">Select Category or Highlight</span>
+            {/* Top-Level Two-Tier Navigation Filter */}
+            <div className="space-y-4 mb-10">
+                {/* Tier 1: Department & Highlight Pills */}
+                <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-border/40 pb-3">
+                    <div className="flex items-center gap-2">
+                        {/* All Items Button */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                handleTypeSelect(null);
+                                setBadgeFilter('all');
+                            }}
+                            className={cn(
+                                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
+                                selectedTypeId === null && badgeFilter === 'all'
+                                    ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                                    : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            <Layers className="size-3.5" />
+                            <span>All Items</span>
+                        </button>
+
+                        {/* Product Type Tabs (Beverage, Food, etc.) */}
+                        {types.map((type) => {
+                            const isBeverage = type.name.toLowerCase().includes('bev') || type.name.toLowerCase().includes('drink');
+                            const isSelected = selectedTypeId === type.id && badgeFilter === 'all';
+                            return (
+                                <button
+                                    key={type.id}
+                                    type="button"
+                                    onClick={() => {
+                                        handleTypeSelect(type.id);
+                                        setBadgeFilter('all');
+                                    }}
+                                    className={cn(
+                                        'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
+                                        isSelected
+                                            ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                                            : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    {isBeverage ? <Coffee className="size-3.5" /> : <Utensils className="size-3.5" />}
+                                    <span>{type.name}</span>
+                                </button>
+                            );
+                        })}
+
+                        {/* Best Sellers Pill */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                handleBadgeSelect(badgeFilter === 'best_seller' ? 'all' : 'best_seller');
+                                setSelectedCategory(null);
+                            }}
+                            className={cn(
+                                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
+                                badgeFilter === 'best_seller'
+                                    ? 'bg-amber-500 text-white font-bold shadow-xs'
+                                    : 'bg-muted/40 hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400'
+                            )}
+                        >
+                            <Sparkles className="size-3.5" />
+                            <span>⭐ Best Sellers</span>
+                        </button>
+
+                        {/* Must Try Pill */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                handleBadgeSelect(badgeFilter === 'must_try' ? 'all' : 'must_try');
+                                setSelectedCategory(null);
+                            }}
+                            className={cn(
+                                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
+                                badgeFilter === 'must_try'
+                                    ? 'bg-orange-500 text-white font-bold shadow-xs'
+                                    : 'bg-muted/40 hover:bg-orange-500/10 text-muted-foreground hover:text-orange-600 dark:hover:text-orange-400'
+                            )}
+                        >
+                            <Flame className="size-3.5" />
+                            <span>🔥 Must Try</span>
+                        </button>
+                    </div>
+
                     {hasActiveFilters && (
                         <button
                             type="button"
                             onClick={handleClearFilters}
-                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer shrink-0 ml-auto"
                         >
                             <RotateCcw className="size-3" />
                             Reset
@@ -105,142 +215,96 @@ export default function ProductsPage() {
                     )}
                 </div>
 
-                {/* Cards Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {/* All Items Card */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSelectedCategory(null);
-                            setBadgeFilter('all');
-                            setPage(1);
-                        }}
-                        className={cn(
-                            'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
-                            selectedCategory === null && badgeFilter === 'all'
-                                ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                                : 'bg-card hover:bg-muted/40 border-border/60 hover:border-primary/30'
+                {/* Tier 2: Subcategory Cards Grid */}
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold uppercase text-muted-foreground">
+                            {activeType ? `${activeType.name} Categories` : 'All Categories'}
+                        </span>
+                        {selectedCategory && (
+                            <button
+                                type="button"
+                                onClick={() => handleCategorySelect(null)}
+                                className="text-xs font-medium text-muted-foreground hover:text-foreground underline cursor-pointer"
+                            >
+                                View All {activeType ? activeType.name : 'Items'}
+                            </button>
                         )}
-                    >
-                        <div
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {/* All in Active Type Card */}
+                        <button
+                            type="button"
+                            onClick={() => handleCategorySelect(null)}
                             className={cn(
-                                'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
+                                'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
                                 selectedCategory === null && badgeFilter === 'all'
-                                    ? 'bg-primary-foreground/20 text-primary-foreground'
-                                    : 'bg-primary/10 text-primary'
+                                    ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                                    : 'bg-card hover:bg-muted/40 border-border/60 hover:border-primary/30'
                             )}
                         >
-                            <Layers className="size-4.5" />
-                        </div>
-                        <span className="text-xs font-bold leading-tight">All Menu</span>
-                        <span
-                            className={cn(
-                                'text-xs mt-0.5 font-medium',
-                                selectedCategory === null && badgeFilter === 'all' ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                            )}
-                        >
-                            Full Catalog
-                        </span>
-                    </button>
+                            <div
+                                className={cn(
+                                    'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
+                                    selectedCategory === null && badgeFilter === 'all'
+                                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                                        : 'bg-primary/10 text-primary'
+                                )}
+                            >
+                                <Layers className="size-4.5" />
+                            </div>
+                            <span className="text-xs font-bold leading-tight">{activeType ? `All ${activeType.name}` : 'All Categories'}</span>
+                            <span
+                                className={cn(
+                                    'text-xs mt-0.5 font-medium',
+                                    selectedCategory === null && badgeFilter === 'all' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                                )}
+                            >
+                                {visibleCategories.length} Categories
+                            </span>
+                        </button>
 
-                    {/* Best Sellers Card */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            handleBadgeSelect(badgeFilter === 'best_seller' ? 'all' : 'best_seller');
-                            setSelectedCategory(null);
-                        }}
-                        className={cn(
-                            'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
-                            badgeFilter === 'best_seller'
-                                ? 'bg-amber-500 text-white border-amber-500 shadow-md ring-2 ring-amber-500/20'
-                                : 'bg-card hover:bg-amber-500/5 border-border/60 hover:border-amber-500/40'
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
-                                badgeFilter === 'best_seller' ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                            )}
-                        >
-                            <Sparkles className="size-4.5" />
-                        </div>
-                        <span className="text-xs font-bold leading-tight">⭐ Best Sellers</span>
-                        <span className={cn('text-xs mt-0.5 font-medium', badgeFilter === 'best_seller' ? 'text-white/90' : 'text-muted-foreground')}>
-                            Top Favorites
-                        </span>
-                    </button>
-
-                    {/* Must Try Card */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            handleBadgeSelect(badgeFilter === 'must_try' ? 'all' : 'must_try');
-                            setSelectedCategory(null);
-                        }}
-                        className={cn(
-                            'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
-                            badgeFilter === 'must_try'
-                                ? 'bg-orange-500 text-white border-orange-500 shadow-md ring-2 ring-orange-500/20'
-                                : 'bg-card hover:bg-orange-500/5 border-border/60 hover:border-orange-500/40'
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
-                                badgeFilter === 'must_try' ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                            )}
-                        >
-                            <Flame className="size-4.5" />
-                        </div>
-                        <span className="text-xs font-bold leading-tight">🔥 Must Try</span>
-                        <span className={cn('text-xs mt-0.5 font-medium', badgeFilter === 'must_try' ? 'text-white/90' : 'text-muted-foreground')}>
-                            Special Picks
-                        </span>
-                    </button>
-
-                    {/* Dynamic Category Cards */}
-                    {isCategoriesLoading
-                        ? Array.from({ length: 3 }).map((_, idx) => (
-                              <div key={idx} className="h-24 rounded-2xl border border-border/40 bg-muted/30 animate-pulse p-3.5" />
-                          ))
-                        : categories.map((category: IMenuCategory) => {
-                              const isSelected = selectedCategory === category.id && badgeFilter === 'all';
-                              return (
-                                  <button
-                                      key={category.id}
-                                      type="button"
-                                      onClick={() => {
-                                          handleCategorySelect(isSelected ? null : category.id);
-                                          setBadgeFilter('all');
-                                      }}
-                                      className={cn(
-                                          'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
-                                          isSelected
-                                              ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                                              : 'bg-card hover:bg-muted/40 border-border/60 hover:border-primary/30'
-                                      )}
-                                  >
-                                      <div
+                        {/* Dynamic Subcategory Cards */}
+                        {isCategoriesLoading || isTypesLoading
+                            ? Array.from({ length: 5 }).map((_, idx) => (
+                                  <div key={idx} className="h-24 rounded-2xl border border-border/40 bg-muted/30 animate-pulse p-3.5" />
+                              ))
+                            : visibleCategories.map((category: IMenuCategory) => {
+                                  const isSelected = selectedCategory === category.id && badgeFilter === 'all';
+                                  return (
+                                      <button
+                                          key={category.id}
+                                          type="button"
+                                          onClick={() => handleCategorySelect(isSelected ? null : category.id)}
                                           className={cn(
-                                              'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
-                                              isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground'
+                                              'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
+                                              isSelected
+                                                  ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                                                  : 'bg-card hover:bg-muted/40 border-border/60 hover:border-primary/30'
                                           )}
                                       >
-                                          <Coffee className="size-4.5" />
-                                      </div>
-                                      <span className="text-xs font-bold leading-tight line-clamp-1">{category.name}</span>
-                                      <span
-                                          className={cn(
-                                              'text-xs mt-0.5 font-medium line-clamp-1',
-                                              isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                                          )}
-                                      >
-                                          {category.description || 'Category'}
-                                      </span>
-                                  </button>
-                              );
-                          })}
+                                          <div
+                                              className={cn(
+                                                  'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
+                                                  isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground'
+                                              )}
+                                          >
+                                              <Coffee className="size-4.5" />
+                                          </div>
+                                          <span className="text-xs font-bold leading-tight line-clamp-1">{category.name}</span>
+                                          <span
+                                              className={cn(
+                                                  'text-xs mt-0.5 font-medium line-clamp-1',
+                                                  isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                                              )}
+                                          >
+                                              {category.description || 'Category'}
+                                          </span>
+                                      </button>
+                                  );
+                              })}
+                    </div>
                 </div>
             </div>
 

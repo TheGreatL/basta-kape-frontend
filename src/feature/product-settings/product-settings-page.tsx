@@ -9,7 +9,8 @@ import AttributeTab from './tabs/attribute-tab.tsx';
 
 export default function ProductSettingsPage() {
     const navigate = useNavigate({ from: '/admin/products/settings' });
-    const { tab, cPage, cPageSize, cSearch, cStatus, tPage, tPageSize, tSearch, tStatus, aPage, aPageSize, aSearch, aStatus } = Route.useSearch();
+    const { tab, cPage, cPageSize, cSearch, cStatus, cProductTypeId, tPage, tPageSize, tSearch, tStatus, aPage, aPageSize, aSearch, aStatus } =
+        Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -56,9 +57,11 @@ export default function ProductSettingsPage() {
                         pageSize={cPageSize}
                         search={cSearch}
                         status={cStatus}
+                        productTypeId={cProductTypeId}
                         onPaginationChange={(page, pageSize) => setSearch({ cPage: page, cPageSize: pageSize })}
                         onSearchChange={(search) => setSearch({ cSearch: search, cPage: 1 })}
                         onStatusChange={(status) => setSearch({ cStatus: status, cPage: 1 })}
+                        onProductTypeChange={(id) => setSearch({ cProductTypeId: id, cPage: 1 })}
                     />
                 </TabsContent>
 

@@ -30,8 +30,11 @@ export const getMenuProductById = async (id: string): Promise<IMenuProduct> => {
     return response.json();
 };
 
-export const getMenuCategories = async (): Promise<IMenuCategory[]> => {
-    const response = await api.get('/menu/categories');
+export const getMenuCategories = async (params?: { productTypeId?: string }): Promise<IMenuCategory[]> => {
+    const query = new URLSearchParams();
+    if (params?.productTypeId) query.set('productTypeId', params.productTypeId);
+    const url = query.toString() ? `/menu/categories?${query.toString()}` : '/menu/categories';
+    const response = await api.get(url);
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to fetch menu categories', response.status, errorData);

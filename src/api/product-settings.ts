@@ -26,6 +26,7 @@ export const getCategoriesList = async (params: IGetProductSettingsListParams): 
     if (params.limit !== undefined) query.set('limit', String(params.limit));
     if (params.search) query.set('search', params.search);
     if (params.status) query.set('status', params.status);
+    if (params.productTypeId) query.set('productTypeId', params.productTypeId);
 
     const response = await api.get(`/product-settings/categories?${query.toString()}`);
     if (!response.ok) {
