@@ -142,7 +142,6 @@ export default function ProductsPage() {
             </span>
         );
     };
-    console.log(productsData);
     // Table Columns definition
     const columns = React.useMemo<ColumnDef<IProduct>[]>(
         () => [

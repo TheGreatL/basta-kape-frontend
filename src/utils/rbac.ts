@@ -24,20 +24,11 @@ export function requirePermission(auth: ReturnType<typeof useAuth> | null, modul
     const currentUser = auth?.user;
     const currentPermissions = getUserPermissions(currentUser);
 
-    console.log('[DEBUG] requirePermission checked.', {
-        user: currentUser ? currentUser.username : null,
-        permissionsCount: currentPermissions.length,
-        module,
-        action
-    });
-
     if (!currentUser) {
-        console.log('[DEBUG] requirePermission redirecting to /login because currentUser is null!');
         throw redirect({ to: '/login' });
     }
 
     if (!hasPermission(currentPermissions, module, action)) {
-        console.log('[DEBUG] requirePermission redirecting to /not-found because permission check failed!');
         throw redirect({ to: '/not-found' });
     }
 }

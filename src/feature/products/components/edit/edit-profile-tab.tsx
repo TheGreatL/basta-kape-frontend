@@ -20,7 +20,6 @@ interface EditProfileTabProps {
 }
 
 export default function EditProfileTab({ form, onSubmit, categoriesData, typesData, isSaving, currentCategory }: EditProfileTabProps) {
-    console.log(categoriesData);
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs">
             <Form {...form}>

@@ -61,7 +61,6 @@ export default function ModuleTable({ page, pageSize, search, onPaginationChange
         ],
         []
     );
-    console.log(data);
     return (
         <div className="space-y-4">
             <div>
