@@ -44,10 +44,10 @@ import { Route as AdminProductsCreateRouteImport } from './routes/admin/products
 import { Route as AdminOrdersCreateRouteImport } from './routes/admin/orders/create'
 import { Route as AdminInventoryWasteLogRouteImport } from './routes/admin/inventory/waste-log'
 import { Route as AdminInventoryUnitsRouteImport } from './routes/admin/inventory/units'
+import { Route as AdminInventoryTransactionsRouteImport } from './routes/admin/inventory/transactions'
 import { Route as AdminInventoryStockLevelsRouteImport } from './routes/admin/inventory/stock-levels'
 import { Route as AdminInventoryProjectionsRouteImport } from './routes/admin/inventory/projections'
 import { Route as AdminInventoryIngredientsRouteImport } from './routes/admin/inventory/ingredients'
-import { Route as AdminInventoryDeliveriesRouteImport } from './routes/admin/inventory/deliveries'
 import { Route as AdminCustomersCreateRouteImport } from './routes/admin/customers/create'
 import { Route as AdminrbacPermissionsRouteImport } from './routes/admin/(rbac)/permissions'
 import { Route as AdminrbacModulesRouteImport } from './routes/admin/(rbac)/modules'
@@ -242,6 +242,12 @@ const AdminInventoryUnitsRoute = AdminInventoryUnitsRouteImport.update({
   path: '/inventory/units',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminInventoryTransactionsRoute =
+  AdminInventoryTransactionsRouteImport.update({
+    id: '/inventory/transactions',
+    path: '/inventory/transactions',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminInventoryStockLevelsRoute =
   AdminInventoryStockLevelsRouteImport.update({
     id: '/inventory/stock-levels',
@@ -258,12 +264,6 @@ const AdminInventoryIngredientsRoute =
   AdminInventoryIngredientsRouteImport.update({
     id: '/inventory/ingredients',
     path: '/inventory/ingredients',
-    getParentRoute: () => AdminRouteRoute,
-  } as any)
-const AdminInventoryDeliveriesRoute =
-  AdminInventoryDeliveriesRouteImport.update({
-    id: '/inventory/deliveries',
-    path: '/inventory/deliveries',
     getParentRoute: () => AdminRouteRoute,
   } as any)
 const AdminCustomersCreateRoute = AdminCustomersCreateRouteImport.update({
@@ -404,10 +404,10 @@ export interface FileRoutesByFullPath {
   '/admin/modules': typeof AdminrbacModulesRoute
   '/admin/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
-  '/admin/inventory/deliveries': typeof AdminInventoryDeliveriesRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
+  '/admin/inventory/transactions': typeof AdminInventoryTransactionsRoute
   '/admin/inventory/units': typeof AdminInventoryUnitsRoute
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
@@ -462,10 +462,10 @@ export interface FileRoutesByTo {
   '/admin/modules': typeof AdminrbacModulesRoute
   '/admin/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
-  '/admin/inventory/deliveries': typeof AdminInventoryDeliveriesRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
+  '/admin/inventory/transactions': typeof AdminInventoryTransactionsRoute
   '/admin/inventory/units': typeof AdminInventoryUnitsRoute
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
@@ -525,10 +525,10 @@ export interface FileRoutesById {
   '/admin/(rbac)/modules': typeof AdminrbacModulesRoute
   '/admin/(rbac)/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
-  '/admin/inventory/deliveries': typeof AdminInventoryDeliveriesRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
+  '/admin/inventory/transactions': typeof AdminInventoryTransactionsRoute
   '/admin/inventory/units': typeof AdminInventoryUnitsRoute
   '/admin/inventory/waste-log': typeof AdminInventoryWasteLogRoute
   '/admin/orders/create': typeof AdminOrdersCreateRoute
@@ -586,10 +586,10 @@ export interface FileRouteTypes {
     | '/admin/modules'
     | '/admin/permissions'
     | '/admin/customers/create'
-    | '/admin/inventory/deliveries'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
+    | '/admin/inventory/transactions'
     | '/admin/inventory/units'
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
@@ -644,10 +644,10 @@ export interface FileRouteTypes {
     | '/admin/modules'
     | '/admin/permissions'
     | '/admin/customers/create'
-    | '/admin/inventory/deliveries'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
+    | '/admin/inventory/transactions'
     | '/admin/inventory/units'
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
@@ -706,10 +706,10 @@ export interface FileRouteTypes {
     | '/admin/(rbac)/modules'
     | '/admin/(rbac)/permissions'
     | '/admin/customers/create'
-    | '/admin/inventory/deliveries'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
+    | '/admin/inventory/transactions'
     | '/admin/inventory/units'
     | '/admin/inventory/waste-log'
     | '/admin/orders/create'
@@ -992,6 +992,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryUnitsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/inventory/transactions': {
+      id: '/admin/inventory/transactions'
+      path: '/inventory/transactions'
+      fullPath: '/admin/inventory/transactions'
+      preLoaderRoute: typeof AdminInventoryTransactionsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/inventory/stock-levels': {
       id: '/admin/inventory/stock-levels'
       path: '/inventory/stock-levels'
@@ -1011,13 +1018,6 @@ declare module '@tanstack/react-router' {
       path: '/inventory/ingredients'
       fullPath: '/admin/inventory/ingredients'
       preLoaderRoute: typeof AdminInventoryIngredientsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/inventory/deliveries': {
-      id: '/admin/inventory/deliveries'
-      path: '/inventory/deliveries'
-      fullPath: '/admin/inventory/deliveries'
-      preLoaderRoute: typeof AdminInventoryDeliveriesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/customers/create': {
@@ -1205,10 +1205,10 @@ interface AdminRouteRouteChildren {
   AdminrbacModulesRoute: typeof AdminrbacModulesRoute
   AdminrbacPermissionsRoute: typeof AdminrbacPermissionsRoute
   AdminCustomersCreateRoute: typeof AdminCustomersCreateRoute
-  AdminInventoryDeliveriesRoute: typeof AdminInventoryDeliveriesRoute
   AdminInventoryIngredientsRoute: typeof AdminInventoryIngredientsRoute
   AdminInventoryProjectionsRoute: typeof AdminInventoryProjectionsRoute
   AdminInventoryStockLevelsRoute: typeof AdminInventoryStockLevelsRoute
+  AdminInventoryTransactionsRoute: typeof AdminInventoryTransactionsRoute
   AdminInventoryUnitsRoute: typeof AdminInventoryUnitsRoute
   AdminInventoryWasteLogRoute: typeof AdminInventoryWasteLogRoute
   AdminOrdersCreateRoute: typeof AdminOrdersCreateRoute
@@ -1251,10 +1251,10 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminrbacModulesRoute: AdminrbacModulesRoute,
   AdminrbacPermissionsRoute: AdminrbacPermissionsRoute,
   AdminCustomersCreateRoute: AdminCustomersCreateRoute,
-  AdminInventoryDeliveriesRoute: AdminInventoryDeliveriesRoute,
   AdminInventoryIngredientsRoute: AdminInventoryIngredientsRoute,
   AdminInventoryProjectionsRoute: AdminInventoryProjectionsRoute,
   AdminInventoryStockLevelsRoute: AdminInventoryStockLevelsRoute,
+  AdminInventoryTransactionsRoute: AdminInventoryTransactionsRoute,
   AdminInventoryUnitsRoute: AdminInventoryUnitsRoute,
   AdminInventoryWasteLogRoute: AdminInventoryWasteLogRoute,
   AdminOrdersCreateRoute: AdminOrdersCreateRoute,

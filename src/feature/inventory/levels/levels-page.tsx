@@ -137,8 +137,8 @@ export default function StockLevelsPage() {
                     <div className="flex items-center gap-1">
                         <RequirePermission module="Inventory Management" action="read">
                             <Link
-                                to="/admin/inventory/deliveries"
-                                title="View Delivery Intake Logs"
+                                to="/admin/inventory/transactions"
+                                title="View Inventory Transactions"
                                 className={buttonVariants({
                                     variant: 'ghost',
                                     size: 'icon',

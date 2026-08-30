@@ -2,16 +2,16 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Truck, Plus, Calendar as CalendarIcon, Pencil, Eye, RotateCcw, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeftRight, Plus, Calendar as CalendarIcon, Pencil, Eye, RotateCcw, X, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
-import { Route } from '#/routes/admin/inventory/deliveries.tsx';
+import { Route } from '#/routes/admin/inventory/transactions.tsx';
 import { getDeliveries } from '#/api/inventory.api.ts';
 import { getSuppliersList } from '#/api/suppliers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { IDelivery, IIngredient } from '../inventory.types';
+import type { IDelivery, IIngredient } from '../inventory.types.ts';
 import type { ISupplierListItem } from '#/feature/suppliers/suppliers.types';
 
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -27,8 +27,8 @@ import DeliveryViewDialog from '../components/inventory-delivery-view-dialog.tsx
 import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 import type { TStockActionMode } from '../components/unified-stock-dialog.tsx';
 
-export default function DeliveriesPage() {
-    const navigate = useNavigate({ from: '/admin/inventory/deliveries' });
+export default function InventoryTransactionPage() {
+    const navigate = useNavigate({ from: '/admin/inventory/transactions' });
     const { page, pageSize, search, supplierId, startDate, endDate } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
@@ -257,18 +257,22 @@ export default function DeliveriesPage() {
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <Truck className="h-5 w-5 text-primary" />
+                        <ArrowLeftRight className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Deliveries</h1>
-                        <p className="text-xs text-muted-foreground">All logged supplier replenishment receipts and material intake records.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Inventory Transactions</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Complete audit ledger of raw material replenishments, supplier deliveries, and stock movements.
+                        </p>
                     </div>
                 </div>
             </div>
 
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Log and track raw ingredient deliveries from suppliers.</p>
+                    <p className="text-xs text-muted-foreground font-medium">
+                        Log and track raw ingredient deliveries, replenishments, and material intake.
+                    </p>
                     <RequirePermission module="Inventory Management" action="create">
                         <Button
                             onClick={() => {
@@ -279,7 +283,7 @@ export default function DeliveriesPage() {
                             className="h-9 gap-1.5 shadow-sm"
                             size="sm"
                         >
-                            <Plus className="size-4" /> Log Delivery
+                            <Plus className="size-4" /> Record Transaction
                         </Button>
                     </RequirePermission>
                 </div>

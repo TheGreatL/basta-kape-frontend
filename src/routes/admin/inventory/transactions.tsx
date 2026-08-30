@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import DeliveriesPage from '#/feature/inventory/deliveries/deliveries-page.tsx';
+import InventoryTransactionPage from '#/feature/inventory/transaction/inventory-transaction-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
@@ -12,12 +12,12 @@ const searchParamsSchema = z.object({
     endDate: z.string().optional()
 });
 
-export const Route = createFileRoute('/admin/inventory/deliveries')({
+export const Route = createFileRoute('/admin/inventory/transactions')({
     validateSearch: (search) => searchParamsSchema.parse(search),
-    component: DeliveriesPage,
+    component: InventoryTransactionPage,
     beforeLoad: ({ context }) => {
         requirePermission(context.auth, 'Inventory Management', 'read');
     }
 });
 
-export type TDeliveriesSearchSchema = z.infer<typeof searchParamsSchema>;
+export type TTransactionsSearchSchema = z.infer<typeof searchParamsSchema>;
