@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Truck, Calendar, User, PackageCheck, AlertTriangle, ShieldCheck, DollarSign, Tag } from 'lucide-react';
+import { Truck, Calendar, User, PackageCheck, AlertTriangle, ShieldCheck, DollarSign, Tag, Sliders } from 'lucide-react';
 
 import type { IDelivery } from '../inventory.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -11,9 +11,10 @@ interface DeliveryViewDialogProps {
     onOpenChange: (open: boolean) => void;
     delivery: IDelivery | null;
     onEdit?: () => void;
+    onAdjustStock?: () => void;
 }
 
-export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdit }: DeliveryViewDialogProps) {
+export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdit, onAdjustStock }: DeliveryViewDialogProps) {
     if (!delivery) return null;
 
     const unitStr = delivery.ingredient?.defaultUnit
@@ -179,18 +180,33 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                     <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">
                         Close
                     </Button>
-                    {onEdit && (
-                        <Button
-                            size="sm"
-                            onClick={() => {
-                                onOpenChange(false);
-                                onEdit();
-                            }}
-                            className="h-8 text-xs gap-1.5"
-                        >
-                            Edit Record
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {onAdjustStock && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    onOpenChange(false);
+                                    onAdjustStock();
+                                }}
+                                className="h-8 text-xs gap-1.5"
+                            >
+                                <Sliders className="size-3.5" /> Adjust Stock
+                            </Button>
+                        )}
+                        {onEdit && (
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    onOpenChange(false);
+                                    onEdit();
+                                }}
+                                className="h-8 text-xs gap-1.5"
+                            >
+                                Edit Record
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

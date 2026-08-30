@@ -25,6 +25,7 @@ import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import DeliveryDialog from '../components/inventory-delivery-dialog.tsx';
 import DeliveryViewDialog from '../components/inventory-delivery-view-dialog.tsx';
 import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
+import type { TStockActionMode } from '../components/unified-stock-dialog.tsx';
 
 export default function DeliveriesPage() {
     const navigate = useNavigate({ from: '/admin/inventory/deliveries' });
@@ -50,6 +51,7 @@ export default function DeliveriesPage() {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [deliveryOpen, setDeliveryOpen] = React.useState(false);
     const [unifiedOpen, setUnifiedOpen] = React.useState(false);
+    const [unifiedMode, setUnifiedMode] = React.useState<TStockActionMode>('ADD_STOCK');
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
     const [deliveryToEdit, setDeliveryToEdit] = React.useState<IDelivery | null>(null);
     const [deliveryToView, setDeliveryToView] = React.useState<IDelivery | null>(null);
@@ -238,7 +240,7 @@ export default function DeliveriesPage() {
                                     setDeliveryOpen(true);
                                 }}
                                 className="size-8 text-muted-foreground hover:text-foreground"
-                                title="Edit Delivery Log"
+                                title="Edit Delivery Record"
                             >
                                 <Pencil className="size-4" />
                             </Button>
@@ -271,6 +273,7 @@ export default function DeliveriesPage() {
                         <Button
                             onClick={() => {
                                 setSelectedIngredient(null);
+                                setUnifiedMode('ADD_STOCK');
                                 setUnifiedOpen(true);
                             }}
                             className="h-9 gap-1.5 shadow-sm"
@@ -381,7 +384,12 @@ export default function DeliveriesPage() {
             </div>
 
             {/* Unified Stock Action Dialog */}
-            <UnifiedStockDialog open={unifiedOpen} onOpenChange={setUnifiedOpen} initialMode="ADD_STOCK" preselectedIngredient={selectedIngredient} />
+            <UnifiedStockDialog
+                open={unifiedOpen}
+                onOpenChange={setUnifiedOpen}
+                initialMode={unifiedMode}
+                preselectedIngredient={selectedIngredient}
+            />
 
             {/* View Details Dialog */}
             <DeliveryViewDialog
@@ -391,7 +399,15 @@ export default function DeliveriesPage() {
                 onEdit={() => {
                     if (deliveryToView) {
                         setDeliveryToEdit(deliveryToView);
+                        setSelectedIngredient(null);
                         setDeliveryOpen(true);
+                    }
+                }}
+                onAdjustStock={() => {
+                    if (deliveryToView?.ingredient) {
+                        setSelectedIngredient(deliveryToView.ingredient);
+                        setUnifiedMode('LOG_WASTE');
+                        setUnifiedOpen(true);
                     }
                 }}
             />

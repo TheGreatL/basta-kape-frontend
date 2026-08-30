@@ -117,7 +117,7 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
             toast.success('Replenishment Delivery Updated', {
-                description: 'Delivery record updated and active stock recalculated.'
+                description: 'Delivery record metadata and unit cost updated successfully.'
             });
             onOpenChange(false);
         },
@@ -134,7 +134,6 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                 id: deliveryToEdit.id,
                 payload: {
                     supplierId: values.supplierId || null,
-                    quantityReceived: values.quantityReceived,
                     unitCost: values.unitCost,
                     batchNumber: values.batchNumber || undefined,
                     expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null
@@ -165,7 +164,7 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                     </DialogTitle>
                     <DialogDescription className="text-xs">
                         {isEditMode
-                            ? 'Modify delivery details, cost values, or received counts. Active stock levels will automatically adjust.'
+                            ? 'Modify supplier, lot/batch code, expiration date, or unit cost. Received stock quantity is locked to prevent inventory inaccuracies.'
                             : 'Log incoming materials to increment active stock counts and update financial unit values.'}
                     </DialogDescription>
                 </DialogHeader>
@@ -270,16 +269,28 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                             name="quantityReceived"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
+                                                    <div className="flex items-center justify-between">
+                                                        <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
+                                                        {isEditMode && (
+                                                            <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                                                                Locked
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <FormControl>
                                                         <Input
                                                             type="number"
                                                             step="any"
+                                                            disabled={isEditMode}
                                                             {...field}
                                                             onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                            className="h-9 bg-background/50"
+                                                            className={cn(
+                                                                'h-9 bg-background/50',
+                                                                isEditMode && 'bg-muted/40 cursor-not-allowed opacity-80 font-medium'
+                                                            )}
                                                         />
                                                     </FormControl>
+                                                    {isEditMode && <p className="text-[11px] text-muted-foreground">Locked after delivery intake.</p>}
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
