@@ -149,7 +149,9 @@ export default function ProductEditPage() {
                   isMustTry: !!productDetails.isMustTry,
                   isBestSeller: !!productDetails.isBestSeller,
                   productCategoryId: categoryId,
-                  productTypeId: typeId
+                  productTypeId: typeId,
+                  preparationType: productDetails.preparationType || 'MADE_TO_ORDER',
+                  defaultShelfLife: productDetails.defaultShelfLife ?? null
               }
             : undefined,
         defaultValues: {
@@ -159,7 +161,9 @@ export default function ProductEditPage() {
             isMustTry: false,
             isBestSeller: false,
             productCategoryId: '',
-            productTypeId: ''
+            productTypeId: '',
+            preparationType: 'MADE_TO_ORDER',
+            defaultShelfLife: null
         }
     });
 
@@ -273,7 +277,9 @@ export default function ProductEditPage() {
             isMustTry: values.isMustTry,
             isBestSeller: values.isBestSeller,
             productCategoryId: values.productCategoryId || null,
-            productTypeId: inferredTypeId
+            productTypeId: inferredTypeId,
+            preparationType: values.preparationType,
+            defaultShelfLife: values.defaultShelfLife ?? null
         });
     };
 

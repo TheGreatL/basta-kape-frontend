@@ -18,6 +18,8 @@ export interface IProduct {
     isBestSeller: boolean;
     productCategoryId: string | null;
     productTypeId: string | null;
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
+    defaultShelfLife?: number | null;
     category: {
         id: string;
         name: string;
@@ -73,6 +75,8 @@ export interface ICreateProductPayload {
     isBestSeller?: boolean;
     productCategoryId?: string | null;
     productTypeId?: string | null;
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
+    defaultShelfLife?: number | null;
 }
 
 export interface IUpdateProductPayload {
@@ -83,6 +87,8 @@ export interface IUpdateProductPayload {
     isBestSeller?: boolean;
     productCategoryId?: string | null;
     productTypeId?: string | null;
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
+    defaultShelfLife?: number | null;
 }
 
 export interface ICreateVariantPayload {

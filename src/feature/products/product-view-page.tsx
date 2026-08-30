@@ -148,6 +148,24 @@ export default function ProductViewPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-1">
+                                        <div className="font-bold text-muted-foreground/80">Preparation Mode</div>
+                                        <div className="font-semibold text-foreground bg-muted/20 border p-2.5 rounded-lg">
+                                            {product.preparationType === 'PREPARED_DISPLAY'
+                                                ? 'Prepared / Display Stock (Batch Tracked)'
+                                                : 'Made to Order (Cooked on Order)'}
+                                        </div>
+                                    </div>
+                                    {product.preparationType === 'PREPARED_DISPLAY' && (
+                                        <div className="space-y-1">
+                                            <div className="font-bold text-muted-foreground/80">Default Shelf-Life</div>
+                                            <div className="font-semibold text-foreground bg-muted/20 border p-2.5 rounded-lg">
+                                                {product.defaultShelfLife
+                                                    ? `${product.defaultShelfLife} mins (${(product.defaultShelfLife / 60).toFixed(1)} hrs)`
+                                                    : 'Not specified'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="space-y-1 sm:col-span-2">
                                         <div className="font-bold text-muted-foreground/80">Description</div>
                                         <div className="font-semibold text-foreground bg-muted/20 border p-2.5 rounded-lg min-h-[38px]">
                                             {product.description || 'No description provided.'}

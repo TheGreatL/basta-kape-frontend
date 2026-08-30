@@ -55,6 +55,13 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {menuData.data.map((product) => {
                     const firstVariantPrice = product.variants[0]?.price ?? 0;
+                    const isPreparedDisplay = product.preparationType === 'PREPARED_DISPLAY';
+                    const totalDisplayStock = product.variants.reduce((acc, v) => {
+                        if (typeof v.maxProduceable === 'number') return acc + v.maxProduceable;
+                        return acc;
+                    }, 0);
+                    const isOutOfStock = isPreparedDisplay && totalDisplayStock <= 0;
+
                     return (
                         <Card
                             key={product.id}
@@ -75,6 +82,18 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                                     </Badge>
                                 )}
                                 <ProductBadges product={product} variant="floating" className="absolute top-2 right-2" />
+                                {isPreparedDisplay && (
+                                    <Badge
+                                        variant={isOutOfStock ? 'destructive' : 'outline'}
+                                        className={`absolute bottom-2 left-2 text-xs py-0 px-1.5 font-bold backdrop-blur-md ${
+                                            isOutOfStock
+                                                ? 'bg-destructive/90 text-destructive-foreground'
+                                                : 'bg-background/80 text-foreground border-border/50'
+                                        }`}
+                                    >
+                                        {isOutOfStock ? 'Out of Display Stock' : `${totalDisplayStock} on display`}
+                                    </Badge>
+                                )}
                             </div>
                             {/* Card Body */}
                             <CardHeader className="p-3 pb-1.5 flex-1 min-w-0">

@@ -35,6 +35,8 @@ export interface IMenuProduct {
     isBestSeller: boolean;
     productCategoryId: string | null;
     productTypeId: string | null;
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
+    defaultShelfLife?: number | null;
     category: IMenuCategory | null;
     type: IMenuProductType | null;
     variants: IMenuProductVariant[];

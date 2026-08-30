@@ -100,6 +100,15 @@ const QUERY_KEY = {
         PURCHASE_ORDER_DETAILS: 'purchase_orders:purchase_order_details',
         ACTIVE_SUPPLIERS_LIST: 'purchase_orders:active_suppliers_list',
         ACTIVE_INGREDIENTS_LIST: 'purchase_orders:active_ingredients_list'
+    },
+    FOOD_PREP: {
+        SUMMARY: 'food_prep:summary',
+        BATCHES_LIST: 'food_prep:batches_list',
+        BATCH_DETAILS: 'food_prep:batch_details'
+    },
+    DISPOSALS: {
+        LIST: 'disposals:list',
+        SUMMARY: 'disposals:summary'
     }
 };
 export default QUERY_KEY;

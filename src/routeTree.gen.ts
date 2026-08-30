@@ -25,6 +25,7 @@ import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminPosRouteImport } from './routes/admin/pos'
 import { Route as AdminOrderQueueRouteImport } from './routes/admin/order-queue'
 import { Route as AdminMenuRouteImport } from './routes/admin/menu'
+import { Route as AdminFoodPrepRouteImport } from './routes/admin/food-prep'
 import { Route as AdminActivityLogsRouteImport } from './routes/admin/activity-logs'
 import { Route as CustomerProtectedRouteImport } from './routes/_customer/_protected'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
@@ -145,6 +146,11 @@ const AdminOrderQueueRoute = AdminOrderQueueRouteImport.update({
 const AdminMenuRoute = AdminMenuRouteImport.update({
   id: '/menu',
   path: '/menu',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminFoodPrepRoute = AdminFoodPrepRouteImport.update({
+  id: '/food-prep',
+  path: '/food-prep',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminActivityLogsRoute = AdminActivityLogsRouteImport.update({
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof authRegisterRoute
   '/reset-password': typeof authResetPasswordRoute
   '/admin/activity-logs': typeof AdminActivityLogsRoute
+  '/admin/food-prep': typeof AdminFoodPrepRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/order-queue': typeof AdminOrderQueueRoute
   '/admin/pos': typeof AdminPosRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof authResetPasswordRoute
   '/': typeof CustomerIndexRoute
   '/admin/activity-logs': typeof AdminActivityLogsRoute
+  '/admin/food-prep': typeof AdminFoodPrepRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/order-queue': typeof AdminOrderQueueRoute
   '/admin/pos': typeof AdminPosRoute
@@ -497,6 +505,7 @@ export interface FileRoutesById {
   '/(auth)/reset-password': typeof authResetPasswordRoute
   '/_customer/_protected': typeof CustomerProtectedRouteWithChildren
   '/admin/activity-logs': typeof AdminActivityLogsRoute
+  '/admin/food-prep': typeof AdminFoodPrepRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/order-queue': typeof AdminOrderQueueRoute
   '/admin/pos': typeof AdminPosRoute
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/admin/activity-logs'
+    | '/admin/food-prep'
     | '/admin/menu'
     | '/admin/order-queue'
     | '/admin/pos'
@@ -615,6 +625,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/'
     | '/admin/activity-logs'
+    | '/admin/food-prep'
     | '/admin/menu'
     | '/admin/order-queue'
     | '/admin/pos'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/(auth)/reset-password'
     | '/_customer/_protected'
     | '/admin/activity-logs'
+    | '/admin/food-prep'
     | '/admin/menu'
     | '/admin/order-queue'
     | '/admin/pos'
@@ -845,6 +857,13 @@ declare module '@tanstack/react-router' {
       path: '/menu'
       fullPath: '/admin/menu'
       preLoaderRoute: typeof AdminMenuRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/food-prep': {
+      id: '/admin/food-prep'
+      path: '/food-prep'
+      fullPath: '/admin/food-prep'
+      preLoaderRoute: typeof AdminFoodPrepRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/activity-logs': {
@@ -1171,6 +1190,7 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface AdminRouteRouteChildren {
   AdminActivityLogsRoute: typeof AdminActivityLogsRoute
+  AdminFoodPrepRoute: typeof AdminFoodPrepRoute
   AdminMenuRoute: typeof AdminMenuRoute
   AdminOrderQueueRoute: typeof AdminOrderQueueRoute
   AdminPosRoute: typeof AdminPosRoute
@@ -1216,6 +1236,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminActivityLogsRoute: AdminActivityLogsRoute,
+  AdminFoodPrepRoute: AdminFoodPrepRoute,
   AdminMenuRoute: AdminMenuRoute,
   AdminOrderQueueRoute: AdminOrderQueueRoute,
   AdminPosRoute: AdminPosRoute,

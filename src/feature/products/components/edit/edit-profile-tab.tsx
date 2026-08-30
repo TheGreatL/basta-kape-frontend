@@ -191,6 +191,83 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                 )}
                             />
 
+                            {/* Preparation Mode & Shelf Life Tracking */}
+                            <div className="rounded-xl border border-border/60 bg-muted/10 p-4 space-y-4">
+                                <div className="space-y-1">
+                                    <h4 className="text-xs font-bold text-foreground uppercase flex items-center gap-1.5">
+                                        Preparation & Inventory Tracking Mode
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        Choose how inventory is deducted when customers purchase this item.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="preparationType"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-semibold text-foreground/80 text-xs">Preparation Mode</FormLabel>
+                                                <Select value={field.value} onValueChange={field.onChange}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-9 bg-background/50 rounded-xl text-xs font-semibold">
+                                                            <SelectValue placeholder="Select preparation mode" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="MADE_TO_ORDER" className="text-xs">
+                                                            <div className="space-y-0.5">
+                                                                <div className="font-semibold">Made to Order</div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    Drinks & hot food; ingredients deducted at POS order time
+                                                                </div>
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="PREPARED_DISPLAY" className="text-xs">
+                                                            <div className="space-y-0.5">
+                                                                <div className="font-semibold">Prepared / Display Stock</div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    Cookies & pastries; baked in advance with shelf-life expiry tracking
+                                                                </div>
+                                                            </div>
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {form.watch('preparationType') === 'PREPARED_DISPLAY' && (
+                                        <FormField
+                                            control={form.control}
+                                            name="defaultShelfLife"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                        Default Shelf-Life (Minutes)
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            min={1}
+                                                            step={1}
+                                                            placeholder="e.g. 1440 (24h), 2880 (48h)"
+                                                            {...field}
+                                                            value={field.value ?? ''}
+                                                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                                                            className="h-9 bg-background/50 rounded-xl text-xs font-bold"
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Promotional Badges & Highlights */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                                 <FormField

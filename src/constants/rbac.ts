@@ -24,7 +24,8 @@ export const appModules = {
     TRANSACTION_HISTORY: 'Transaction History',
     ORDER_QUEUE: 'Order Queue',
     MENU: 'Menu',
-    ACTIVITY_LOGS: 'Activity Logs'
+    ACTIVITY_LOGS: 'Activity Logs',
+    FOOD_PREPARATION: 'Food Preparation'
 } as const;
 
 export type TAppModule = (typeof appModules)[keyof typeof appModules];

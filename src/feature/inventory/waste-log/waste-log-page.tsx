@@ -2,15 +2,15 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Trash2, Plus, Calendar as CalendarIcon, RotateCcw, X, Pencil } from 'lucide-react';
-import { format } from 'date-fns';
+import { Trash2, Plus, Calendar as CalendarIcon, RotateCcw, X } from 'lucide-react';
+import { format, isValid } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
 import { Route } from '#/routes/admin/inventory/waste-log.tsx';
-import { getAdjustments } from '#/api/inventory.api.ts';
+import { getDisposals, getDisposalSummary } from '#/api/disposal.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { IAdjustment, IIngredient, TAdjustmentType } from '../inventory.types';
+import type { IDisposalItem, DisposalCategory, DisposalReason } from '#/feature/disposal/disposal.types.ts';
 
 import DataTable from '#/components/data-table/data-table.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -21,31 +21,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Calendar } from '#/components/ui/calendar.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 
-import AdjustmentDialog from '../components/inventory-adjustment-dialog.tsx';
+import DisposalSummaryCards from '#/feature/disposal/components/disposal-summary-cards.tsx';
+import DisposalCategoryBadge from '#/feature/disposal/components/disposal-category-badge.tsx';
 import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 
-const ADJUSTMENT_LABEL: Record<TAdjustmentType, string> = {
-    WASTE: 'Waste',
-    SPOILED: 'Spoiled',
+const REASON_LABELS: Record<string, string> = {
+    ALL: 'All Reasons',
     EXPIRED: 'Expired',
-    THEFT: 'Theft',
+    SPOILED: 'Spoiled',
+    WASTE: 'Waste / Spill',
+    SAMPLING: 'Taste Sampling',
+    THEFT: 'Loss / Theft',
     PROMOTIONAL_USE: 'Promotional Use',
-    PHYSICAL_COUNT_DISCREPANCY: 'Count Difference'
+    DISPOSED: 'Disposed',
+    PHYSICAL_COUNT_CORRECTION: 'Count Correction',
+    PHYSICAL_COUNT_DISCREPANCY: 'Count Discrepancy'
 };
 
-const TYPE_FILTER_OPTIONS: { value: TAdjustmentType | 'ALL'; label: string }[] = [
-    { value: 'ALL', label: 'All Adjustment Types' },
-    { value: 'WASTE', label: 'Waste' },
-    { value: 'SPOILED', label: 'Spoiled' },
-    { value: 'EXPIRED', label: 'Expired' },
-    { value: 'THEFT', label: 'Theft' },
-    { value: 'PROMOTIONAL_USE', label: 'Promotional Use' },
-    { value: 'PHYSICAL_COUNT_DISCREPANCY', label: 'Count Difference' }
-];
+const REASON_BADGE_VARIANTS: Record<string, string> = {
+    EXPIRED: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
+    SPOILED: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30',
+    WASTE: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    SAMPLING: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
+    THEFT: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/30',
+    PROMOTIONAL_USE: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    DISPOSED: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30',
+    PHYSICAL_COUNT_CORRECTION: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    PHYSICAL_COUNT_DISCREPANCY: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30'
+};
 
 export default function WasteLogPage() {
     const navigate = useNavigate({ from: '/admin/inventory/waste-log' });
-    const { page, pageSize, search, type, startDate, endDate } = Route.useSearch();
+    const { page, pageSize, search, category, reason, startDate, endDate } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -65,10 +72,7 @@ export default function WasteLogPage() {
     }, [debouncedSearch]);
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [adjustmentOpen, setAdjustmentOpen] = React.useState(false);
     const [unifiedOpen, setUnifiedOpen] = React.useState(false);
-    const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
-    const [adjustmentToEdit, setAdjustmentToEdit] = React.useState<IAdjustment | null>(null);
 
     // Date range state for UI Popover Calendar
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>(() => {
@@ -109,71 +113,96 @@ export default function WasteLogPage() {
         }
     };
 
-    // Query: Adjustments with type and date range filters
-    const { data: adjustmentsData, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.ADJUSTMENTS_LIST, { page, pageSize, search, type, startDate, endDate }],
+    // 1. Query: Financial Loss KPIs & Summary
+    const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
+        queryKey: [QUERY_KEY.DISPOSALS.SUMMARY, { category, reason, search: debouncedSearch, startDate, endDate }],
         queryFn: () =>
-            getAdjustments({
-                page,
-                limit: pageSize,
-                search,
-                type: type === 'ALL' ? undefined : type,
+            getDisposalSummary({
+                category: category === 'ALL' ? undefined : (category as DisposalCategory),
+                reason: reason === 'ALL' ? undefined : (reason as DisposalReason),
+                search: debouncedSearch || undefined,
                 startDate: startDate || undefined,
                 endDate: endDate || undefined
             })
     });
 
-    const hasActiveFilters = Boolean(type !== 'ALL' || startDate || endDate || localSearch);
+    // 2. Query: Paginated Unified Disposals Audit Log
+    const { data: disposalsData, isLoading: isDisposalsLoading } = useQuery({
+        queryKey: [QUERY_KEY.DISPOSALS.LIST, { page, pageSize, category, reason, search: debouncedSearch, startDate, endDate }],
+        queryFn: () =>
+            getDisposals({
+                page,
+                limit: pageSize,
+                category: category === 'ALL' ? undefined : (category as DisposalCategory),
+                reason: reason === 'ALL' ? undefined : (reason as DisposalReason),
+                search: debouncedSearch || undefined,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined
+            })
+    });
+
+    const hasActiveFilters = Boolean(category !== 'ALL' || reason !== 'ALL' || startDate || endDate || localSearch);
 
     const handleResetFilters = () => {
         setLocalSearch('');
         setDateRange(undefined);
         setSearch({
             search: '',
-            type: 'ALL',
+            category: 'ALL',
+            reason: 'ALL',
             startDate: '',
             endDate: '',
             page: 1
         });
     };
 
-    const columns = React.useMemo<ColumnDef<IAdjustment>[]>(
+    const columns = React.useMemo<ColumnDef<IDisposalItem>[]>(
         () => [
             {
-                accessorKey: 'ingredient.name',
-                header: 'Ingredient',
-                cell: ({ row }) => (
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-foreground/90 text-sm">{row.original.ingredient?.name || '—'}</span>
-                        {row.original.ingredient?.defaultUnit && (
-                            <span className="text-xs text-muted-foreground">
-                                Unit: {row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}
-                            </span>
-                        )}
-                    </div>
-                )
+                id: 'item',
+                header: 'Item & Category',
+                cell: ({ row }) => {
+                    const item = row.original;
+                    return (
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold text-foreground text-xs">{item.itemName}</span>
+                                <DisposalCategoryBadge category={item.category} />
+                            </div>
+                            {item.variantLabel && <span className="text-xs text-muted-foreground">{item.variantLabel}</span>}
+                        </div>
+                    );
+                }
             },
             {
-                accessorKey: 'type',
-                header: 'Type',
-                cell: ({ row }) => (
-                    <Badge variant="outline" className="text-xs font-semibold bg-muted/20 border-border/60">
-                        {ADJUSTMENT_LABEL[row.original.type]}
-                    </Badge>
-                )
+                accessorKey: 'batchNumber',
+                header: 'Batch Number',
+                cell: ({ row }) => {
+                    const batch = row.original.batchNumber;
+                    if (!batch) return <span className="text-xs text-muted-foreground/60">—</span>;
+                    return <span className="font-mono text-xs font-bold text-foreground">{batch}</span>;
+                }
             },
             {
                 accessorKey: 'quantity',
                 header: 'Quantity',
                 cell: ({ row }) => {
-                    const unitStr = row.original.ingredient?.defaultUnit
-                        ? ` ${row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}`
-                        : '';
+                    const item = row.original;
                     return (
-                        <span className={`text-sm font-bold ${row.original.quantity < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                            {row.original.quantity > 0 ? '+' : ''}
-                            {row.original.quantity.toLocaleString()}
-                            <span className="text-xs font-normal text-muted-foreground">{unitStr}</span>
+                        <span className="text-xs font-bold text-foreground">
+                            {item.quantity.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
+                        </span>
+                    );
+                }
+            },
+            {
+                accessorKey: 'estimatedCostLoss',
+                header: 'Financial Loss',
+                cell: ({ row }) => {
+                    const loss = row.original.estimatedCostLoss;
+                    return (
+                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                            ₱{loss.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     );
                 }
@@ -181,71 +210,48 @@ export default function WasteLogPage() {
             {
                 accessorKey: 'reason',
                 header: 'Reason',
-                cell: ({ row }) => (
-                    <span className="text-xs text-muted-foreground max-w-[200px] truncate block" title={row.original.reason || undefined}>
-                        {row.original.reason || '—'}
-                    </span>
-                )
+                cell: ({ row }) => {
+                    const reasonKey = row.original.reason;
+                    const label = REASON_LABELS[reasonKey] || reasonKey;
+                    const variantClass = REASON_BADGE_VARIANTS[reasonKey] || 'bg-muted/20 text-muted-foreground border-border/60';
+                    return (
+                        <Badge variant="outline" className={`text-xs font-semibold ${variantClass}`}>
+                            {label}
+                        </Badge>
+                    );
+                }
             },
             {
-                id: 'createdBy',
-                header: 'Logged By',
+                accessorKey: 'notes',
+                header: 'Notes',
                 cell: ({ row }) => {
-                    const user = row.original.createdBy;
+                    const notes = row.original.notes;
+                    if (!notes) return <span className="text-xs text-muted-foreground/60">—</span>;
+                    return (
+                        <span className="text-xs text-muted-foreground max-w-[200px] truncate block" title={notes}>
+                            {notes}
+                        </span>
+                    );
+                }
+            },
+            {
+                id: 'disposedBy',
+                header: 'Logged By & Date',
+                cell: ({ row }) => {
+                    const item = row.original;
+                    const user = item.disposedBy;
+                    const date = new Date(item.disposedAt);
+                    const formattedDate = isValid(date) ? format(date, 'MMM d, yyyy h:mm a') : '—';
                     return (
                         <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-foreground/85" title={user?.email}>
-                                {user ? `${user.firstName} ${user.lastName}` : '—'}
-                            </span>
+                            <span className="text-xs font-semibold text-foreground/85">{user?.name || user?.username || 'System / Staff'}</span>
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                                 <CalendarIcon className="size-2.5" />
-                                {format(new Date(row.original.createdAt), 'MMM d, yyyy HH:mm')}
+                                {formattedDate}
                             </span>
                         </div>
                     );
                 }
-            },
-            {
-                id: 'updatedBy',
-                header: 'Last Editor',
-                cell: ({ row }) => {
-                    const user = row.original.updatedBy;
-                    if (!user) return <span className="text-xs text-muted-foreground">—</span>;
-                    return (
-                        <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-foreground/85" title={user.email}>
-                                {user.firstName} {user.lastName}
-                            </span>
-                            {row.original.updatedAt && (
-                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <CalendarIcon className="size-2.5" />
-                                    {format(new Date(row.original.updatedAt), 'MMM d, yyyy HH:mm')}
-                                </span>
-                            )}
-                        </div>
-                    );
-                }
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => (
-                    <RequirePermission module="Inventory Management" action="update">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                                setAdjustmentToEdit(row.original);
-                                setSelectedIngredient(null);
-                                setAdjustmentOpen(true);
-                            }}
-                            className="size-8 text-muted-foreground hover:text-foreground"
-                            title="Edit Adjustment Log"
-                        >
-                            <Pencil className="size-4" />
-                        </Button>
-                    </RequirePermission>
-                )
             }
         ],
         []
@@ -253,77 +259,114 @@ export default function WasteLogPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <Trash2 className="h-5 w-5 text-primary" />
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600">
+                        <Trash2 className="h-5 w-5" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Spoiled Items Log</h1>
-                        <p className="text-xs text-muted-foreground">Track wasted, spoiled, lost, or corrected items.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Unified Waste & Loss Log</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Single source of truth tracking raw material shrinkage and prepared food disposals.
+                        </p>
                     </div>
                 </div>
+
+                <RequirePermission module="Inventory Management" action="create">
+                    <Button onClick={() => setUnifiedOpen(true)} className="h-9 gap-1.5 shadow-sm text-xs font-bold" size="sm">
+                        <Plus className="size-4" /> Log Raw Stock Waste
+                    </Button>
+                </RequirePermission>
             </div>
 
-            <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Log and track adjustments, waste and spoilage incidents.</p>
-                    <RequirePermission module="Inventory Management" action="create">
-                        <Button
-                            onClick={() => {
-                                setSelectedIngredient(null);
-                                setUnifiedOpen(true);
-                            }}
-                            className="h-9 gap-1.5 shadow-sm"
-                            size="sm"
-                        >
-                            <Plus className="size-4" /> Log Waste / Adjustment
-                        </Button>
-                    </RequirePermission>
-                </div>
+            {/* Financial Loss KPIs */}
+            <DisposalSummaryCards summary={summaryData} isLoading={isSummaryLoading} />
 
+            {/* Audit Log Table */}
+            <div className="space-y-4">
                 <DataTable
                     columns={columns}
-                    data={adjustmentsData?.data || []}
-                    pageCount={adjustmentsData?.meta.pageCount || 1}
+                    data={disposalsData?.data || []}
+                    pageCount={disposalsData?.meta.pageCount || 1}
                     pageIndex={page - 1}
                     pageSize={pageSize}
                     onPaginationChange={(idx, size) => setSearch({ page: idx + 1, pageSize: size })}
                     sorting={sorting}
                     onSortingChange={setSorting}
-                    isLoading={isLoading}
+                    isLoading={isDisposalsLoading}
                     showColumnVisibilityToggle={true}
                     filterContent={
                         <div className="flex flex-wrap items-center gap-2.5 w-full">
                             {/* Search Input */}
                             <Input
-                                placeholder="Search ingredient or reason..."
+                                placeholder="Search item, batch #, notes..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className="h-9 w-full sm:w-[200px] bg-background/50 text-xs"
+                                className="h-9 w-full sm:w-[220px] bg-background/50 text-xs rounded-xl"
                             />
 
-                            {/* Adjustment Type Filter */}
-                            <Select value={type} onValueChange={(val) => setSearch({ type: val, page: 1 })}>
-                                <SelectTrigger className="h-9 w-full sm:w-[180px] bg-background/50 text-xs">
-                                    <SelectValue placeholder="All Adjustment Types" />
+                            {/* Category Filter */}
+                            <Select value={category} onValueChange={(val) => setSearch({ category: val, page: 1 })}>
+                                <SelectTrigger className="h-9 w-full sm:w-[170px] bg-background/50 text-xs font-semibold rounded-xl">
+                                    <SelectValue placeholder="All Categories" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {TYPE_FILTER_OPTIONS.map((opt) => (
-                                        <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                                            {opt.label}
-                                        </SelectItem>
-                                    ))}
+                                    <SelectItem value="ALL" className="text-xs">
+                                        All Categories
+                                    </SelectItem>
+                                    <SelectItem value="PREPARED_FOOD" className="text-xs">
+                                        🍪 Prepared Food
+                                    </SelectItem>
+                                    <SelectItem value="RAW_INGREDIENT" className="text-xs">
+                                        🥛 Raw Material
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
 
-                            {/* Date Range Picker Popover using UI Calendar */}
+                            {/* Reason Filter */}
+                            <Select value={reason} onValueChange={(val) => setSearch({ reason: val, page: 1 })}>
+                                <SelectTrigger className="h-9 w-full sm:w-[170px] bg-background/50 text-xs font-semibold rounded-xl">
+                                    <SelectValue placeholder="All Reasons" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL" className="text-xs">
+                                        All Reasons
+                                    </SelectItem>
+                                    <SelectItem value="EXPIRED" className="text-xs">
+                                        Expired
+                                    </SelectItem>
+                                    <SelectItem value="SPOILED" className="text-xs">
+                                        Spoiled
+                                    </SelectItem>
+                                    <SelectItem value="WASTE" className="text-xs">
+                                        Waste / Spilled
+                                    </SelectItem>
+                                    <SelectItem value="SAMPLING" className="text-xs">
+                                        Taste Sampling
+                                    </SelectItem>
+                                    <SelectItem value="THEFT" className="text-xs">
+                                        Loss / Theft
+                                    </SelectItem>
+                                    <SelectItem value="PROMOTIONAL_USE" className="text-xs">
+                                        Promotional Use
+                                    </SelectItem>
+                                    <SelectItem value="DISPOSED" className="text-xs">
+                                        Disposed
+                                    </SelectItem>
+                                    <SelectItem value="PHYSICAL_COUNT_CORRECTION" className="text-xs">
+                                        Count Correction
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Date Range Picker Popover */}
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className={`h-9 justify-start text-xs font-normal bg-background/50 border-border/60 gap-2 ${
+                                        className={`h-9 justify-start text-xs font-normal bg-background/50 border-border/60 gap-2 rounded-xl ${
                                             startDate || endDate ? 'border-primary/40 text-primary font-semibold' : 'text-muted-foreground'
                                         }`}
                                     >
@@ -360,7 +403,7 @@ export default function WasteLogPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleResetFilters}
-                                    className="h-9 text-xs text-muted-foreground hover:text-foreground gap-1 px-2.5"
+                                    className="h-9 text-xs text-muted-foreground hover:text-foreground gap-1 px-2.5 rounded-xl"
                                 >
                                     <RotateCcw className="size-3.5" /> Reset
                                 </Button>
@@ -371,21 +414,7 @@ export default function WasteLogPage() {
             </div>
 
             {/* Unified Stock Action Dialog */}
-            <UnifiedStockDialog open={unifiedOpen} onOpenChange={setUnifiedOpen} initialMode="LOG_WASTE" preselectedIngredient={selectedIngredient} />
-
-            {/* Edit Adjustment Dialog */}
-            <AdjustmentDialog
-                open={adjustmentOpen}
-                onOpenChange={(open) => {
-                    setAdjustmentOpen(open);
-                    if (!open) {
-                        setAdjustmentToEdit(null);
-                        setSelectedIngredient(null);
-                    }
-                }}
-                preselectedIngredient={selectedIngredient}
-                adjustmentToEdit={adjustmentToEdit}
-            />
+            <UnifiedStockDialog open={unifiedOpen} onOpenChange={setUnifiedOpen} initialMode="LOG_WASTE" preselectedIngredient={null} />
         </div>
     );
 }

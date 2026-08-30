@@ -7,13 +7,17 @@ export const productSchema = z.object({
     isMustTry: z.boolean(),
     isBestSeller: z.boolean(),
     productCategoryId: z.string().max(100, 'Category ID must not exceed 100 characters').or(z.literal('')).optional().nullable(),
-    productTypeId: z.string().max(100, 'Product Type ID must not exceed 100 characters').or(z.literal('')).optional().nullable()
+    productTypeId: z.string().max(100, 'Product Type ID must not exceed 100 characters').or(z.literal('')).optional().nullable(),
+    preparationType: z.enum(['MADE_TO_ORDER', 'PREPARED_DISPLAY']),
+    defaultShelfLife: z.number().min(1, 'Shelf life must be at least 1 minute').optional().nullable()
 });
 
 export type TProductSchema = z.infer<typeof productSchema>;
 
 export const productVariantSchema = z.object({
     sku: z.string().min(2, 'SKU must be at least 2 characters').max(50, 'SKU must not exceed 50 characters').or(z.literal('')).optional().nullable(),
-    price: z.coerce.number().min(0, 'Price must be a positive number or zero'),
+    price: z.number().min(0, 'Price must be a positive number or zero'),
     attributeValueIds: z.array(z.string().max(100, 'Attribute value ID must not exceed 100 characters')).optional().default([])
 });
+
+export type TProductVariantSchema = z.infer<typeof productVariantSchema>;

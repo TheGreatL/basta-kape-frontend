@@ -7,7 +7,21 @@ const searchParamsSchema = z.object({
     page: z.number().catch(1),
     pageSize: z.number().catch(10),
     search: z.string().catch(''),
-    type: z.enum(['ALL', 'WASTE', 'SPOILED', 'EXPIRED', 'THEFT', 'PROMOTIONAL_USE', 'PHYSICAL_COUNT_DISCREPANCY']).catch('ALL'),
+    category: z.enum(['ALL', 'PREPARED_FOOD', 'RAW_INGREDIENT']).catch('ALL'),
+    reason: z
+        .enum([
+            'ALL',
+            'EXPIRED',
+            'SPOILED',
+            'WASTE',
+            'SAMPLING',
+            'THEFT',
+            'PROMOTIONAL_USE',
+            'DISPOSED',
+            'PHYSICAL_COUNT_CORRECTION',
+            'PHYSICAL_COUNT_DISCREPANCY'
+        ])
+        .catch('ALL'),
     startDate: z.string().catch(''),
     endDate: z.string().catch('')
 });
