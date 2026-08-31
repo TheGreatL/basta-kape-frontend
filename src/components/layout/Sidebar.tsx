@@ -141,7 +141,7 @@ const getSidebarGroups = (
     {
         label: 'Reports & Settings',
         items: [
-            { title: 'Sales Management', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
+            { title: 'Sales & Financials', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
             { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
             { title: 'System History', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
             { title: 'Shop Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }

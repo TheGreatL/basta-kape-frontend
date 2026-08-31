@@ -86,8 +86,8 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h3 className="text-sm font-bold text-foreground">Per Order Breakdown</h3>
-                    <p className="text-xs text-muted-foreground">List of all completed transactions within the selected timeframe.</p>
+                    <h3 className="text-sm font-bold text-foreground">Completed Orders List</h3>
+                    <p className="text-xs text-muted-foreground">All completed customer orders in the selected period.</p>
                 </div>
 
                 {/* Local Search Input */}

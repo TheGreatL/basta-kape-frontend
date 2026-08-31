@@ -55,7 +55,7 @@ export default function PaymentBreakdownWidget({ dateFrom, dateTo }: PaymentBrea
 
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col">
-            <h3 className="text-sm font-bold text-foreground mb-4">Payment Methods Revenue</h3>
+            <h3 className="text-sm font-bold text-foreground mb-4">Payment Methods</h3>
             <div className="flex-1 flex items-center justify-center">
                 {paymentData.length > 0 ? (
                     <div className="h-[180px] w-full">
@@ -66,17 +66,18 @@ export default function PaymentBreakdownWidget({ dateFrom, dateTo }: PaymentBrea
                                     dataKey="name"
                                     tickLine={false}
                                     axisLine={false}
-                                    style={{ fontSize: '9px', fill: '#64748b', fontWeight: 'semibold', textTransform: 'capitalize' }}
+                                    className="text-xs font-semibold fill-muted-foreground capitalize"
                                 />
                                 <YAxis
                                     tickLine={false}
                                     axisLine={false}
-                                    style={{ fontSize: '9px', fill: '#64748b', fontWeight: 'semibold' }}
+                                    className="text-xs font-semibold fill-muted-foreground"
                                     tickFormatter={(val) => `₱${val}`}
                                 />
                                 <Tooltip
                                     formatter={(value: any) => [`₱${Number(value).toLocaleString()}`, 'Revenue']}
-                                    contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0', fontSize: '10px' }}
+                                    wrapperClassName="text-xs"
+                                    contentStyle={{ borderRadius: '12px', borderColor: '#e2e8f0' }}
                                 />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                     {paymentData.map((_entry, index) => (

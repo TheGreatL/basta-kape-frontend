@@ -61,7 +61,7 @@ export default function OrderTypeWidget({ dateFrom, dateTo }: OrderTypeWidgetPro
 
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col">
-            <h3 className="text-sm font-bold text-foreground mb-4">Dining Methods Distribution</h3>
+            <h3 className="text-sm font-bold text-foreground mb-4">Dine-in vs Takeout</h3>
             <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-6">
                 {orderTypeData.length > 0 ? (
                     <>

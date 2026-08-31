@@ -8,7 +8,8 @@ export type ReportModule =
     | 'suppliers'
     | 'activity-logs'
     | 'orders'
-    | 'sales';
+    | 'sales'
+    | 'financials';
 
 export type ReportExportFormat = 'excel' | 'pdf';
 

@@ -51,7 +51,7 @@ export default function TopProductsWidget({ dateFrom, dateTo }: TopProductsWidge
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
             <div>
-                <h3 className="text-sm font-bold text-foreground mb-4">Top 5 Best-Selling Favorites</h3>
+                <h3 className="text-sm font-bold text-foreground mb-4">Top 5 Best Sellers</h3>
                 <div className="space-y-4">
                     {topProducts.length > 0 ? (
                         topProducts.map((p: any, idx: number) => (

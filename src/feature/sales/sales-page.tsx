@@ -11,6 +11,10 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 
 import SalesSummaryWidget from './components/sales-summary-widget';
 import SalesTrendWidget from './components/sales-trend-widget';
+import FinancialPnLWidget from './components/financial-pnl-widget';
+import LossBreakdownWidget from './components/loss-breakdown-widget';
+import ExpenseBreakdownWidget from './components/expense-breakdown-widget';
+import InventoryStockCostingWidget from './components/inventory-stock-costing-widget';
 import TopProductsWidget from './components/top-products-widget';
 import OrderTypeWidget from './components/order-type-widget';
 import PaymentBreakdownWidget from './components/payment-breakdown-widget';
@@ -20,8 +24,14 @@ export default function SalesPage() {
     const navigate = useNavigate({ from: '/admin/sales' });
     const { dateFrom, dateTo } = Route.useSearch();
 
-    const [startDate, setStartDate] = React.useState(dateFrom || '');
-    const [endDate, setEndDate] = React.useState(dateTo || '');
+    const defaultDateTo = React.useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
+    const defaultDateFrom = React.useMemo(() => format(subDays(new Date(), 30), 'yyyy-MM-dd'), []);
+
+    const activeDateFrom = dateFrom || defaultDateFrom;
+    const activeDateTo = dateTo || defaultDateTo;
+
+    const [startDate, setStartDate] = React.useState(activeDateFrom);
+    const [endDate, setEndDate] = React.useState(activeDateTo);
 
     const setSearchParams = (updates: Record<string, any>) => {
         navigate({
@@ -30,9 +40,9 @@ export default function SalesPage() {
     };
 
     React.useEffect(() => {
-        setStartDate(dateFrom || '');
-        setEndDate(dateTo || '');
-    }, [dateFrom, dateTo]);
+        setStartDate(activeDateFrom);
+        setEndDate(activeDateTo);
+    }, [activeDateFrom, activeDateTo]);
 
     const handleApplyCustomDates = () => {
         setSearchParams({ dateFrom: startDate, dateTo: endDate });
@@ -44,11 +54,19 @@ export default function SalesPage() {
         setSearchParams({ dateFrom: pastStr, dateTo: todayStr });
     };
 
-    const handleClearRange = () => {
-        setSearchParams({ dateFrom: '', dateTo: '' });
-        setStartDate('');
-        setEndDate('');
+    const handleResetDefault = () => {
+        setSearchParams({ dateFrom: defaultDateFrom, dateTo: defaultDateTo });
+        setStartDate(defaultDateFrom);
+        setEndDate(defaultDateTo);
     };
+
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const sevenDaysStr = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+    const thirtyDaysStr = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+
+    const isToday = activeDateFrom === todayStr && activeDateTo === todayStr;
+    const is7Days = activeDateFrom === sevenDaysStr && activeDateTo === todayStr;
+    const is30Days = activeDateFrom === thirtyDaysStr && activeDateTo === todayStr;
 
     return (
         <div className="flex flex-col gap-6 pb-12">
@@ -59,8 +77,10 @@ export default function SalesPage() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales Overview</h1>
-                        <p className="text-xs text-muted-foreground">See your total sales, popular items, and payment breakdown.</p>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales & Financials</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Track your sales earnings, stock purchases, wasted items, and take-home profit.
+                        </p>
                     </div>
                 </div>
 
@@ -68,25 +88,25 @@ export default function SalesPage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1">
                         <Button
-                            variant="outline"
+                            variant={isToday ? 'default' : 'outline'}
                             size="sm"
-                            className="h-9 text-xs rounded-lg font-semibold hover:bg-muted"
+                            className="h-9 text-xs rounded-lg font-semibold"
                             onClick={() => handlePresetRange(0)}
                         >
                             Today
                         </Button>
                         <Button
-                            variant="outline"
+                            variant={is7Days ? 'default' : 'outline'}
                             size="sm"
-                            className="h-9 text-xs rounded-lg font-semibold hover:bg-muted"
+                            className="h-9 text-xs rounded-lg font-semibold"
                             onClick={() => handlePresetRange(7)}
                         >
                             7 Days
                         </Button>
                         <Button
-                            variant="outline"
+                            variant={is30Days ? 'default' : 'outline'}
                             size="sm"
-                            className="h-9 text-xs rounded-lg font-semibold hover:bg-muted"
+                            className="h-9 text-xs rounded-lg font-semibold"
                             onClick={() => handlePresetRange(30)}
                         >
                             30 Days
@@ -154,34 +174,45 @@ export default function SalesPage() {
                         </Button>
                     </div>
 
-                    {(dateFrom || dateTo) && (
-                        <Button variant="ghost" onClick={handleClearRange} className="h-9 text-xs px-2 gap-1">
-                            <X className="size-3.5" /> Reset
+                    {!is30Days && (
+                        <Button variant="ghost" onClick={handleResetDefault} className="h-9 text-xs px-2 gap-1">
+                            <X className="size-3.5" /> Reset (30 Days)
                         </Button>
                     )}
                 </div>
             </div>
 
-            {/* KPI Cards Widget */}
-            <SalesSummaryWidget dateFrom={dateFrom} dateTo={dateTo} />
+            {/* 1. Top Financial KPI Cards */}
+            <SalesSummaryWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
 
-            {/* Sales Trend Chart Widget */}
-            <SalesTrendWidget dateFrom={dateFrom} dateTo={dateTo} />
-
-            {/* Bottom Breakdown Panels */}
+            {/* 2. Main Financial Performance (Trend & P&L Statement) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Panel 1: Top Favorites list */}
-                <TopProductsWidget dateFrom={dateFrom} dateTo={dateTo} />
-
-                {/* Panel 2: Order Dining Types breakdown */}
-                <OrderTypeWidget dateFrom={dateFrom} dateTo={dateTo} />
-
-                {/* Panel 3: Payment breakdown chart */}
-                <PaymentBreakdownWidget dateFrom={dateFrom} dateTo={dateTo} />
+                <div className="lg:col-span-2">
+                    <SalesTrendWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+                </div>
+                <div className="lg:col-span-1">
+                    <FinancialPnLWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+                </div>
             </div>
 
-            {/* Per Order Breakdown Table */}
-            <OrderBreakdownTableWidget dateFrom={dateFrom} dateTo={dateTo} />
+            {/* 3. Outflow Details (Wastage Losses & Procurement Expenses) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <LossBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+                <ExpenseBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+            </div>
+
+            {/* 4. Complete Inventory Stock Transactions & Cost Valuation */}
+            <InventoryStockCostingWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+
+            {/* 5. Operational Inflow Breakdown Panels */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <TopProductsWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+                <OrderTypeWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+                <PaymentBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
+            </div>
+
+            {/* 6. Detailed Orders Transaction Table */}
+            <OrderBreakdownTableWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
         </div>
     );
 }

@@ -4,10 +4,10 @@ import WasteLogPage from '#/feature/inventory/waste-log/waste-log-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
-    page: z.number().catch(1),
-    pageSize: z.number().catch(10),
-    search: z.string().catch(''),
-    category: z.enum(['ALL', 'PREPARED_FOOD', 'RAW_INGREDIENT']).catch('ALL'),
+    page: z.number().optional().default(1).catch(1),
+    pageSize: z.number().optional().default(10).catch(10),
+    search: z.string().optional().default('').catch(''),
+    category: z.enum(['ALL', 'PREPARED_FOOD', 'RAW_INGREDIENT']).optional().default('ALL').catch('ALL'),
     reason: z
         .enum([
             'ALL',
@@ -21,9 +21,11 @@ const searchParamsSchema = z.object({
             'PHYSICAL_COUNT_CORRECTION',
             'PHYSICAL_COUNT_DISCREPANCY'
         ])
+        .optional()
+        .default('ALL')
         .catch('ALL'),
-    startDate: z.string().catch(''),
-    endDate: z.string().catch('')
+    startDate: z.string().optional().default('').catch(''),
+    endDate: z.string().optional().default('').catch('')
 });
 
 export const Route = createFileRoute('/admin/inventory/waste-log')({
