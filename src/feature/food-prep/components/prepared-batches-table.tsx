@@ -192,19 +192,19 @@ export default function PreparedBatchesTable({
                         All Statuses
                     </SelectItem>
                     <SelectItem value="FRESH" className="text-xs">
-                        🟢 Fresh
+                        Fresh
                     </SelectItem>
                     <SelectItem value="NEAR_EXPIRY" className="text-xs">
-                        🟡 Near Expiry
+                        Near Expiry
                     </SelectItem>
                     <SelectItem value="EXPIRED" className="text-xs">
-                        🔴 Expired
+                        Expired
                     </SelectItem>
                     <SelectItem value="DEPLETED" className="text-xs">
-                        ⚪ Depleted
+                        Depleted
                     </SelectItem>
                     <SelectItem value="DISPOSED" className="text-xs">
-                        🟣 Disposed
+                        Disposed
                     </SelectItem>
                 </SelectContent>
             </Select>
