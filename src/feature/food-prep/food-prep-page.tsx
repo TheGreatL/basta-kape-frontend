@@ -91,7 +91,7 @@ export default function FoodPrepPage() {
     };
 
     return (
-        <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
+        <div className="flex flex-col gap-6">
             {/* Page Header */}
             <FoodPrepHeader onOpenBakeDialog={() => handleOpenBakeDialog()} />
 

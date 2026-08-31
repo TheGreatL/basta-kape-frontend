@@ -10,7 +10,7 @@ export default function FoodPrepHeader({ onOpenBakeDialog }: FoodPrepHeaderProps
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
             <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                         <Cookie className="size-5" />
                     </div>
                     <h1 className="text-xl font-bold text-foreground">Food Prep & Display Station</h1>
