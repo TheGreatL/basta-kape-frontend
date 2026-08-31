@@ -26,7 +26,8 @@ import {
     SidebarFooter,
     SidebarMenuSub,
     SidebarMenuSubItem,
-    SidebarMenuSubButton
+    SidebarMenuSubButton,
+    useSidebar
 } from '#/components/ui/sidebar.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx';
 import { ScrollArea, ScrollBar } from '#/components/ui/scroll-area.tsx';
@@ -151,6 +152,8 @@ const getSidebarGroups = (
 
 function SidebarLinkItem({ item }: { item: SidebarItem }) {
     const matchRoute = useMatchRoute();
+    const { state, isMobile } = useSidebar();
+    const isCollapsed = state === 'collapsed' && !isMobile;
 
     const isRouteActive = (path: string, exact?: boolean) => {
         let active = matchRoute({ to: path as any, fuzzy: !exact }) !== false;
@@ -185,10 +188,80 @@ function SidebarLinkItem({ item }: { item: SidebarItem }) {
         return active;
     };
 
-    // If it has children (accordion)
+    // If it has children (accordion in expanded mode, dropdown in collapsed mode)
     if (item.items && item.items.length > 0) {
         const hasActiveChild = item.items.some((subItem) => isRouteActive(subItem.path, subItem.exact));
 
+        // When sidebar is collapsed (icon-only), provide a floating DropdownMenu
+        if (isCollapsed) {
+            return (
+                <SidebarMenuItem>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <SidebarMenuButton
+                                isActive={hasActiveChild}
+                                className={cn(
+                                    'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                                    hasActiveChild && 'bg-sidebar-primary text-sidebar-primary-foreground font-medium'
+                                )}
+                            >
+                                <DynamicIcon name={item.icon} />
+                                <span>{item.title}</span>
+                            </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            side="right"
+                            align="start"
+                            sideOffset={8}
+                            className="w-56 p-1.5 rounded-xl shadow-md border-border/80 bg-popover z-50"
+                        >
+                            <DropdownMenuLabel className="text-xs font-bold px-2.5 py-1.5 text-foreground flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                    <DynamicIcon name={item.icon} className="size-4 text-primary" />
+                                    {item.title}
+                                </span>
+                                {item.badge && (
+                                    <span className="bg-primary/10 text-primary font-medium text-xs px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                                )}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className="my-1 bg-border/60" />
+                            {item.items.map((subItem) => {
+                                const isSubActive = isRouteActive(subItem.path, subItem.exact);
+                                return (
+                                    <DropdownMenuItem key={subItem.title} asChild>
+                                        <Link
+                                            to={subItem.path}
+                                            className={cn(
+                                                'w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg transition-colors cursor-pointer',
+                                                isSubActive
+                                                    ? 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground'
+                                                    : 'text-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground font-medium'
+                                            )}
+                                        >
+                                            <span>{subItem.title}</span>
+                                            {subItem.badge && (
+                                                <span
+                                                    className={cn(
+                                                        'font-medium text-xs px-1.5 py-0.5 rounded-full transition-colors',
+                                                        isSubActive
+                                                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                                                            : 'bg-primary/10 text-primary'
+                                                    )}
+                                                >
+                                                    {subItem.badge}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                );
+                            })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </SidebarMenuItem>
+            );
+        }
+
+        // Expanded sidebar: render inline Collapsible accordion
         return (
             <Collapsible asChild defaultOpen={hasActiveChild} className="group/collapsible">
                 <SidebarMenuItem>
