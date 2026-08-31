@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { ColumnDef, SortingState, VisibilityState } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, SlidersHorizontal, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, SlidersHorizontal, Inbox } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import {
     DropdownMenu,
@@ -28,9 +28,9 @@ interface DataTableProps<TData, TValue> {
     pageSize: number;
     onPaginationChange: (pageIndex: number, pageSize: number) => void;
 
-    // Server-side Sorting
-    sorting: SortingState;
-    onSortingChange: (sorting: SortingState) => void;
+    // Optional Server-side Sorting
+    sorting?: SortingState;
+    onSortingChange?: (sorting: SortingState) => void;
 
     // Custom toolbar content (search, custom filters, select filters)
     filterContent?: React.ReactNode;
@@ -51,7 +51,7 @@ export default function DataTable<TData, TValue>({
     pageIndex,
     pageSize,
     onPaginationChange,
-    sorting,
+    sorting = [],
     onSortingChange,
     filterContent,
     isLoading = false,
@@ -65,6 +65,7 @@ export default function DataTable<TData, TValue>({
         data,
         columns,
         pageCount,
+        enableSorting: false,
         state: {
             sorting,
             columnVisibility,
@@ -75,13 +76,15 @@ export default function DataTable<TData, TValue>({
             }
         },
         // Handlers are passed down from parent to maintain fully server-side state
-        onSortingChange: (updater) => {
-            if (typeof updater === 'function') {
-                onSortingChange(updater(sorting));
-            } else {
-                onSortingChange(updater);
-            }
-        },
+        onSortingChange: onSortingChange
+            ? (updater) => {
+                  if (typeof updater === 'function') {
+                      onSortingChange(updater(sorting));
+                  } else {
+                      onSortingChange(updater);
+                  }
+              }
+            : undefined,
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: (updater) => {
             if (onRowSelectionChange) {
@@ -155,38 +158,11 @@ export default function DataTable<TData, TValue>({
                     <TableHeader className="bg-muted/40 dark:bg-muted/10">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                                {headerGroup.headers.map((header) => {
-                                    const canSort = header.column.getCanSort();
-                                    const sortedState = header.column.getIsSorted();
-
-                                    return (
-                                        <TableHead key={header.id} className="font-semibold text-foreground/80 py-3">
-                                            {header.isPlaceholder ? null : (
-                                                <div className="flex items-center gap-2">
-                                                    {canSort ? (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="-ml-2 h-8 px-2 hover:bg-muted font-semibold text-foreground/80 hover:text-foreground transition-colors duration-200"
-                                                            onClick={header.column.getToggleSortingHandler()}
-                                                        >
-                                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                                            {sortedState === 'asc' ? (
-                                                                <ArrowUp className="ml-1.5 h-3.5 w-3.5 text-primary" />
-                                                            ) : sortedState === 'desc' ? (
-                                                                <ArrowDown className="ml-1.5 h-3.5 w-3.5 text-primary" />
-                                                            ) : (
-                                                                <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 text-muted-foreground/60 group-hover:text-muted-foreground transition-colors" />
-                                                            )}
-                                                        </Button>
-                                                    ) : (
-                                                        flexRender(header.column.columnDef.header, header.getContext())
-                                                    )}
-                                                </div>
-                                            )}
-                                        </TableHead>
-                                    );
-                                })}
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id} className="font-semibold text-foreground/80 py-3">
+                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                    </TableHead>
+                                ))}
                             </TableRow>
                         ))}
                     </TableHeader>
