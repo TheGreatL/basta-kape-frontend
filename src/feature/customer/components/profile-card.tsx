@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { Mail, Phone, Calendar } from 'lucide-react';
 
 interface ProfileCardProps {
@@ -33,7 +34,7 @@ export default function ProfileCard({ firstName, lastName, username, email, phon
                 )}
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                     <Calendar className="size-4 text-primary shrink-0" />
-                    <span>Member since {new Date(createdAt).toLocaleDateString()}</span>
+                    <span>Member since {format(new Date(createdAt), 'MMM d, yyyy')}</span>
                 </div>
             </div>
         </div>

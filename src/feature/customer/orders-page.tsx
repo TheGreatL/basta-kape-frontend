@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Search, Coffee, ChevronLeft, ChevronRight, ClipboardCheck, Clock, Printer, Download, Eye } from 'lucide-react';
+import { format } from 'date-fns';
 
 import { getCustomerOrders } from '#/api/customer.api.ts';
 import { useCurrentCustomer } from '#/feature/customer/use-current-customer.ts';
@@ -228,14 +229,7 @@ export default function OrdersPage() {
                                         <div className="mt-4 space-y-2 text-sm">
                                             <div className="flex items-center gap-1.5 text-muted-foreground">
                                                 <Clock className="size-4" />
-                                                <span>
-                                                    {new Date(order.createdAt).toLocaleString(undefined, {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
-                                                </span>
+                                                <span>{format(new Date(order.createdAt), 'MMM d, yyyy, h:mm a')}</span>
                                             </div>
                                             {/* Order Items List */}
                                             <div className="mt-3 space-y-2 pt-3 border-t border-dashed border-border/40">

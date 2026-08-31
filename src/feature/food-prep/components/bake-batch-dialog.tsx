@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Cookie, Plus, Clock, FileText, Check, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
@@ -116,14 +117,7 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
     const shelfLifeMinutes = form.watch('shelfLifeMinutes') || 1440;
     const estimatedExpiry = React.useMemo(() => {
         const d = new Date(Date.now() + shelfLifeMinutes * 60 * 1000);
-        return d.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
+        return format(d, 'MMM d, yyyy, h:mm a');
     }, [shelfLifeMinutes]);
 
     const quantityValue = form.watch('quantity');

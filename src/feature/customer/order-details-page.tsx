@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import {
     ArrowLeft,
     Clock,
@@ -224,15 +225,7 @@ export default function OrderDetailsPage() {
 
                         <div className="text-sm md:text-right">
                             <span className="text-xs text-muted-foreground block font-medium">Order Date</span>
-                            <span className="font-bold text-foreground">
-                                {new Date(order.createdAt).toLocaleString(undefined, {
-                                    month: 'long',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </span>
+                            <span className="font-bold text-foreground">{format(new Date(order.createdAt), 'MMMM dd, yyyy - hh:mm a')}</span>
                         </div>
                     </div>
                 </div>
@@ -527,12 +520,7 @@ export default function OrderDetailsPage() {
                                     <div className="space-y-1">
                                         <div className="flex flex-wrap items-baseline gap-2">
                                             <span className="text-sm font-bold text-foreground">{getStatusText(history.status)}</span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {new Date(history.createdAt).toLocaleTimeString(undefined, {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
+                                            <span className="text-xs text-muted-foreground">{format(new Date(history.createdAt), 'hh:mm a')}</span>
                                         </div>
 
                                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
