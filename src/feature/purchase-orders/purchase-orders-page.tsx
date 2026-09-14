@@ -2,13 +2,13 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Eye, Search, X, Calendar, User, Truck, Trash2, ShoppingCart, Send, XCircle, Pencil } from 'lucide-react';
+import { Plus, Eye, Search, X, Calendar, User, Truck, Trash2, ShoppingCart, Send, XCircle, Pencil, Package, CheckSquare, Square } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/purchase-orders.tsx';
 import { getPurchaseOrders, createPurchaseOrder, updatePurchaseOrderStatus } from '#/api/purchase-orders.api.ts';
-import { getSuppliersList } from '#/api/suppliers.api.ts';
+import { getSuppliersList, getSupplierIngredients } from '#/api/suppliers.api.ts';
 import { getIngredients } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -19,6 +19,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
 import {
     AlertDialog,
@@ -35,7 +36,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#/comp
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import type { IPurchaseOrder } from '#/api/purchase-orders.api.ts';
-import type { ISupplierListItem } from '../suppliers/suppliers.types';
+import type { ISupplierListItem, ISupplierIngredient } from '../suppliers/suppliers.types';
 import type { IIngredient } from '../inventory/inventory.types';
 import PurchaseOrderDetailDialog from './components/purchase-order-detail-dialog';
 import UpdatePurchaseOrderDialog from './components/update-purchase-order-dialog';
@@ -59,9 +60,11 @@ export default function PurchaseOrdersPage() {
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
 
     // Form states for PO creation
+    // Form states for PO creation
     const [newPOSupplierId, setNewPOSupplierId] = React.useState<string>('');
     const [newPONotes, setNewPONotes] = React.useState<string>('');
-    const [newPOItems, setNewPOItems] = React.useState<ICreateItemInput[]>([{ ingredientId: '', quantity: 1, unitCost: 0 }]);
+    const [newPOItems, setNewPOItems] = React.useState<ICreateItemInput[]>([]);
+    const [extraPOItems, setExtraPOItems] = React.useState<ICreateItemInput[]>([]);
     const [editingPOId, setEditingPOId] = React.useState<string | null>(null);
 
     const setSearchParams = (updates: Record<string, any>) => {
@@ -99,6 +102,13 @@ export default function PurchaseOrdersPage() {
         queryFn: () => getSuppliersList({ page: 1, limit: 50, status: 'active' })
     });
     const suppliers = suppliersData?.data || [];
+
+    // Queries: Supplier's linked ingredients for PO creation
+    const { data: supplierIngredients, isLoading: isSupplierIngredientsLoading } = useQuery({
+        queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIER_INGREDIENTS, newPOSupplierId],
+        queryFn: () => getSupplierIngredients(newPOSupplierId),
+        enabled: isCreateOpen && !!newPOSupplierId
+    });
 
     // Queries: Ingredients (for create picker)
     const { data: ingredientsData } = useQuery({
@@ -143,44 +153,86 @@ export default function PurchaseOrdersPage() {
     const resetCreateForm = () => {
         setNewPOSupplierId('');
         setNewPONotes('');
-        setNewPOItems([{ ingredientId: '', quantity: 1, unitCost: 0 }]);
+        setNewPOItems([]);
+        setExtraPOItems([]);
     };
 
-    const handleClearFilters = () => {
-        setLocalSearch('');
-        setSearchParams({
-            page: 1,
-            search: '',
-            status: '',
-            supplierId: ''
+    const handleSupplierChange = (id: string) => {
+        setNewPOSupplierId(id);
+        setNewPOItems([]);
+        setExtraPOItems([]);
+    };
+
+    const handleToggleSupplierIngredient = (ing: ISupplierIngredient) => {
+        setNewPOItems((prev) => {
+            const exists = prev.some((item) => item.ingredientId === ing.ingredientId);
+            if (exists) {
+                return prev.filter((item) => item.ingredientId !== ing.ingredientId);
+            } else {
+                return [
+                    ...prev,
+                    {
+                        ingredientId: ing.ingredientId,
+                        quantity: 1,
+                        unitCost: ing.unitCost ?? 0
+                    }
+                ];
+            }
         });
     };
 
-    const handleAddItem = () => {
-        setNewPOItems((prev) => [...prev, { ingredientId: '', quantity: 1, unitCost: 0 }]);
-    };
+    const handleToggleAllSupplierIngredients = () => {
+        if (!supplierIngredients || supplierIngredients.length === 0) return;
+        const allSelected = supplierIngredients.every((si) => newPOItems.some((item) => item.ingredientId === si.ingredientId));
 
-    const handleRemoveItem = (index: number) => {
-        if (newPOItems.length === 1) {
-            toast.warning('Purchase orders must contain at least one line item');
-            return;
+        if (allSelected) {
+            const supplierIngIds = new Set(supplierIngredients.map((si) => si.ingredientId));
+            setNewPOItems((prev) => prev.filter((item) => !supplierIngIds.has(item.ingredientId)));
+        } else {
+            setNewPOItems((prev) => {
+                const existingMap = new Map(prev.map((item) => [item.ingredientId, item]));
+                const updated = [...prev];
+                for (const si of supplierIngredients) {
+                    if (!existingMap.has(si.ingredientId)) {
+                        updated.push({
+                            ingredientId: si.ingredientId,
+                            quantity: 1,
+                            unitCost: si.unitCost ?? 0
+                        });
+                    }
+                }
+                return updated;
+            });
         }
-        setNewPOItems((prev) => prev.filter((_, idx) => idx !== index));
     };
 
-    const handleItemChange = (index: number, field: keyof ICreateItemInput, value: any) => {
-        setNewPOItems((prev) =>
+    const handleUpdatePOItem = (ingredientId: string, field: 'quantity' | 'unitCost', value: number) => {
+        setNewPOItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, [field]: value } : item)));
+    };
+
+    const handleAddExtraItem = () => {
+        setExtraPOItems((prev) => [...prev, { ingredientId: '', quantity: 1, unitCost: 0 }]);
+    };
+
+    const handleRemoveExtraItem = (index: number) => {
+        setExtraPOItems((prev) => prev.filter((_, idx) => idx !== index));
+    };
+
+    const handleExtraItemChange = (index: number, field: keyof ICreateItemInput, value: any) => {
+        setExtraPOItems((prev) =>
             prev.map((item, idx) => {
                 if (idx !== index) return item;
-                const updated = { ...item, [field]: value };
-                // If ingredient is changed, fill in unit cost from previous purchases or default if desired, otherwise leave empty
-                return updated;
+                return { ...item, [field]: value };
             })
         );
     };
 
+    const allActiveItems = React.useMemo(() => {
+        return [...newPOItems, ...extraPOItems.filter((i) => i.ingredientId)];
+    }, [newPOItems, extraPOItems]);
+
     const calculatePOTotal = () => {
-        return newPOItems.reduce((acc, item) => {
+        return allActiveItems.reduce((acc, item) => {
             const qty = Number(item.quantity) || 0;
             const cost = Number(item.unitCost) || 0;
             return acc + qty * cost;
@@ -194,9 +246,9 @@ export default function PurchaseOrdersPage() {
             return;
         }
 
-        const validItems = newPOItems.filter((item) => item.ingredientId && item.quantity > 0 && item.unitCost >= 0);
+        const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0 && item.unitCost >= 0);
         if (validItems.length === 0) {
-            toast.error('Please add at least one valid line item with quantity > 0');
+            toast.error('Please select or add at least one line item with quantity > 0');
             return;
         }
 
@@ -211,6 +263,16 @@ export default function PurchaseOrdersPage() {
         };
 
         createPOMutation.mutate(payload);
+    };
+
+    const handleClearFilters = () => {
+        setLocalSearch('');
+        setSearchParams({
+            page: 1,
+            search: '',
+            status: '',
+            supplierId: ''
+        });
     };
 
     const getStatusBadgeClass = (poStatus: string) => {
@@ -554,7 +616,7 @@ export default function PurchaseOrdersPage() {
                                     return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
                                 }}
                                 value={newPOSupplierId}
-                                onChange={(val) => setNewPOSupplierId(val || '')}
+                                onChange={(val) => handleSupplierChange(val || '')}
                                 getOptionValue={(item) => item.id}
                                 getOptionLabel={(item) => `${item.name}`}
                                 placeholder="Select Supplier"
@@ -574,117 +636,254 @@ export default function PurchaseOrdersPage() {
                             />
                         </div>
 
-                        {/* Line Items */}
+                        {/* Supplier Orderable Ingredients */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs font-bold text-foreground">Ingredient Line Items</label>
-                                <Button type="button" variant="outline" size="sm" onClick={handleAddItem} className="h-8 text-xs font-bold gap-1">
+                                <div>
+                                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                        <Package className="size-3.5 text-primary" />
+                                        Supplier Ingredients
+                                    </label>
+                                    <p className="text-[11px] text-muted-foreground">Toggle the ingredients you want to order from this supplier.</p>
+                                </div>
+                                {supplierIngredients && supplierIngredients.length > 0 && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleToggleAllSupplierIngredients}
+                                        className="h-7 text-xs font-semibold gap-1"
+                                    >
+                                        {supplierIngredients.every((si) => newPOItems.some((item) => item.ingredientId === si.ingredientId)) ? (
+                                            <>
+                                                <Square className="size-3" /> Deselect All
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckSquare className="size-3" /> Select All
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+
+                            {!newPOSupplierId ? (
+                                <div className="p-4 rounded-xl border border-dashed border-border/60 text-center bg-muted/10">
+                                    <span className="text-xs text-muted-foreground">Select a supplier above to view orderable ingredients.</span>
+                                </div>
+                            ) : isSupplierIngredientsLoading ? (
+                                <div className="p-4 rounded-xl border border-border/40 text-center bg-muted/10 flex items-center justify-center gap-2">
+                                    <span className="animate-spin size-4 border-2 border-primary border-t-transparent rounded-full" />
+                                    <span className="text-xs text-muted-foreground">Loading supplier ingredients...</span>
+                                </div>
+                            ) : supplierIngredients && supplierIngredients.length > 0 ? (
+                                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                    {supplierIngredients.map((si) => {
+                                        const isSelected = newPOItems.some((item) => item.ingredientId === si.ingredientId);
+                                        const poItem = newPOItems.find((item) => item.ingredientId === si.ingredientId);
+                                        const unitAbbrev = si.ingredient?.defaultUnit?.abbreviation || '';
+
+                                        return (
+                                            <div
+                                                key={si.ingredientId}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                                                    isSelected
+                                                        ? 'bg-primary/5 border-primary/30'
+                                                        : 'bg-muted/10 border-border/40 opacity-80 hover:opacity-100'
+                                                }`}
+                                            >
+                                                {/* Checkbox Toggle */}
+                                                <div className="flex items-center">
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        onCheckedChange={() => handleToggleSupplierIngredient(si)}
+                                                        className="size-4.5"
+                                                    />
+                                                </div>
+
+                                                {/* Ingredient info */}
+                                                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleToggleSupplierIngredient(si)}>
+                                                    <span className="text-xs font-bold text-foreground block truncate">
+                                                        {si.ingredient?.name || 'Unknown Ingredient'}
+                                                    </span>
+                                                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                                                        <span>Unit: {si.ingredient?.defaultUnit?.name || 'N/A'}</span>
+                                                        {si.unitCost ? <span>• Agreed Price: ₱{si.unitCost.toFixed(2)}</span> : null}
+                                                    </div>
+                                                </div>
+
+                                                {isSelected && (
+                                                    <>
+                                                        {/* Quantity */}
+                                                        <div className="w-[100px] space-y-0.5 shrink-0">
+                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                                                Qty {unitAbbrev && `(${unitAbbrev})`}
+                                                            </span>
+                                                            <Input
+                                                                type="number"
+                                                                min="0.01"
+                                                                step="any"
+                                                                value={poItem?.quantity ?? 1}
+                                                                onChange={(e) =>
+                                                                    handleUpdatePOItem(si.ingredientId, 'quantity', parseFloat(e.target.value) || 0)
+                                                                }
+                                                                className="h-8 text-xs bg-background/80 font-bold"
+                                                            />
+                                                        </div>
+
+                                                        {/* Unit Cost */}
+                                                        <div className="w-[105px] space-y-0.5 shrink-0">
+                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                                                Unit Cost (₱)
+                                                            </span>
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                step="any"
+                                                                value={poItem?.unitCost ?? 0}
+                                                                onChange={(e) =>
+                                                                    handleUpdatePOItem(si.ingredientId, 'unitCost', parseFloat(e.target.value) || 0)
+                                                                }
+                                                                className="h-8 text-xs bg-background/80 font-bold"
+                                                            />
+                                                        </div>
+
+                                                        {/* Subtotal */}
+                                                        <div className="w-[90px] text-right shrink-0 space-y-0.5">
+                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                                                Subtotal
+                                                            </span>
+                                                            <span className="text-xs font-bold text-foreground block font-mono">
+                                                                ₱
+                                                                {((poItem?.quantity || 0) * (poItem?.unitCost || 0)).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="p-3.5 rounded-xl border border-border/40 bg-muted/15 text-xs text-muted-foreground">
+                                    No ingredients linked to this supplier yet. You can link ingredients in Supplier Management, or add items manually
+                                    below.
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Extra / Unlisted Items */}
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                            <div className="flex justify-between items-center">
+                                <label className="text-xs font-bold text-foreground">Other / Unlisted Items (Optional)</label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleAddExtraItem}
+                                    className="h-7 text-xs font-bold gap-1"
+                                >
                                     <Plus className="size-3" /> Add Item
                                 </Button>
                             </div>
 
-                            <div className="space-y-3">
-                                {newPOItems.map((item, index) => {
-                                    const selectedIng = ingredients.find((i: IIngredient) => i.id === item.ingredientId);
-                                    const unitAbbrev = selectedIng?.defaultUnit?.abbreviation || '';
+                            {extraPOItems.length > 0 && (
+                                <div className="space-y-2">
+                                    {extraPOItems.map((item, index) => {
+                                        const selectedIng = ingredients.find((i: IIngredient) => i.id === item.ingredientId);
+                                        const unitAbbrev = selectedIng?.defaultUnit?.abbreviation || '';
 
-                                    return (
-                                        <div key={index} className="flex items-end gap-3 p-3 border border-border/40 rounded-xl bg-muted/20 relative">
-                                            {/* Ingredient Picker */}
-                                            <div className="flex-1 space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap">
-                                                    Ingredient
-                                                </span>
-                                                <InfiniteSelect<IIngredient>
-                                                    queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST, 'po-item', index]}
-                                                    fetchFn={async ({ pageParam, query }) => {
-                                                        return getIngredients({
-                                                            page: pageParam || 1,
-                                                            limit: 20,
-                                                            search: query,
-                                                            status: 'active'
-                                                        });
-                                                    }}
-                                                    getItems={(pageItem) => pageItem.data}
-                                                    getNextPageParam={(lastPage) => {
-                                                        return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
-                                                    }}
-                                                    value={item.ingredientId}
-                                                    onChange={(val) => handleItemChange(index, 'ingredientId', val || '')}
-                                                    getOptionValue={(i) => i.id}
-                                                    getOptionLabel={(i) => `${i.name}`}
-                                                    selectedItem={ingredients.find((i) => i.id === item.ingredientId)}
-                                                    placeholder="Select Ingredient"
-                                                    searchPlaceholder="Search ingredients..."
-                                                    className="h-8.5 text-xs bg-background/50"
-                                                />
+                                        return (
+                                            <div key={index} className="flex items-end gap-3 p-2.5 border border-border/40 rounded-xl bg-muted/20">
+                                                <div className="flex-1 space-y-1">
+                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Ingredient</span>
+                                                    <InfiniteSelect<IIngredient>
+                                                        queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST, 'po-extra-item', index]}
+                                                        fetchFn={async ({ pageParam, query }) => {
+                                                            return getIngredients({
+                                                                page: pageParam || 1,
+                                                                limit: 20,
+                                                                search: query,
+                                                                status: 'active'
+                                                            });
+                                                        }}
+                                                        getItems={(pageItem) => pageItem.data}
+                                                        getNextPageParam={(lastPage) => {
+                                                            return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                        }}
+                                                        value={item.ingredientId}
+                                                        onChange={(val) => handleExtraItemChange(index, 'ingredientId', val || '')}
+                                                        getOptionValue={(i) => i.id}
+                                                        getOptionLabel={(i) => `${i.name}`}
+                                                        selectedItem={ingredients.find((i) => i.id === item.ingredientId)}
+                                                        placeholder="Select Ingredient"
+                                                        searchPlaceholder="Search ingredients..."
+                                                        className="h-8 text-xs bg-background/50"
+                                                    />
+                                                </div>
+
+                                                <div className="w-[100px] space-y-1">
+                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                                                        Qty {unitAbbrev && `(${unitAbbrev})`}
+                                                    </span>
+                                                    <Input
+                                                        type="number"
+                                                        min="0.01"
+                                                        step="any"
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleExtraItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                                                        className="h-8 text-xs bg-background/50 font-bold"
+                                                    />
+                                                </div>
+
+                                                <div className="w-[105px] space-y-1">
+                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        step="any"
+                                                        value={item.unitCost}
+                                                        onChange={(e) => handleExtraItemChange(index, 'unitCost', parseFloat(e.target.value) || 0)}
+                                                        className="h-8 text-xs bg-background/50 font-bold"
+                                                    />
+                                                </div>
+
+                                                <div className="w-[90px] text-right pb-1.5 space-y-0.5 shrink-0">
+                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Subtotal</span>
+                                                    <span className="text-xs font-bold text-foreground block font-mono">
+                                                        ₱
+                                                        {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2
+                                                        })}
+                                                    </span>
+                                                </div>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+                                                    onClick={() => handleRemoveExtraItem(index)}
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </Button>
                                             </div>
-
-                                            {/* Quantity */}
-                                            <div className="w-[110px] space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap flex justify-between">
-                                                    Qty{' '}
-                                                    {unitAbbrev && (
-                                                        <span className="text-xs text-muted-foreground/80 font-normal">({unitAbbrev})</span>
-                                                    )}
-                                                </span>
-                                                <Input
-                                                    type="number"
-                                                    min="0.01"
-                                                    step="any"
-                                                    value={item.quantity}
-                                                    onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                                                    className="h-8.5 text-xs bg-background/50 font-bold"
-                                                />
-                                            </div>
-
-                                            {/* Unit Cost */}
-                                            <div className="w-[120px] space-y-1">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap">
-                                                    Unit Cost (₱)
-                                                </span>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    step="any"
-                                                    value={item.unitCost}
-                                                    onChange={(e) => handleItemChange(index, 'unitCost', parseFloat(e.target.value) || 0)}
-                                                    className="h-8.5 text-xs bg-background/50 font-bold"
-                                                />
-                                            </div>
-
-                                            {/* Total */}
-                                            <div className="w-[100px] text-right pb-2 space-y-0.5 shrink-0">
-                                                <span className="text-xs uppercase font-bold text-muted-foreground whitespace-nowrap block">
-                                                    Subtotal
-                                                </span>
-                                                <span className="text-xs font-bold text-foreground block">
-                                                    ₱
-                                                    {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2
-                                                    })}
-                                                </span>
-                                            </div>
-
-                                            {/* Trash button */}
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                className="size-8.5 text-muted-foreground hover:text-destructive shrink-0"
-                                                onClick={() => handleRemoveItem(index)}
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Grand Total */}
                         <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-2xl flex justify-between items-center mt-2 shrink-0">
-                            <span className="text-xs font-bold text-primary">Estimated Purchase Order Total</span>
+                            <div>
+                                <span className="text-xs font-bold text-primary block">Estimated Purchase Order Total</span>
+                                <span className="text-[10px] text-muted-foreground">
+                                    {allActiveItems.filter((i) => i.quantity > 0).length} items included
+                                </span>
+                            </div>
                             <span className="text-lg font-bold text-primary font-mono">
                                 ₱{calculatePOTotal().toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>

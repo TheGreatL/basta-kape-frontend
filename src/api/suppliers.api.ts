@@ -5,7 +5,8 @@ import type {
     IGetSuppliersListParams,
     ISupplierListItem,
     ICreateSupplierPayload,
-    IUpdateSupplierPayload
+    IUpdateSupplierPayload,
+    ISupplierIngredient
 } from '../feature/suppliers/suppliers.types';
 
 export const getSuppliersList = async (params: IGetSuppliersListParams): Promise<IPaginatedResult<ISupplierListItem>> => {
@@ -64,6 +65,15 @@ export const restoreSupplier = async (id: string): Promise<ISupplierListItem> =>
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to restore supplier profile', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const getSupplierIngredients = async (id: string): Promise<ISupplierIngredient[]> => {
+    const response = await api.get(`/suppliers/${id}/ingredients`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch supplier ingredients', response.status, errorData);
     }
     return response.json();
 };

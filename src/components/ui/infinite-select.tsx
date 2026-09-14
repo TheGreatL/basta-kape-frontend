@@ -157,6 +157,7 @@ export function InfiniteSelect<TItem, TValue = string, TPage = any>({
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button
+                    type="button"
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
@@ -187,7 +188,7 @@ export function InfiniteSelect<TItem, TValue = string, TPage = any>({
                     <div className="flex flex-col items-center justify-center p-6 text-center gap-2">
                         <AlertCircle className="size-6 text-destructive" />
                         <p className="text-sm font-medium text-muted-foreground">{errorText}</p>
-                        <Button size="sm" variant="outline" onClick={() => refetch()}>
+                        <Button type="button" size="sm" variant="outline" onClick={() => refetch()}>
                             Retry
                         </Button>
                     </div>

@@ -17,7 +17,8 @@ const QUERY_KEY = {
     },
     SUPPLIERS: {
         SUPPLIERS_LIST: 'suppliers:suppliers_list',
-        SUPPLIER_DETAILS: 'suppliers:supplier_details'
+        SUPPLIER_DETAILS: 'suppliers:supplier_details',
+        SUPPLIER_INGREDIENTS: 'suppliers:supplier_ingredients'
     },
     PRODUCT_SETTINGS: {
         CATEGORIES_LIST: 'product_settings:categories_list',

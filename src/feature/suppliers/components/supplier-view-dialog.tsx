@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Truck, Calendar, MapPin, User, Phone, FileText } from 'lucide-react';
+import { Truck, Calendar, MapPin, User, Phone, FileText, Package } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { getSupplierById } from '#/api/suppliers.api.ts';
@@ -10,6 +10,7 @@ import type { ISupplierListItem } from '../suppliers.types';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Label } from '#/components/ui/label.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
@@ -98,8 +99,45 @@ export default function SupplierViewDialog({ open, onOpenChange, supplier }: Sup
                                     <Textarea
                                         disabled
                                         value={supplierDetails.notes || 'No remarks added.'}
-                                        className="min-h-[100px] bg-background/50"
+                                        className="min-h-[80px] bg-background/50"
                                     />
+                                </div>
+
+                                {/* Supplied Ingredients Card */}
+                                <div className="space-y-2 pt-2">
+                                    <div className="flex items-center justify-between border-b pb-1">
+                                        <h3 className="text-xs font-bold text-foreground/80 flex items-center gap-1.5">
+                                            <Package className="size-3.5 text-primary" />
+                                            Supplied Ingredients ({supplierDetails.ingredients?.length || 0})
+                                        </h3>
+                                    </div>
+                                    {supplierDetails.ingredients && supplierDetails.ingredients.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                                            {supplierDetails.ingredients.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="flex items-center justify-between p-2.5 rounded-lg border border-border/40 bg-muted/20 text-xs"
+                                                >
+                                                    <div className="min-w-0 flex-1 pr-2">
+                                                        <span className="font-semibold text-foreground truncate block">
+                                                            {item.ingredient?.name || 'Unknown Ingredient'}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground">
+                                                            Unit: {item.ingredient?.defaultUnit?.name || 'N/A'}{' '}
+                                                            {item.ingredient?.defaultUnit?.abbreviation
+                                                                ? `(${item.ingredient.defaultUnit.abbreviation})`
+                                                                : ''}
+                                                        </span>
+                                                    </div>
+                                                    <Badge variant="outline" className="text-[11px] font-mono shrink-0 font-bold bg-background/50">
+                                                        ₱{Number(item.unitCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground italic py-2">No ingredients linked to this supplier yet.</p>
+                                    )}
                                 </div>
 
                                 {/* Audit Card */}
