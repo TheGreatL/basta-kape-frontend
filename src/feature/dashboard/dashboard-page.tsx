@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { format } from 'date-fns';
+import { format, startOfWeek, startOfMonth } from 'date-fns';
 import {
     Coffee,
     TrendingUp,
@@ -11,10 +11,8 @@ import {
     Clock,
     CheckCircle2,
     ChevronRight,
-    Users,
     Shield,
     ArrowUpRight,
-    Menu as MenuIcon,
     RefreshCw
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -82,12 +80,13 @@ export default function DashboardPage() {
     const { user } = useAuth();
     const permissions = React.useMemo(() => getUserPermissions(user), [user]);
 
+    // Period filter state
+    const [period, setPeriod] = React.useState<'today' | 'this_week' | 'this_month'>('today');
+
     // String paths as escape hatch for TanStack Router Link strict search params checking
     const salesPath = '/admin/sales' as string;
     const ordersPath = '/admin/orders' as string;
     const inventoryPath = '/admin/inventory' as string;
-    const menuPath = '/admin/menu' as string;
-    const usersPath = '/admin/users' as string;
 
     // Check permissions dynamically
     const canReadSales = React.useMemo(
@@ -101,7 +100,27 @@ export default function DashboardPage() {
 
     const canReadOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ), [permissions]);
 
-    const canReadPOS = React.useMemo(() => hasPermission(permissions, appModules.POINT_OF_SALE, appPermissions.READ), [permissions]);
+    // Calculate dates dynamically based on selected period
+    const { dateFrom, dateTo } = React.useMemo(() => {
+        const now = new Date();
+        const todayStr = format(now, 'yyyy-MM-dd');
+        if (period === 'this_week') {
+            return {
+                dateFrom: format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+                dateTo: todayStr
+            };
+        }
+        if (period === 'this_month') {
+            return {
+                dateFrom: format(startOfMonth(now), 'yyyy-MM-dd'),
+                dateTo: todayStr
+            };
+        }
+        return {
+            dateFrom: todayStr,
+            dateTo: todayStr
+        };
+    }, [period]);
 
     // Consolidated Dashboard Summary query
     const {
@@ -114,10 +133,10 @@ export default function DashboardPage() {
         queryFn: getDashboardSummary
     });
 
-    // Sales Trend Chart query (last 30 days) - only runs if authorized
+    // Sales Analytics query driven by the selected time period
     const { data: salesAnalytics, isLoading: isSalesLoading } = useQuery({
-        queryKey: [QUERY_KEY.SALES.SALES_ANALYTICS, 'dashboard-trend'],
-        queryFn: () => getSalesAnalytics(undefined, undefined),
+        queryKey: [QUERY_KEY.SALES.SALES_ANALYTICS, 'dashboard', period, dateFrom, dateTo],
+        queryFn: () => getSalesAnalytics(dateFrom, dateTo),
         enabled: !!canReadSales
     });
 
@@ -147,12 +166,28 @@ export default function DashboardPage() {
     const userRoles = user?.roles.map((r) => r.name).join(', ') || 'Staff';
     const dailyTrend = salesAnalytics?.dailyTrend || [];
 
+    const periodLabel = period === 'today' ? "Today's" : period === 'this_week' ? "This Week's" : "This Month's";
+    const periodSuffix = period === 'today' ? 'today' : period === 'this_week' ? 'this week' : 'this month';
+    const trendLabel = period === 'today' ? 'Today' : period === 'this_week' ? 'This Week' : 'This Month';
+
+    const salesMetrics =
+        salesAnalytics?.summary ||
+        (period === 'today' && summary.salesToday
+            ? summary.salesToday
+            : {
+                  grossSales: 0,
+                  discountTotal: 0,
+                  netSales: 0,
+                  orderCount: 0,
+                  averageOrderValue: 0
+              });
+
     return (
         <div className="flex flex-col gap-8 min-h-screen pb-12">
             {/* Elegant Welcome Banner */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-primary-foreground p-6 text-primary-foreground shadow-lg md:p-8">
                 <div className="relative z-10 space-y-2.5">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase  backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase backdrop-blur-sm">
                         <Shield className="size-3.5" /> {userRoles}
                     </span>
                     <h1 className="text-2xl font-bold md:text-3xl leading-tight">Welcome back, {displayName}!</h1>
@@ -166,16 +201,57 @@ export default function DashboardPage() {
             </div>
 
             {/* Manager Perspective: Sales Overview */}
-            {canReadSales && summary.salesToday && (
+            {canReadSales && (
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5 text-primary" />
-                            <h2 className="text-lg font-bold text-foreground">Today's Sales Performance</h2>
+                            <h2 className="text-lg font-bold text-foreground">{periodLabel} Sales Performance</h2>
                         </div>
-                        <Link to={salesPath} className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
-                            View Full Performance <ArrowUpRight className="size-3.5" />
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Record filter for Today, This Week, This Month */}
+                            <div className="inline-flex items-center p-1 bg-muted/60 border border-border/50 rounded-xl gap-1">
+                                <Button
+                                    type="button"
+                                    variant={period === 'today' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setPeriod('today')}
+                                    className={cn(
+                                        'h-7 text-xs font-semibold rounded-lg px-2.5 transition-all',
+                                        period === 'today' ? 'shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    Today
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={period === 'this_week' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setPeriod('this_week')}
+                                    className={cn(
+                                        'h-7 text-xs font-semibold rounded-lg px-2.5 transition-all',
+                                        period === 'this_week' ? 'shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    This Week
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={period === 'this_month' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setPeriod('this_month')}
+                                    className={cn(
+                                        'h-7 text-xs font-semibold rounded-lg px-2.5 transition-all',
+                                        period === 'this_month' ? 'shadow-2xs' : 'text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    This Month
+                                </Button>
+                            </div>
+                            <Link to={salesPath} className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5 ml-1">
+                                View Full Performance <ArrowUpRight className="size-3.5" />
+                            </Link>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -187,7 +263,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="space-y-0.5">
                                 <h3 className="text-lg font-bold text-foreground">
-                                    ₱{summary.salesToday.grossSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    ₱{salesMetrics.grossSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </h3>
                                 <span className="text-xs text-muted-foreground font-semibold">Before deductions</span>
                             </div>
@@ -201,9 +277,9 @@ export default function DashboardPage() {
                             </div>
                             <div className="space-y-0.5">
                                 <h3 className="text-lg font-bold text-primary">
-                                    ₱{summary.salesToday.netSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    ₱{salesMetrics.netSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </h3>
-                                <span className="text-xs text-primary/80 font-bold">Total earnings today</span>
+                                <span className="text-xs text-primary/80 font-bold">Total earnings {periodSuffix}</span>
                             </div>
                         </div>
 
@@ -215,9 +291,9 @@ export default function DashboardPage() {
                             </div>
                             <div className="space-y-0.5">
                                 <h3 className="text-lg font-bold text-amber-600">
-                                    ₱{summary.salesToday.discountTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    ₱{salesMetrics.discountTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </h3>
-                                <span className="text-xs text-muted-foreground font-semibold">Discount deductions</span>
+                                <span className="text-xs text-muted-foreground font-semibold">Total discounts applied</span>
                             </div>
                         </div>
 
@@ -228,8 +304,8 @@ export default function DashboardPage() {
                                 <ShoppingBag className="size-4 text-muted-foreground/80" />
                             </div>
                             <div className="space-y-0.5">
-                                <h3 className="text-lg font-bold text-foreground">{summary.salesToday.orderCount}</h3>
-                                <span className="text-xs text-muted-foreground font-semibold">Completed order count</span>
+                                <h3 className="text-lg font-bold text-foreground">{salesMetrics.orderCount}</h3>
+                                <span className="text-xs text-muted-foreground font-semibold">Completed orders</span>
                             </div>
                         </div>
 
@@ -241,7 +317,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="space-y-0.5">
                                 <h3 className="text-lg font-bold text-foreground">
-                                    ₱{summary.salesToday.averageOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    ₱{salesMetrics.averageOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </h3>
                                 <span className="text-xs text-muted-foreground font-semibold">Avg ticket size</span>
                             </div>
@@ -255,8 +331,10 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Card className="lg:col-span-2 shadow-2xs border-border/60 rounded-2xl">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-bold text-foreground">Sales Trend (Last 30 Days)</CardTitle>
-                            <CardDescription className="text-xs text-muted-foreground">Historical view of net daily sales revenue.</CardDescription>
+                            <CardTitle className="text-sm font-bold text-foreground">Sales Trend ({trendLabel})</CardTitle>
+                            <CardDescription className="text-xs text-muted-foreground">
+                                Historical view of net daily sales revenue for {periodSuffix}.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="h-[260px] pt-4">
                             {isSalesLoading ? (
@@ -325,7 +403,9 @@ export default function DashboardPage() {
                     <Card className="shadow-2xs border-border/60 rounded-2xl flex flex-col justify-between">
                         <CardHeader>
                             <CardTitle className="text-sm font-bold text-foreground">Top 5 Best-Selling Favorites</CardTitle>
-                            <CardDescription className="text-xs text-muted-foreground">Most popular items based on sales volume.</CardDescription>
+                            <CardDescription className="text-xs text-muted-foreground">
+                                Most popular items based on sales volume {periodSuffix}.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col justify-center">
                             {salesAnalytics?.topProducts && salesAnalytics.topProducts.length > 0 ? (
@@ -468,11 +548,8 @@ export default function DashboardPage() {
                     </Card>
                 )}
 
-                {/* Cash Drawer & Stock Alerts Sidebar (accessible depending on permissions) */}
+                {/* Stock Alerts Sidebar */}
                 <div className="space-y-6">
-                    {/* Active Register Shift Info */}
-
-                    {/* Stock Alert Statuses */}
                     {canReadInventory && summary.inventorySummary && (
                         <Card className="shadow-2xs border-border/60 rounded-2xl">
                             <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -538,73 +615,6 @@ export default function DashboardPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    )}
-                </div>
-            </div>
-
-            {/* Quick Action Navigation Grid */}
-            <div className="space-y-4">
-                <h3 className="text-sm font-bold text-foreground">Quick Shortcuts</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {canReadPOS && (
-                        <Link to="/admin/pos">
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <Coffee className="size-4 text-primary" /> POS
-                            </Button>
-                        </Link>
-                    )}
-                    {hasPermission(permissions, appModules.ORDER_QUEUE, appPermissions.READ) && (
-                        <Link to="/admin/order-queue">
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <Clock className="size-4 text-primary" /> Order Queue
-                            </Button>
-                        </Link>
-                    )}
-                    {hasPermission(permissions, appModules.MENU, appPermissions.READ) && (
-                        <Link to={menuPath}>
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <MenuIcon className="size-4 text-primary" /> Menu
-                            </Button>
-                        </Link>
-                    )}
-                    {canReadInventory && (
-                        <Link to={inventoryPath}>
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <ShoppingBag className="size-4 text-primary" /> Inventory
-                            </Button>
-                        </Link>
-                    )}
-                    {canReadSales && (
-                        <Link to={salesPath}>
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <TrendingUp className="size-4 text-primary" /> Sales Performance
-                            </Button>
-                        </Link>
-                    )}
-                    {hasPermission(permissions, appModules.USERS_MANAGEMENT, appPermissions.READ) && (
-                        <Link to={usersPath}>
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"
-                            >
-                                <Users className="size-4 text-primary" /> Users
-                            </Button>
-                        </Link>
                     )}
                 </div>
             </div>
