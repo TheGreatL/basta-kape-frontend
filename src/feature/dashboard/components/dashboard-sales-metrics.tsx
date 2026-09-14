@@ -56,7 +56,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 {/* Net Revenue (Key Highlighted Metric) */}
                 <div className="bg-card border border-primary/20 rounded-2xl p-5 shadow-2xs bg-gradient-to-br from-primary/5 to-transparent space-y-2">
                     <div className="flex justify-between items-center text-primary">
-                        <span className="text-xs font-bold uppercase tracking-wider">Net Revenue</span>
+                        <span className="text-xs font-bold uppercase">Net Revenue</span>
                         <TrendingUp className="size-4 text-primary" />
                     </div>
                     <div className="space-y-0.5">
@@ -70,7 +70,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 {/* Gross Sales */}
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground">
-                        <span className="text-xs font-bold uppercase tracking-wider">Gross Sales</span>
+                        <span className="text-xs font-bold uppercase">Gross Sales</span>
                         <DollarSign className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
@@ -84,7 +84,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 {/* Total Orders */}
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground">
-                        <span className="text-xs font-bold uppercase tracking-wider">Total Orders</span>
+                        <span className="text-xs font-bold uppercase">Total Orders</span>
                         <ShoppingBag className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
@@ -96,7 +96,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 {/* Average Receipt */}
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground">
-                        <span className="text-xs font-bold uppercase tracking-wider">Average Order</span>
+                        <span className="text-xs font-bold uppercase">Average Order</span>
                         <Coffee className="size-4 text-muted-foreground/80" />
                     </div>
                     <div className="space-y-0.5">
@@ -110,7 +110,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 {/* Discounts Deducted */}
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-amber-600">
-                        <span className="text-xs font-bold uppercase tracking-wider">Discounts</span>
+                        <span className="text-xs font-bold uppercase">Discounts</span>
                         <Percent className="size-4 text-amber-600/80" />
                     </div>
                     <div className="space-y-0.5">

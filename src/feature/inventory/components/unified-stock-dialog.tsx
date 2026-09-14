@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import { PackagePlus, Trash2, Sliders, CalendarIcon } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 
 import { createDelivery, createAdjustment, updatePhysicalCount, getIngredients } from '#/api/inventory.api.ts';
-import { getSuppliersList } from '#/api/suppliers.api.ts';
+import { getSuppliersList, getSupplierIngredients } from '#/api/suppliers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import type { IIngredient, TAdjustmentType } from '../inventory.types';
@@ -73,6 +73,7 @@ export default function UnifiedStockDialog({
     const queryClient = useQueryClient();
     const [mode, setMode] = React.useState<TStockActionMode>(initialMode);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(preselectedIngredient || null);
+    const [selectedSupplier, setSelectedSupplier] = React.useState<ISupplierListItem | null>(null);
 
     const form = useForm<UnifiedFormValues>({
         resolver: zodResolver(unifiedFormSchema),
@@ -95,6 +96,7 @@ export default function UnifiedStockDialog({
         if (open) {
             setMode(initialMode);
             setSelectedIngredient(preselectedIngredient || null);
+            setSelectedSupplier(null);
             form.reset({
                 mode: initialMode,
                 ingredientId: preselectedIngredient?.id || '',
@@ -115,6 +117,44 @@ export default function UnifiedStockDialog({
         setMode(newMode);
         form.setValue('mode', newMode);
     };
+
+    const watchedSupplierId = form.watch('supplierId');
+    const watchedIngredientId = form.watch('ingredientId');
+
+    const { data: supplierIngredientsData, isLoading: isLoadingSupplierIngredients } = useQuery({
+        queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIER_INGREDIENTS, watchedSupplierId],
+        queryFn: () => getSupplierIngredients(watchedSupplierId!),
+        enabled: Boolean(watchedSupplierId && mode === 'ADD_STOCK')
+    });
+
+    const prevSupplierIdRef = React.useRef<string | undefined>(watchedSupplierId);
+
+    // Auto-fill unit cost when matching supplier ingredient is found, or reset ingredient if not supplied by new supplier
+    React.useEffect(() => {
+        if (mode === 'ADD_STOCK') {
+            const supplierChanged = prevSupplierIdRef.current !== watchedSupplierId;
+            prevSupplierIdRef.current = watchedSupplierId;
+
+            if (watchedSupplierId && supplierIngredientsData) {
+                if (watchedIngredientId) {
+                    const matched = supplierIngredientsData.find((si) => si.ingredientId === watchedIngredientId);
+                    if (matched) {
+                        if (matched.unitCost != null && matched.unitCost > 0) {
+                            const currentCost = form.getValues('unitCost');
+                            if (!currentCost || currentCost === 0 || supplierChanged) {
+                                form.setValue('unitCost', matched.unitCost);
+                            }
+                        }
+                    } else {
+                        // The selected ingredient is not supplied by this supplier, reset it
+                        form.setValue('ingredientId', '');
+                        setSelectedIngredient(null);
+                        form.setValue('unitCost', 0);
+                    }
+                }
+            }
+        }
+    }, [mode, watchedSupplierId, watchedIngredientId, supplierIngredientsData, form]);
 
     // Delivery mutation
     const deliveryMutation = useMutation({
@@ -259,17 +299,90 @@ export default function UnifiedStockDialog({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
                         <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 min-h-0">
-                            {/* Raw Ingredient Select */}
+                            {/* 🟢 In ADD_STOCK mode: Supplier is the 1st field */}
+                            {mode === 'ADD_STOCK' && (
+                                <FormField
+                                    control={form.control}
+                                    name="supplierId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-semibold text-foreground/80">Select Supplier (Optional)</FormLabel>
+                                            <FormControl>
+                                                <InfiniteSelect<ISupplierListItem>
+                                                    queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST]}
+                                                    fetchFn={async ({ pageParam, query }) => {
+                                                        return getSuppliersList({
+                                                            page: pageParam || 1,
+                                                            limit: 20,
+                                                            search: query,
+                                                            status: 'active'
+                                                        });
+                                                    }}
+                                                    getItems={(resPage) => resPage.data}
+                                                    getNextPageParam={(lastPage) => {
+                                                        return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                    }}
+                                                    value={field.value || ''}
+                                                    onChange={(val, item) => {
+                                                        field.onChange(val || '');
+                                                        setSelectedSupplier(item || null);
+                                                    }}
+                                                    getOptionValue={(item) => item.id}
+                                                    getOptionLabel={(item) => item.name}
+                                                    selectedItem={selectedSupplier || undefined}
+                                                    placeholder="Choose supplier profile..."
+                                                    searchPlaceholder="Search suppliers..."
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
+                            {/* Raw Ingredient Select (2nd field in ADD_STOCK, 1st field in LOG_WASTE / CORRECTION) */}
                             <FormField
                                 control={form.control}
                                 name="ingredientId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80">Raw Ingredient</FormLabel>
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                {mode === 'ADD_STOCK' && watchedSupplierId ? 'Supplied Ingredient' : 'Raw Ingredient'}
+                                            </FormLabel>
+                                            {mode === 'ADD_STOCK' && watchedSupplierId && supplierIngredientsData && (
+                                                <span className="text-xs font-semibold text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                                                    {supplierIngredientsData.length} linked item{supplierIngredientsData.length === 1 ? '' : 's'}
+                                                </span>
+                                            )}
+                                        </div>
                                         <FormControl>
                                             <InfiniteSelect<IIngredient>
-                                                queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
+                                                queryKey={
+                                                    mode === 'ADD_STOCK' && watchedSupplierId
+                                                        ? [QUERY_KEY.SUPPLIERS.SUPPLIER_INGREDIENTS, watchedSupplierId, 'stock-select']
+                                                        : [QUERY_KEY.INVENTORY.INGREDIENTS_LIST]
+                                                }
                                                 fetchFn={async ({ pageParam, query }) => {
+                                                    if (mode === 'ADD_STOCK' && watchedSupplierId) {
+                                                        const list = supplierIngredientsData ?? (await getSupplierIngredients(watchedSupplierId));
+                                                        const filtered = list
+                                                            .filter((si) => {
+                                                                if (!si.ingredient) return false;
+                                                                if (!query) return true;
+                                                                return si.ingredient.name.toLowerCase().includes(query.toLowerCase());
+                                                            })
+                                                            .map((si) => si.ingredient as unknown as IIngredient);
+                                                        return {
+                                                            data: filtered,
+                                                            meta: {
+                                                                currentPage: 1,
+                                                                totalPages: 1,
+                                                                totalItems: filtered.length,
+                                                                hasMore: false
+                                                            }
+                                                        };
+                                                    }
                                                     return getIngredients({
                                                         page: pageParam || 1,
                                                         limit: 20,
@@ -283,19 +396,47 @@ export default function UnifiedStockDialog({
                                                 }}
                                                 value={field.value}
                                                 onChange={(val, item) => {
-                                                    field.onChange(val);
+                                                    field.onChange(val || '');
                                                     setSelectedIngredient(item || null);
+                                                    if (watchedSupplierId && supplierIngredientsData && val) {
+                                                        const matched = supplierIngredientsData.find((si) => si.ingredientId === val);
+                                                        if (matched && matched.unitCost != null && matched.unitCost > 0) {
+                                                            form.setValue('unitCost', matched.unitCost);
+                                                        }
+                                                    }
                                                 }}
                                                 getOptionValue={(item) => item.id}
                                                 getOptionLabel={(item) => {
                                                     const unitStr = item.defaultUnit
                                                         ? ` (${item.defaultUnit.abbreviation || item.defaultUnit.name})`
                                                         : '';
-                                                    return `${item.name}${unitStr}`;
+                                                    const suppliedItem = supplierIngredientsData?.find((si) => si.ingredientId === item.id);
+                                                    const costBadge =
+                                                        suppliedItem && suppliedItem.unitCost != null && suppliedItem.unitCost > 0
+                                                            ? ` • ₱${suppliedItem.unitCost.toFixed(2)}`
+                                                            : '';
+                                                    return `${item.name}${unitStr}${costBadge}`;
                                                 }}
-                                                selectedItem={preselectedIngredient || undefined}
-                                                placeholder="Choose ingredient..."
-                                                searchPlaceholder="Search ingredients..."
+                                                selectedItem={selectedIngredient || undefined}
+                                                placeholder={
+                                                    mode === 'ADD_STOCK' && watchedSupplierId
+                                                        ? isLoadingSupplierIngredients
+                                                            ? 'Loading supplier ingredients...'
+                                                            : supplierIngredientsData && supplierIngredientsData.length === 0
+                                                              ? 'No ingredients linked to supplier'
+                                                              : 'Choose supplied ingredient...'
+                                                        : 'Choose ingredient...'
+                                                }
+                                                searchPlaceholder={
+                                                    mode === 'ADD_STOCK' && watchedSupplierId
+                                                        ? 'Search supplier ingredients...'
+                                                        : 'Search ingredients...'
+                                                }
+                                                emptyText={
+                                                    mode === 'ADD_STOCK' && watchedSupplierId
+                                                        ? 'No ingredients linked to this supplier'
+                                                        : 'No ingredients found'
+                                                }
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -306,40 +447,6 @@ export default function UnifiedStockDialog({
                             {/* 🟢 MODE 1: ADD STOCK (DELIVERY) */}
                             {mode === 'ADD_STOCK' && (
                                 <>
-                                    <FormField
-                                        control={form.control}
-                                        name="supplierId"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Select Supplier (Optional)</FormLabel>
-                                                <FormControl>
-                                                    <InfiniteSelect<ISupplierListItem>
-                                                        queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST]}
-                                                        fetchFn={async ({ pageParam, query }) => {
-                                                            return getSuppliersList({
-                                                                page: pageParam || 1,
-                                                                limit: 20,
-                                                                search: query,
-                                                                status: 'active'
-                                                            });
-                                                        }}
-                                                        getItems={(resPage) => resPage.data}
-                                                        getNextPageParam={(lastPage) => {
-                                                            return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
-                                                        }}
-                                                        value={field.value || ''}
-                                                        onChange={(val) => field.onChange(val || '')}
-                                                        getOptionValue={(item) => item.id}
-                                                        getOptionLabel={(item) => item.name}
-                                                        placeholder="Choose supplier profile..."
-                                                        searchPlaceholder="Search suppliers..."
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
                                     <div className="grid grid-cols-2 gap-4">
                                         <FormField
                                             control={form.control}

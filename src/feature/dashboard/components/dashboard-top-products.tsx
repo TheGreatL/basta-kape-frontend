@@ -36,7 +36,7 @@ export function DashboardTopProducts({ topProducts, isLoading, dateRange }: Dash
                                     </div>
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-xs font-bold text-foreground truncate max-w-[140px] sm:max-w-[180px]">{p.name}</span>
-                                        <span className="text-[11px] text-muted-foreground font-semibold">
+                                        <span className="text-xs text-muted-foreground font-semibold">
                                             {p.quantity} {p.quantity === 1 ? 'cup' : 'cups'} sold
                                         </span>
                                     </div>

@@ -43,17 +43,17 @@ export function DashboardOrdersQueue({ queueStats, recentOrders }: DashboardOrde
                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 flex flex-col items-center justify-center">
                         <Clock className="size-4 text-amber-500 mb-1" />
                         <span className="text-xl font-bold text-amber-500">{queueStats.pending}</span>
-                        <span className="text-[11px] uppercase font-bold text-muted-foreground">Pending</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Pending</span>
                     </div>
                     <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3 flex flex-col items-center justify-center">
                         <Coffee className="size-4 text-blue-500 mb-1" />
                         <span className="text-xl font-bold text-blue-500">{queueStats.preparing}</span>
-                        <span className="text-[11px] uppercase font-bold text-muted-foreground">Preparing</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Preparing</span>
                     </div>
                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 flex flex-col items-center justify-center">
                         <CheckCircle2 className="size-4 text-emerald-500 mb-1" />
                         <span className="text-xl font-bold text-emerald-500">{queueStats.ready}</span>
-                        <span className="text-[11px] uppercase font-bold text-muted-foreground">Ready</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Ready</span>
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@ export function DashboardOrdersQueue({ queueStats, recentOrders }: DashboardOrde
                                                                   : 'destructive'
                                                     }
                                                     className={cn(
-                                                        'text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm',
+                                                        'text-xs font-bold uppercase px-2 py-0.5 rounded-sm',
                                                         order.status === 'COMPLETED' && 'bg-emerald-500/10 text-emerald-600 border-transparent',
                                                         order.status === 'PREPARING' && 'bg-blue-500/10 text-blue-600 border-transparent',
                                                         order.status === 'READY' && 'bg-indigo-500/10 text-indigo-600 border-transparent',

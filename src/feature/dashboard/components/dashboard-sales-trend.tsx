@@ -42,7 +42,7 @@ export function DashboardSalesTrend({ dailyTrend, isLoading, dateRange }: Dashbo
                                 dataKey="date"
                                 tickLine={false}
                                 axisLine={false}
-                                style={{ fontSize: '10px', fill: '#64748b', fontWeight: 600 }}
+                                className="text-xs font-semibold fill-muted-foreground"
                                 tickFormatter={(str) => {
                                     try {
                                         return format(new Date(str), 'MMM d');
@@ -54,7 +54,7 @@ export function DashboardSalesTrend({ dailyTrend, isLoading, dateRange }: Dashbo
                             <YAxis
                                 tickLine={false}
                                 axisLine={false}
-                                style={{ fontSize: '10px', fill: '#64748b', fontWeight: 600 }}
+                                className="text-xs font-semibold fill-muted-foreground"
                                 tickFormatter={(val) => `₱${val.toLocaleString()}`}
                             />
                             <Tooltip
@@ -69,10 +69,10 @@ export function DashboardSalesTrend({ dailyTrend, isLoading, dateRange }: Dashbo
                                         return label;
                                     }
                                 }}
+                                wrapperClassName="text-xs"
                                 contentStyle={{
                                     borderRadius: '12px',
                                     borderColor: '#e2e8f0',
-                                    fontSize: '11px',
                                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'
                                 }}
                             />

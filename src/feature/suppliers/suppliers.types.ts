@@ -5,6 +5,32 @@ export interface IGetSuppliersListParams extends IPaginationParams {
     status?: 'active' | 'archive';
 }
 
+export interface ISupplierIngredientItemInput {
+    ingredientId: string;
+    unitCost?: number;
+}
+
+export interface ISupplierIngredient {
+    id: string;
+    supplierId: string;
+    ingredientId: string;
+    unitCost?: number | null;
+    ingredient?: {
+        id: string;
+        name: string;
+        description?: string | null;
+        type: string;
+        reorderPoint: number;
+        defaultUnit?: {
+            id: string;
+            name: string;
+            abbreviation: string | null;
+        } | null;
+    };
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 export interface ISupplierListItem {
     id: string;
     name: string;
@@ -12,6 +38,7 @@ export interface ISupplierListItem {
     contactPerson: string | null;
     contactNumber: string | null;
     notes: string | null;
+    ingredients?: ISupplierIngredient[];
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -25,6 +52,8 @@ export interface ICreateSupplierPayload {
     contactPerson?: string | null;
     contactNumber?: string | null;
     notes?: string | null;
+    ingredients?: ISupplierIngredientItemInput[];
+    ingredientIds?: string[];
 }
 
 export interface IUpdateSupplierPayload {
@@ -33,6 +62,8 @@ export interface IUpdateSupplierPayload {
     contactPerson?: string | null;
     contactNumber?: string | null;
     notes?: string | null;
+    ingredients?: ISupplierIngredientItemInput[];
+    ingredientIds?: string[];
 }
 
 export interface SuppliersTabProps {

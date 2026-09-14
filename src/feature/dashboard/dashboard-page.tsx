@@ -20,7 +20,6 @@ import { DashboardSalesTrend } from './components/dashboard-sales-trend';
 import { DashboardTopProducts } from './components/dashboard-top-products';
 import { DashboardOrdersQueue } from './components/dashboard-orders-queue';
 import { DashboardStockAlerts } from './components/dashboard-stock-alerts';
-import { DashboardQuickActions } from './components/dashboard-quick-actions';
 
 import { getDashboardDateRange } from './dashboard.types';
 import type { TDashboardDateFilter, DashboardSummary } from './dashboard.types';
@@ -42,11 +41,12 @@ export default function DashboardPage() {
     );
 
     const canReadInventory = React.useMemo(() => hasPermission(permissions, appModules.INVENTORY_MANAGEMENT, appPermissions.READ), [permissions]);
-    const canReadOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ), [permissions]);
-    const canReadOrderQueue = React.useMemo(() => hasPermission(permissions, appModules.ORDER_QUEUE, appPermissions.READ), [permissions]);
-    const canReadPOS = React.useMemo(() => hasPermission(permissions, appModules.POINT_OF_SALE, appPermissions.READ), [permissions]);
-    const canReadMenu = React.useMemo(() => hasPermission(permissions, appModules.MENU, appPermissions.READ), [permissions]);
-    const canReadUsers = React.useMemo(() => hasPermission(permissions, appModules.USERS_MANAGEMENT, appPermissions.READ), [permissions]);
+    const canReadOrders = React.useMemo(
+        () =>
+            hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ) ||
+            hasPermission(permissions, appModules.ORDER_QUEUE, appPermissions.READ),
+        [permissions]
+    );
 
     // Consolidated Dashboard Summary query (updates with selected date filter)
     const {
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
     return (
         <div className="flex flex-col gap-8 min-h-screen pb-12">
-            {/* 1. Welcome Banner with Interactive Date Filter */}
+            {/* 1. Welcome Banner with Interactive Date Filter (Today, This Week, This Month) */}
             <DashboardHeader
                 displayName={displayName}
                 userRoles={userRoles}
@@ -119,29 +119,21 @@ export default function DashboardPage() {
             )}
 
             {/* 4. Real-time Kitchen Operations: Order Queue & Live Stock Alerts */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {canReadOrders && summary.ordersSummary && (
-                    <DashboardOrdersQueue queueStats={summary.ordersSummary.queueStats} recentOrders={summary.ordersSummary.recentOrders} />
-                )}
+            {(canReadOrders || canReadInventory) && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {canReadOrders && summary.ordersSummary && (
+                        <DashboardOrdersQueue queueStats={summary.ordersSummary.queueStats} recentOrders={summary.ordersSummary.recentOrders} />
+                    )}
 
-                {canReadInventory && summary.inventorySummary && (
-                    <DashboardStockAlerts
-                        outOfStockCount={summary.inventorySummary.outOfStockCount}
-                        criticalCount={summary.inventorySummary.criticalCount}
-                        lowStockItems={summary.inventorySummary.lowStockItems}
-                    />
-                )}
-            </div>
-
-            {/* 5. Permission-based Quick Shortcuts */}
-            <DashboardQuickActions
-                canReadPOS={canReadPOS}
-                canReadOrderQueue={canReadOrderQueue}
-                canReadMenu={canReadMenu}
-                canReadInventory={canReadInventory}
-                canReadSales={canReadSales}
-                canReadUsers={canReadUsers}
-            />
+                    {canReadInventory && summary.inventorySummary && (
+                        <DashboardStockAlerts
+                            outOfStockCount={summary.inventorySummary.outOfStockCount}
+                            criticalCount={summary.inventorySummary.criticalCount}
+                            lowStockItems={summary.inventorySummary.lowStockItems}
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 }

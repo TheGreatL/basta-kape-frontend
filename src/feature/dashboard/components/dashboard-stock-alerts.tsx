@@ -30,11 +30,11 @@ export function DashboardStockAlerts({ outOfStockCount, criticalCount, lowStockI
                 <div className="grid grid-cols-2 gap-2">
                     <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-2.5 flex flex-col items-center">
                         <span className="text-lg font-bold text-rose-500">{outOfStockCount}</span>
-                        <span className="text-[11px] uppercase font-bold text-muted-foreground">Out of Stock</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Out of Stock</span>
                     </div>
                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-2.5 flex flex-col items-center">
                         <span className="text-lg font-bold text-amber-500">{criticalCount}</span>
-                        <span className="text-[11px] uppercase font-bold text-muted-foreground">Critical Stock</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Critical Stock</span>
                     </div>
                 </div>
 
