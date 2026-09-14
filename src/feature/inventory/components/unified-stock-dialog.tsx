@@ -351,7 +351,7 @@ export default function UnifiedStockDialog({
                                                 {mode === 'ADD_STOCK' && watchedSupplierId ? 'Supplied Ingredient' : 'Raw Ingredient'}
                                             </FormLabel>
                                             {mode === 'ADD_STOCK' && watchedSupplierId && supplierIngredientsData && (
-                                                <span className="text-[11px] font-semibold text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                                                <span className="text-xs font-semibold text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
                                                     {supplierIngredientsData.length} linked item{supplierIngredientsData.length === 1 ? '' : 's'}
                                                 </span>
                                             )}

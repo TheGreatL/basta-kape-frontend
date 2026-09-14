@@ -249,11 +249,11 @@ export default function SupplierCreateDialog({ open, onOpenChange }: SupplierCre
                                                     <Package className="size-3.5 text-primary" />
                                                     Supplied Ingredients
                                                 </Label>
-                                                <p className="text-[11px] text-muted-foreground">
+                                                <p className="text-xs text-muted-foreground">
                                                     Link ingredients from this supplier to easily toggle them when creating POs.
                                                 </p>
                                             </div>
-                                            <Badge variant="secondary" className="text-[11px] font-semibold">
+                                            <Badge variant="secondary" className="text-xs font-semibold">
                                                 {selectedIngredients.length} linked
                                             </Badge>
                                         </div>
@@ -324,14 +324,14 @@ export default function SupplierCreateDialog({ open, onOpenChange }: SupplierCre
                                                                     {ing?.name || 'Unknown Ingredient'}
                                                                 </span>
                                                                 {ing?.defaultUnit?.name && (
-                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                    <span className="text-xs text-muted-foreground">
                                                                         Unit: {ing.defaultUnit.name} ({ing.defaultUnit.abbreviation || 'N/A'})
                                                                     </span>
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <div className="flex items-center gap-1">
-                                                                    <span className="text-[11px] text-muted-foreground">₱</span>
+                                                                    <span className="text-xs text-muted-foreground">₱</span>
                                                                     <Input
                                                                         type="number"
                                                                         min="0"

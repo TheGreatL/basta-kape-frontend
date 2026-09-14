@@ -294,7 +294,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                         <Package className="size-3.5 text-primary" />
                                         Supplier Ingredients
                                     </label>
-                                    <p className="text-[11px] text-muted-foreground">Toggle the ingredients you want to order from this supplier.</p>
+                                    <p className="text-xs text-muted-foreground">Toggle the ingredients you want to order from this supplier.</p>
                                 </div>
                                 {supplierIngredients && supplierIngredients.length > 0 && (
                                     <Button
@@ -356,7 +356,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     <span className="text-xs font-bold text-foreground block truncate">
                                                         {si.ingredient?.name || 'Unknown Ingredient'}
                                                     </span>
-                                                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                                                         <span>Unit: {si.ingredient?.defaultUnit?.name || 'N/A'}</span>
                                                         {si.unitCost ? <span>• Agreed Price: ₱{si.unitCost.toFixed(2)}</span> : null}
                                                     </div>
@@ -366,7 +366,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     <>
                                                         {/* Quantity */}
                                                         <div className="w-[100px] space-y-0.5 shrink-0">
-                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
                                                                 Qty {unitAbbrev && `(${unitAbbrev})`}
                                                             </span>
                                                             <Input
@@ -387,7 +387,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
 
                                                         {/* Unit Cost */}
                                                         <div className="w-[105px] space-y-0.5 shrink-0">
-                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
                                                                 Unit Cost (₱)
                                                             </span>
                                                             <Input
@@ -408,9 +408,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
 
                                                         {/* Subtotal */}
                                                         <div className="w-[85px] text-right space-y-0.5 shrink-0">
-                                                            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                                                                Subtotal
-                                                            </span>
+                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
                                                             <span className="text-xs font-bold text-foreground block font-mono">
                                                                 ₱
                                                                 {((poItem?.quantity || 0) * (poItem?.unitCost || 0)).toLocaleString(undefined, {
@@ -439,7 +437,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                             <div className="flex justify-between items-center">
                                 <div>
                                     <label className="text-xs font-bold text-foreground">Other / Unlisted Items</label>
-                                    <p className="text-[11px] text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground">
                                         Add emergency or extra items that are not normally linked to this supplier.
                                     </p>
                                 </div>
@@ -463,7 +461,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                         return (
                                             <div key={index} className="flex items-end gap-2.5 p-2.5 border border-border/40 rounded-xl bg-muted/20">
                                                 <div className="flex-1 space-y-1">
-                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Ingredient</span>
+                                                    <span className="text-xs uppercase font-bold text-muted-foreground">Ingredient</span>
                                                     <InfiniteSelect<IIngredient>
                                                         queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST, 'po-update-extra', index]}
                                                         fetchFn={async ({ pageParam, query }) => {
@@ -490,7 +488,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                 </div>
 
                                                 <div className="w-[95px] space-y-1">
-                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
+                                                    <span className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
                                                         Qty {unitAbbrev && `(${unitAbbrev})`}
                                                     </span>
                                                     <Input
@@ -504,7 +502,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                 </div>
 
                                                 <div className="w-[105px] space-y-1">
-                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
+                                                    <span className="text-xs uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
                                                     <Input
                                                         type="number"
                                                         min="0"
@@ -516,7 +514,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                 </div>
 
                                                 <div className="w-[85px] text-right pb-1.5 space-y-0.5 shrink-0">
-                                                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Subtotal</span>
+                                                    <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
                                                     <span className="text-xs font-bold text-foreground block font-mono">
                                                         ₱
                                                         {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {

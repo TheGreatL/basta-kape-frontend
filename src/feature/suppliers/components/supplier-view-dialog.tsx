@@ -122,14 +122,14 @@ export default function SupplierViewDialog({ open, onOpenChange, supplier }: Sup
                                                         <span className="font-semibold text-foreground truncate block">
                                                             {item.ingredient?.name || 'Unknown Ingredient'}
                                                         </span>
-                                                        <span className="text-[10px] text-muted-foreground">
+                                                        <span className="text-xs text-muted-foreground">
                                                             Unit: {item.ingredient?.defaultUnit?.name || 'N/A'}{' '}
                                                             {item.ingredient?.defaultUnit?.abbreviation
                                                                 ? `(${item.ingredient.defaultUnit.abbreviation})`
                                                                 : ''}
                                                         </span>
                                                     </div>
-                                                    <Badge variant="outline" className="text-[11px] font-mono shrink-0 font-bold bg-background/50">
+                                                    <Badge variant="outline" className="text-xs font-mono shrink-0 font-bold bg-background/50">
                                                         ₱{Number(item.unitCost || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                     </Badge>
                                                 </div>
