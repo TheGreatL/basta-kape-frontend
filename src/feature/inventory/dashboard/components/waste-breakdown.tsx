@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardWasteSummary } from '#/api/inventory.api';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import type { TAdjustmentType } from '../../inventory.types';
@@ -25,7 +26,7 @@ const COLOR_MAP: Record<TAdjustmentType, string> = {
 
 export default function WasteBreakdownWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['inventory:dashboard_waste'],
+        queryKey: [QUERY_KEY.INVENTORY.DASHBOARD_WASTE],
         queryFn: getInventoryDashboardWasteSummary
     });
 

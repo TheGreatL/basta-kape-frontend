@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardExpiringSoon } from '#/api/inventory.api';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import { format, differenceInDays } from 'date-fns';
@@ -7,7 +8,7 @@ import type { IDashboardExpiringSoon } from '../../inventory.types';
 
 export default function ExpiringSoonWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['inventory:dashboard_expiring'],
+        queryKey: [QUERY_KEY.INVENTORY.DASHBOARD_EXPIRING],
         queryFn: getInventoryDashboardExpiringSoon
     });
 

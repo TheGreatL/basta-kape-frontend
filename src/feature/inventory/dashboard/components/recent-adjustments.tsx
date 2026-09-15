@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardRecentAdjustments } from '#/api/inventory.api';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { ClipboardList, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -16,7 +17,7 @@ const ADJUSTMENT_LABEL: Record<TAdjustmentType, string> = {
 
 export default function RecentAdjustmentsWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['inventory:dashboard_adjustments'],
+        queryKey: [QUERY_KEY.INVENTORY.DASHBOARD_ADJUSTMENTS],
         queryFn: getInventoryDashboardRecentAdjustments
     });
 

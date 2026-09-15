@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardRecentDeliveries } from '#/api/inventory.api';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { Truck, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '#/components/ui/card.tsx';
 import type { IDashboardDelivery } from '../../inventory.types';
 
 export default function RecentDeliveriesWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['inventory:dashboard_deliveries'],
+        queryKey: [QUERY_KEY.INVENTORY.DASHBOARD_DELIVERIES],
         queryFn: getInventoryDashboardRecentDeliveries
     });
 

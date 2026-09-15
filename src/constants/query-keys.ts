@@ -56,7 +56,12 @@ const QUERY_KEY = {
         LEVEL_DETAILS: 'inventory:level_details',
         DELIVERIES_LIST: 'inventory:deliveries_list',
         ADJUSTMENTS_LIST: 'inventory:adjustments_list',
-        FORECAST: 'inventory:forecast'
+        FORECAST: 'inventory:forecast',
+        DASHBOARD_OVERVIEW: 'inventory:dashboard_overview',
+        DASHBOARD_EXPIRING: 'inventory:dashboard_expiring',
+        DASHBOARD_WASTE: 'inventory:dashboard_waste',
+        DASHBOARD_DELIVERIES: 'inventory:dashboard_deliveries',
+        DASHBOARD_ADJUSTMENTS: 'inventory:dashboard_adjustments'
     },
     CUSTOMERS: {
         CUSTOMERS_LIST: 'customers:customers_list',
@@ -112,4 +117,5 @@ const QUERY_KEY = {
         SUMMARY: 'disposals:summary'
     }
 };
+export { QUERY_KEY };
 export default QUERY_KEY;

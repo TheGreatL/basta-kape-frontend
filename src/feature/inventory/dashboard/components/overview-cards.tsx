@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardOverview } from '#/api/inventory.api';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { Beef, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '#/components/ui/card.tsx';
 import { Link } from '@tanstack/react-router';
 
 export default function OverviewCardsWidget() {
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['inventory:dashboard_overview'],
+        queryKey: [QUERY_KEY.INVENTORY.DASHBOARD_OVERVIEW],
         queryFn: getInventoryDashboardOverview
     });
 
