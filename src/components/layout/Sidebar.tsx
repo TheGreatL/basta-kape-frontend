@@ -114,19 +114,19 @@ const getSidebarGroups = (
                 items: [
                     { title: 'Dashboard', path: '/admin/inventory', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Stock Forecasts', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    // { title: 'Stock Forecasts', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Transactions', path: '/admin/inventory/transactions', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Spoiled Items Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
                 ]
             },
-            {
-                title: 'Food Preparation',
-                path: '/admin/food-prep',
-                icon: 'cookie',
-                module: appModules.FOOD_PREPARATION
-            },
+            // {
+            //     title: 'Food Preparation',
+            //     path: '/admin/food-prep',
+            //     icon: 'cookie',
+            //     module: appModules.FOOD_PREPARATION
+            // },
             { title: 'Stock Buy Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]
