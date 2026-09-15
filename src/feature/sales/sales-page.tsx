@@ -11,10 +11,6 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 
 import SalesSummaryWidget from './components/sales-summary-widget';
 import SalesTrendWidget from './components/sales-trend-widget';
-import FinancialPnLWidget from './components/financial-pnl-widget';
-import LossBreakdownWidget from './components/loss-breakdown-widget';
-import ExpenseBreakdownWidget from './components/expense-breakdown-widget';
-import InventoryStockCostingWidget from './components/inventory-stock-costing-widget';
 import TopProductsWidget from './components/top-products-widget';
 import OrderTypeWidget from './components/order-type-widget';
 import PaymentBreakdownWidget from './components/payment-breakdown-widget';
@@ -77,9 +73,9 @@ export default function SalesPage() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales & Financials</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Sales Analytics</h1>
                         <p className="text-xs text-muted-foreground">
-                            Track your sales earnings, stock purchases, wasted items, and take-home profit.
+                            Track sales performance, revenue trends, top-selling items, and order channels.
                         </p>
                     </div>
                 </div>
@@ -182,36 +178,20 @@ export default function SalesPage() {
                 </div>
             </div>
 
-            {/* 1. Top Financial KPI Cards */}
+            {/* 1. Top Sales KPI Cards */}
             <SalesSummaryWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
 
-            {/* 2. Main Financial Performance (Trend & P&L Statement) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                    <SalesTrendWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
-                </div>
-                <div className="lg:col-span-1">
-                    <FinancialPnLWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
-                </div>
-            </div>
+            {/* 2. Sales Revenue Trend Chart */}
+            <SalesTrendWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
 
-            {/* 3. Outflow Details (Wastage Losses & Procurement Expenses) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <LossBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
-                <ExpenseBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
-            </div>
-
-            {/* 4. Complete Inventory Stock Transactions & Cost Valuation */}
-            <InventoryStockCostingWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
-
-            {/* 5. Operational Inflow Breakdown Panels */}
+            {/* 3. Sales Breakdown Panels */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <TopProductsWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
                 <OrderTypeWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
                 <PaymentBreakdownWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
             </div>
 
-            {/* 6. Detailed Orders Transaction Table */}
+            {/* 4. Detailed Orders Transaction Table */}
             <OrderBreakdownTableWidget dateFrom={activeDateFrom} dateTo={activeDateTo} />
         </div>
     );
