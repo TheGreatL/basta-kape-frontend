@@ -93,7 +93,7 @@ export const createPurchaseOrder = async (data: {
     items: Array<{
         ingredientId: string;
         quantity: number;
-        unitCost: number;
+        unitCost?: number;
     }>;
 }): Promise<IPurchaseOrder> => {
     const response = await api.post('/purchase-orders', data);
@@ -104,8 +104,20 @@ export const createPurchaseOrder = async (data: {
     return response.json();
 };
 
-export const updatePurchaseOrderStatus = async (id: string, status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED'): Promise<IPurchaseOrder> => {
-    const response = await api.patch(`/purchase-orders/${id}/status`, { status });
+export interface IUpdatePurchaseOrderStatusPayload {
+    status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED';
+    items?: Array<{
+        ingredientId: string;
+        unitCost: number;
+    }>;
+}
+
+export const updatePurchaseOrderStatus = async (
+    id: string,
+    data: IUpdatePurchaseOrderStatusPayload | 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED'
+): Promise<IPurchaseOrder> => {
+    const payload = typeof data === 'string' ? { status: data } : data;
+    const response = await api.patch(`/purchase-orders/${id}/status`, payload);
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to update purchase order status', response.status, errorData);
@@ -121,7 +133,7 @@ export const updatePurchaseOrder = async (
         items?: Array<{
             ingredientId: string;
             quantity: number;
-            unitCost: number;
+            unitCost?: number;
         }>;
     }
 ): Promise<IPurchaseOrder> => {

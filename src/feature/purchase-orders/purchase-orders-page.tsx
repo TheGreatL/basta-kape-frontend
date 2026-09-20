@@ -44,7 +44,6 @@ import UpdatePurchaseOrderDialog from './components/update-purchase-order-dialog
 interface ICreateItemInput {
     ingredientId: string;
     quantity: number;
-    unitCost: number;
 }
 
 export default function PurchaseOrdersPage() {
@@ -173,8 +172,7 @@ export default function PurchaseOrdersPage() {
                     ...prev,
                     {
                         ingredientId: ing.ingredientId,
-                        quantity: 1,
-                        unitCost: ing.unitCost ?? 0
+                        quantity: 1
                     }
                 ];
             }
@@ -196,8 +194,7 @@ export default function PurchaseOrdersPage() {
                     if (!existingMap.has(si.ingredientId)) {
                         updated.push({
                             ingredientId: si.ingredientId,
-                            quantity: 1,
-                            unitCost: si.unitCost ?? 0
+                            quantity: 1
                         });
                     }
                 }
@@ -206,12 +203,12 @@ export default function PurchaseOrdersPage() {
         }
     };
 
-    const handleUpdatePOItem = (ingredientId: string, field: 'quantity' | 'unitCost', value: number) => {
-        setNewPOItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, [field]: value } : item)));
+    const handleUpdatePOItem = (ingredientId: string, quantity: number) => {
+        setNewPOItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, quantity } : item)));
     };
 
     const handleAddExtraItem = () => {
-        setExtraPOItems((prev) => [...prev, { ingredientId: '', quantity: 1, unitCost: 0 }]);
+        setExtraPOItems((prev) => [...prev, { ingredientId: '', quantity: 1 }]);
     };
 
     const handleRemoveExtraItem = (index: number) => {
@@ -231,14 +228,6 @@ export default function PurchaseOrdersPage() {
         return [...newPOItems, ...extraPOItems.filter((i) => i.ingredientId)];
     }, [newPOItems, extraPOItems]);
 
-    const calculatePOTotal = () => {
-        return allActiveItems.reduce((acc, item) => {
-            const qty = Number(item.quantity) || 0;
-            const cost = Number(item.unitCost) || 0;
-            return acc + qty * cost;
-        }, 0);
-    };
-
     const handleSavePO = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newPOSupplierId) {
@@ -246,7 +235,7 @@ export default function PurchaseOrdersPage() {
             return;
         }
 
-        const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0 && item.unitCost >= 0);
+        const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0);
         if (validItems.length === 0) {
             toast.error('Please select or add at least one line item with quantity > 0');
             return;
@@ -257,8 +246,7 @@ export default function PurchaseOrdersPage() {
             notes: newPONotes.trim() || undefined,
             items: validItems.map((item) => ({
                 ingredientId: item.ingredientId,
-                quantity: Number(item.quantity),
-                unitCost: Number(item.unitCost)
+                quantity: Number(item.quantity)
             }))
         };
 
@@ -314,11 +302,21 @@ export default function PurchaseOrdersPage() {
             {
                 accessorKey: 'totalAmount',
                 header: 'Total Amount',
-                cell: ({ row }) => (
-                    <span className="font-bold text-foreground">
-                        ₱{row.original.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </span>
-                )
+                cell: ({ row }) => {
+                    const po = row.original;
+                    if (po.status === 'DRAFT' || po.status === 'SENT' || po.totalAmount === 0) {
+                        return (
+                            <Badge variant="outline" className="text-xs font-semibold text-muted-foreground border-dashed bg-muted/20">
+                                Calculated upon delivery
+                            </Badge>
+                        );
+                    }
+                    return (
+                        <span className="text-xs font-bold text-foreground font-mono">
+                            ₱{po.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                    );
+                }
             },
             {
                 accessorKey: 'createdAt',
@@ -713,52 +711,19 @@ export default function PurchaseOrdersPage() {
                                                 </div>
 
                                                 {isSelected && (
-                                                    <>
-                                                        {/* Quantity */}
-                                                        <div className="w-[100px] space-y-0.5 shrink-0">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
-                                                                Qty {unitAbbrev && `(${unitAbbrev})`}
-                                                            </span>
-                                                            <Input
-                                                                type="number"
-                                                                min="0.01"
-                                                                step="any"
-                                                                value={poItem?.quantity ?? 1}
-                                                                onChange={(e) =>
-                                                                    handleUpdatePOItem(si.ingredientId, 'quantity', parseFloat(e.target.value) || 0)
-                                                                }
-                                                                className="h-8 text-xs bg-background/80 font-bold"
-                                                            />
-                                                        </div>
-
-                                                        {/* Unit Cost */}
-                                                        <div className="w-[105px] space-y-0.5 shrink-0">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
-                                                                Unit Cost (₱)
-                                                            </span>
-                                                            <Input
-                                                                type="number"
-                                                                min="0"
-                                                                step="any"
-                                                                value={poItem?.unitCost ?? 0}
-                                                                onChange={(e) =>
-                                                                    handleUpdatePOItem(si.ingredientId, 'unitCost', parseFloat(e.target.value) || 0)
-                                                                }
-                                                                className="h-8 text-xs bg-background/80 font-bold"
-                                                            />
-                                                        </div>
-
-                                                        {/* Subtotal */}
-                                                        <div className="w-[90px] text-right shrink-0 space-y-0.5">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
-                                                            <span className="text-xs font-bold text-foreground block font-mono">
-                                                                ₱
-                                                                {((poItem?.quantity || 0) * (poItem?.unitCost || 0)).toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2
-                                                                })}
-                                                            </span>
-                                                        </div>
-                                                    </>
+                                                    <div className="w-[120px] space-y-0.5 shrink-0">
+                                                        <span className="text-xs uppercase font-bold text-muted-foreground block">
+                                                            Qty {unitAbbrev && `(${unitAbbrev})`}
+                                                        </span>
+                                                        <Input
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="any"
+                                                            value={poItem?.quantity ?? 1}
+                                                            onChange={(e) => handleUpdatePOItem(si.ingredientId, parseFloat(e.target.value) || 0)}
+                                                            className="h-8 text-xs bg-background/80 font-bold"
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                         );
@@ -822,7 +787,7 @@ export default function PurchaseOrdersPage() {
                                                     />
                                                 </div>
 
-                                                <div className="w-[100px] space-y-1">
+                                                <div className="w-[120px] space-y-1">
                                                     <span className="text-xs uppercase font-bold text-muted-foreground">
                                                         Qty {unitAbbrev && `(${unitAbbrev})`}
                                                     </span>
@@ -834,28 +799,6 @@ export default function PurchaseOrdersPage() {
                                                         onChange={(e) => handleExtraItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                                                         className="h-8 text-xs bg-background/50 font-bold"
                                                     />
-                                                </div>
-
-                                                <div className="w-[105px] space-y-1">
-                                                    <span className="text-xs uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        step="any"
-                                                        value={item.unitCost}
-                                                        onChange={(e) => handleExtraItemChange(index, 'unitCost', parseFloat(e.target.value) || 0)}
-                                                        className="h-8 text-xs bg-background/50 font-bold"
-                                                    />
-                                                </div>
-
-                                                <div className="w-[90px] text-right pb-1.5 space-y-0.5 shrink-0">
-                                                    <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
-                                                    <span className="text-xs font-bold text-foreground block font-mono">
-                                                        ₱
-                                                        {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 2
-                                                        })}
-                                                    </span>
                                                 </div>
 
                                                 <Button
@@ -877,14 +820,15 @@ export default function PurchaseOrdersPage() {
                         {/* Grand Total */}
                         <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-2xl flex justify-between items-center mt-2 shrink-0">
                             <div>
-                                <span className="text-xs font-bold text-primary block">Estimated Purchase Order Total</span>
+                                <span className="text-xs font-bold text-primary block">Purchase Order Summary</span>
                                 <span className="text-xs text-muted-foreground">
-                                    {allActiveItems.filter((i) => i.quantity > 0).length} items included
+                                    {allActiveItems.filter((i) => i.quantity > 0).length} items included • Pricing automatically calculated upon
+                                    delivery
                                 </span>
                             </div>
-                            <span className="text-lg font-bold text-primary font-mono">
-                                ₱{calculatePOTotal().toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                            </span>
+                            <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10 px-3 py-1">
+                                Calculated upon delivery
+                            </Badge>
                         </div>
                     </form>
 

@@ -13,6 +13,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import type { ISupplierListItem, ISupplierIngredient } from '#/feature/suppliers/suppliers.types';
 import type { IIngredient } from '#/feature/inventory/inventory.types';
@@ -20,7 +21,6 @@ import type { IIngredient } from '#/feature/inventory/inventory.types';
 interface ICreateItemInput {
     ingredientId: string;
     quantity: number;
-    unitCost: number;
 }
 
 interface UpdatePurchaseOrderDialogProps {
@@ -73,8 +73,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
             (poDetails.items || []).forEach((item) => {
                 const entry: ICreateItemInput = {
                     ingredientId: item.ingredientId,
-                    quantity: item.quantity,
-                    unitCost: item.unitCost
+                    quantity: item.quantity
                 };
                 if (supplierIngIdSet.has(item.ingredientId)) {
                     initialSupplierItems.push(entry);
@@ -133,8 +132,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                     ...prev,
                     {
                         ingredientId: ing.ingredientId,
-                        quantity: 1,
-                        unitCost: ing.unitCost ?? 0
+                        quantity: 1
                     }
                 ];
             }
@@ -156,8 +154,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                     if (!existingMap.has(si.ingredientId)) {
                         updated.push({
                             ingredientId: si.ingredientId,
-                            quantity: 1,
-                            unitCost: si.unitCost ?? 0
+                            quantity: 1
                         });
                     }
                 }
@@ -166,12 +163,12 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         }
     };
 
-    const handleUpdateSupplierItem = (ingredientId: string, field: 'quantity' | 'unitCost', value: number) => {
-        setSupplierItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, [field]: value } : item)));
+    const handleUpdateSupplierItem = (ingredientId: string, quantity: number) => {
+        setSupplierItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, quantity } : item)));
     };
 
     const handleAddExtraItem = () => {
-        setExtraItems((prev) => [...prev, { ingredientId: '', quantity: 1, unitCost: 0 }]);
+        setExtraItems((prev) => [...prev, { ingredientId: '', quantity: 1 }]);
     };
 
     const handleRemoveExtraItem = (index: number) => {
@@ -191,14 +188,6 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         return [...supplierItems, ...extraItems.filter((i) => i.ingredientId)];
     }, [supplierItems, extraItems]);
 
-    const calculatePOTotal = () => {
-        return allActiveItems.reduce((acc, item) => {
-            const qty = Number(item.quantity) || 0;
-            const cost = Number(item.unitCost) || 0;
-            return acc + qty * cost;
-        }, 0);
-    };
-
     const handleSavePO = (e: React.FormEvent) => {
         e.preventDefault();
         if (!supplierId) {
@@ -206,7 +195,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
             return;
         }
 
-        const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0 && item.unitCost >= 0);
+        const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0);
         if (validItems.length === 0) {
             toast.error('Please select or add at least one line item with quantity > 0');
             return;
@@ -219,8 +208,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                 notes: notes.trim() || null,
                 items: validItems.map((item) => ({
                     ingredientId: item.ingredientId,
-                    quantity: Number(item.quantity),
-                    unitCost: Number(item.unitCost)
+                    quantity: Number(item.quantity)
                 }))
             }
         });
@@ -358,65 +346,26 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     </span>
                                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                                                         <span>Unit: {si.ingredient?.defaultUnit?.name || 'N/A'}</span>
-                                                        {si.unitCost ? <span>• Agreed Price: ₱{si.unitCost.toFixed(2)}</span> : null}
+                                                        {si.unitCost ? <span>• Catalog Price: ₱{si.unitCost.toFixed(2)}</span> : null}
                                                     </div>
                                                 </div>
 
                                                 {isSelected && (
-                                                    <>
-                                                        {/* Quantity */}
-                                                        <div className="w-[100px] space-y-0.5 shrink-0">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
-                                                                Qty {unitAbbrev && `(${unitAbbrev})`}
-                                                            </span>
-                                                            <Input
-                                                                type="number"
-                                                                min="0.01"
-                                                                step="any"
-                                                                value={poItem?.quantity ?? 1}
-                                                                onChange={(e) =>
-                                                                    handleUpdateSupplierItem(
-                                                                        si.ingredientId,
-                                                                        'quantity',
-                                                                        parseFloat(e.target.value) || 0
-                                                                    )
-                                                                }
-                                                                className="h-8 text-xs bg-background/80 font-bold"
-                                                            />
-                                                        </div>
-
-                                                        {/* Unit Cost */}
-                                                        <div className="w-[105px] space-y-0.5 shrink-0">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">
-                                                                Unit Cost (₱)
-                                                            </span>
-                                                            <Input
-                                                                type="number"
-                                                                min="0"
-                                                                step="any"
-                                                                value={poItem?.unitCost ?? 0}
-                                                                onChange={(e) =>
-                                                                    handleUpdateSupplierItem(
-                                                                        si.ingredientId,
-                                                                        'unitCost',
-                                                                        parseFloat(e.target.value) || 0
-                                                                    )
-                                                                }
-                                                                className="h-8 text-xs bg-background/80 font-bold"
-                                                            />
-                                                        </div>
-
-                                                        {/* Subtotal */}
-                                                        <div className="w-[85px] text-right space-y-0.5 shrink-0">
-                                                            <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
-                                                            <span className="text-xs font-bold text-foreground block font-mono">
-                                                                ₱
-                                                                {((poItem?.quantity || 0) * (poItem?.unitCost || 0)).toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2
-                                                                })}
-                                                            </span>
-                                                        </div>
-                                                    </>
+                                                    <div className="w-[120px] space-y-0.5 shrink-0">
+                                                        <span className="text-xs uppercase font-bold text-muted-foreground block">
+                                                            Qty {unitAbbrev && `(${unitAbbrev})`}
+                                                        </span>
+                                                        <Input
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="any"
+                                                            value={poItem?.quantity ?? 1}
+                                                            onChange={(e) =>
+                                                                handleUpdateSupplierItem(si.ingredientId, parseFloat(e.target.value) || 0)
+                                                            }
+                                                            className="h-8 text-xs bg-background/80 font-bold"
+                                                        />
+                                                    </div>
                                                 )}
                                             </div>
                                         );
@@ -487,7 +436,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     />
                                                 </div>
 
-                                                <div className="w-[95px] space-y-1">
+                                                <div className="w-[120px] space-y-1">
                                                     <span className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
                                                         Qty {unitAbbrev && `(${unitAbbrev})`}
                                                     </span>
@@ -499,28 +448,6 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                         onChange={(e) => handleExtraItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                                                         className="h-8 text-xs bg-background/50 font-bold"
                                                     />
-                                                </div>
-
-                                                <div className="w-[105px] space-y-1">
-                                                    <span className="text-xs uppercase font-bold text-muted-foreground">Unit Cost (₱)</span>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        step="any"
-                                                        value={item.unitCost}
-                                                        onChange={(e) => handleExtraItemChange(index, 'unitCost', parseFloat(e.target.value) || 0)}
-                                                        className="h-8 text-xs bg-background/50 font-bold"
-                                                    />
-                                                </div>
-
-                                                <div className="w-[85px] text-right pb-1.5 space-y-0.5 shrink-0">
-                                                    <span className="text-xs uppercase font-bold text-muted-foreground block">Subtotal</span>
-                                                    <span className="text-xs font-bold text-foreground block font-mono">
-                                                        ₱
-                                                        {((item.quantity || 0) * (item.unitCost || 0)).toLocaleString(undefined, {
-                                                            minimumFractionDigits: 2
-                                                        })}
-                                                    </span>
                                                 </div>
 
                                                 <Button
@@ -541,10 +468,16 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
 
                         {/* Grand Total */}
                         <div className="p-3.5 bg-primary/5 border border-primary/15 rounded-2xl flex justify-between items-center mt-2 shrink-0">
-                            <span className="text-xs font-bold text-primary">Estimated Purchase Order Total</span>
-                            <span className="text-lg font-bold text-primary font-mono">
-                                ₱{calculatePOTotal().toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                            </span>
+                            <div>
+                                <span className="text-xs font-bold text-primary block">Purchase Order Summary</span>
+                                <span className="text-xs text-muted-foreground">
+                                    {allActiveItems.filter((i) => i.quantity > 0).length} items included • Pricing automatically calculated upon
+                                    delivery
+                                </span>
+                            </div>
+                            <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10 px-3 py-1">
+                                Calculated upon delivery
+                            </Badge>
                         </div>
                     </form>
                 )}
