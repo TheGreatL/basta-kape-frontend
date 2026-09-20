@@ -226,29 +226,29 @@ export default function UnitsPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                         <Scale className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Units</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Units</h1>
                         <p className="text-xs text-muted-foreground">
                             Manage measurement unit definitions used across raw material and recipe configurations.
                         </p>
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Configure measurement unit options.</p>
+                <div className="flex items-center gap-2">
                     <RequirePermission module="Inventory Management" action="create">
-                        <Button onClick={() => setUnitCreateOpen(true)} className="h-9 gap-1.5 shadow-sm" size="sm">
+                        <Button onClick={() => setUnitCreateOpen(true)} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" /> Create Unit
                         </Button>
                     </RequirePermission>
                 </div>
+            </div>
+
+            <div className="space-y-4">
                 <DataTable
                     columns={columns}
                     data={unitsData?.data || []}

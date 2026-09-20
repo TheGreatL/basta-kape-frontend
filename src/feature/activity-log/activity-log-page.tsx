@@ -116,12 +116,12 @@ export default function ActivityLogPage() {
         <div className="flex flex-col gap-6">
             {/* Page Header */}
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                         <Activity className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">System History</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">System History</h1>
                         <p className="text-xs text-muted-foreground">View system actions, changes, and user activity history.</p>
                     </div>
                 </div>

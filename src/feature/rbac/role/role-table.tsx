@@ -81,10 +81,6 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
     // Actions Handlers
     const navigate = useNavigate();
 
-    const handleOpenCreate = () => {
-        navigate({ to: '/admin/roles/create' });
-    };
-
     const handleOpenEdit = (role: IRoleListItem) => {
         navigate({ to: `/admin/roles/${encodeURIComponent(role.name)}/edit` });
     };
@@ -225,26 +221,6 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 className="text-lg font-bold text-foreground/90">Configured Roles</h2>
-                    <p className="text-xs text-muted-foreground">
-                        Configure functional user roles, custom permissions, and nested access scope boundaries.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    {status === 'active' && (
-                        <RequirePermission module="Roles and Permissions" action="create">
-                            <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
-                                <Plus className="size-4" />
-                                Create Role
-                            </Button>
-                        </RequirePermission>
-                    )}
-                </div>
-            </div>
-
             {/* Main Roles Table */}
             <DataTable
                 columns={columns}

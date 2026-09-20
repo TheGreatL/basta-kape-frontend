@@ -64,11 +64,6 @@ export default function PermissionTable({ page, pageSize, search, onPaginationCh
 
     return (
         <div className="space-y-4">
-            <div>
-                <h2 className="text-lg font-bold text-foreground/90">Action Permissions</h2>
-                <p className="text-xs text-muted-foreground">Directory of system-wide action nodes mapping nested module security scopes.</p>
-            </div>
-
             <DataTable
                 columns={columns}
                 data={data?.data || []}

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { getUsersList } from '#/api/users.api.ts';
@@ -204,11 +204,16 @@ export default function UsersPage() {
     );
 
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 className="text-lg font-bold text-foreground/90 flex items-center gap-2">Staff & Users List</h2>
-                    <p className="text-xs text-muted-foreground">Manage employee accounts, role assignments, and login permissions.</p>
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+                        <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Staff & Users</h1>
+                        <p className="text-xs text-muted-foreground">Manage employee accounts, role assignments, and login permissions.</p>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">

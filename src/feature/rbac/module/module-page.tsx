@@ -21,27 +21,27 @@ export default function ModulePage() {
         <div className="flex flex-col gap-6">
             {/* Page Header */}
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                         <Shield className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
-                        <p className="text-xs text-muted-foreground">Manage employee roles, system access levels, and feature permissions.</p>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">System Modules</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Directory of registered operational system modules available for custom security role configuration.
+                        </p>
                     </div>
                 </div>
             </div>
 
             {/* Modules Table */}
-            <div className="mt-4">
-                <ModuleTable
-                    page={page}
-                    pageSize={pageSize}
-                    search={search}
-                    onPaginationChange={(p, ps) => setSearch({ page: p, pageSize: ps })}
-                    onSearchChange={(s) => setSearch({ search: s, page: 1 })}
-                />
-            </div>
+            <ModuleTable
+                page={page}
+                pageSize={pageSize}
+                search={search}
+                onPaginationChange={(p, ps) => setSearch({ page: p, pageSize: ps })}
+                onSearchChange={(s) => setSearch({ search: s, page: 1 })}
+            />
         </div>
     );
 }

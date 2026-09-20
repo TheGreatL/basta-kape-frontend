@@ -63,13 +63,6 @@ export default function ModuleTable({ page, pageSize, search, onPaginationChange
     );
     return (
         <div className="space-y-4">
-            <div>
-                <h2 className="text-lg font-bold text-foreground/90">System Modules</h2>
-                <p className="text-xs text-muted-foreground">
-                    Directory of registered operational system modules available for custom security role configuration.
-                </p>
-            </div>
-
             <DataTable
                 columns={columns}
                 data={data?.data || []}

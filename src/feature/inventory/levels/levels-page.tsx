@@ -175,21 +175,18 @@ export default function StockLevelsPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                         <Package className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Stock Levels</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Stock Levels</h1>
                         <p className="text-xs text-muted-foreground">Live inventory stock readings with alert statuses ranked by criticality.</p>
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p className="text-xs text-muted-foreground font-medium">Live stock levels across all registered raw ingredients.</p>
+                <div className="flex items-center gap-2">
                     <RequirePermission module="Inventory Management" action="create">
                         <Button
                             onClick={() => {
@@ -199,12 +196,14 @@ export default function StockLevelsPage() {
                                 setStockDialogOpen(true);
                             }}
                             className="h-9 gap-1.5 shadow-sm"
-                            size="sm"
                         >
                             <Sliders className="size-4" /> Manage Stock
                         </Button>
                     </RequirePermission>
                 </div>
+            </div>
+
+            <div className="space-y-4">
                 <DataTable
                     columns={columns}
                     data={levelsData?.data || []}

@@ -22,12 +22,12 @@ export default function ProductSettingsPage() {
         <div className="flex flex-col gap-6">
             {/* Page Header */}
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
                         <Settings className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Product Settings</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Product Settings</h1>
                         <p className="text-xs text-muted-foreground">Set up product categories, types, and custom choices.</p>
                     </div>
                 </div>

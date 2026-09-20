@@ -97,7 +97,7 @@ export default function DashboardPage() {
     const topProducts = salesAnalytics?.topProducts || [];
 
     return (
-        <div className="flex flex-col gap-8 min-h-screen pb-12">
+        <div className="flex flex-col gap-8 pb-12">
             {/* 1. Welcome Banner with Interactive Date Filter (Today, This Week, This Month) */}
             <DashboardHeader
                 displayName={displayName}

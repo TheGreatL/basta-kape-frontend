@@ -99,11 +99,16 @@ function AdminProfilePage() {
     };
 
     return (
-        <div className="space-y-6 w-full max-w-5xl mx-auto">
+        <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
-                <p className="text-sm text-muted-foreground mt-1">Manage your administrator account details and password security.</p>
+            <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+                    <UserIcon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground leading-tight">My Profile</h1>
+                    <p className="text-xs text-muted-foreground">Manage your administrator account details and password security.</p>
+                </div>
             </div>
 
             {/* Content Layout */}
