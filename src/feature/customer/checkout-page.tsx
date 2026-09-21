@@ -282,7 +282,11 @@ export default function CheckoutPage() {
 
             // Clear states
             if (!isDirectCheckout) {
-                await clearCart(checkoutItemIds);
+                try {
+                    await clearCart(checkoutItemIds);
+                } catch (clearErr) {
+                    console.error('Failed to clear cart items:', clearErr);
+                }
             }
             clearCheckoutState();
 

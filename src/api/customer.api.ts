@@ -121,14 +121,18 @@ export const clearCart = async (customerId: string, cartItemIds?: string[]): Pro
 
 // Helper: resolve current user profile
 export const getMyCustomerProfile = async (username: string): Promise<ICustomerResponse> => {
-    const response = await getCustomers({ search: username, limit: 10 });
-    const found = response.data.find((c) => c.user.username.toLowerCase() === username.toLowerCase());
-    if (!found) {
-        // If not found, let's try creating a placeholder customer profile if possible
-        // but normally it should exist or be created by register/admin
-        throw new ApiError('Customer profile not found', 404, null);
+    // 1. First attempt direct resolution via GET /customers/:id (which accepts username or userId)
+    try {
+        return await getCustomerById(encodeURIComponent(username));
+    } catch {
+        // 2. Fallback: search customer list if direct lookup failed
+        const response = await getCustomers({ search: username, limit: 50 });
+        const found = response.data.find((c) => c.user.username.toLowerCase() === username.toLowerCase());
+        if (!found) {
+            throw new ApiError('Customer profile not found', 404, null);
+        }
+        return found;
     }
-    return found;
 };
 
 export const restoreCustomer = async (id: string): Promise<ICustomerResponse> => {
