@@ -22,6 +22,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '#/context/AuthContext.tsx';
+import type { User as TAuthUser } from '#/context/AuthContext.tsx';
+import { getCurrentUser } from '#/api/auth.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import { useCart } from './use-cart.ts';
 import { useCheckoutStore } from '#/store/checkout-store.ts';
 import { Button } from '#/components/ui/button.tsx';
@@ -59,8 +64,17 @@ const diningOptions = [
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
+    const { user: authUser } = useAuth();
     const { customer, cart, isLoading, clearCart } = useCart();
     const { checkoutItemIds, selectedModifiers, clearCheckoutState, isDirectCheckout, directCheckoutItem } = useCheckoutStore();
+
+    // Query: Current user profile from the me endpoint
+    const { data: meUser } = useQuery<TAuthUser | null>({
+        queryKey: [QUERY_KEY.AUTH.ME],
+        queryFn: getCurrentUser,
+        staleTime: 5 * 60 * 1000,
+        initialData: authUser ?? undefined
+    });
 
     // Form states
     const [orderType, setOrderType] = useState<TOrderType>('DINE_IN');
@@ -145,13 +159,19 @@ export default function CheckoutPage() {
         [orderType]
     );
 
-    // Pre-populate customer details once loaded
+    // Pre-populate customer details once loaded from the me api endpoint
     useEffect(() => {
-        if (customer) {
-            setCustomerName(`${customer.user.firstName || ''} ${customer.user.lastName || ''}`.trim() || customer.user.username);
-            setPhoneNumber(customer.user.phoneNumber || '');
+        const profile = meUser || authUser || customer?.user;
+        if (profile) {
+            const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim() || profile.username || '';
+            if (fullName) {
+                setCustomerName((prev) => (prev.trim() ? prev : fullName));
+            }
+            if (profile.phoneNumber) {
+                setPhoneNumber((prev) => (prev.trim() ? prev : profile.phoneNumber || ''));
+            }
         }
-    }, [customer]);
+    }, [meUser, authUser, customer]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -191,7 +211,7 @@ export default function CheckoutPage() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!customer) return;
+        if (!customer && !authUser && !meUser) return;
 
         if (orderType === 'DELIVERY' && !address.trim()) {
             toast.error('Delivery Address Required', {
@@ -246,7 +266,7 @@ export default function CheckoutPage() {
                 orderType,
                 orderSource: 'WEBSITE',
                 notes: finalNotes || undefined,
-                customerId: customer.id,
+                customerId: customer?.id || null,
                 customerName: customerName.trim() || 'Customer',
                 paymentMethod: paymentMethod,
                 paymentReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : null,
