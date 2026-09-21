@@ -14,11 +14,11 @@ import {
     updateModifierOptionRecipe,
     deleteModifierOptionRecipe
 } from '#/api/modifiers.api.ts';
-import { getIngredients } from '#/api/inventory.api.ts';
+import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type { IModifierOption, IModifierRecipe, IModifierRecipeIngredient } from '../modifier.types';
-import type { IIngredient } from '#/feature/inventory/inventory.types';
+import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -27,6 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Switch } from '#/components/ui/switch.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 
 const recipeIngredientSchema = z.object({
     ingredientId: z.string().uuid('Please select a valid raw ingredient'),
@@ -108,6 +109,14 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
     });
 
     const isRecipeNotFound = isError && error instanceof ApiError && error.status === 404;
+
+    // Query: Active Measurement Units for kitchen unit flexibility
+    const { data: activeUnitsData } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { status: 'active', limit: 100 }],
+        queryFn: () => getIngredientUnits({ page: 1, limit: 100, status: 'active' }),
+        enabled: open
+    });
+    const activeUnits = activeUnitsData?.data || [];
 
     // Reset/Populate form values when dialog opens or query updates
     React.useEffect(() => {
@@ -272,7 +281,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                     <FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-2xs">
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-xs font-bold text-foreground">Deduct Raw Materials (Recipe)</FormLabel>
-                                            <p className="text-3xs text-muted-foreground">
+                                            <p className="text-xs text-muted-foreground">
                                                 Enable stock deductions for inventory items when this option is selected.
                                             </p>
                                         </div>
@@ -336,7 +345,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                 type="button"
                                                 size="sm"
                                                 onClick={() => append({ ingredientId: '', quantity: 1, ingredientUnitId: '' })}
-                                                className="h-8 text-2xs gap-1 shadow-xs"
+                                                className="h-8 text-xs gap-1 shadow-xs"
                                                 disabled={isSaving}
                                             >
                                                 <Plus className="size-3.5" /> Add Ingredient
@@ -362,7 +371,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                                 name={`ingredients.${index}.ingredientId`}
                                                                 render={({ field: selectField }) => (
                                                                     <FormItem>
-                                                                        <FormLabel className="text-2xs font-semibold text-foreground/80">
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
                                                                             Raw Ingredient
                                                                         </FormLabel>
                                                                         <FormControl>
@@ -424,7 +433,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                                 name={`ingredients.${index}.quantity`}
                                                                 render={({ field: qtyField }) => (
                                                                     <FormItem>
-                                                                        <FormLabel className="text-2xs font-semibold text-foreground/80">
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
                                                                             Quantity
                                                                         </FormLabel>
                                                                         <FormControl>
@@ -448,34 +457,46 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                             />
                                                         </div>
 
-                                                        {/* Unit Display (Derived from selected ingredient) */}
+                                                        {/* Unit Selection (Kitchen Units flexibility) */}
                                                         <div className="sm:col-span-3">
                                                             <FormField
                                                                 control={form.control}
                                                                 name={`ingredients.${index}.ingredientUnitId`}
-                                                                render={({ field: unitField }) => {
-                                                                    const unitName = form.watch(`ingredients.${index}._unitName`);
-                                                                    return (
-                                                                        <FormItem>
-                                                                            <FormLabel className="text-2xs font-semibold text-foreground/80">
-                                                                                Unit
-                                                                            </FormLabel>
-                                                                            <FormControl>
-                                                                                <Input
-                                                                                    type="text"
-                                                                                    readOnly
-                                                                                    disabled
-                                                                                    value={
-                                                                                        unitName ||
-                                                                                        (unitField.value ? 'Set Unit' : 'Select ingredient')
+                                                                render={({ field: unitField }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Unit
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Select
+                                                                                value={unitField.value}
+                                                                                disabled={isSaving}
+                                                                                onValueChange={(val) => {
+                                                                                    unitField.onChange(val);
+                                                                                    const found = activeUnits.find((u) => u.id === val);
+                                                                                    if (found) {
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}._unitName`,
+                                                                                            found.abbreviation || found.name
+                                                                                        );
                                                                                     }
-                                                                                    className="h-9 bg-muted/40 font-semibold text-xs text-foreground/75 border-border/50 cursor-not-allowed select-none"
-                                                                                />
-                                                                            </FormControl>
-                                                                            <FormMessage />
-                                                                        </FormItem>
-                                                                    );
-                                                                }}
+                                                                                }}
+                                                                            >
+                                                                                <SelectTrigger className="h-9 bg-background/50 text-xs">
+                                                                                    <SelectValue placeholder="Select unit..." />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {activeUnits.map((u) => (
+                                                                                        <SelectItem key={u.id} value={u.id} className="text-xs">
+                                                                                            {u.name} ({u.abbreviation})
+                                                                                        </SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
                                                             />
                                                         </div>
 

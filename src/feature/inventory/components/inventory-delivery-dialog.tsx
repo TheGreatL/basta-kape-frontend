@@ -272,7 +272,7 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                                     <div className="flex items-center justify-between">
                                                         <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
                                                         {isEditMode && (
-                                                            <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                                                            <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
                                                                 Locked
                                                             </span>
                                                         )}
@@ -290,7 +290,7 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                                             )}
                                                         />
                                                     </FormControl>
-                                                    {isEditMode && <p className="text-[11px] text-muted-foreground">Locked after delivery intake.</p>}
+                                                    {isEditMode && <p className="text-xs text-muted-foreground">Locked after delivery intake.</p>}
                                                     <FormMessage />
                                                 </FormItem>
                                             )}

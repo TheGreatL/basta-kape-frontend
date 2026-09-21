@@ -34,6 +34,9 @@ import {
 
 import { UnitCreateDialog, UnitEditDialog } from '../components/inventory-units-dialogs.tsx';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
+import UnitConversionsTab from './components/unit-conversions-tab.tsx';
+
 const UNIT_CATEGORY_CONFIG: Record<TUnitCategory, { label: string; className: string }> = {
     ALL: {
         label: 'Universal / All Items',
@@ -56,7 +59,7 @@ const UNIT_CATEGORY_CONFIG: Record<TUnitCategory, { label: string; className: st
 export default function UnitsPage() {
     const navigate = useNavigate({ from: '/admin/inventory/units' });
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status, category } = Route.useSearch();
+    const { tab, page, pageSize, search, status, category } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -232,70 +235,87 @@ export default function UnitsPage() {
                         <Scale className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Units</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Units & Conversions</h1>
                         <p className="text-xs text-muted-foreground">
-                            Manage measurement unit definitions used across raw material and recipe configurations.
+                            Manage measurement unit definitions and conversion ratios used across raw material, recipe, and inventory calculations.
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <RequirePermission module="Inventory Management" action="create">
-                        <Button onClick={() => setUnitCreateOpen(true)} className="h-9 gap-1.5 shadow-sm">
-                            <Plus className="size-4" /> Create Unit
-                        </Button>
-                    </RequirePermission>
-                </div>
+                {tab === 'units' && (
+                    <div className="flex items-center gap-2">
+                        <RequirePermission module="Inventory Management" action="create">
+                            <Button onClick={() => setUnitCreateOpen(true)} className="h-9 gap-1.5 shadow-sm">
+                                <Plus className="size-4" /> Create Unit
+                            </Button>
+                        </RequirePermission>
+                    </div>
+                )}
             </div>
 
-            <div className="space-y-4">
-                <DataTable
-                    columns={columns}
-                    data={unitsData?.data || []}
-                    pageCount={unitsData?.meta.pageCount || 1}
-                    pageIndex={page - 1}
-                    pageSize={pageSize}
-                    onPaginationChange={(idx, size) => setSearch({ page: idx + 1, pageSize: size })}
-                    sorting={sorting}
-                    onSortingChange={setSorting}
-                    isLoading={isLoading}
-                    showColumnVisibilityToggle={true}
-                    filterContent={
-                        <>
-                            <Input
-                                placeholder="Search units..."
-                                value={localSearch}
-                                onChange={(e) => setLocalSearch(e.target.value)}
-                                className="h-9 w-full sm:w-[250px] bg-background/50"
-                            />
-                            <Select
-                                value={category || 'ALL_CATEGORIES'}
-                                onValueChange={(val) => setSearch({ category: val === 'ALL_CATEGORIES' ? '' : val, page: 1 })}
-                            >
-                                <SelectTrigger className="h-9 min-w-[170px] bg-background/50">
-                                    <SelectValue placeholder="All Categories" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ALL_CATEGORIES">All Categories</SelectItem>
-                                    <SelectItem value="ALL">Universal (All Items)</SelectItem>
-                                    <SelectItem value="INGREDIENT">Raw Ingredients</SelectItem>
-                                    <SelectItem value="PACKAGING_MATERIAL">Packaging Materials</SelectItem>
-                                    <SelectItem value="SUPPLY">General Supplies</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Select value={status} onValueChange={(val: any) => setSearch({ status: val, page: 1 })}>
-                                <SelectTrigger className="h-9 min-w-[130px] bg-background/50 capitalize">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent className="capitalize">
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="archive">Archived</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </>
-                    }
-                />
-            </div>
+            <Tabs value={tab} onValueChange={(val) => setSearch({ tab: val, page: 1 })} className="w-full space-y-6">
+                <TabsList className="grid w-full grid-cols-2 max-w-[340px] h-9">
+                    <TabsTrigger value="units" className="text-xs font-medium">
+                        Measurement Units
+                    </TabsTrigger>
+                    <TabsTrigger value="conversions" className="text-xs font-medium">
+                        Unit Conversions
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="units" className="space-y-4 m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <DataTable
+                        columns={columns}
+                        data={unitsData?.data || []}
+                        pageCount={unitsData?.meta.pageCount || 1}
+                        pageIndex={page - 1}
+                        pageSize={pageSize}
+                        onPaginationChange={(idx, size) => setSearch({ page: idx + 1, pageSize: size })}
+                        sorting={sorting}
+                        onSortingChange={setSorting}
+                        isLoading={isLoading}
+                        showColumnVisibilityToggle={true}
+                        filterContent={
+                            <>
+                                <Input
+                                    placeholder="Search units..."
+                                    value={localSearch}
+                                    onChange={(e) => setLocalSearch(e.target.value)}
+                                    className="h-9 w-full sm:w-[250px] bg-background/50"
+                                />
+                                <Select
+                                    value={category || 'ALL_CATEGORIES'}
+                                    onValueChange={(val) => setSearch({ category: val === 'ALL_CATEGORIES' ? '' : val, page: 1 })}
+                                >
+                                    <SelectTrigger className="h-9 min-w-[170px] bg-background/50">
+                                        <SelectValue placeholder="All Categories" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL_CATEGORIES">All Categories</SelectItem>
+                                        <SelectItem value="ALL">Universal (All Items)</SelectItem>
+                                        <SelectItem value="INGREDIENT">Raw Ingredients</SelectItem>
+                                        <SelectItem value="PACKAGING_MATERIAL">Packaging Materials</SelectItem>
+                                        <SelectItem value="SUPPLY">General Supplies</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select value={status} onValueChange={(val: any) => setSearch({ status: val, page: 1 })}>
+                                    <SelectTrigger className="h-9 min-w-[130px] bg-background/50 capitalize">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent className="capitalize">
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="archive">Archived</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </>
+                        }
+                    />
+                </TabsContent>
+
+                <TabsContent value="conversions" className="space-y-4 m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <UnitConversionsTab />
+                </TabsContent>
+            </Tabs>
 
             <UnitCreateDialog open={unitCreateOpen} onOpenChange={setUnitCreateOpen} />
             <UnitEditDialog open={unitEditOpen} onOpenChange={setUnitEditOpen} unit={selectedUnit} />

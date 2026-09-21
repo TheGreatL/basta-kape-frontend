@@ -81,6 +81,13 @@ export interface IUpdateIngredientPayload {
 // =============================================================================
 export type TInventoryStatus = 'SAFE' | 'CRITICAL' | 'OUT_OF_STOCK';
 
+export interface IConvertedQuantity {
+    unitId: string;
+    unitName: string;
+    unitAbbreviation: string | null;
+    quantity: number;
+}
+
 export interface IIngredientInventory {
     id: string;
     ingredientId: string;
@@ -92,6 +99,7 @@ export interface IIngredientInventory {
     ingredient: IIngredient & {
         defaultUnit: IIngredientUnit;
     };
+    convertedQuantities?: IConvertedQuantity[];
     createdBy?: IUserAudit;
     updatedBy?: IUserAudit;
 }

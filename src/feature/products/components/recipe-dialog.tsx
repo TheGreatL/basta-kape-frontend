@@ -27,11 +27,11 @@ import {
     deleteVariantRecipe,
     restoreVariantRecipe
 } from '#/api/products.api.ts';
-import { getIngredients } from '#/api/inventory.api.ts';
+import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type { IProduct, IProductVariant, IRecipe, IRecipeIngredient } from '../products.types';
-import type { IIngredient } from '#/feature/inventory/inventory.types';
+import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -111,6 +111,14 @@ export default function RecipeDialog({
         queryFn: () => getProductById(variant!.productId),
         enabled: open && !!variant?.productId
     });
+
+    // Query: Active Measurement Units for kitchen unit flexibility
+    const { data: activeUnitsData } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { status: 'active', limit: 100 }],
+        queryFn: () => getIngredientUnits({ page: 1, limit: 100, status: 'active' }),
+        enabled: open
+    });
+    const activeUnits = activeUnitsData?.data || [];
 
     const otherVariants = React.useMemo(() => {
         if (!productDetailsData || !variant) return [];
@@ -475,33 +483,43 @@ export default function RecipeDialog({
                                                         />
                                                     </div>
 
-                                                    {/* Unit Display (Derived from selected ingredient) */}
+                                                    {/* Unit Selection (Kitchen Units flexibility) */}
                                                     <div className="sm:col-span-3">
                                                         <FormField
                                                             control={form.control}
                                                             name={`ingredients.${index}.ingredientUnitId`}
-                                                            render={({ field: unitField }) => {
-                                                                const unitName = form.watch(`ingredients.${index}._unitName`);
-                                                                return (
-                                                                    <FormItem>
-                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Unit
-                                                                        </FormLabel>
-                                                                        <FormControl>
-                                                                            <Input
-                                                                                type="text"
-                                                                                readOnly
-                                                                                disabled
-                                                                                value={
-                                                                                    unitName || (unitField.value ? 'Set Unit' : 'Select ingredient')
+                                                            render={({ field: unitField }) => (
+                                                                <FormItem>
+                                                                    <FormLabel className="text-xs font-semibold text-foreground/80">Unit</FormLabel>
+                                                                    <FormControl>
+                                                                        <Select
+                                                                            value={unitField.value}
+                                                                            onValueChange={(val) => {
+                                                                                unitField.onChange(val);
+                                                                                const found = activeUnits.find((u) => u.id === val);
+                                                                                if (found) {
+                                                                                    form.setValue(
+                                                                                        `ingredients.${index}._unitName`,
+                                                                                        found.abbreviation || found.name
+                                                                                    );
                                                                                 }
-                                                                                className="h-9 bg-muted/40 font-semibold text-xs text-foreground/75 border-border/50 cursor-not-allowed select-none"
-                                                                            />
-                                                                        </FormControl>
-                                                                        <FormMessage />
-                                                                    </FormItem>
-                                                                );
-                                                            }}
+                                                                            }}
+                                                                        >
+                                                                            <SelectTrigger className="h-9 bg-background/50 text-xs">
+                                                                                <SelectValue placeholder="Select unit..." />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                {activeUnits.map((u) => (
+                                                                                    <SelectItem key={u.id} value={u.id} className="text-xs">
+                                                                                        {u.name} ({u.abbreviation})
+                                                                                    </SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
                                                         />
                                                     </div>
 

@@ -115,6 +115,11 @@ const QUERY_KEY = {
     DISPOSALS: {
         LIST: 'disposals:list',
         SUMMARY: 'disposals:summary'
+    },
+    UNIT_CONVERSIONS: {
+        LIST: 'unit_conversions:list',
+        DETAILS: 'unit_conversions:details',
+        CONVERT: 'unit_conversions:convert'
     }
 };
 export { QUERY_KEY };

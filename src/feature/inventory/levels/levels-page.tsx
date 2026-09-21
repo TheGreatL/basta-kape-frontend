@@ -81,11 +81,34 @@ export default function StockLevelsPage() {
             {
                 accessorKey: 'currentQuantity',
                 header: 'Current Stock',
-                cell: ({ row }) => (
-                    <span className="text-sm font-bold text-foreground/90">
-                        {row.original.currentQuantity} {row.original.ingredient.defaultUnit.abbreviation}
-                    </span>
-                )
+                cell: ({ row }) => {
+                    const item = row.original;
+                    const abbrev = item.ingredient.defaultUnit.abbreviation || item.ingredient.defaultUnit.name || '';
+                    const conversions = item.convertedQuantities || [];
+
+                    return (
+                        <div className="flex flex-col gap-1 py-0.5">
+                            <span className="text-sm font-bold text-foreground/90 font-mono">
+                                {Number(item.currentQuantity).toLocaleString(undefined, { maximumFractionDigits: 2 })} {abbrev}
+                            </span>
+                            {conversions.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1">
+                                    <span className="text-xs text-muted-foreground font-medium">Equivalent:</span>
+                                    {conversions.map((cq, idx) => (
+                                        <Badge
+                                            key={cq.unitId || idx}
+                                            variant="secondary"
+                                            className="text-xs font-semibold py-0 px-1.5 bg-muted/60 text-foreground/80 border border-border/40 font-mono"
+                                        >
+                                            {Number(cq.quantity).toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                                            {cq.unitAbbreviation || cq.unitName}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
             },
             {
                 accessorKey: 'status',

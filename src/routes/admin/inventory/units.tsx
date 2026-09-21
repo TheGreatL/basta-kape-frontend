@@ -4,6 +4,7 @@ import UnitsPage from '#/feature/inventory/units/units-page.tsx';
 import { requirePermission } from '#/utils/rbac.ts';
 
 const searchParamsSchema = z.object({
+    tab: z.enum(['units', 'conversions']).catch('units'),
     page: z.number().catch(1),
     pageSize: z.number().catch(10),
     search: z.string().catch(''),

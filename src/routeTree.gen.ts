@@ -48,6 +48,7 @@ import { Route as AdminInventoryTransactionsRouteImport } from './routes/admin/i
 import { Route as AdminInventoryStockLevelsRouteImport } from './routes/admin/inventory/stock-levels'
 import { Route as AdminInventoryProjectionsRouteImport } from './routes/admin/inventory/projections'
 import { Route as AdminInventoryIngredientsRouteImport } from './routes/admin/inventory/ingredients'
+import { Route as AdminInventoryConversionsRouteImport } from './routes/admin/inventory/conversions'
 import { Route as AdminCustomersCreateRouteImport } from './routes/admin/customers/create'
 import { Route as AdminrbacPermissionsRouteImport } from './routes/admin/(rbac)/permissions'
 import { Route as AdminrbacModulesRouteImport } from './routes/admin/(rbac)/modules'
@@ -266,6 +267,12 @@ const AdminInventoryIngredientsRoute =
     path: '/inventory/ingredients',
     getParentRoute: () => AdminRouteRoute,
   } as any)
+const AdminInventoryConversionsRoute =
+  AdminInventoryConversionsRouteImport.update({
+    id: '/inventory/conversions',
+    path: '/inventory/conversions',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminCustomersCreateRoute = AdminCustomersCreateRouteImport.update({
   id: '/customers/create',
   path: '/customers/create',
@@ -404,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/admin/modules': typeof AdminrbacModulesRoute
   '/admin/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
+  '/admin/inventory/conversions': typeof AdminInventoryConversionsRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
@@ -462,6 +470,7 @@ export interface FileRoutesByTo {
   '/admin/modules': typeof AdminrbacModulesRoute
   '/admin/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
+  '/admin/inventory/conversions': typeof AdminInventoryConversionsRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
@@ -525,6 +534,7 @@ export interface FileRoutesById {
   '/admin/(rbac)/modules': typeof AdminrbacModulesRoute
   '/admin/(rbac)/permissions': typeof AdminrbacPermissionsRoute
   '/admin/customers/create': typeof AdminCustomersCreateRoute
+  '/admin/inventory/conversions': typeof AdminInventoryConversionsRoute
   '/admin/inventory/ingredients': typeof AdminInventoryIngredientsRoute
   '/admin/inventory/projections': typeof AdminInventoryProjectionsRoute
   '/admin/inventory/stock-levels': typeof AdminInventoryStockLevelsRoute
@@ -586,6 +596,7 @@ export interface FileRouteTypes {
     | '/admin/modules'
     | '/admin/permissions'
     | '/admin/customers/create'
+    | '/admin/inventory/conversions'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
@@ -644,6 +655,7 @@ export interface FileRouteTypes {
     | '/admin/modules'
     | '/admin/permissions'
     | '/admin/customers/create'
+    | '/admin/inventory/conversions'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
@@ -706,6 +718,7 @@ export interface FileRouteTypes {
     | '/admin/(rbac)/modules'
     | '/admin/(rbac)/permissions'
     | '/admin/customers/create'
+    | '/admin/inventory/conversions'
     | '/admin/inventory/ingredients'
     | '/admin/inventory/projections'
     | '/admin/inventory/stock-levels'
@@ -1020,6 +1033,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryIngredientsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/inventory/conversions': {
+      id: '/admin/inventory/conversions'
+      path: '/inventory/conversions'
+      fullPath: '/admin/inventory/conversions'
+      preLoaderRoute: typeof AdminInventoryConversionsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/customers/create': {
       id: '/admin/customers/create'
       path: '/customers/create'
@@ -1205,6 +1225,7 @@ interface AdminRouteRouteChildren {
   AdminrbacModulesRoute: typeof AdminrbacModulesRoute
   AdminrbacPermissionsRoute: typeof AdminrbacPermissionsRoute
   AdminCustomersCreateRoute: typeof AdminCustomersCreateRoute
+  AdminInventoryConversionsRoute: typeof AdminInventoryConversionsRoute
   AdminInventoryIngredientsRoute: typeof AdminInventoryIngredientsRoute
   AdminInventoryProjectionsRoute: typeof AdminInventoryProjectionsRoute
   AdminInventoryStockLevelsRoute: typeof AdminInventoryStockLevelsRoute
@@ -1251,6 +1272,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminrbacModulesRoute: AdminrbacModulesRoute,
   AdminrbacPermissionsRoute: AdminrbacPermissionsRoute,
   AdminCustomersCreateRoute: AdminCustomersCreateRoute,
+  AdminInventoryConversionsRoute: AdminInventoryConversionsRoute,
   AdminInventoryIngredientsRoute: AdminInventoryIngredientsRoute,
   AdminInventoryProjectionsRoute: AdminInventoryProjectionsRoute,
   AdminInventoryStockLevelsRoute: AdminInventoryStockLevelsRoute,

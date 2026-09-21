@@ -118,7 +118,7 @@ const getSidebarGroups = (
                     { title: 'Transactions', path: '/admin/inventory/transactions', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Spoiled Items Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Units', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
+                    { title: 'Units & Conversions', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
                 ]
             },
             // {
