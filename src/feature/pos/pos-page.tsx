@@ -89,7 +89,7 @@ export default function PosPage() {
     const [selectedCustomerId, setSelectedCustomerId] = React.useState<string>('');
     const [buzzerId, setBuzzerId] = React.useState('');
     const [orderType, setOrderType] = React.useState<'DINE_IN' | 'TAKE_OUT' | 'DELIVERY'>('DINE_IN');
-    const [paymentMethod, setPaymentMethod] = React.useState<'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD'>('CASH');
+    const [paymentMethod, setPaymentMethod] = React.useState<'CASH' | 'GCASH'>('CASH');
     const [cashTendered, setCashTendered] = React.useState<number | ''>('');
     const [referenceNumber, setReferenceNumber] = React.useState('');
     const [paymentProofPhoto, setPaymentProofPhoto] = React.useState('');
@@ -415,8 +415,10 @@ export default function PosPage() {
             if (paymentMethod === 'CASH' && (cashTendered === '' || cashTendered < cartNetTotal)) {
                 throw new Error(`Tendered cash must be at least the total of ₱${cartNetTotal.toFixed(2)}.`);
             }
-            if ((paymentMethod === 'GCASH' || paymentMethod === 'PAYMAYA') && !referenceNumber.trim()) {
-                throw new Error('Digital payment Reference ID is required.');
+            if (paymentMethod === 'GCASH') {
+                if (!referenceNumber.trim() || !/^\d{13}$/.test(referenceNumber.trim())) {
+                    throw new Error('GCash reference number must be exactly 13 digits.');
+                }
             }
 
             const customerObj =
@@ -500,10 +502,16 @@ export default function PosPage() {
                 setIsReceiptLoading(false);
             }
         },
-        onError: (err) => {
-            toast.error('POS Checkout Failed', {
-                description: getErrorMessage(err)
-            });
+        onError: (err: any) => {
+            const status = err?.status || err?.statusCode;
+            const msg = getErrorMessage(err);
+            if (status === 409 || msg.includes('already exists')) {
+                toast.error('This GCash reference has already been used for another transaction.');
+            } else {
+                toast.error('POS Checkout Failed', {
+                    description: msg
+                });
+            }
         }
     });
 

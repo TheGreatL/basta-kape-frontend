@@ -35,11 +35,6 @@ export default function CheckoutSuccessDialog({
                 return <Coins className="size-4 text-emerald-600 dark:text-emerald-400" />;
             case 'GCASH':
                 return <Wallet className="size-4 text-blue-600 dark:text-blue-400" />;
-            case 'PAYMAYA':
-                return <Landmark className="size-4 text-teal-600 dark:text-teal-400" />;
-            case 'CREDIT_CARD':
-            case 'CARD':
-                return <CreditCard className="size-4 text-purple-600 dark:text-purple-400" />;
             default:
                 return <CheckCircle2 className="size-4 text-muted-foreground" />;
         }

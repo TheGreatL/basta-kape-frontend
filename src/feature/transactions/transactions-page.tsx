@@ -50,9 +50,14 @@ export default function TransactionsPage() {
     const debouncedSearch = useDebounce(localSearch, 400);
 
     const [selectedTx, setSelectedTx] = React.useState<ITransaction | null>(null);
+    const [manualRefNumber, setManualRefNumber] = React.useState('');
     const [isUploadPending, setIsUploadPending] = React.useState(false);
     const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    React.useEffect(() => {
+        setManualRefNumber('');
+    }, [selectedTx?.id]);
 
     const setSearchParams = (updates: Record<string, any>) => {
         navigate({
@@ -91,11 +96,18 @@ export default function TransactionsPage() {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.TRANSACTIONS.TRANSACTIONS_LIST] });
             setSelectedTx(data);
+            setManualRefNumber('');
             toast.success('Receipt details updated successfully');
         },
         onError: (err) => {
+            const status = (err as any)?.status || (err as any)?.statusCode;
+            const msg = getErrorMessage(err);
+            if (status === 409 || msg.includes('already exists') || msg.toLowerCase().includes('already used')) {
+                toast.error('This GCash reference has already been used for another transaction.');
+                return;
+            }
             toast.error('Failed to update receipt details', {
-                description: getErrorMessage(err)
+                description: msg
             });
         }
     });
@@ -146,10 +158,9 @@ export default function TransactionsPage() {
             case 'CASH':
                 return <PhilippinePeso className="size-4 text-emerald-600" />;
             case 'GCASH':
-            case 'PAYMAYA':
                 return <Smartphone className="size-4 text-blue-600" />;
             default:
-                return <CreditCard className="size-4 text-purple-600" />;
+                return <PhilippinePeso className="size-4 text-muted-foreground" />;
         }
     };
 
@@ -310,12 +321,6 @@ export default function TransactionsPage() {
                                     </SelectItem>
                                     <SelectItem value="GCASH" className="text-xs">
                                         GCash
-                                    </SelectItem>
-                                    <SelectItem value="PAYMAYA" className="text-xs">
-                                        PayMaya
-                                    </SelectItem>
-                                    <SelectItem value="CREDIT_CARD" className="text-xs">
-                                        Credit Card
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -508,7 +513,7 @@ export default function TransactionsPage() {
                                 {selectedTx.paymentMethod !== 'CASH' && (
                                     <div className="space-y-2 pt-1 border-b border-border/30 pb-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground font-medium">GCash / Reference Number</span>
+                                            <span className="text-muted-foreground font-medium">GCash Reference Number</span>
                                             <div className="flex items-center gap-1.5">
                                                 <span className="font-bold text-foreground font-mono">
                                                     {selectedTx.paymentReferenceNumber || 'None'}
@@ -521,39 +526,54 @@ export default function TransactionsPage() {
 
                                         {/* Reference input field if missing */}
                                         {!selectedTx.paymentReferenceNumber && (
-                                            <div className="flex gap-2 items-center mt-1">
-                                                <Input
-                                                    id="refNumInput"
-                                                    placeholder="Input Reference Number"
-                                                    className="h-8 text-xs bg-background/50 rounded-lg flex-1"
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            const val = (e.target as HTMLInputElement).value.trim();
-                                                            if (val) {
+                                            <div className="space-y-1 mt-1">
+                                                <div className="flex gap-2 items-center">
+                                                    <Input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]{13}"
+                                                        maxLength={13}
+                                                        placeholder="13-digit GCash Ref #"
+                                                        value={manualRefNumber}
+                                                        className="h-8 text-xs font-mono bg-background/50 rounded-lg flex-1"
+                                                        onChange={(e) => {
+                                                            setManualRefNumber(e.target.value.replace(/\D/g, '').slice(0, 13));
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                if (!/^\d{13}$/.test(manualRefNumber)) {
+                                                                    toast.error('Invalid GCash Reference Number', {
+                                                                        description: 'Reference number must be exactly 13 digits.'
+                                                                    });
+                                                                    return;
+                                                                }
                                                                 updateReceiptMutation.mutate({
                                                                     paymentId: selectedTx.id,
-                                                                    payload: { paymentReferenceNumber: val }
+                                                                    payload: { paymentReferenceNumber: manualRefNumber }
                                                                 });
                                                             }
-                                                        }
-                                                    }}
-                                                />
-                                                <Button
-                                                    size="sm"
-                                                    className="h-8 text-xs rounded-lg font-bold"
-                                                    onClick={() => {
-                                                        const el = document.getElementById('refNumInput') as HTMLInputElement;
-                                                        const val = el.value.trim();
-                                                        if (val) {
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 text-xs rounded-lg font-bold"
+                                                        onClick={() => {
+                                                            if (!/^\d{13}$/.test(manualRefNumber)) {
+                                                                toast.error('Invalid GCash Reference Number', {
+                                                                    description: 'Reference number must be exactly 13 digits.'
+                                                                });
+                                                                return;
+                                                            }
                                                             updateReceiptMutation.mutate({
                                                                 paymentId: selectedTx.id,
-                                                                payload: { paymentReferenceNumber: val }
+                                                                payload: { paymentReferenceNumber: manualRefNumber }
                                                             });
-                                                        }
-                                                    }}
-                                                >
-                                                    Save
-                                                </Button>
+                                                        }}
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">Must be exactly 13 numeric digits</p>
                                             </div>
                                         )}
                                     </div>

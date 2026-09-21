@@ -7,7 +7,7 @@ const searchParamsSchema = z.object({
     page: z.number().catch(1),
     pageSize: z.number().catch(10),
     search: z.string().catch(''),
-    paymentMethod: z.enum(['CASH', 'GCASH', 'PAYMAYA', 'CREDIT_CARD', '']).catch(''),
+    paymentMethod: z.enum(['CASH', 'GCASH', '']).catch(''),
     paymentStatus: z.enum(['PENDING', 'PAID', 'FAILED', 'REFUNDED', '']).catch(''),
     dateFrom: z.string().catch(''),
     dateTo: z.string().catch('')

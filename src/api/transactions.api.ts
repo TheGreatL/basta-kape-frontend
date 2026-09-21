@@ -1,10 +1,12 @@
 import { api } from './api';
 import { ApiError } from '../utils/error-handler';
 
+export type PaymentMethod = 'CASH' | 'GCASH';
+
 export interface ITransaction {
     id: string;
     orderId: string;
-    paymentMethod: 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD';
+    paymentMethod: PaymentMethod;
     paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
     amount: number;
     paymentReferenceNumber: string | null;

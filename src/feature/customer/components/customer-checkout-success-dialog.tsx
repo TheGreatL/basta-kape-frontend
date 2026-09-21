@@ -1,4 +1,4 @@
-import { CheckCircle2, Download, ArrowRight, Wallet, CreditCard, Coins, Landmark, Eye } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Wallet, Coins, Eye } from 'lucide-react';
 import type { IOrder } from '#/feature/order/order.types.ts';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -25,11 +25,6 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                 return <Coins className="size-4 text-emerald-600 dark:text-emerald-400" />;
             case 'GCASH':
                 return <Wallet className="size-4 text-blue-600 dark:text-blue-400" />;
-            case 'PAYMAYA':
-                return <Landmark className="size-4 text-teal-600 dark:text-teal-400" />;
-            case 'CREDIT_CARD':
-            case 'CARD':
-                return <CreditCard className="size-4 text-purple-600 dark:text-purple-400" />;
             default:
                 return <CheckCircle2 className="size-4 text-muted-foreground" />;
         }

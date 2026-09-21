@@ -402,14 +402,14 @@ export default function OrderDetailsPage() {
                                     <div className="flex justify-between items-center pb-2 border-b border-border/30">
                                         <span className="font-semibold text-muted-foreground">Payment Method</span>
                                         <span className="font-bold text-foreground capitalize">
-                                            {payment.paymentMethod === 'PAYMAYA' ? 'Maya' : payment.paymentMethod.toLowerCase()}
+                                            {payment.paymentMethod === 'GCASH' ? 'GCash' : 'Cash'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center pb-2 border-b border-border/30">
                                         <span className="font-semibold text-muted-foreground">Status</span>
                                         <Badge
                                             variant="outline"
-                                            className={`text-2xs font-bold py-0.5 px-2 capitalize ${
+                                            className={`text-xs font-bold py-0.5 px-2 capitalize ${
                                                 order.paymentStatus === 'PAID'
                                                     ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40'
                                                     : order.paymentStatus === 'PENDING'

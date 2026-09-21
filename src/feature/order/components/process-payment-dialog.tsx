@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Coins, CreditCard, CheckCircle2, Landmark, Wallet, Upload, Trash2 } from 'lucide-react';
+import { Coins, CreditCard, CheckCircle2, Wallet, Upload, Trash2 } from 'lucide-react';
 
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { createOrderPayment, getOrderPayments } from '#/api/orders.api.ts';
@@ -34,13 +34,11 @@ const createPaymentSchema = (netTotal: number) => {
             }),
         z.object({
             paymentMethod: z.literal('GCASH'),
-            paymentReferenceNumber: z.string().regex(/^\d{11}$/, 'GCash reference number must be exactly 11 digits'),
-            paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional()
-        }),
-        z.object({
-            paymentMethod: z.enum(['PAYMAYA', 'CREDIT_CARD']),
-            paymentReferenceNumber: z.string().min(5, 'Reference number must be at least 5 characters'),
-            paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional()
+            paymentReferenceNumber: z
+                .string()
+                .trim()
+                .regex(/^\d{13}$/, 'GCash reference number must be exactly 13 digits'),
+            paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional().nullable()
         })
     ]);
 };
@@ -82,10 +80,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
     });
 
     const pendingPayment = React.useMemo(() => {
-        return payments?.find(
-            (p: any) =>
-                p.paymentStatus === 'PENDING' && (p.paymentMethod === 'GCASH' || p.paymentMethod === 'PAYMAYA' || p.paymentMethod === 'CREDIT_CARD')
-        );
+        return payments?.find((p: any) => p.paymentStatus === 'PENDING' && p.paymentMethod === 'GCASH');
     }, [payments]);
 
     // Reset override and form when dialog closes
@@ -186,10 +181,16 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
             onOpenChange(false);
             if (onSuccess) onSuccess();
         },
-        onError: (err) => {
-            toast.error('Failed to process payment', {
-                description: getErrorMessage(err)
-            });
+        onError: (err: any) => {
+            const status = err?.status || err?.statusCode;
+            const msg = getErrorMessage(err);
+            if (status === 409 || msg.includes('already exists')) {
+                toast.error('This GCash reference has already been used for another transaction.');
+            } else {
+                toast.error('Failed to process payment', {
+                    description: msg
+                });
+            }
         }
     });
 
@@ -278,24 +279,12 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                         ) : (
                             <>
                                 {/* Selection Tabs */}
-                                <div className="grid grid-cols-4 gap-2 mb-4 bg-muted/40 p-1 rounded-lg border border-border/40">
-                                    {(['CASH', 'GCASH', 'PAYMAYA', 'CREDIT_CARD'] as const).map((method) => {
+                                <div className="grid grid-cols-2 gap-2 mb-4 bg-muted/40 p-1 rounded-lg border border-border/40">
+                                    {(['CASH', 'GCASH'] as const).map((method) => {
                                         const active = paymentMethodValue === method;
-                                        let label = method as string;
-                                        let icon = <CreditCard className="size-3.5" />;
-                                        if (method === 'CASH') {
-                                            label = 'Cash';
-                                            icon = <Coins className="size-3.5" />;
-                                        } else if (method === 'GCASH') {
-                                            label = 'GCash';
-                                            icon = <Wallet className="size-3.5 text-blue-500" />;
-                                        } else if (method === 'PAYMAYA') {
-                                            label = 'Maya';
-                                            icon = <Landmark className="size-3.5 text-green-500" />;
-                                        } else {
-                                            label = 'Card';
-                                            icon = <CreditCard className="size-3.5 text-purple-500" />;
-                                        }
+                                        const label = method === 'CASH' ? 'Cash' : 'GCash';
+                                        const icon =
+                                            method === 'CASH' ? <Coins className="size-3.5" /> : <Wallet className="size-3.5 text-blue-500" />;
 
                                         return (
                                             <button
@@ -367,7 +356,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                         )}
 
                                         {/* DIGITAL PAYMENTS FORM */}
-                                        {paymentMethodValue !== 'CASH' && (
+                                        {paymentMethodValue === 'GCASH' && (
                                             <div className="space-y-3">
                                                 <FormField
                                                     control={paymentForm.control}
@@ -375,28 +364,17 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                                {paymentMethodValue === 'GCASH'
-                                                                    ? 'GCash Reference Number (11 Digits)'
-                                                                    : paymentMethodValue === 'PAYMAYA'
-                                                                      ? 'Maya Reference Number'
-                                                                      : 'Card Reference Number'}
+                                                                GCash Reference Number (13 Digits)
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input
-                                                                    placeholder={
-                                                                        paymentMethodValue === 'GCASH'
-                                                                            ? 'Enter 11-digit GCash reference number'
-                                                                            : 'Enter reference number'
-                                                                    }
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    pattern="[0-9]{13}"
+                                                                    placeholder="13-digit GCash Ref #"
                                                                     value={field.value || ''}
-                                                                    onChange={(e) => {
-                                                                        if (paymentMethodValue === 'GCASH') {
-                                                                            field.onChange(e.target.value.replace(/\D/g, ''));
-                                                                        } else {
-                                                                            field.onChange(e.target.value);
-                                                                        }
-                                                                    }}
-                                                                    maxLength={paymentMethodValue === 'GCASH' ? 11 : undefined}
+                                                                    onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                                                                    maxLength={13}
                                                                     className="h-9 bg-background/50 text-xs font-semibold font-mono"
                                                                 />
                                                             </FormControl>

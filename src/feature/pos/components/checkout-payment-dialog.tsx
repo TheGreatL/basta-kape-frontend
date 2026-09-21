@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Coins, Wallet, Landmark, CreditCard, Check, Info, Upload, X } from 'lucide-react';
+import { Coins, Wallet, Check, Info, Upload, X } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -28,8 +28,8 @@ interface CheckoutPaymentDialogProps {
     setBuzzerId: (id: string) => void;
     orderType: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
     setOrderType: (type: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY') => void;
-    paymentMethod: 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD';
-    setPaymentMethod: (method: 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD') => void;
+    paymentMethod: 'CASH' | 'GCASH';
+    setPaymentMethod: (method: 'CASH' | 'GCASH') => void;
     cashTendered: number | '';
     setCashTendered: (cash: number | '') => void;
     referenceNumber: string;
@@ -263,12 +263,10 @@ export default function CheckoutPaymentDialog({
                     <div className="space-y-3.5 pt-2 border-t border-border/20">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-foreground/80 uppercase">Settlement Channel</label>
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { id: 'CASH', label: 'Cash', icon: Coins },
-                                    { id: 'GCASH', label: 'GCash', icon: Wallet },
-                                    { id: 'PAYMAYA', label: 'Maya', icon: Landmark },
-                                    { id: 'CREDIT_CARD', label: 'Card', icon: CreditCard }
+                                    { id: 'GCASH', label: 'GCash', icon: Wallet }
                                 ].map((method) => {
                                     const Icon = method.icon;
                                     const isSelected = paymentMethod === method.id;
@@ -321,7 +319,7 @@ export default function CheckoutPaymentDialog({
                                                 key={denom}
                                                 type="button"
                                                 onClick={() => setCashTendered(value)}
-                                                className="text-2xs font-semibold py-1 px-2.5 rounded-lg border border-emerald-500/25 text-emerald-800 hover:bg-emerald-500/10 cursor-pointer bg-background"
+                                                className="text-xs font-semibold py-1 px-2.5 rounded-lg border border-emerald-500/25 text-emerald-800 hover:bg-emerald-500/10 cursor-pointer bg-background"
                                             >
                                                 {label}
                                             </button>
@@ -339,40 +337,24 @@ export default function CheckoutPaymentDialog({
                         )}
 
                         {/* DIGITAL REFERENCE & PROOF UPLOAD */}
-                        {paymentMethod !== 'CASH' && (
+                        {paymentMethod === 'GCASH' && (
                             <div className="space-y-3.5 p-3 rounded-xl border border-primary/15 bg-primary/5 animate-fade-in">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-primary uppercase flex items-center gap-1">
-                                        {paymentMethod === 'GCASH'
-                                            ? 'GCash Reference Number (11 Digits)'
-                                            : paymentMethod === 'PAYMAYA'
-                                              ? 'Maya Reference Number'
-                                              : 'Card Reference Number'}{' '}
-                                        <span className="text-destructive">*</span>
+                                        GCash Reference Number (13 Digits) <span className="text-destructive">*</span>
                                     </label>
                                     <Input
-                                        placeholder={
-                                            paymentMethod === 'GCASH'
-                                                ? 'Enter 11-digit GCash reference number'
-                                                : paymentMethod === 'PAYMAYA'
-                                                  ? 'Enter Maya reference number...'
-                                                  : 'Enter Card reference number...'
-                                        }
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]{13}"
+                                        placeholder="13-digit GCash Ref #"
                                         value={referenceNumber}
-                                        onChange={(e) => {
-                                            if (paymentMethod === 'GCASH') {
-                                                setReferenceNumber(e.target.value.replace(/\D/g, ''));
-                                            } else {
-                                                setReferenceNumber(e.target.value);
-                                            }
-                                        }}
-                                        maxLength={paymentMethod === 'GCASH' ? 11 : undefined}
+                                        onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                                        maxLength={13}
                                         className="h-8.5 text-xs bg-background font-mono border-primary/20"
                                     />
                                     <span className="text-xs text-muted-foreground block mt-1 leading-tight">
-                                        {paymentMethod === 'GCASH'
-                                            ? 'Provide the 11-digit GCash reference number printed on customer receipt screen.'
-                                            : "Provide the reference number printed on the customer's payment screen."}
+                                        Must be exactly 13 digits printed on customer's GCash receipt screen.
                                     </span>
                                 </div>
 
@@ -406,10 +388,10 @@ export default function CheckoutPaymentDialog({
                                                 />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <span className="text-2xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
+                                                <span className="text-xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
                                                     Proof Screenshot Uploaded
                                                 </span>
-                                                <span className="text-3xs text-muted-foreground font-mono truncate block">
+                                                <span className="text-xs text-muted-foreground font-mono truncate block">
                                                     {paymentProofPhoto.split('/').pop() || 'screenshot.png'} • Click to view
                                                 </span>
                                             </div>
@@ -438,7 +420,7 @@ export default function CheckoutPaymentDialog({
                                             {isUploading ? (
                                                 <div className="flex flex-col items-center gap-1.5 py-1">
                                                     <Spinner className="size-4.5 text-primary animate-spin" />
-                                                    <span className="text-3xs font-semibold text-muted-foreground">Uploading receipt photo...</span>
+                                                    <span className="text-xs font-semibold text-muted-foreground">Uploading receipt photo...</span>
                                                 </div>
                                             ) : (
                                                 <button
@@ -447,8 +429,8 @@ export default function CheckoutPaymentDialog({
                                                     className="flex flex-col items-center gap-1 cursor-pointer text-center bg-transparent border-0 p-0"
                                                 >
                                                     <Upload className="size-5 text-primary/70" />
-                                                    <span className="text-2xs font-bold text-primary">Upload Proof Image</span>
-                                                    <span className="text-3xs text-muted-foreground">PNG, JPG or WEBP (Max 5MB)</span>
+                                                    <span className="text-xs font-bold text-primary">Upload Proof Image</span>
+                                                    <span className="text-xs text-muted-foreground">PNG, JPG or WEBP (Max 5MB)</span>
                                                 </button>
                                             )}
                                         </div>

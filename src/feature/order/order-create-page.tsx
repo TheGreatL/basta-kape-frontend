@@ -498,9 +498,15 @@ export default function OrderCreatePage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
         } catch (err) {
-            toast.error('Failed to process payment', {
-                description: getErrorMessage(err)
-            });
+            const status = (err as any)?.status || (err as any)?.statusCode;
+            const msg = getErrorMessage(err);
+            if (status === 409 || msg.includes('already exists')) {
+                toast.error('This GCash reference has already been used for another transaction.');
+            } else {
+                toast.error('Failed to process payment', {
+                    description: msg
+                });
+            }
         } finally {
             setIsSubmitting(false);
             setIsUploading(false);
@@ -1370,7 +1376,7 @@ export default function OrderCreatePage() {
                                         )}
 
                                         {/* DIGITAL WALLETS details */}
-                                        {(paymentMethod === 'GCASH' || paymentMethod === 'PAYMAYA') && (
+                                        {paymentMethod === 'GCASH' && (
                                             <div className="space-y-3 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
                                                 <FormField
                                                     control={paymentForm.control}
@@ -1378,13 +1384,17 @@ export default function OrderCreatePage() {
                                                     render={({ field }) => (
                                                         <FormItem className="space-y-1.5">
                                                             <FormLabel className="font-bold text-foreground/80 block">
-                                                                Reference / Txn ID <span className="text-rose-500">*</span>
+                                                                GCash Reference Number (13 Digits) <span className="text-rose-500">*</span>
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input
-                                                                    placeholder={`Enter ${paymentMethod === 'GCASH' ? 'GCash' : 'Maya'} reference ID`}
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    pattern="[0-9]{13}"
+                                                                    placeholder="13-digit GCash Ref #"
                                                                     value={field.value || ''}
-                                                                    onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ''))}
+                                                                    onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                                                                    maxLength={13}
                                                                     className="h-9.5 text-xs bg-background/50 rounded-lg font-mono font-bold"
                                                                 />
                                                             </FormControl>
@@ -1402,7 +1412,7 @@ export default function OrderCreatePage() {
                                                             <FormControl>
                                                                 <div>
                                                                     {receiptPreview ? (
-                                                                        <div className="relative border border-border/40 rounded-xl overflow-hidden bg-background/50 p-2 flex items-center justify-between gap-3 text-2xs">
+                                                                        <div className="relative border border-border/40 rounded-xl overflow-hidden bg-background/50 p-2 flex items-center justify-between gap-3 text-xs">
                                                                             <div className="flex items-center gap-2.5 min-w-0">
                                                                                 <img
                                                                                     src={receiptPreview}

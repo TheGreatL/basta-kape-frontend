@@ -693,12 +693,7 @@ export default function OrderEditPage() {
                                             type="button"
                                             disabled={approvePaymentMutation.isPending}
                                             onClick={() => {
-                                                const pendingPayment = payments.find(
-                                                    (p: IOrderPayment) =>
-                                                        p.paymentMethod === 'GCASH' ||
-                                                        p.paymentMethod === 'PAYMAYA' ||
-                                                        p.paymentMethod === 'CREDIT_CARD'
-                                                );
+                                                const pendingPayment = payments.find((p: IOrderPayment) => p.paymentMethod === 'GCASH');
                                                 if (pendingPayment) {
                                                     approvePaymentMutation.mutate(pendingPayment.id);
                                                 }

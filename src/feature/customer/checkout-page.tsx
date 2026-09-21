@@ -68,7 +68,7 @@ export default function CheckoutPage() {
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'GCASH' | 'PAYMAYA'>('CASH');
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'GCASH'>('CASH');
     const [referenceNumber, setReferenceNumber] = useState('');
 
     const [receiptFile, setReceiptFile] = useState<File | null>(null);
@@ -140,12 +140,6 @@ export default function CheckoutPage() {
                 label: 'GCash',
                 description: 'Scan or transfer to 0917-123-4567',
                 icon: Smartphone
-            },
-            {
-                value: 'PAYMAYA' as const,
-                label: 'Maya',
-                description: 'Scan or transfer to 0917-123-4567',
-                icon: Smartphone
             }
         ],
         [orderType]
@@ -206,16 +200,16 @@ export default function CheckoutPage() {
             return;
         }
 
-        if (paymentMethod !== 'CASH') {
-            if (!referenceNumber.trim()) {
+        if (paymentMethod === 'GCASH') {
+            if (!referenceNumber.trim() || !/^\d{13}$/.test(referenceNumber.trim())) {
                 toast.error('Payment Reference Number Required', {
-                    description: `Please input the ${paymentMethod === 'GCASH' ? 'GCash' : 'Maya'} reference number to verify your transaction.`
+                    description: 'GCash reference number must be exactly 13 digits.'
                 });
                 return;
             }
             if (!receiptFile) {
                 toast.error('Payment Receipt Required', {
-                    description: `Please upload a screenshot receipt of your ${paymentMethod === 'GCASH' ? 'GCash' : 'Maya'} payment.`
+                    description: 'Please upload a screenshot receipt of your GCash payment.'
                 });
                 return;
             }
@@ -279,9 +273,15 @@ export default function CheckoutPage() {
             setCreatedOrder(order);
             setShowSuccessDialog(true);
         } catch (err) {
-            toast.error('Failed to place order', {
-                description: getErrorMessage(err)
-            });
+            const status = (err as any)?.status || (err as any)?.statusCode;
+            const msg = getErrorMessage(err);
+            if (status === 409 || msg.includes('already exists')) {
+                toast.error('This GCash reference has already been used for another transaction.');
+            } else {
+                toast.error('Failed to place order', {
+                    description: msg
+                });
+            }
         } finally {
             setIsSubmitting(false);
             setIsUploading(false);
@@ -479,13 +479,16 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="space-y-1.5 pt-1">
                                     <label className="font-bold text-foreground/80 block text-xs">
-                                        GCash Reference Number <span className="text-rose-500">*</span>
+                                        GCash Reference Number (13 Digits) <span className="text-rose-500">*</span>
                                     </label>
                                     <Input
-                                        placeholder="Enter 11-digit GCash reference number"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]{13}"
+                                        placeholder="13-digit GCash Ref #"
                                         value={referenceNumber}
-                                        onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, ''))}
-                                        maxLength={11}
+                                        onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, '').slice(0, 13))}
+                                        maxLength={13}
                                         className="h-10 text-xs rounded-xl bg-background/50 border-border/60 font-mono"
                                         required
                                     />
@@ -544,97 +547,6 @@ export default function CheckoutPage() {
                                             <Upload className="size-5 text-muted-foreground group-hover:text-blue-600 transition-colors" />
                                             <span className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">
                                                 Upload GCash receipt photo
-                                            </span>
-                                            <span className="text-xs text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Maya Details */}
-                        {paymentMethod === 'PAYMAYA' && (
-                            <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                                    <div>
-                                        <span className="text-xs font-bold uppercase  text-emerald-600">Maya Account Details</span>
-                                        <p className="text-sm font-bold text-foreground">BASTA KAPE STORE</p>
-                                        <p className="text-xs font-mono text-muted-foreground">0917-123-4567</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 border border-emerald-500/10 rounded-lg p-2 bg-background/50 self-start">
-                                        <QrCode className="size-8 text-emerald-600" />
-                                        <div className="text-xs leading-tight font-semibold text-muted-foreground">
-                                            <span className="font-bold text-foreground">Scan QR Code</span>
-                                            <br /> Send payment before placing order
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5 pt-1">
-                                    <label className="font-bold text-foreground/80 block text-xs">
-                                        Maya Reference Number <span className="text-rose-500">*</span>
-                                    </label>
-                                    <Input
-                                        placeholder="Enter Maya reference number"
-                                        value={referenceNumber}
-                                        onChange={(e) => setReferenceNumber(e.target.value.replace(/\D/g, ''))}
-                                        className="h-10 text-xs rounded-xl bg-background/50 border-border/60 font-mono"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Receipt screenshot */}
-                                {receiptPreview ? (
-                                    <div className="space-y-1.5 pt-1">
-                                        <label className="font-bold text-foreground/80 block text-xs">
-                                            Payment Receipt Screenshot <span className="text-rose-500">*</span>
-                                        </label>
-                                        <div
-                                            onClick={() => setViewingFileUrl(receiptPreview)}
-                                            className="relative border border-emerald-500/10 hover:border-emerald-500/30 rounded-xl overflow-hidden bg-background/50 hover:bg-emerald-500/5 p-2 flex items-center justify-between gap-3 cursor-pointer transition-colors group"
-                                        >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <img
-                                                    src={receiptPreview}
-                                                    alt="Receipt preview"
-                                                    className="size-12 rounded-lg object-cover border border-border/40 shrink-0 group-hover:scale-105 transition-transform"
-                                                />
-                                                <div className="min-w-0 text-xs">
-                                                    <p className="font-bold text-foreground truncate group-hover:text-emerald-600 transition-colors">
-                                                        {receiptFile?.name}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {(receiptFile ? receiptFile.size / 1024 / 1024 : 0).toFixed(2)} MB • Click to view
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRemoveReceipt();
-                                                }}
-                                                className="size-8 text-muted-foreground hover:text-rose-500 shrink-0"
-                                            >
-                                                <Trash2 className="size-4" />
-                                                <span className="sr-only">Remove screenshot</span>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-1.5 pt-1">
-                                        <label className="font-bold text-foreground/80 block text-xs">
-                                            Payment Receipt Screenshot <span className="text-rose-500">*</span>
-                                        </label>
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="w-full py-4 border border-dashed border-emerald-500/20 hover:border-emerald-500 rounded-xl flex flex-col items-center justify-center gap-1.5 text-xs text-muted-foreground bg-background/30 hover:bg-emerald-500/5 transition-all cursor-pointer group"
-                                        >
-                                            <Upload className="size-5 text-muted-foreground group-hover:text-emerald-600 transition-colors" />
-                                            <span className="font-semibold text-foreground group-hover:text-emerald-600 transition-colors">
-                                                Upload Maya receipt photo
                                             </span>
                                             <span className="text-xs text-muted-foreground/80">PNG, JPG, or JPEG up to 5MB</span>
                                         </button>
@@ -775,7 +687,12 @@ export default function CheckoutPage() {
                         <div className="pt-2 space-y-2">
                             <Button
                                 type="submit"
-                                disabled={isSubmitting || isUploading || checkoutItems.length === 0}
+                                disabled={
+                                    isSubmitting ||
+                                    isUploading ||
+                                    checkoutItems.length === 0 ||
+                                    (paymentMethod === 'GCASH' && (referenceNumber.length !== 13 || !receiptFile))
+                                }
                                 className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-all"
                             >
                                 {isUploading ? (

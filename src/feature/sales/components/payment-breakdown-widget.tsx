@@ -34,7 +34,7 @@ export default function PaymentBreakdownWidget({ dateFrom, dateTo }: PaymentBrea
             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs flex flex-col min-h-[300px]">
                 <Skeleton className="h-4 w-44 mb-6" />
                 <div className="flex-1 flex items-end justify-between gap-6 h-[180px] w-full pt-4">
-                    {Array.from({ length: 4 }).map((_, idx) => (
+                    {Array.from({ length: 2 }).map((_, idx) => (
                         <div key={idx} className="flex flex-col items-center gap-2 flex-1">
                             <Skeleton className="w-full rounded-t-lg bg-accent/60" style={{ height: `${(idx + 1) * 35 + 20}px` }} />
                             <Skeleton className="h-3 w-12" />

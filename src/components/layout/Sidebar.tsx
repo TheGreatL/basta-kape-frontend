@@ -121,12 +121,12 @@ const getSidebarGroups = (
                     { title: 'Units & Conversions', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
                 ]
             },
-            // {
-            //     title: 'Food Preparation',
-            //     path: '/admin/food-prep',
-            //     icon: 'cookie',
-            //     module: appModules.FOOD_PREPARATION
-            // },
+            {
+                title: 'Food Preparation',
+                path: '/admin/food-prep',
+                icon: 'cookie',
+                module: appModules.FOOD_PREPARATION
+            },
             { title: 'Stock Buy Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]

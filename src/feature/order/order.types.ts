@@ -94,7 +94,7 @@ export interface ICreateOrderPayload {
     customerId?: string | null;
     customerName?: string;
     buzzerId?: string | null;
-    paymentMethod?: 'CASH' | 'GCASH' | 'PAYMAYA' | null;
+    paymentMethod?: 'CASH' | 'GCASH' | null;
     paymentReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
     items: Array<{
@@ -110,7 +110,8 @@ export interface IUpdateOrderStatusPayload {
     notes?: string;
 }
 
-export type TPaymentMethod = 'CASH' | 'GCASH' | 'PAYMAYA' | 'CREDIT_CARD';
+export type PaymentMethod = 'CASH' | 'GCASH';
+export type TPaymentMethod = PaymentMethod;
 export type TPaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 
 export interface IOrderPayment {
@@ -200,10 +201,24 @@ export const orderDiscountFormSchema = z.object({
     referenceName: z.string().optional()
 });
 
+export const GCashPaymentSchema = z.object({
+    paymentMethod: z.literal('GCASH'),
+    paymentReferenceNumber: z
+        .string()
+        .trim()
+        .regex(/^\d{13}$/, 'GCash reference number must be exactly 13 digits'),
+    paymentProofPhoto: z.string().optional().nullable()
+});
+
+export const CashPaymentSchema = z.object({
+    paymentMethod: z.literal('CASH'),
+    amountTendered: z.number().nonnegative('Amount tendered must be >= 0')
+});
+
 export const createOrderPaymentSchema = (netTotal: number) => {
     return z
         .object({
-            paymentMethod: z.enum(['UNPAID', 'CASH', 'GCASH', 'PAYMAYA', 'CREDIT_CARD']),
+            paymentMethod: z.enum(['UNPAID', 'CASH', 'GCASH']),
             amountTendered: z.number().optional(),
             referenceNumber: z.string().optional(),
             receiptFile: z.any().nullable().optional()
@@ -218,12 +233,12 @@ export const createOrderPaymentSchema = (netTotal: number) => {
                     });
                 }
             }
-            if (data.paymentMethod === 'GCASH' || data.paymentMethod === 'PAYMAYA') {
-                if (!data.referenceNumber || !data.referenceNumber.trim() || data.referenceNumber.trim().length < 5) {
+            if (data.paymentMethod === 'GCASH') {
+                if (!data.referenceNumber || !/^\d{13}$/.test(data.referenceNumber.trim())) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
                         path: ['referenceNumber'],
-                        message: 'Digital payments require a reference number of at least 5 characters.'
+                        message: 'GCash reference number must be exactly 13 digits'
                     });
                 }
             }
@@ -233,7 +248,5 @@ export const createOrderPaymentSchema = (netTotal: number) => {
 export const PAYMENT_METHODS = [
     { id: 'UNPAID', label: 'Unpaid / Delay', icon: Clock },
     { id: 'CASH', label: 'Cash Drawer', icon: Coins },
-    { id: 'GCASH', label: 'GCash', icon: Wallet },
-    { id: 'PAYMAYA', label: 'Maya Wallet', icon: Wallet },
-    { id: 'CREDIT_CARD', label: 'Card Swipe', icon: Landmark }
+    { id: 'GCASH', label: 'GCash', icon: Wallet }
 ] as const;

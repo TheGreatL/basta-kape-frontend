@@ -118,8 +118,6 @@ export type TOrderTypeBreakdown = {
 export type TPaymentBreakdown = {
     CASH: { count: number; revenue: number };
     GCASH: { count: number; revenue: number };
-    PAYMAYA: { count: number; revenue: number };
-    CREDIT_CARD: { count: number; revenue: number };
 };
 
 export type TSalesOrder = {
