@@ -4,7 +4,6 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Card, CardDescription, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IMenuProduct } from '../../menu/menu.types';
 import type { IPaginatedResult } from '#/types/base.types';
@@ -81,7 +80,6 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                                         {product.category.name}
                                     </Badge>
                                 )}
-                                <ProductBadges product={product} variant="floating" className="absolute top-2 right-2" />
                                 {isPreparedDisplay && (
                                     <Badge
                                         variant={isOutOfStock ? 'destructive' : 'outline'}

@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { IMenuProduct, IMenuProductVariant } from '#/feature/menu/menu.types.ts';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 
 interface ProductCardProps {
     product: IMenuProduct;
@@ -33,7 +32,6 @@ export default function ProductCard({ product }: ProductCardProps) {
                         {product.type.name}
                     </span>
                 )}
-                <ProductBadges product={product} variant="floating" className="absolute top-2 right-2" />
             </div>
 
             {/* Content */}

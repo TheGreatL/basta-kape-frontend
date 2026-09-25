@@ -9,9 +9,7 @@ const searchParamsSchema = z.object({
     search: z.string().catch(''),
     status: z.enum(['active', 'archive']).catch('active'),
     productCategoryId: z.string().catch(''),
-    productTypeId: z.string().catch(''),
-    isMustTry: z.boolean().optional(),
-    isBestSeller: z.boolean().optional()
+    productTypeId: z.string().catch('')
 });
 
 export const Route = createFileRoute('/admin/products/')({

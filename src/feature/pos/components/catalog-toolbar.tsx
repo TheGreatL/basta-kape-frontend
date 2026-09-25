@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Search, X, Sparkles, Flame, RotateCcw, Coffee, Layers, ChevronDown } from 'lucide-react';
+import { Search, X, RotateCcw, Coffee, Layers, ChevronDown } from 'lucide-react';
 import { Input } from '#/components/ui/input.tsx';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible.tsx';
 import { cn } from '#/lib/utils.ts';
@@ -12,10 +12,6 @@ interface CatalogToolbarProps {
     setProductCategoryId: (id: string) => void;
     productTypeId: string;
     setProductTypeId: (id: string) => void;
-    isMustTry?: boolean;
-    setIsMustTry: (val: boolean | undefined) => void;
-    isBestSeller?: boolean;
-    setIsBestSeller: (val: boolean | undefined) => void;
     categoriesData: IMenuCategory[] | undefined;
     typesData: IMenuProductType[] | undefined;
 }
@@ -27,16 +23,12 @@ export default function CatalogToolbar({
     setProductCategoryId,
     productTypeId,
     setProductTypeId,
-    isMustTry,
-    setIsMustTry,
-    isBestSeller,
-    setIsBestSeller,
     categoriesData,
     typesData
 }: CatalogToolbarProps) {
     const [isCategoriesOpen, setIsCategoriesOpen] = React.useState(true);
 
-    const hasActiveFilters = !!search || !!productCategoryId || !!productTypeId || isMustTry !== undefined || isBestSeller !== undefined;
+    const hasActiveFilters = !!search || !!productCategoryId || !!productTypeId;
 
     const filteredCategories = React.useMemo(() => {
         if (!categoriesData) return [];
@@ -45,13 +37,11 @@ export default function CatalogToolbar({
     }, [categoriesData, productTypeId]);
 
     const selectedCategoryName = React.useMemo(() => {
-        if (isBestSeller) return '⭐ Best Sellers';
-        if (isMustTry) return '🔥 Must Try';
         if (productCategoryId) {
             return categoriesData?.find((c) => c.id === productCategoryId)?.name || 'Filtered';
         }
         return 'All Menu';
-    }, [isBestSeller, isMustTry, productCategoryId, categoriesData]);
+    }, [productCategoryId, categoriesData]);
 
     const handleProductTypeChange = (typeId: string) => {
         const nextTypeId = typeId === productTypeId ? '' : typeId;
@@ -68,8 +58,6 @@ export default function CatalogToolbar({
         setSearch('');
         setProductCategoryId('');
         setProductTypeId('');
-        setIsMustTry(undefined);
-        setIsBestSeller(undefined);
     };
 
     return (
@@ -143,16 +131,14 @@ export default function CatalogToolbar({
                                 'text-xs font-semibold py-1.5 px-3 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-2xs',
                                 isCategoriesOpen
                                     ? 'bg-muted/50 border-border/60 text-foreground'
-                                    : productCategoryId || isBestSeller || isMustTry
+                                    : productCategoryId
                                       ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                       : 'bg-background hover:bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground'
                             )}
                         >
                             <Layers className="size-3.5" />
                             <span>
-                                {!isCategoriesOpen && (productCategoryId || isBestSeller || isMustTry)
-                                    ? selectedCategoryName
-                                    : `Categories (${filteredCategories.length + 3})`}
+                                {!isCategoriesOpen && productCategoryId ? selectedCategoryName : `Categories (${filteredCategories.length + 1})`}
                             </span>
                             <ChevronDown className={cn('size-3.5 transition-transform duration-200', isCategoriesOpen && 'rotate-180')} />
                         </button>
@@ -180,12 +166,10 @@ export default function CatalogToolbar({
                         type="button"
                         onClick={() => {
                             setProductCategoryId('');
-                            setIsBestSeller(undefined);
-                            setIsMustTry(undefined);
                         }}
                         className={cn(
                             'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                            !productCategoryId && !isBestSeller && !isMustTry
+                            !productCategoryId
                                 ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold'
                                 : 'bg-background hover:bg-muted/40 border-border/60 hover:border-primary/30 text-foreground'
                         )}
@@ -193,9 +177,7 @@ export default function CatalogToolbar({
                         <div
                             className={cn(
                                 'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                !productCategoryId && !isBestSeller && !isMustTry
-                                    ? 'bg-primary-foreground/20 text-primary-foreground'
-                                    : 'bg-primary/10 text-primary'
+                                !productCategoryId ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/10 text-primary'
                             )}
                         >
                             <Layers className="size-3.5" />
@@ -203,69 +185,15 @@ export default function CatalogToolbar({
                         <span className="text-xs font-semibold">All Menu</span>
                     </button>
 
-                    {/* Best Sellers Card */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setIsBestSeller(isBestSeller ? undefined : true);
-                            setIsMustTry(undefined);
-                            setProductCategoryId('');
-                        }}
-                        className={cn(
-                            'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                            isBestSeller
-                                ? 'bg-amber-500 text-white border-amber-500 shadow-xs font-bold'
-                                : 'bg-background hover:bg-amber-500/5 border-border/60 hover:border-amber-500/40 text-foreground'
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                isBestSeller ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                            )}
-                        >
-                            <Sparkles className="size-3.5" />
-                        </div>
-                        <span className="text-xs font-semibold">⭐ Best Sellers</span>
-                    </button>
-
-                    {/* Must Try Card */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setIsMustTry(isMustTry ? undefined : true);
-                            setIsBestSeller(undefined);
-                            setProductCategoryId('');
-                        }}
-                        className={cn(
-                            'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                            isMustTry
-                                ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold'
-                                : 'bg-background hover:bg-orange-500/5 border-border/60 hover:border-orange-500/40 text-foreground'
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                isMustTry ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                            )}
-                        >
-                            <Flame className="size-3.5" />
-                        </div>
-                        <span className="text-xs font-semibold">🔥 Must Try</span>
-                    </button>
-
                     {/* Dynamic Category Cards */}
                     {filteredCategories.map((cat) => {
-                        const isSelected = productCategoryId === cat.id && !isBestSeller && !isMustTry;
+                        const isSelected = productCategoryId === cat.id;
                         return (
                             <button
                                 key={cat.id}
                                 type="button"
                                 onClick={() => {
                                     setProductCategoryId(cat.id === productCategoryId ? '' : cat.id);
-                                    setIsBestSeller(undefined);
-                                    setIsMustTry(undefined);
                                 }}
                                 className={cn(
                                     'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',

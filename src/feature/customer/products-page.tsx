@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Coffee, ChevronLeft, ChevronRight, Sparkles, Flame, Layers, RotateCcw, Utensils } from 'lucide-react';
+import { Search, Coffee, ChevronLeft, ChevronRight, Layers, RotateCcw, Utensils } from 'lucide-react';
 
 import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
 import type { IMenuCategory, IMenuProduct } from '#/feature/menu/menu.types.ts';
@@ -16,7 +16,6 @@ export default function ProductsPage() {
     const debouncedSearch = useDebounce(search, 300);
     const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [badgeFilter, setBadgeFilter] = useState<'all' | 'best_seller' | 'must_try'>('all');
     const [page, setPage] = useState(1);
     const limit = 8;
 
@@ -51,16 +50,14 @@ export default function ProductsPage() {
 
     // Fetch products list
     const { data: menuData, isLoading: isProductsLoading } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATALOG, page, debouncedSearch, selectedTypeId, selectedCategory, badgeFilter],
+        queryKey: [QUERY_KEY.MENU.CATALOG, page, debouncedSearch, selectedTypeId, selectedCategory],
         queryFn: () =>
             getMenuCatalog({
                 page,
                 limit,
                 search: debouncedSearch || undefined,
                 productTypeId: selectedTypeId || undefined,
-                productCategoryId: selectedCategory || undefined,
-                isBestSeller: badgeFilter === 'best_seller' ? true : undefined,
-                isMustTry: badgeFilter === 'must_try' ? true : undefined
+                productCategoryId: selectedCategory || undefined
             })
     });
 
@@ -78,18 +75,12 @@ export default function ProductsPage() {
         setPage(1);
     };
 
-    const handleBadgeSelect = (filter: 'all' | 'best_seller' | 'must_try') => {
-        setBadgeFilter(filter);
-        setPage(1);
-    };
-
-    const hasActiveFilters = selectedTypeId !== null || selectedCategory !== null || badgeFilter !== 'all' || !!search;
+    const hasActiveFilters = selectedTypeId !== null || selectedCategory !== null || !!search;
 
     const handleClearFilters = () => {
         setSearch('');
         setSelectedTypeId(null);
         setSelectedCategory(null);
-        setBadgeFilter('all');
         setPage(1);
     };
 
@@ -128,11 +119,10 @@ export default function ProductsPage() {
                             type="button"
                             onClick={() => {
                                 handleTypeSelect(null);
-                                setBadgeFilter('all');
                             }}
                             className={cn(
                                 'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
-                                selectedTypeId === null && badgeFilter === 'all'
+                                selectedTypeId === null
                                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                                     : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
                             )}
@@ -144,14 +134,13 @@ export default function ProductsPage() {
                         {/* Product Type Tabs (Beverage, Food, etc.) */}
                         {types.map((type) => {
                             const isBeverage = type.name.toLowerCase().includes('bev') || type.name.toLowerCase().includes('drink');
-                            const isSelected = selectedTypeId === type.id && badgeFilter === 'all';
+                            const isSelected = selectedTypeId === type.id;
                             return (
                                 <button
                                     key={type.id}
                                     type="button"
                                     onClick={() => {
                                         handleTypeSelect(type.id);
-                                        setBadgeFilter('all');
                                     }}
                                     className={cn(
                                         'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
@@ -165,42 +154,6 @@ export default function ProductsPage() {
                                 </button>
                             );
                         })}
-
-                        {/* Best Sellers Pill */}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                handleBadgeSelect(badgeFilter === 'best_seller' ? 'all' : 'best_seller');
-                                setSelectedCategory(null);
-                            }}
-                            className={cn(
-                                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
-                                badgeFilter === 'best_seller'
-                                    ? 'bg-amber-500 text-white font-bold shadow-xs'
-                                    : 'bg-muted/40 hover:bg-amber-500/10 text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400'
-                            )}
-                        >
-                            <Sparkles className="size-3.5" />
-                            <span>⭐ Best Sellers</span>
-                        </button>
-
-                        {/* Must Try Pill */}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                handleBadgeSelect(badgeFilter === 'must_try' ? 'all' : 'must_try');
-                                setSelectedCategory(null);
-                            }}
-                            className={cn(
-                                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs',
-                                badgeFilter === 'must_try'
-                                    ? 'bg-orange-500 text-white font-bold shadow-xs'
-                                    : 'bg-muted/40 hover:bg-orange-500/10 text-muted-foreground hover:text-orange-600 dark:hover:text-orange-400'
-                            )}
-                        >
-                            <Flame className="size-3.5" />
-                            <span>🔥 Must Try</span>
-                        </button>
                     </div>
 
                     {hasActiveFilters && (
@@ -239,7 +192,7 @@ export default function ProductsPage() {
                             onClick={() => handleCategorySelect(null)}
                             className={cn(
                                 'flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-200 text-left group cursor-pointer relative overflow-hidden',
-                                selectedCategory === null && badgeFilter === 'all'
+                                selectedCategory === null
                                     ? 'bg-primary text-primary-foreground border-primary shadow-md'
                                     : 'bg-card hover:bg-muted/40 border-border/60 hover:border-primary/30'
                             )}
@@ -247,9 +200,7 @@ export default function ProductsPage() {
                             <div
                                 className={cn(
                                     'size-9 rounded-xl flex items-center justify-center mb-2.5 transition-colors',
-                                    selectedCategory === null && badgeFilter === 'all'
-                                        ? 'bg-primary-foreground/20 text-primary-foreground'
-                                        : 'bg-primary/10 text-primary'
+                                    selectedCategory === null ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/10 text-primary'
                                 )}
                             >
                                 <Layers className="size-4.5" />
@@ -258,7 +209,7 @@ export default function ProductsPage() {
                             <span
                                 className={cn(
                                     'text-xs mt-0.5 font-medium',
-                                    selectedCategory === null && badgeFilter === 'all' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                                    selectedCategory === null ? 'text-primary-foreground/80' : 'text-muted-foreground'
                                 )}
                             >
                                 {visibleCategories.length} Categories
@@ -271,7 +222,7 @@ export default function ProductsPage() {
                                   <div key={idx} className="h-24 rounded-2xl border border-border/40 bg-muted/30 animate-pulse p-3.5" />
                               ))
                             : visibleCategories.map((category: IMenuCategory) => {
-                                  const isSelected = selectedCategory === category.id && badgeFilter === 'all';
+                                  const isSelected = selectedCategory === category.id;
                                   return (
                                       <button
                                           key={category.id}

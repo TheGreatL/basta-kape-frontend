@@ -4,8 +4,6 @@ export interface IGetProductsParams extends IPaginationParams {
     search?: string;
     productCategoryId?: string;
     productTypeId?: string;
-    isMustTry?: boolean;
-    isBestSeller?: boolean;
     status?: 'active' | 'archive';
 }
 
@@ -14,8 +12,6 @@ export interface IProduct {
     name: string;
     photo: string | null;
     description: string | null;
-    isMustTry: boolean;
-    isBestSeller: boolean;
     productCategoryId: string | null;
     productTypeId: string | null;
     preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
@@ -71,8 +67,6 @@ export interface ICreateProductPayload {
     name: string;
     photo?: string | null;
     description?: string | null;
-    isMustTry?: boolean;
-    isBestSeller?: boolean;
     productCategoryId?: string | null;
     productTypeId?: string | null;
     preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
@@ -83,8 +77,6 @@ export interface IUpdateProductPayload {
     name?: string;
     photo?: string | null;
     description?: string | null;
-    isMustTry?: boolean;
-    isBestSeller?: boolean;
     productCategoryId?: string | null;
     productTypeId?: string | null;
     preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';

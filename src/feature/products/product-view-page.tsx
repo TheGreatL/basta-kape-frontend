@@ -16,7 +16,6 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 
 export default function ProductViewPage() {
@@ -89,7 +88,6 @@ export default function ProductViewPage() {
                                 >
                                     {product.deletedAt ? 'archived' : 'active'}
                                 </Badge>
-                                <ProductBadges product={product} variant="inline" />
                             </h1>
                             <p className="text-xs text-muted-foreground pt-1">
                                 View only: Product basic profile, active categories, variations, and customizations.
@@ -169,18 +167,6 @@ export default function ProductViewPage() {
                                         <div className="font-bold text-muted-foreground/80">Description</div>
                                         <div className="font-semibold text-foreground bg-muted/20 border p-2.5 rounded-lg min-h-[38px]">
                                             {product.description || 'No description provided.'}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1 sm:col-span-2">
-                                        <div className="font-bold text-muted-foreground/80">Highlights & Badges</div>
-                                        <div className="flex items-center gap-2 bg-muted/20 border p-2.5 rounded-lg min-h-[38px]">
-                                            {product.isBestSeller || product.isMustTry ? (
-                                                <ProductBadges product={product} variant="inline" />
-                                            ) : (
-                                                <span className="text-muted-foreground italic">
-                                                    Standard catalog item (No promotional badges assigned)
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
                                 </div>

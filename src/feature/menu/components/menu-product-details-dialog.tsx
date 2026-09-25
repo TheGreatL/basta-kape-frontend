@@ -11,7 +11,6 @@ import type { IMenuProduct, IMenuProductVariant } from '../menu.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 
 interface MenuProductDetailsDialogProps {
     open: boolean;
@@ -103,7 +102,6 @@ export default function MenuProductDetailsDialog({ open, onOpenChange, product }
                                                     Type: {menuProduct.type.name}
                                                 </Badge>
                                             )}
-                                            <ProductBadges product={menuProduct} variant="inline" />
                                         </div>
                                         <p className="text-xs text-muted-foreground leading-relaxed pt-1.5">
                                             {menuProduct.description || 'No flavor descriptors or recipe notes entered.'}

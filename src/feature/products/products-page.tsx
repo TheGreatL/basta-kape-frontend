@@ -34,7 +34,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Badge } from '#/components/ui/badge.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 
 import ProductDeleteDialog from './components/product-delete-dialog.tsx';
 
@@ -42,7 +41,7 @@ export default function ProductsPage() {
     const navigate = useNavigate({ from: '/admin/products/' });
     const globalNavigate = useNavigate();
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status, productCategoryId, productTypeId, isMustTry, isBestSeller } = Route.useSearch();
+    const { page, pageSize, search, status, productCategoryId, productTypeId } = Route.useSearch();
 
     const restoreMutation = useMutation({
         mutationFn: restoreProduct,
@@ -94,7 +93,7 @@ export default function ProductsPage() {
 
     // 2. Fetch Products Catalog List
     const { data: productsData, isLoading: isProductsLoading } = useQuery({
-        queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST, { page, pageSize, search, status, productCategoryId, productTypeId, isMustTry, isBestSeller }],
+        queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST, { page, pageSize, search, status, productCategoryId, productTypeId }],
         queryFn: () =>
             getProductsList({
                 page,
@@ -102,9 +101,7 @@ export default function ProductsPage() {
                 search,
                 status,
                 productCategoryId: productCategoryId || undefined,
-                productTypeId: productTypeId || undefined,
-                isMustTry: isMustTry !== undefined ? isMustTry : undefined,
-                isBestSeller: isBestSeller !== undefined ? isBestSeller : undefined
+                productTypeId: productTypeId || undefined
             })
     });
 
@@ -162,10 +159,7 @@ export default function ProductsPage() {
                             )}
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-semibold text-foreground/90 leading-tight truncate">{row.original.name}</span>
-                                <ProductBadges product={row.original} variant="compact" />
-                            </div>
+                            <span className="font-semibold text-foreground/90 leading-tight truncate">{row.original.name}</span>
                             <span className="text-xs text-muted-foreground font-normal line-clamp-1 max-w-xs pt-0.5">
                                 {row.original.description || '—'}
                             </span>
@@ -406,29 +400,6 @@ export default function ProductsPage() {
                             searchPlaceholder="Search product types..."
                             className="h-9 w-full sm:w-[180px] bg-background/50 text-xs"
                         />
-
-                        {/* Badge Filter */}
-                        <Select
-                            value={isBestSeller ? 'best_seller' : isMustTry ? 'must_try' : 'all'}
-                            onValueChange={(val) => {
-                                if (val === 'best_seller') {
-                                    setSearchParams({ isBestSeller: true, isMustTry: undefined, page: 1 });
-                                } else if (val === 'must_try') {
-                                    setSearchParams({ isMustTry: true, isBestSeller: undefined, page: 1 });
-                                } else {
-                                    setSearchParams({ isBestSeller: undefined, isMustTry: undefined, page: 1 });
-                                }
-                            }}
-                        >
-                            <SelectTrigger className="h-9 min-w-[130px] bg-background/50 text-xs">
-                                <SelectValue placeholder="All Badges" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Badges</SelectItem>
-                                <SelectItem value="best_seller">⭐ Best Sellers</SelectItem>
-                                <SelectItem value="must_try">🔥 Must Try</SelectItem>
-                            </SelectContent>
-                        </Select>
 
                         {/* Status Filter */}
                         <Select value={status} onValueChange={(val) => setSearchParams({ status: val as 'active' | 'archive', page: 1 })}>

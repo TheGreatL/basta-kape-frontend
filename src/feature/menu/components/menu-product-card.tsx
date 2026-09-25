@@ -3,7 +3,6 @@ import type { IMenuProduct } from '../menu.types';
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Button } from '#/components/ui/button.tsx';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 
 interface MenuProductCardProps {
     product: IMenuProduct;
@@ -50,9 +49,6 @@ export default function MenuProductCard({ product, onViewDetails }: MenuProductC
                         </Badge>
                     )}
                 </div>
-
-                {/* Promotional Badges */}
-                <ProductBadges product={product} variant="floating" className="absolute top-3 right-3" />
             </div>
 
             {/* Content Body Section */}

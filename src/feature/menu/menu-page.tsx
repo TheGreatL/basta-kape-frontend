@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { BookOpen, Coffee, Search, X, Sparkles, Flame, Layers, RotateCcw, ChevronDown } from 'lucide-react';
+import { BookOpen, Coffee, Search, X, Layers, RotateCcw, ChevronDown } from 'lucide-react';
 
 import { Route } from '#/routes/admin/menu.tsx';
 import { getMenuCatalog, getMenuCategories, getMenuTypes } from '#/api/menu.api.ts';
@@ -18,7 +18,7 @@ import MenuProductDetailsDialog from './components/menu-product-details-dialog.t
 
 export default function MenuPage() {
     const navigate = useNavigate({ from: '/admin/menu' });
-    const { page, pageSize, search, productCategoryId, productTypeId, isMustTry, isBestSeller } = Route.useSearch();
+    const { page, pageSize, search, productCategoryId, productTypeId } = Route.useSearch();
 
     const [localSearch, setLocalSearch] = React.useState(search || '');
     const [selectedProduct, setSelectedProduct] = React.useState<IMenuProduct | null>(null);
@@ -43,7 +43,7 @@ export default function MenuPage() {
         queryFn: () => getMenuTypes()
     });
 
-    const hasActiveFilters = !!localSearch || !!productCategoryId || !!productTypeId || isMustTry !== undefined || isBestSeller !== undefined;
+    const hasActiveFilters = !!localSearch || !!productCategoryId || !!productTypeId;
 
     // Debounce query search input
     React.useEffect(() => {
@@ -67,16 +67,14 @@ export default function MenuPage() {
         isLoading: isMenuLoading,
         error
     } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATALOG, { page, pageSize, search, productCategoryId, productTypeId, isMustTry, isBestSeller }],
+        queryKey: [QUERY_KEY.MENU.CATALOG, { page, pageSize, search, productCategoryId, productTypeId }],
         queryFn: () =>
             getMenuCatalog({
                 page,
                 limit: pageSize,
                 search,
                 productCategoryId: productCategoryId || undefined,
-                productTypeId: productTypeId || undefined,
-                isMustTry: isMustTry !== undefined ? isMustTry : undefined,
-                isBestSeller: isBestSeller !== undefined ? isBestSeller : undefined
+                productTypeId: productTypeId || undefined
             })
     });
 
@@ -86,13 +84,11 @@ export default function MenuPage() {
     }, [categoriesData, productTypeId]);
 
     const selectedCategoryName = React.useMemo(() => {
-        if (isBestSeller) return '⭐ Best Sellers';
-        if (isMustTry) return '🔥 Must Try';
         if (productCategoryId) {
             return categoriesData.find((c) => c.id === productCategoryId)?.name || 'Filtered';
         }
         return 'All Menu';
-    }, [isBestSeller, isMustTry, productCategoryId, categoriesData]);
+    }, [productCategoryId, categoriesData]);
 
     const handleProductTypeChange = (typeId: string) => {
         const nextTypeId = typeId === productTypeId ? '' : typeId;
@@ -198,16 +194,14 @@ export default function MenuPage() {
                                     'text-xs font-semibold py-1.5 px-3 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-2xs',
                                     isCategoriesOpen
                                         ? 'bg-muted/50 border-border/60 text-foreground'
-                                        : productCategoryId || isBestSeller || isMustTry
+                                        : productCategoryId
                                           ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                           : 'bg-background hover:bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground'
                                 )}
                             >
                                 <Layers className="size-3.5" />
                                 <span>
-                                    {!isCategoriesOpen && (productCategoryId || isBestSeller || isMustTry)
-                                        ? selectedCategoryName
-                                        : `Categories (${filteredCategories.length + 3})`}
+                                    {!isCategoriesOpen && productCategoryId ? selectedCategoryName : `Categories (${filteredCategories.length + 1})`}
                                 </span>
                                 <ChevronDown className={cn('size-3.5 transition-transform duration-200', isCategoriesOpen && 'rotate-180')} />
                             </button>
@@ -223,8 +217,6 @@ export default function MenuPage() {
                                         search: '',
                                         productCategoryId: '',
                                         productTypeId: '',
-                                        isMustTry: undefined,
-                                        isBestSeller: undefined,
                                         page: 1
                                     });
                                 }}
@@ -243,10 +235,10 @@ export default function MenuPage() {
                         {/* All Menu Card */}
                         <button
                             type="button"
-                            onClick={() => setSearchParams({ productCategoryId: '', isBestSeller: undefined, isMustTry: undefined, page: 1 })}
+                            onClick={() => setSearchParams({ productCategoryId: '', page: 1 })}
                             className={cn(
                                 'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                                !productCategoryId && !isBestSeller && !isMustTry
+                                !productCategoryId
                                     ? 'bg-primary text-primary-foreground border-primary shadow-xs font-bold'
                                     : 'bg-background hover:bg-muted/40 border-border/60 hover:border-primary/30 text-foreground'
                             )}
@@ -254,9 +246,7 @@ export default function MenuPage() {
                             <div
                                 className={cn(
                                     'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                    !productCategoryId && !isBestSeller && !isMustTry
-                                        ? 'bg-primary-foreground/20 text-primary-foreground'
-                                        : 'bg-primary/10 text-primary'
+                                    !productCategoryId ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/10 text-primary'
                                 )}
                             >
                                 <Layers className="size-3.5" />
@@ -264,62 +254,9 @@ export default function MenuPage() {
                             <span className="text-xs font-semibold">All Menu</span>
                         </button>
 
-                        {/* Best Sellers Card */}
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSearchParams({
-                                    isBestSeller: isBestSeller ? undefined : true,
-                                    isMustTry: undefined,
-                                    productCategoryId: '',
-                                    page: 1
-                                })
-                            }
-                            className={cn(
-                                'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                                isBestSeller
-                                    ? 'bg-amber-500 text-white border-amber-500 shadow-xs font-bold'
-                                    : 'bg-background hover:bg-amber-500/5 border-border/60 hover:border-amber-500/40 text-foreground'
-                            )}
-                        >
-                            <div
-                                className={cn(
-                                    'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                    isBestSeller ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                )}
-                            >
-                                <Sparkles className="size-3.5" />
-                            </div>
-                            <span className="text-xs font-semibold">⭐ Best Sellers</span>
-                        </button>
-
-                        {/* Must Try Card */}
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSearchParams({ isMustTry: isMustTry ? undefined : true, isBestSeller: undefined, productCategoryId: '', page: 1 })
-                            }
-                            className={cn(
-                                'flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer whitespace-nowrap shadow-2xs',
-                                isMustTry
-                                    ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold'
-                                    : 'bg-background hover:bg-orange-500/5 border-border/60 hover:border-orange-500/40 text-foreground'
-                            )}
-                        >
-                            <div
-                                className={cn(
-                                    'size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                                    isMustTry ? 'bg-white/20 text-white' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                                )}
-                            >
-                                <Flame className="size-3.5" />
-                            </div>
-                            <span className="text-xs font-semibold">🔥 Must Try</span>
-                        </button>
-
                         {/* Dynamic Category Cards */}
                         {filteredCategories.map((cat: IMenuCategory) => {
-                            const isSelected = cat.id === productCategoryId && !isBestSeller && !isMustTry;
+                            const isSelected = cat.id === productCategoryId;
                             return (
                                 <button
                                     key={cat.id}
@@ -327,8 +264,6 @@ export default function MenuPage() {
                                     onClick={() =>
                                         setSearchParams({
                                             productCategoryId: cat.id === productCategoryId ? '' : cat.id,
-                                            isBestSeller: undefined,
-                                            isMustTry: undefined,
                                             page: 1
                                         })
                                     }

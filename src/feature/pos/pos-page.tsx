@@ -55,8 +55,6 @@ export default function PosPage() {
     const [search, setSearch] = React.useState('');
     const [productCategoryId, setProductCategoryId] = React.useState('');
     const [productTypeId, setProductTypeId] = React.useState('');
-    const [isMustTry, setIsMustTry] = React.useState<boolean | undefined>(undefined);
-    const [isBestSeller, setIsBestSeller] = React.useState<boolean | undefined>(undefined);
     const [page, setPage] = React.useState(1);
     const pageSize = 12;
 
@@ -135,16 +133,14 @@ export default function PosPage() {
         isLoading: isMenuLoading,
         error: menuError
     } = useQuery({
-        queryKey: [QUERY_KEY.MENU.CATALOG, { page, search, productCategoryId, productTypeId, isMustTry, isBestSeller }],
+        queryKey: [QUERY_KEY.MENU.CATALOG, { page, search, productCategoryId, productTypeId }],
         queryFn: () =>
             getMenuCatalog({
                 page,
                 limit: pageSize,
                 search,
                 productCategoryId: productCategoryId || undefined,
-                productTypeId: productTypeId || undefined,
-                isMustTry: isMustTry !== undefined ? isMustTry : undefined,
-                isBestSeller: isBestSeller !== undefined ? isBestSeller : undefined
+                productTypeId: productTypeId || undefined
             })
     });
 
@@ -555,16 +551,6 @@ export default function PosPage() {
                         productTypeId={productTypeId}
                         setProductTypeId={(id) => {
                             setProductTypeId(id);
-                            setPage(1);
-                        }}
-                        isMustTry={isMustTry}
-                        setIsMustTry={(val) => {
-                            setIsMustTry(val);
-                            setPage(1);
-                        }}
-                        isBestSeller={isBestSeller}
-                        setIsBestSeller={(val) => {
-                            setIsBestSeller(val);
                             setPage(1);
                         }}
                         categoriesData={categoriesData}

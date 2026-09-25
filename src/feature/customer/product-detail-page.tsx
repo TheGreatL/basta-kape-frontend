@@ -16,7 +16,6 @@ import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifie
 import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import { toast } from 'sonner';
 import { Badge } from '#/components/ui/badge';
-import { ProductBadges } from '#/components/products/product-badges.tsx';
 
 interface ProductDetailPageProps {
     productId: string;
@@ -544,7 +543,6 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                     <div className="flex gap-2.5 items-center flex-wrap">
                         <Badge variant={'outline'}>{product.category?.name || 'Beverage'}</Badge>
                         <Badge variant={'outline'}>{product.type?.name || 'Beverage'}</Badge>
-                        <ProductBadges product={product} variant="inline" />
                     </div>
 
                     <h1 className="text-3xl font-bold text-foreground leading-tight">{product.name}</h1>
