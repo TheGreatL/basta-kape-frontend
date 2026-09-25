@@ -11,6 +11,7 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Skeleton } from '#/components/ui/skeleton.tsx';
+import { cn } from '#/lib/utils.ts';
 
 interface OrderBreakdownTableWidgetProps {
     dateFrom?: string;
@@ -85,9 +86,10 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* @deprecated: Previously titled "Completed Orders List" when only COMPLETED orders were shown. */}
                 <div>
-                    <h3 className="text-sm font-bold text-foreground">Completed Orders List</h3>
-                    <p className="text-xs text-muted-foreground">All completed customer orders in the selected period.</p>
+                    <h3 className="text-sm font-bold text-foreground">Sales Orders List</h3>
+                    <p className="text-xs text-muted-foreground">All confirmed paid customer orders in the selected period.</p>
                 </div>
 
                 {/* Local Search Input */}
@@ -113,6 +115,7 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
                             <TableHead className="font-bold text-xs uppercase">Customer</TableHead>
                             <TableHead className="font-bold text-xs uppercase">Dining Type</TableHead>
                             <TableHead className="font-bold text-xs uppercase">Order Source</TableHead>
+                            <TableHead className="font-bold text-xs uppercase">Order Status</TableHead>
                             <TableHead className="font-bold text-xs uppercase">Payment Method</TableHead>
                             <TableHead className="font-bold text-xs uppercase text-right">Net Total</TableHead>
                             <TableHead className="font-bold text-xs uppercase text-center w-[100px]">Actions</TableHead>
@@ -153,6 +156,20 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
                                                 {order.orderSource}
                                             </Badge>
                                         </TableCell>
+                                        <TableCell className="text-xs font-medium">
+                                            <Badge
+                                                variant="secondary"
+                                                className={cn(
+                                                    'text-xs font-semibold px-2 py-0.5 rounded-md',
+                                                    order.status === 'COMPLETED' && 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+                                                    order.status === 'READY' && 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+                                                    order.status === 'PREPARING' && 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+                                                    order.status === 'PENDING' && 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                                                )}
+                                            >
+                                                {order.status}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell className="text-xs font-medium text-foreground uppercase">{paymentMethods || 'UNPAID'}</TableCell>
                                         <TableCell className="font-bold text-xs text-right text-foreground">
                                             ₱{order.netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -173,7 +190,7 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
                             })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground font-semibold">
+                                <TableCell colSpan={9} className="text-center py-12 text-xs text-muted-foreground font-semibold">
                                     No transactions found within this timeframe.
                                 </TableCell>
                             </TableRow>

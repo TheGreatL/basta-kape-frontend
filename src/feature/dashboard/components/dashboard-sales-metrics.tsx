@@ -89,7 +89,8 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                     </div>
                     <div className="space-y-0.5">
                         <h3 className="text-lg font-bold text-foreground">{orderCount.toLocaleString()}</h3>
-                        <span className="text-xs text-muted-foreground font-semibold">Completed order count</span>
+                        {/* @deprecated: Previously "Completed order count" */}
+                        <span className="text-xs text-muted-foreground font-semibold">Paid order count</span>
                     </div>
                 </div>
 

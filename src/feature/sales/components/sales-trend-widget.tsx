@@ -120,7 +120,8 @@ export default function SalesTrendWidget({ dateFrom, dateTo }: SalesTrendWidgetP
                                     if (name === 'sales' || name === 'Revenue') {
                                         return [`₱${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Net Sales'];
                                     }
-                                    return [`${Number(value).toLocaleString()} orders`, 'Completed Orders'];
+                                    // @deprecated: Previously labeled 'Completed Orders'
+                                    return [`${Number(value).toLocaleString()} orders`, 'Paid Orders'];
                                 }}
                                 labelFormatter={(label) => {
                                     try {

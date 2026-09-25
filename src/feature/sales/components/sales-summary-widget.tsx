@@ -100,10 +100,11 @@ export default function SalesSummaryWidget({ dateFrom, dateTo }: SalesSummaryWid
                 </div>
             </div>
 
-            {/* 3. Completed Orders */}
+            {/* @deprecated: Previously titled "Orders Completed" when only completed orders were counted */}
+            {/* 3. Paid Orders */}
             <div className="bg-card border border-border/60 rounded-2xl p-4 shadow-2xs space-y-2">
                 <div className="flex justify-between items-center text-muted-foreground">
-                    <span className="text-xs font-bold uppercase">Orders Completed</span>
+                    <span className="text-xs font-bold uppercase">Paid Orders</span>
                     <ShoppingBag className="size-4 text-muted-foreground/80" />
                 </div>
                 <div className="space-y-0.5">
