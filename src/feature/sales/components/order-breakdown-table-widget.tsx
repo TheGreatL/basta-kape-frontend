@@ -1,17 +1,18 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Eye, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { getSalesAnalytics } from '#/api/reports.api.ts';
 import { getFrontendReference } from '#/utils/helper';
 import QUERY_KEY from '#/constants/query-keys.ts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
+import DataTable from '#/components/data-table/data-table.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Button } from '#/components/ui/button.tsx';
-import { Skeleton } from '#/components/ui/skeleton.tsx';
 import { cn } from '#/lib/utils.ts';
+import type { TSalesOrder } from '../sales.types.ts';
 
 interface OrderBreakdownTableWidgetProps {
     dateFrom?: string;
@@ -21,59 +22,181 @@ interface OrderBreakdownTableWidgetProps {
 export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBreakdownTableWidgetProps) {
     const globalNavigate = useNavigate();
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [pageIndex, setPageIndex] = React.useState(0);
+    const [pageSize, setPageSize] = React.useState(10);
 
     const { data, isLoading, isError } = useQuery({
         queryKey: [QUERY_KEY.SALES.SALES_ANALYTICS, 'orders', { dateFrom, dateTo }],
         queryFn: () => getSalesAnalytics(dateFrom || undefined, dateTo || undefined, 'orders')
     });
 
-    const orders = React.useMemo(() => data?.orders || [], [data?.orders]);
+    const orders = React.useMemo<TSalesOrder[]>(() => data?.orders || [], [data?.orders]);
+
+    // Reset pagination when date filter or search query changes
+    React.useEffect(() => {
+        setPageIndex(0);
+    }, [dateFrom, dateTo, searchQuery]);
 
     const filteredOrders = React.useMemo(() => {
-        if (!searchQuery) return orders;
-        const query = searchQuery.toLowerCase();
+        if (!searchQuery.trim()) return orders;
+        const query = searchQuery.toLowerCase().trim();
         return orders.filter(
-            (order: any) =>
+            (order) =>
                 (order.queueNumber && order.queueNumber.toLowerCase().includes(query)) ||
                 (order.customerName && order.customerName.toLowerCase().includes(query)) ||
                 (order.orderType && order.orderType.toLowerCase().includes(query)) ||
-                (order.orderSource && order.orderSource.toLowerCase().includes(query))
+                (order.orderSource && order.orderSource.toLowerCase().includes(query)) ||
+                (order.id && order.id.toLowerCase().includes(query))
         );
     }, [orders, searchQuery]);
 
-    if (isLoading) {
-        return (
-            <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <Skeleton className="h-4 w-36" />
-                        <Skeleton className="h-3 w-56" />
+    const pageCount = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+
+    // Clamp pageIndex if list shrunk due to search filter
+    React.useEffect(() => {
+        if (pageIndex >= pageCount) {
+            setPageIndex(Math.max(0, pageCount - 1));
+        }
+    }, [pageCount, pageIndex]);
+
+    const paginatedOrders = React.useMemo(() => {
+        const start = pageIndex * pageSize;
+        return filteredOrders.slice(start, start + pageSize);
+    }, [filteredOrders, pageIndex, pageSize]);
+
+    const columns = React.useMemo<ColumnDef<TSalesOrder>[]>(
+        () => [
+            {
+                accessorKey: 'createdAt',
+                id: 'createdAt',
+                header: 'Date & Time',
+                cell: ({ row }) => (
+                    <span className="text-xs text-muted-foreground font-semibold whitespace-nowrap">
+                        {format(new Date(row.original.createdAt), 'MMM d, yyyy h:mm a')}
+                    </span>
+                )
+            },
+            {
+                id: 'queueNumber',
+                accessorFn: (row) => row.queueNumber || row.id,
+                header: 'Queue #',
+                cell: ({ row }) => {
+                    const order = row.original;
+                    const refNo = (order as any).referenceNumber || getFrontendReference(order.createdAt, order.queueNumber);
+                    return (
+                        <div className="flex flex-col gap-0.5 font-mono leading-tight">
+                            <span className="text-muted-foreground">
+                                <span className="font-semibold text-foreground/70">Ref:</span> {refNo}
+                            </span>
+                            <span className="text-muted-foreground">
+                                <span className="font-semibold text-foreground/70">ID:</span> {order.id.slice(0, 8).toUpperCase()}
+                            </span>
+                        </div>
+                    );
+                }
+            },
+            {
+                accessorKey: 'customerName',
+                id: 'customerName',
+                header: 'Customer',
+                cell: ({ row }) => (
+                    <span className="text-xs font-semibold text-foreground truncate max-w-[150px] block">
+                        {row.original.customerName || 'Walk-in Customer'}
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'orderType',
+                id: 'orderType',
+                header: 'Dining Type',
+                cell: ({ row }) => (
+                    <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+                        {row.original.orderType ? row.original.orderType.replace(/_/g, ' ') : '—'}
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'orderSource',
+                id: 'orderSource',
+                header: 'Order Source',
+                cell: ({ row }) => (
+                    <Badge variant="outline" className="text-xs font-bold px-1.5 py-0 uppercase">
+                        {row.original.orderSource}
+                    </Badge>
+                )
+            },
+            {
+                accessorKey: 'status',
+                id: 'status',
+                header: 'Order Status',
+                cell: ({ row }) => {
+                    const status = row.original.status;
+                    return (
+                        <Badge
+                            variant="secondary"
+                            className={cn(
+                                'text-xs font-semibold px-2 py-0.5 rounded-md',
+                                status === 'COMPLETED' && 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+                                status === 'READY' && 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+                                status === 'PREPARING' && 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+                                status === 'PENDING' && 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                            )}
+                        >
+                            {status}
+                        </Badge>
+                    );
+                }
+            },
+            {
+                id: 'paymentMethod',
+                accessorFn: (row) =>
+                    row.payments
+                        .filter((p) => p.paymentStatus === 'PAID')
+                        .map((p) => p.paymentMethod)
+                        .join(', ') || 'UNPAID',
+                header: 'Payment Method',
+                cell: ({ row }) => {
+                    const paymentMethods = row.original.payments
+                        .filter((p) => p.paymentStatus === 'PAID')
+                        .map((p) => p.paymentMethod)
+                        .join(', ');
+                    return <span className="text-xs font-medium text-foreground uppercase whitespace-nowrap">{paymentMethods || 'UNPAID'}</span>;
+                }
+            },
+            {
+                accessorKey: 'netTotal',
+                id: 'netTotal',
+                header: () => <div className="text-right">Net Total</div>,
+                cell: ({ row }) => (
+                    <div className="font-bold text-xs text-right text-foreground">
+                        ₱{row.original.netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
-                    <Skeleton className="h-9 w-full sm:w-[300px] rounded-xl" />
-                </div>
-                <div className="border border-border/50 rounded-xl overflow-hidden">
-                    <div className="bg-muted/30 p-4 flex justify-between border-b border-border/50">
-                        {Array.from({ length: 7 }).map((_, idx) => (
-                            <Skeleton key={idx} className="h-3.5 w-16" />
-                        ))}
-                    </div>
-                    <div className="p-4 space-y-4">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                            <div key={idx} className="flex justify-between items-center">
-                                <Skeleton className="h-3.5 w-24" />
-                                <Skeleton className="h-3.5 w-12" />
-                                <Skeleton className="h-3.5 w-24" />
-                                <Skeleton className="h-3.5 w-16" />
-                                <Skeleton className="h-3.5 w-16" />
-                                <Skeleton className="h-3.5 w-14" />
-                                <Skeleton className="h-7 w-7 rounded-lg" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+                )
+            },
+            {
+                id: 'actions',
+                header: () => <div className="text-center">Actions</div>,
+                enableHiding: false,
+                cell: ({ row }) => {
+                    const order = row.original;
+                    return (
+                        <div className="flex justify-center">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 rounded-lg hover:bg-muted"
+                                onClick={() => globalNavigate({ to: `/admin/orders/${order.id}/edit` })}
+                                title="View Details"
+                            >
+                                <Eye className="size-3.5 text-muted-foreground hover:text-foreground" />
+                            </Button>
+                        </div>
+                    );
+                }
+            }
+        ],
+        [globalNavigate]
+    );
 
     if (isError) {
         return (
@@ -85,119 +208,37 @@ export default function OrderBreakdownTableWidget({ dateFrom, dateTo }: OrderBre
 
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                {/* @deprecated: Previously titled "Completed Orders List" when only COMPLETED orders were shown. */}
-                <div>
-                    <h3 className="text-sm font-bold text-foreground">Sales Orders List</h3>
-                    <p className="text-xs text-muted-foreground">All confirmed paid customer orders in the selected period.</p>
-                </div>
-
-                {/* Local Search Input */}
-                <div className="relative w-full sm:w-[300px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/80" />
-                    <Input
-                        type="text"
-                        placeholder="Search by queue, customer, type..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-9 pl-9 pr-4 text-xs bg-background/50 border-border/60 rounded-xl"
-                    />
-                </div>
+            {/* @deprecated: Previously titled "Completed Orders List" when only COMPLETED orders were shown. */}
+            <div>
+                <h3 className="text-sm font-bold text-foreground">Sales Orders List</h3>
+                <p className="text-xs text-muted-foreground">All confirmed paid customer orders in the selected period.</p>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto border border-border/50 rounded-xl">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/30">
-                            <TableHead className="font-bold text-xs uppercase">Date & Time</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Queue #</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Customer</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Dining Type</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Order Source</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Order Status</TableHead>
-                            <TableHead className="font-bold text-xs uppercase">Payment Method</TableHead>
-                            <TableHead className="font-bold text-xs uppercase text-right">Net Total</TableHead>
-                            <TableHead className="font-bold text-xs uppercase text-center w-[100px]">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredOrders.length > 0 ? (
-                            filteredOrders.map((order: any) => {
-                                const paymentMethods = order.payments
-                                    ?.filter((p: any) => p.paymentStatus === 'PAID')
-                                    .map((p: any) => p.paymentMethod)
-                                    .join(', ');
-
-                                return (
-                                    <TableRow key={order.id} className="hover:bg-muted/10">
-                                        <TableCell className="text-xs text-muted-foreground font-semibold">
-                                            {format(new Date(order.createdAt), 'MMM d, yyyy h:mm a')}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-0.5 font-mono leading-tight">
-                                                <span className="text-muted-foreground">
-                                                    <span className="font-semibold text-foreground/70">Ref:</span>{' '}
-                                                    {order.referenceNumber || getFrontendReference(order.createdAt, order.queueNumber)}
-                                                </span>
-                                                <span className="text-muted-foreground">
-                                                    <span className="font-semibold text-foreground/70">ID:</span> {order.id.slice(0, 8).toUpperCase()}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-xs font-semibold text-foreground truncate max-w-[150px]">
-                                            {order.customerName || 'Walk-in Customer'}
-                                        </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground font-medium">
-                                            {order.orderType.replace('_', ' ')}
-                                        </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground font-medium">
-                                            <Badge variant="outline" className="text-xs font-bold px-1.5 py-0 uppercase">
-                                                {order.orderSource}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-xs font-medium">
-                                            <Badge
-                                                variant="secondary"
-                                                className={cn(
-                                                    'text-xs font-semibold px-2 py-0.5 rounded-md',
-                                                    order.status === 'COMPLETED' && 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-                                                    order.status === 'READY' && 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-                                                    order.status === 'PREPARING' && 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-                                                    order.status === 'PENDING' && 'bg-orange-500/10 text-orange-600 border-orange-500/20'
-                                                )}
-                                            >
-                                                {order.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-xs font-medium text-foreground uppercase">{paymentMethods || 'UNPAID'}</TableCell>
-                                        <TableCell className="font-bold text-xs text-right text-foreground">
-                                            ₱{order.netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 w-7 p-0 rounded-lg hover:bg-muted"
-                                                onClick={() => globalNavigate({ to: `/admin/orders/${order.id}/edit` })}
-                                                title="View Details"
-                                            >
-                                                <Eye className="size-3.5 text-muted-foreground hover:text-foreground" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={9} className="text-center py-12 text-xs text-muted-foreground font-semibold">
-                                    No transactions found within this timeframe.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <DataTable
+                columns={columns}
+                data={paginatedOrders}
+                pageCount={pageCount}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                onPaginationChange={(idx, size) => {
+                    setPageIndex(idx);
+                    setPageSize(size);
+                }}
+                isLoading={isLoading}
+                showColumnVisibilityToggle={true}
+                filterContent={
+                    <div className="relative w-full sm:w-[300px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/80" />
+                        <Input
+                            type="text"
+                            placeholder="Search by queue, customer, type..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="h-9 pl-9 pr-4 text-xs bg-background/50 border-border/60 rounded-xl"
+                        />
+                    </div>
+                }
+            />
         </div>
     );
 }
