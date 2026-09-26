@@ -27,14 +27,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getAttributeValuesList } from '#/api/product-settings.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IAttribute } from '#/feature/product-settings/product-settings-types.ts';
+import type { ILocalRecipe } from '../../products.types';
 
 export interface IGridVariant {
     id?: string;
+    tempId?: string;
     sku?: string | null;
     price: number;
     attributeValueIds: string[];
     attributeValueLabels: string[];
     recipeConfigured: boolean;
+    localRecipe?: ILocalRecipe | null;
 }
 
 interface EditVariantsTabProps {
@@ -116,7 +119,7 @@ export default function EditVariantsTab({
             {/* Header & Quick Action */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border/40 pb-3 gap-2">
                 <div>
-                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 uppercase">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 ">
                         <Layers className="size-4 text-primary" />
                         Drink Variants & Recipe Mapping
                     </h3>
@@ -355,6 +358,7 @@ export default function EditVariantsTab({
                             setGridVariants((prev) => [
                                 ...prev,
                                 {
+                                    tempId: crypto.randomUUID(),
                                     sku: null,
                                     price: 0,
                                     attributeValueIds: [],

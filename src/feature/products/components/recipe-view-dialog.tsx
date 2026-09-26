@@ -6,7 +6,7 @@ import { ChefHat, BookOpen, Calendar, AlertTriangle, RotateCcw, Edit2 } from 'lu
 import { getVariantRecipe } from '#/api/products.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { ApiError, getErrorMessage } from '#/utils/error-handler.ts';
-import type { IProductVariant, IRecipe, IRecipeIngredient, IVariantAttribute } from '../products.types';
+import type { IProductVariant, IRecipe, IRecipeIngredient, IVariantAttribute, ILocalRecipe, ILocalRecipeIngredient } from '../products.types';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
@@ -29,9 +29,10 @@ interface RecipeViewDialogProps {
     variant: RecipeViewVariant | IProductVariant | null;
     productName: string;
     onEdit?: () => void;
+    localRecipe?: ILocalRecipe | null;
 }
 
-export default function RecipeViewDialog({ open, onOpenChange, variant, productName, onEdit }: RecipeViewDialogProps) {
+export default function RecipeViewDialog({ open, onOpenChange, variant, productName, onEdit, localRecipe }: RecipeViewDialogProps) {
     const [isRendering, setIsRendering] = React.useState(false);
 
     React.useEffect(() => {
@@ -53,12 +54,48 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
     } = useQuery<IRecipe>({
         queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id],
         queryFn: () => getVariantRecipe(variant!.id!),
-        enabled: open && !!variant?.id,
+        enabled: open && !!variant?.id && !localRecipe,
         retry: false
     });
 
-    const isNotFound = isError && error instanceof ApiError && error.status === 404;
-    const isDataLoading = !isRendering || (isRecipeLoading && !isNotFound);
+    const effectiveRecipe: IRecipe | null | undefined = React.useMemo(() => {
+        if (localRecipe) {
+            return {
+                id: 'local',
+                name: localRecipe.name,
+                description: localRecipe.description || null,
+                productVariantId: variant?.id || '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null,
+                ingredients: localRecipe.ingredients.map(
+                    (ing: ILocalRecipeIngredient, idx: number): IRecipeIngredient => ({
+                        id: `local-ing-${idx}`,
+                        recipeId: 'local',
+                        ingredientId: ing.ingredientId,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        quantity: ing.quantity,
+                        ingredient: {
+                            id: ing.ingredientId,
+                            name: ing._ingredientName || ing.ingredient?.name || 'Raw Ingredient'
+                        },
+                        unit: {
+                            id: ing.ingredientUnitId,
+                            name: ing._unitName || ing.unit?.name || 'Unit',
+                            abbreviation: ing._unitName || ing.unit?.abbreviation || null
+                        },
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        deletedAt: null
+                    })
+                )
+            };
+        }
+        return recipe;
+    }, [localRecipe, recipe, variant?.id]);
+
+    const isNotFound = !localRecipe && isError && error instanceof ApiError && error.status === 404;
+    const isDataLoading = localRecipe ? !isRendering : !isRendering || (isRecipeLoading && !isNotFound);
 
     const attributeLabels = React.useMemo(() => {
         if (!variant) return [];
@@ -92,7 +129,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                             <Spinner className="size-6 text-primary animate-spin" />
                             <span className="text-xs text-muted-foreground font-semibold">Loading recipe specifications...</span>
                         </div>
-                    ) : isNotFound || !variant?.id || (!recipe && !isRecipeLoading) ? (
+                    ) : isNotFound || (!localRecipe && !variant?.id) || (!effectiveRecipe && !isRecipeLoading) ? (
                         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                             <div className="size-12 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-center mb-3">
                                 <ChefHat className="size-6 text-muted-foreground stroke-[1.5]" />
@@ -113,7 +150,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                 </RequirePermission>
                             )}
                         </div>
-                    ) : isError ? (
+                    ) : isError && !localRecipe ? (
                         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                             <div className="size-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center mb-3">
                                 <AlertTriangle className="size-6 text-destructive" />
@@ -131,9 +168,9 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                             </Button>
                         </div>
                     ) : (
-                        recipe && (
+                        effectiveRecipe && (
                             <>
-                                {recipe.deletedAt && (
+                                {effectiveRecipe.deletedAt && (
                                     <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
                                         <AlertTriangle className="size-4 shrink-0" />
                                         <span>This recipe build is archived / soft-deleted and currently inactive.</span>
@@ -147,7 +184,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                             <span className="text-xs font-bold text-muted-foreground uppercase">Target Drink</span>
                                             <h3 className="text-base font-bold text-foreground leading-snug truncate">{productName}</h3>
                                         </div>
-                                        {variant.price !== undefined && (
+                                        {variant?.price !== undefined && (
                                             <div className="text-right shrink-0">
                                                 <span className="text-xs font-bold text-muted-foreground uppercase block">Fulfillment Price</span>
                                                 <span className="text-sm font-bold text-foreground font-mono">
@@ -169,7 +206,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                                 Standard Item
                                             </Badge>
                                         )}
-                                        {recipe.deletedAt && (
+                                        {effectiveRecipe.deletedAt && (
                                             <Badge
                                                 variant="outline"
                                                 className="text-xs font-bold px-2 py-0.5 bg-rose-500/10 text-rose-700 border-rose-500/30"
@@ -185,13 +222,13 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                     <div className="space-y-1">
                                         <span className="text-xs font-bold text-muted-foreground uppercase">Recipe Name</span>
                                         <div className="text-xs font-semibold text-foreground bg-muted/20 border border-border/40 p-2.5 rounded-lg">
-                                            {recipe.name}
+                                            {effectiveRecipe.name}
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <span className="text-xs font-bold text-muted-foreground uppercase">Preparation Notes / Description</span>
                                         <div className="text-xs font-medium text-foreground bg-muted/20 border border-border/40 p-2.5 rounded-lg min-h-[44px] whitespace-pre-wrap">
-                                            {recipe.description || (
+                                            {effectiveRecipe.description || (
                                                 <span className="text-muted-foreground italic">
                                                     No special instructions or brewing notes entered.
                                                 </span>
@@ -211,11 +248,12 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                             variant="outline"
                                             className="text-xs font-bold px-2 py-0.5 bg-primary/5 text-primary border-primary/20"
                                         >
-                                            {recipe.ingredients.length} {recipe.ingredients.length === 1 ? 'Ingredient' : 'Ingredients'}
+                                            {effectiveRecipe.ingredients.length}{' '}
+                                            {effectiveRecipe.ingredients.length === 1 ? 'Ingredient' : 'Ingredients'}
                                         </Badge>
                                     </div>
 
-                                    {recipe.ingredients.length === 0 ? (
+                                    {effectiveRecipe.ingredients.length === 0 ? (
                                         <div className="text-center py-6 text-xs text-muted-foreground italic border border-dashed rounded-xl bg-muted/10">
                                             No ingredients mapped to this recipe.
                                         </div>
@@ -231,7 +269,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody className="divide-y divide-border/20 font-medium">
-                                                    {recipe.ingredients.map((ing: IRecipeIngredient) => (
+                                                    {effectiveRecipe.ingredients.map((ing: IRecipeIngredient) => (
                                                         <TableRow key={ing.id} className="hover:bg-muted/10">
                                                             <TableCell className="font-semibold text-foreground/90">
                                                                 {ing.ingredient.name || 'Unknown Ingredient'}
@@ -252,40 +290,42 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                     )}
                                 </div>
 
-                                {/* System Audit Logs */}
-                                <div className="space-y-2 pt-1">
-                                    <div className="flex items-center border-b pb-1 border-border/40">
-                                        <h4 className="text-xs font-bold text-foreground/75 flex items-center gap-1.5 uppercase">
-                                            <Calendar className="size-3 text-primary" />
-                                            System Audit Logs
-                                        </h4>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
-                                        <div>
-                                            <span className="font-semibold text-foreground/75 block">Created Date</span>
-                                            {format(new Date(recipe.createdAt), 'MMMM dd, yyyy - hh:mm a')}
-                                            {recipe.createdBy && (
-                                                <span className="block mt-0.5 text-muted-foreground/80">
-                                                    by {recipe.createdBy.firstName} {recipe.createdBy.lastName}
-                                                </span>
-                                            )}
+                                {/* System Audit Logs (only when persisted on server) */}
+                                {effectiveRecipe.id !== 'local' && (
+                                    <div className="space-y-2 pt-1">
+                                        <div className="flex items-center border-b pb-1 border-border/40">
+                                            <h4 className="text-xs font-bold text-foreground/75 flex items-center gap-1.5 uppercase">
+                                                <Calendar className="size-3 text-primary" />
+                                                System Audit Logs
+                                            </h4>
                                         </div>
-                                        <div>
-                                            <span className="font-semibold text-foreground/75 block">Last Updated</span>
-                                            {format(new Date(recipe.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
-                                            {recipe.updatedBy && (
-                                                <span className="block mt-0.5 text-muted-foreground/80">
-                                                    by {recipe.updatedBy.firstName} {recipe.updatedBy.lastName}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {recipe.deletedAt && (
-                                            <div className="sm:col-span-2 text-destructive font-semibold border-t pt-2 mt-1">
-                                                <span>Archived At</span>: {format(new Date(recipe.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
+                                            <div>
+                                                <span className="font-semibold text-foreground/75 block">Created Date</span>
+                                                {format(new Date(effectiveRecipe.createdAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                {effectiveRecipe.createdBy && (
+                                                    <span className="block mt-0.5 text-muted-foreground/80">
+                                                        by {effectiveRecipe.createdBy.firstName} {effectiveRecipe.createdBy.lastName}
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
+                                            <div>
+                                                <span className="font-semibold text-foreground/75 block">Last Updated</span>
+                                                {format(new Date(effectiveRecipe.updatedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                {effectiveRecipe.updatedBy && (
+                                                    <span className="block mt-0.5 text-muted-foreground/80">
+                                                        by {effectiveRecipe.updatedBy.firstName} {effectiveRecipe.updatedBy.lastName}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {effectiveRecipe.deletedAt && (
+                                                <div className="sm:col-span-2 text-destructive font-semibold border-t pt-2 mt-1">
+                                                    <span>Archived At</span>: {format(new Date(effectiveRecipe.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </>
                         )
                     )}

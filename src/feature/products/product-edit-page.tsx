@@ -8,7 +8,7 @@ import { FileText, Layers, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import type { z } from 'zod';
 
 import { Route } from '#/routes/admin/products/$id/edit.tsx';
-import { getProductById, updateProduct, bulkSyncProductVariants } from '#/api/products.api.ts';
+import { getProductById, updateProduct, bulkSyncProductVariants, createVariantRecipe, updateVariantRecipe } from '#/api/products.api.ts';
 import { getCategoriesList, getProductTypesList, getAttributesList } from '#/api/product-settings.ts';
 import { getModifierGroups, deleteModifierGroup, deleteModifierOption } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -18,8 +18,8 @@ import RecipeDialog from './components/recipe-dialog.tsx';
 import RecipeViewDialog from './components/recipe-view-dialog.tsx';
 import GroupDialog from '#/feature/modifier/components/group-dialog.tsx';
 import OptionDialog from '#/feature/modifier/components/option-dialog.tsx';
-import type { IAttribute } from '#/feature/product-settings/product-settings-types.ts';
-import type { IProduct, IProductVariant, IVariantAttribute } from './products.types';
+import type { IAttribute, ICategory } from '#/feature/product-settings/product-settings-types.ts';
+import type { IProduct, IProductVariant, IVariantAttribute, ILocalRecipe, ILocalRecipeIngredient } from './products.types';
 import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifier.types.ts';
 
 import { Spinner } from '#/components/ui/spinner.tsx';
@@ -172,6 +172,7 @@ export default function ProductEditPage() {
             setGridVariants(
                 productDetails.variants.map((v: IProductVariant) => ({
                     id: v.id,
+                    tempId: v.id,
                     sku: v.sku ?? null,
                     price: v.price,
                     attributeValueIds: v.attributes.map((a: IVariantAttribute) => a.productAttributeValueId),
@@ -223,15 +224,60 @@ export default function ProductEditPage() {
         }
     });
 
-    // Sync variants mutation
+    // Sync variants & recipes mutation (one single saving process)
     const syncVariantsMutation = useMutation({
-        mutationFn: (payload: { variants: Array<{ id?: string | null; sku?: string | null; price: number; attributeValueIds: string[] }> }) =>
-            bulkSyncProductVariants(id, payload),
+        mutationFn: async (payload: { variants: IGridVariant[] }) => {
+            // 1. Bulk sync variants matrix to server
+            await bulkSyncProductVariants(id, {
+                variants: payload.variants.map((v) => ({
+                    id: v.id || null,
+                    sku: v.sku ?? null,
+                    price: v.price,
+                    attributeValueIds: v.attributeValueIds
+                }))
+            });
+
+            // 2. Persist any pending local recipes configured for variants
+            const variantsWithRecipes = payload.variants.filter((v) => !!v.localRecipe);
+            if (variantsWithRecipes.length > 0) {
+                // Fetch latest product details to resolve persisted variant IDs
+                const freshDetails = await getProductById(id);
+
+                for (const variantItem of variantsWithRecipes) {
+                    const matchedDbVariant = freshDetails.variants.find((dbV: IProductVariant) => {
+                        if (variantItem.id && dbV.id === variantItem.id) return true;
+                        const dbAttrIds = dbV.attributes.map((a: IVariantAttribute) => a.productAttributeValueId).sort();
+                        const gridAttrIds = [...variantItem.attributeValueIds].sort();
+                        return dbAttrIds.length === gridAttrIds.length && dbAttrIds.every((val, idx) => val === gridAttrIds[idx]);
+                    });
+
+                    if (matchedDbVariant && variantItem.localRecipe) {
+                        const recipePayload = {
+                            name: variantItem.localRecipe.name,
+                            description: variantItem.localRecipe.description || null,
+                            ingredients: variantItem.localRecipe.ingredients.map((ing: ILocalRecipeIngredient) => ({
+                                ingredientId: ing.ingredientId,
+                                quantity: ing.quantity,
+                                ingredientUnitId: ing.ingredientUnitId
+                            }))
+                        };
+
+                        if (matchedDbVariant.recipe) {
+                            await updateVariantRecipe(matchedDbVariant.id, recipePayload);
+                        } else {
+                            await createVariantRecipe(matchedDbVariant.id, recipePayload);
+                        }
+                    }
+                }
+            }
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCT_DETAILS, id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
             toast.success('Variants Saved Successfully', {
-                description: 'Product variants and pricing matrix updated.'
+                description: 'Product variants and recipes configured successfully.'
             });
         },
         onError: (error) => {
@@ -266,7 +312,7 @@ export default function ProductEditPage() {
     });
 
     const onSubmitProfile = (values: ProductFormValues) => {
-        const selectedCat = categoriesData?.data.find((c: any) => c.id === values.productCategoryId);
+        const selectedCat = categoriesData?.data.find((c: ICategory) => c.id === values.productCategoryId);
         const inferredTypeId = selectedCat?.productTypeId || selectedCat?.type?.id || values.productTypeId || null;
 
         updateMutation.mutate({
@@ -321,6 +367,7 @@ export default function ProductEditPage() {
 
                 if (!exists) {
                     next.push({
+                        tempId: crypto.randomUUID(),
                         sku: null,
                         price: defaultPrice,
                         attributeValueIds,
@@ -335,6 +382,27 @@ export default function ProductEditPage() {
         toast.success(`Generated combinations matrix. Save changes to sync!`);
     };
 
+    const handleSaveLocalRecipe = (recipeValues: ILocalRecipe) => {
+        if (!selectedVariantForRecipe) return;
+        const targetKey = selectedVariantForRecipe.id || selectedVariantForRecipe.tempId;
+        setGridVariants((prev) =>
+            prev.map((v) => {
+                const vKey = v.id || v.tempId;
+                if (vKey === targetKey) {
+                    return {
+                        ...v,
+                        recipeConfigured: true,
+                        localRecipe: recipeValues
+                    };
+                }
+                return v;
+            })
+        );
+        toast.success('Recipe configured for variant', {
+            description: 'Save variants matrix to apply and synchronize changes.'
+        });
+    };
+
     const selectedVariantObject = React.useMemo(() => {
         if (!selectedVariantForRecipe || !productDetails) return null;
         if (selectedVariantForRecipe.id) {
@@ -342,9 +410,9 @@ export default function ProductEditPage() {
             if (found) return found;
         }
         return {
-            id: selectedVariantForRecipe.id || '',
+            id: selectedVariantForRecipe.id || selectedVariantForRecipe.tempId || 'temp-id',
             productId: id,
-            sku: selectedVariantForRecipe.sku,
+            sku: selectedVariantForRecipe.sku ?? null,
             price: selectedVariantForRecipe.price,
             attributes: selectedVariantForRecipe.attributeValueIds.map((valId, idx) => ({
                 id: valId,
@@ -367,9 +435,9 @@ export default function ProductEditPage() {
             if (found) return found;
         }
         return {
-            id: selectedVariantForView.id || '',
+            id: selectedVariantForView.id || selectedVariantForView.tempId || 'temp-id',
             productId: id,
-            sku: selectedVariantForView.sku,
+            sku: selectedVariantForView.sku ?? null,
             price: selectedVariantForView.price,
             attributes: selectedVariantForView.attributeValueIds.map((valId, idx) => ({
                 id: valId,
@@ -473,24 +541,10 @@ export default function ProductEditPage() {
                         }}
                         isSaving={syncVariantsMutation.isPending}
                         onOpenRecipe={(variant) => {
-                            if (!variant.id) {
-                                toast.info('Save Variants Matrix First', {
-                                    description:
-                                        'This is a new drink variant. Please click "Save Variants Matrix" above to save changes before configuring its ingredient recipe.'
-                                });
-                                return;
-                            }
                             setSelectedVariantForRecipe(variant);
                             setRecipeOpen(true);
                         }}
                         onOpenViewRecipe={(variant) => {
-                            if (!variant.id) {
-                                toast.info('Save Variants Matrix First', {
-                                    description:
-                                        'This is a new drink variant. Please click "Save Variants Matrix" above to save changes before viewing its ingredient recipe.'
-                                });
-                                return;
-                            }
                             setSelectedVariantForView(variant);
                             setViewRecipeOpen(true);
                         }}
@@ -552,6 +606,7 @@ export default function ProductEditPage() {
                 onOpenChange={setViewRecipeOpen}
                 variant={selectedVariantForViewObject}
                 productName={productDetails.name}
+                localRecipe={selectedVariantForView?.localRecipe || null}
                 onEdit={() => {
                     setViewRecipeOpen(false);
                     if (selectedVariantForView) {
@@ -562,7 +617,21 @@ export default function ProductEditPage() {
             />
 
             {/* Recipe Configuration Slide-out / Modal Drawer */}
-            <RecipeDialog open={recipeOpen} onOpenChange={setRecipeOpen} variant={selectedVariantObject} productName={productDetails.name} />
+            <RecipeDialog
+                open={recipeOpen}
+                onOpenChange={setRecipeOpen}
+                variant={selectedVariantObject}
+                productName={productDetails.name}
+                isLocal={!selectedVariantForRecipe?.id || !!selectedVariantForRecipe.localRecipe}
+                localRecipe={selectedVariantForRecipe?.localRecipe || null}
+                onSaveLocalRecipe={handleSaveLocalRecipe}
+                availableCopyVariants={gridVariants.map((v) => ({
+                    id: v.id || v.tempId || '',
+                    label: v.attributeValueLabels.join(' • ') || 'Standard Item',
+                    recipeConfigured: v.recipeConfigured,
+                    localRecipe: v.localRecipe
+                }))}
+            />
 
             {/* Modifier Group Dialog */}
             <GroupDialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen} group={selectedGroup} targetProductId={id} />

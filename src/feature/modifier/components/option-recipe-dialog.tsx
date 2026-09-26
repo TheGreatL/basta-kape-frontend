@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -103,6 +103,11 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
     });
 
     const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: 'ingredients'
+    });
+
+    const watchedIngredients = useWatch({
         control: form.control,
         name: 'ingredients'
     });
@@ -278,7 +283,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                         <Button
                                             type="button"
                                             size="sm"
-                                            onClick={() => append({ ingredientId: '', quantity: 1, ingredientUnitId: '' })}
+                                            onClick={() => append({ ingredientId: '', quantity: 1, ingredientUnitId: '', _ingredientName: '' })}
                                             className="h-8 text-xs gap-1 shadow-sm"
                                         >
                                             <Plus className="size-3.5" /> Add Ingredient
@@ -327,24 +332,34 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                                             value={selectField.value}
                                                                             onChange={(val, item) => {
                                                                                 selectField.onChange(val);
+                                                                                form.setValue(
+                                                                                    `ingredients.${index}._ingredientName`,
+                                                                                    item?.name || '',
+                                                                                    { shouldDirty: true }
+                                                                                );
                                                                                 if (item?.defaultUnit) {
                                                                                     form.setValue(
                                                                                         `ingredients.${index}.ingredientUnitId`,
-                                                                                        item.defaultUnit.id
+                                                                                        item.defaultUnit.id,
+                                                                                        { shouldDirty: true }
                                                                                     );
                                                                                     form.setValue(
                                                                                         `ingredients.${index}._unitName`,
-                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name
+                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                        { shouldDirty: true }
                                                                                     );
                                                                                 }
                                                                             }}
                                                                             getOptionValue={(item) => item.id}
                                                                             getOptionLabel={(item) => item.name}
                                                                             selectedItem={
-                                                                                field._ingredientName
+                                                                                selectField.value &&
+                                                                                (watchedIngredients[index]?._ingredientName || field._ingredientName)
                                                                                     ? ({
-                                                                                          id: field.ingredientId,
-                                                                                          name: field._ingredientName
+                                                                                          id: selectField.value,
+                                                                                          name:
+                                                                                              watchedIngredients[index]?._ingredientName ||
+                                                                                              field._ingredientName
                                                                                       } as IIngredient)
                                                                                     : undefined
                                                                             }

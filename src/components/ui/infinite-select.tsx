@@ -96,6 +96,23 @@ export function InfiniteSelect<TItem, TValue = string, TPage = any>({
         }
     }, [open]);
 
+    // Cache the selected item so that search debounce/closing popover never clears the displayed label
+    const [cachedItem, setCachedItem] = React.useState<TItem | undefined>(selectedItem);
+
+    // Keep cachedItem in sync when selectedItem prop matches value
+    React.useEffect(() => {
+        if (selectedItem && value !== undefined && value !== null && value !== '' && getOptionValue(selectedItem) === value) {
+            setCachedItem(selectedItem);
+        }
+    }, [selectedItem, value, getOptionValue]);
+
+    // Clear cachedItem if value is reset or empty
+    React.useEffect(() => {
+        if (value === undefined || value === null || value === '') {
+            setCachedItem(undefined);
+        }
+    }, [value]);
+
     // Fetch paginated data using TanStack Query
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } = useInfiniteQuery({
         queryKey: [...queryKey, debouncedSearch],
@@ -111,19 +128,33 @@ export function InfiniteSelect<TItem, TValue = string, TPage = any>({
         return data.pages.flatMap((page) => getItems(page));
     }, [data, getItems]);
 
+    // If allItems contains an item matching value, cache it as well
+    React.useEffect(() => {
+        if (value !== undefined && value !== null && value !== '') {
+            const found = allItems.find((item) => getOptionValue(item) === value);
+            if (found) {
+                setCachedItem(found);
+            }
+        }
+    }, [value, allItems, getOptionValue]);
+
     // Find the currently selected item object to get its label
     const currentItem = React.useMemo(() => {
-        if (value === undefined || value === null) return undefined;
+        if (value === undefined || value === null || value === '') return undefined;
 
-        const found = allItems.find((item) => getOptionValue(item) === value);
-        if (found) return found;
+        if (cachedItem && getOptionValue(cachedItem) === value) {
+            return cachedItem;
+        }
 
         if (selectedItem && getOptionValue(selectedItem) === value) {
             return selectedItem;
         }
 
+        const found = allItems.find((item) => getOptionValue(item) === value);
+        if (found) return found;
+
         return undefined;
-    }, [value, allItems, getOptionValue, selectedItem]);
+    }, [value, allItems, getOptionValue, selectedItem, cachedItem]);
 
     // Determine the label to display in the button trigger
     const displayLabel = React.useMemo(() => {
@@ -203,7 +234,10 @@ export function InfiniteSelect<TItem, TValue = string, TPage = any>({
                                         key={String(itemVal)}
                                         type="button"
                                         onClick={() => {
-                                            onChange?.(isSelected ? undefined : itemVal, isSelected ? undefined : item);
+                                            const nextVal = isSelected ? undefined : itemVal;
+                                            const nextItem = isSelected ? undefined : item;
+                                            setCachedItem(nextItem);
+                                            onChange?.(nextVal, nextItem);
                                             setOpen(false);
                                         }}
                                         className={cn(

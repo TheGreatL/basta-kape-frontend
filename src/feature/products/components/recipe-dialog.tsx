@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -30,7 +30,15 @@ import {
 import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
-import type { IProduct, IProductVariant, IRecipe, IRecipeIngredient } from '../products.types';
+import type {
+    IProduct,
+    IProductVariant,
+    IRecipe,
+    IRecipeIngredient,
+    IVariantAttribute,
+    ILocalRecipe,
+    ILocalRecipeIngredient
+} from '../products.types';
 import type { IIngredient } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
@@ -65,8 +73,14 @@ interface RecipeDialogProps {
     variant: IProductVariant | null;
     productName: string;
     isLocal?: boolean;
-    localRecipe?: RecipeFormValues | null;
-    onSaveLocalRecipe?: (recipe: RecipeFormValues) => void;
+    localRecipe?: ILocalRecipe | null;
+    onSaveLocalRecipe?: (recipe: ILocalRecipe) => void;
+    availableCopyVariants?: Array<{
+        id: string;
+        label: string;
+        recipeConfigured?: boolean;
+        localRecipe?: ILocalRecipe | null;
+    }>;
 }
 
 export default function RecipeDialog({
@@ -76,7 +90,8 @@ export default function RecipeDialog({
     productName,
     isLocal = false,
     localRecipe = null,
-    onSaveLocalRecipe
+    onSaveLocalRecipe,
+    availableCopyVariants
 }: RecipeDialogProps) {
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = React.useState(false);
@@ -120,17 +135,50 @@ export default function RecipeDialog({
     });
     const activeUnits = activeUnitsData?.data || [];
 
-    const otherVariants = React.useMemo(() => {
+    const copyableOptions = React.useMemo(() => {
+        if (availableCopyVariants && availableCopyVariants.length > 0) {
+            return availableCopyVariants
+                .filter((v) => v.id !== variant?.id && (v.recipeConfigured || !!v.localRecipe))
+                .map((v) => ({
+                    id: v.id,
+                    label: v.label,
+                    localRecipe: v.localRecipe || null
+                }));
+        }
         if (!productDetailsData || !variant) return [];
-        return productDetailsData.variants.filter((v: IProductVariant) => v.id !== variant.id && !!v.recipe);
-    }, [productDetailsData, variant]);
+        return productDetailsData.variants
+            .filter((v: IProductVariant) => v.id !== variant.id && !!v.recipe)
+            .map((v: IProductVariant) => ({
+                id: v.id,
+                label: v.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Standard Item',
+                localRecipe: null
+            }));
+    }, [availableCopyVariants, productDetailsData, variant]);
 
     const handleCopyRecipe = async (otherVariantId: string) => {
         if (!otherVariantId) return;
         try {
+            const foundLocal = copyableOptions.find((o) => o.id === otherVariantId && o.localRecipe);
+            if (foundLocal && foundLocal.localRecipe) {
+                const lr = foundLocal.localRecipe;
+                form.reset({
+                    name: `${productName} Recipe (${variant?.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Custom'})`,
+                    description: lr.description || '',
+                    ingredients: lr.ingredients.map((ing: ILocalRecipeIngredient) => ({
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing._ingredientName,
+                        _unitName: ing._unitName
+                    }))
+                });
+                toast.success('Recipe template copied successfully. Save changes to apply!');
+                return;
+            }
+
             const copiedRecipe = await getVariantRecipe(otherVariantId);
             form.reset({
-                name: `${productName} Recipe (${variant?.attributes.map((a) => a.attributeValue.value).join(', ') || 'Custom'})`,
+                name: `${productName} Recipe (${variant?.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Custom'})`,
                 description: copiedRecipe.description || '',
                 ingredients: copiedRecipe.ingredients.map((ing) => ({
                     ingredientId: ing.ingredientId,
@@ -163,14 +211,35 @@ export default function RecipeDialog({
         name: 'ingredients'
     });
 
+    const watchedIngredients = useWatch({
+        control: form.control,
+        name: 'ingredients'
+    });
+
     // Populate form values when recipe changes
     React.useEffect(() => {
         if (isLocal) {
             if (localRecipe) {
                 form.reset(localRecipe);
-            } else {
+            } else if (recipe) {
                 form.reset({
-                    name: `${productName} Recipe`,
+                    name: recipe.name,
+                    description: recipe.description || '',
+                    ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => ({
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing.ingredient.name,
+                        _unitName: ing.unit.abbreviation || ing.unit.name
+                    }))
+                });
+            } else {
+                const attrText = variant?.attributes
+                    .map((a: IVariantAttribute) => a.attributeValue.value)
+                    .filter(Boolean)
+                    .join(', ');
+                form.reset({
+                    name: attrText ? `${productName} (${attrText}) Recipe` : `${productName} Recipe`,
                     description: '',
                     ingredients: []
                 });
@@ -188,13 +257,17 @@ export default function RecipeDialog({
                 }))
             });
         } else {
+            const attrText = variant?.attributes
+                .map((a: IVariantAttribute) => a.attributeValue.value)
+                .filter(Boolean)
+                .join(', ');
             form.reset({
-                name: `${productName} Recipe`,
+                name: attrText ? `${productName} (${attrText}) Recipe` : `${productName} Recipe`,
                 description: '',
                 ingredients: []
             });
         }
-    }, [recipe, localRecipe, isLocal, productName, form]);
+    }, [recipe, localRecipe, isLocal, productName, form, variant]);
 
     // Mutations
     const createRecipeMutation = useMutation({
@@ -305,7 +378,7 @@ export default function RecipeDialog({
                         // Form Edit/Create Mode
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                {otherVariants.length > 0 && (
+                                {copyableOptions.length > 0 && (
                                     <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl space-y-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-xs font-semibold text-foreground/80">Copy Recipe Template</span>
@@ -316,14 +389,11 @@ export default function RecipeDialog({
                                                 <SelectValue placeholder="Select variant to copy recipe from..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {otherVariants.map((v: IProductVariant) => {
-                                                    const attrString = v.attributes.map((a: any) => a.attributeValue.value).join(', ');
-                                                    return (
-                                                        <SelectItem key={v.id} value={v.id} className="text-xs">
-                                                            {attrString || 'Standard'}
-                                                        </SelectItem>
-                                                    );
-                                                })}
+                                                {copyableOptions.map((opt) => (
+                                                    <SelectItem key={opt.id} value={opt.id} className="text-xs">
+                                                        {opt.label}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -375,7 +445,15 @@ export default function RecipeDialog({
                                         <Button
                                             type="button"
                                             size="sm"
-                                            onClick={() => append({ ingredientId: '', quantity: 1, ingredientUnitId: '' })}
+                                            onClick={() =>
+                                                append({
+                                                    ingredientId: '',
+                                                    quantity: 1,
+                                                    ingredientUnitId: '',
+                                                    _ingredientName: '',
+                                                    _unitName: ''
+                                                })
+                                            }
                                             className="h-8 text-xs gap-1 shadow-sm"
                                         >
                                             <Plus className="size-3.5" /> Add Ingredient
@@ -424,24 +502,34 @@ export default function RecipeDialog({
                                                                             value={selectField.value}
                                                                             onChange={(val, item) => {
                                                                                 selectField.onChange(val);
+                                                                                form.setValue(
+                                                                                    `ingredients.${index}._ingredientName`,
+                                                                                    item?.name || '',
+                                                                                    { shouldDirty: true }
+                                                                                );
                                                                                 if (item?.defaultUnit) {
                                                                                     form.setValue(
                                                                                         `ingredients.${index}.ingredientUnitId`,
-                                                                                        item.defaultUnit.id
+                                                                                        item.defaultUnit.id,
+                                                                                        { shouldDirty: true }
                                                                                     );
                                                                                     form.setValue(
                                                                                         `ingredients.${index}._unitName`,
-                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name
+                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                        { shouldDirty: true }
                                                                                     );
                                                                                 }
                                                                             }}
                                                                             getOptionValue={(item) => item.id}
                                                                             getOptionLabel={(item) => item.name}
                                                                             selectedItem={
-                                                                                field._ingredientName
+                                                                                selectField.value &&
+                                                                                (watchedIngredients[index]?._ingredientName || field._ingredientName)
                                                                                     ? ({
-                                                                                          id: field.ingredientId,
-                                                                                          name: field._ingredientName
+                                                                                          id: selectField.value,
+                                                                                          name:
+                                                                                              watchedIngredients[index]?._ingredientName ||
+                                                                                              field._ingredientName
                                                                                       } as IIngredient)
                                                                                     : undefined
                                                                             }

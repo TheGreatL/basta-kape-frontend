@@ -1,4 +1,5 @@
 import type { IPaginationParams, IUserAudit } from '#/types/base.types';
+import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
 
 export interface IGetProductsParams extends IPaginationParams {
     search?: string;
@@ -149,4 +150,20 @@ export interface IUpdateRecipePayload {
         quantity: number;
         ingredientUnitId: string;
     }[];
+}
+
+export interface ILocalRecipeIngredient {
+    ingredientId: string;
+    quantity: number;
+    ingredientUnitId: string;
+    _ingredientName?: string;
+    _unitName?: string;
+    ingredient?: Pick<IIngredient, 'id' | 'name'>;
+    unit?: Pick<IIngredientUnit, 'id' | 'name' | 'abbreviation'>;
+}
+
+export interface ILocalRecipe {
+    name: string;
+    description?: string | null;
+    ingredients: ILocalRecipeIngredient[];
 }

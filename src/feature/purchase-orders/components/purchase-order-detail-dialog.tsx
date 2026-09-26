@@ -34,15 +34,17 @@ interface PurchaseOrderDetailDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     poId: string | null;
+    initialOpenReceive?: boolean;
 }
 
-export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId }: PurchaseOrderDetailDialogProps) {
+export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, initialOpenReceive = false }: PurchaseOrderDetailDialogProps) {
     const queryClient = useQueryClient();
 
     // Receive modal state & adjustments
     const [isReceiveDialogOpen, setIsReceiveDialogOpen] = React.useState(false);
     const [adjustPrices, setAdjustPrices] = React.useState(false);
     const [priceAdjustments, setPriceAdjustments] = React.useState<{ [ingredientId: string]: number }>({});
+    const hasAutoOpenedReceiveRef = React.useRef(false);
 
     // Fetch details for selected PO
     const { data: selectedPODetails, isLoading: isDetailsLoading } = useQuery({
@@ -50,6 +52,24 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId }: 
         queryFn: () => getPurchaseOrderById(poId!),
         enabled: open && !!poId
     });
+
+    React.useEffect(() => {
+        if (!open) {
+            hasAutoOpenedReceiveRef.current = false;
+            setIsReceiveDialogOpen(false);
+        }
+    }, [open]);
+
+    React.useEffect(() => {
+        hasAutoOpenedReceiveRef.current = false;
+    }, [poId]);
+
+    React.useEffect(() => {
+        if (open && initialOpenReceive && selectedPODetails?.status === 'SENT' && !hasAutoOpenedReceiveRef.current) {
+            hasAutoOpenedReceiveRef.current = true;
+            setIsReceiveDialogOpen(true);
+        }
+    }, [open, initialOpenReceive, selectedPODetails]);
 
     // Populate initial prices whenever receive modal opens
     React.useEffect(() => {
