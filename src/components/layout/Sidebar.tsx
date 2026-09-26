@@ -72,7 +72,7 @@ const getSidebarGroups = (
 }> => [
     {
         label: 'Overview',
-        items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', public: true, exact: true }]
+        items: [{ title: 'Dashboard', path: '/admin', icon: 'layout-dashboard', module: appModules.DASHBOARD, exact: true }]
     },
     {
         label: 'Operations',

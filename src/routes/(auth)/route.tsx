@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect, useNavigate, Navigate, Link } from '
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '#/context/AuthContext';
 import LoadingPage from '#/components/layout/loading-page';
+import { getUserPermissions, getDefaultAdminRoute } from '#/utils/rbac';
 
 export const Route = createFileRoute('/(auth)')({
     component: RouteComponent,
@@ -12,8 +13,9 @@ export const Route = createFileRoute('/(auth)')({
         }
         const user = context.auth.user;
         if (user) {
-            const isCustomer = user.roles.find((role: any) => role.name.toLowerCase() === 'customer');
-            throw redirect({ to: isCustomer ? '/' : '/admin' });
+            const isCustomer = user.roles.some((role: any) => role.name.toLowerCase() === 'customer');
+            const targetRoute = isCustomer ? '/' : getDefaultAdminRoute(getUserPermissions(user));
+            throw redirect({ to: targetRoute as any });
         }
     }
 });
@@ -24,8 +26,9 @@ function RouteComponent() {
 
     useEffect(() => {
         if (!isLoading && isAuthenticated && user) {
-            const isCustomer = user.roles.find((role: any) => role.name.toLowerCase() === 'customer');
-            navigate({ to: isCustomer ? '/' : ('/admin' as any) });
+            const isCustomer = user.roles.some((role: any) => role.name.toLowerCase() === 'customer');
+            const targetRoute = isCustomer ? '/' : getDefaultAdminRoute(getUserPermissions(user));
+            navigate({ to: targetRoute as any, replace: true });
         }
     }, [isLoading, isAuthenticated, user, navigate]);
 
@@ -34,8 +37,9 @@ function RouteComponent() {
     }
 
     if (isAuthenticated && user) {
-        const isCustomer = user.roles.find((role: any) => role.name.toLowerCase() === 'customer');
-        return <Navigate to={isCustomer ? '/' : '/admin'} />;
+        const isCustomer = user.roles.some((role: any) => role.name.toLowerCase() === 'customer');
+        const targetRoute = isCustomer ? '/' : getDefaultAdminRoute(getUserPermissions(user));
+        return <Navigate to={targetRoute} replace />;
     }
 
     return (
