@@ -272,7 +272,7 @@ export default function OrderQueuePage() {
                                 className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                             >
                                 <CheckCircle2 className="size-3.5 shrink-0" />
-                                Complete Pick
+                                Complete Order
                             </Button>
                         </RequirePermission>
                     )}
@@ -361,7 +361,7 @@ export default function OrderQueuePage() {
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Pending Orders</h3>
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Pending</h3>
                             </div>
                             <Badge
                                 variant="secondary"
@@ -411,7 +411,7 @@ export default function OrderQueuePage() {
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Ready for Pick</h3>
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Ready</h3>
                             </div>
                             <Badge
                                 variant="secondary"
