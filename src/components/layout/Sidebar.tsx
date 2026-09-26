@@ -86,13 +86,13 @@ const getSidebarGroups = (
                 badge: orderQueueCount > 0 ? (orderQueueCount > 99 ? '99+' : String(orderQueueCount)) : undefined
             },
             { title: 'Orders', path: '/admin/orders', icon: 'shopping-cart', module: appModules.ORDERS_MANAGEMENT },
-            { title: 'Payment History', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
+            { title: 'Transaction History', path: '/admin/transactions', icon: 'history', module: appModules.TRANSACTION_HISTORY }
         ]
     },
     {
         label: 'Catalog & Menu',
         items: [
-            { title: 'Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU },
+            { title: 'Digital Menu', path: '/admin/menu', icon: 'menu', module: appModules.MENU },
             {
                 title: 'Products',
                 icon: 'package',
@@ -116,7 +116,7 @@ const getSidebarGroups = (
                     { title: 'Stock Levels', path: '/admin/inventory/stock-levels', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     // { title: 'Stock Forecasts', path: '/admin/inventory/projections', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Transactions', path: '/admin/inventory/transactions', module: appModules.INVENTORY_MANAGEMENT, exact: true },
-                    { title: 'Spoiled Items Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
+                    { title: 'Waste & Spoilage Log', path: '/admin/inventory/waste-log', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Ingredients', path: '/admin/inventory/ingredients', module: appModules.INVENTORY_MANAGEMENT, exact: true },
                     { title: 'Units & Conversions', path: '/admin/inventory/units', module: appModules.INVENTORY_MANAGEMENT, exact: true }
                 ]
@@ -127,7 +127,7 @@ const getSidebarGroups = (
                 icon: 'cookie',
                 module: appModules.FOOD_PREPARATION
             },
-            { title: 'Stock Buy Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
+            { title: 'Purchase Orders', path: '/admin/purchase-orders', icon: 'receipt', module: appModules.PURCHASE_ORDERS_MANAGEMENT },
             { title: 'Suppliers', path: '/admin/suppliers', icon: 'truck', module: appModules.SUPPLIERS_MANAGEMENT }
         ]
     },
@@ -144,8 +144,8 @@ const getSidebarGroups = (
         items: [
             { title: 'Sales & Financials', path: '/admin/sales', icon: 'trending-up', module: appModules.SALES_MANAGEMENT },
             { title: 'Reports', path: '/admin/reports', icon: 'file-bar-chart', module: appModules.REPORTS_MANAGEMENT },
-            { title: 'System History', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
-            { title: 'Shop Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
+            { title: 'Activity Logs', path: '/admin/activity-logs', icon: 'activity', module: appModules.ACTIVITY_LOGS },
+            { title: 'Store Settings', path: '/admin/store-settings', icon: 'store', module: appModules.STORE_SETTINGS }
         ]
     }
 ];

@@ -633,7 +633,7 @@ export default function PurchaseOrdersPage() {
                         <Truck className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Stock Buy Orders</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Purchase Orders</h1>
                         <p className="text-xs text-muted-foreground">
                             Order ingredients from suppliers, track order status, and check received stocks.
                         </p>
@@ -643,7 +643,7 @@ export default function PurchaseOrdersPage() {
                 <RequirePermission module="Purchase Orders Management" action="create">
                     <Button onClick={() => setIsCreateOpen(true)} className="h-9 gap-1.5 shadow-sm font-bold">
                         <Plus className="size-4" />
-                        New Buy Order
+                        New Purchase Order
                     </Button>
                 </RequirePermission>
             </div>
@@ -742,7 +742,7 @@ export default function PurchaseOrdersPage() {
                     <DialogHeader className="shrink-0">
                         <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <ShoppingCart className="size-5 text-primary" />
-                            New Buy Order
+                            New Purchase Order
                         </DialogTitle>
                         <DialogDescription className="text-xs">Create an order request to send to your supplier.</DialogDescription>
                     </DialogHeader>

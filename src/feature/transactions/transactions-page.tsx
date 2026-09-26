@@ -260,7 +260,7 @@ export default function TransactionsPage() {
                         <History className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Payment Log</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Transaction History</h1>
                         <p className="text-xs text-muted-foreground">View sales payments, cash change, and payment proof screenshots.</p>
                     </div>
                 </div>

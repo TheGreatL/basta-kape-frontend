@@ -116,7 +116,7 @@ export default function MenuPage() {
                         <BookOpen className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Customer Menu Catalog</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Digital Menu Reference</h1>
                         <p className="text-xs text-muted-foreground">
                             Browse active beverage profiles, size configurations, prices, and standard recipe builds.
                         </p>

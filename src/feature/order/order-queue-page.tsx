@@ -290,7 +290,7 @@ export default function OrderQueuePage() {
                         <Coffee className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Order Queue board</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Live Order Queue</h1>
                         <p className="text-xs text-muted-foreground">
                             Kitchen Display System (KDS) board monitoring active drink preps and pickup lifecycles.
                         </p>

@@ -121,7 +121,7 @@ export default function ActivityLogPage() {
                         <Activity className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">System History</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Activity Logs</h1>
                         <p className="text-xs text-muted-foreground">View system actions, changes, and user activity history.</p>
                     </div>
                 </div>
