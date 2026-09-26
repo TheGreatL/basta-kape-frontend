@@ -15,6 +15,7 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { productSchema } from './products.schema.ts';
 import RecipeDialog from './components/recipe-dialog.tsx';
+import RecipeViewDialog from './components/recipe-view-dialog.tsx';
 import GroupDialog from '#/feature/modifier/components/group-dialog.tsx';
 import OptionDialog from '#/feature/modifier/components/option-dialog.tsx';
 import type { IAttribute } from '#/feature/product-settings/product-settings-types.ts';
@@ -62,6 +63,10 @@ export default function ProductEditPage() {
     // Selected variant for recipe configuration dialog
     const [selectedVariantForRecipe, setSelectedVariantForRecipe] = React.useState<IGridVariant | null>(null);
     const [recipeOpen, setRecipeOpen] = React.useState(false);
+
+    // Selected variant for dedicated view recipe dialog
+    const [selectedVariantForView, setSelectedVariantForView] = React.useState<IGridVariant | null>(null);
+    const [viewRecipeOpen, setViewRecipeOpen] = React.useState(false);
 
     // Matrix generator states
     const [activeAttributes, setActiveAttributes] = React.useState<Record<string, boolean>>({});
@@ -355,6 +360,32 @@ export default function ProductEditPage() {
         } as unknown as IProductVariant;
     }, [selectedVariantForRecipe, productDetails, id]);
 
+    const selectedVariantForViewObject = React.useMemo(() => {
+        if (!selectedVariantForView || !productDetails) return null;
+        if (selectedVariantForView.id) {
+            const found = productDetails.variants.find((v: IProductVariant) => v.id === selectedVariantForView.id);
+            if (found) return found;
+        }
+        return {
+            id: selectedVariantForView.id || '',
+            productId: id,
+            sku: selectedVariantForView.sku,
+            price: selectedVariantForView.price,
+            attributes: selectedVariantForView.attributeValueIds.map((valId, idx) => ({
+                id: valId,
+                productVariantId: selectedVariantForView.id || '',
+                attributeValueId: valId,
+                attributeValue: {
+                    id: valId,
+                    attributeId: '',
+                    value: selectedVariantForView.attributeValueLabels[idx] || valId
+                }
+            })),
+            attributeValueLabels: selectedVariantForView.attributeValueLabels,
+            recipe: null
+        } as unknown as IProductVariant;
+    }, [selectedVariantForView, productDetails, id]);
+
     if (isDetailsLoading) {
         return (
             <div className="flex h-[75vh] w-full items-center justify-center">
@@ -452,6 +483,17 @@ export default function ProductEditPage() {
                             setSelectedVariantForRecipe(variant);
                             setRecipeOpen(true);
                         }}
+                        onOpenViewRecipe={(variant) => {
+                            if (!variant.id) {
+                                toast.info('Save Variants Matrix First', {
+                                    description:
+                                        'This is a new drink variant. Please click "Save Variants Matrix" above to save changes before viewing its ingredient recipe.'
+                                });
+                                return;
+                            }
+                            setSelectedVariantForView(variant);
+                            setViewRecipeOpen(true);
+                        }}
                         attributesData={attributesData}
                         activeAttributes={activeAttributes}
                         setActiveAttributes={setActiveAttributes}
@@ -503,6 +545,21 @@ export default function ProductEditPage() {
                     />
                 </TabsContent>
             </Tabs>
+
+            {/* Dedicated View Recipe Dialog */}
+            <RecipeViewDialog
+                open={viewRecipeOpen}
+                onOpenChange={setViewRecipeOpen}
+                variant={selectedVariantForViewObject}
+                productName={productDetails.name}
+                onEdit={() => {
+                    setViewRecipeOpen(false);
+                    if (selectedVariantForView) {
+                        setSelectedVariantForRecipe(selectedVariantForView);
+                        setRecipeOpen(true);
+                    }
+                }}
+            />
 
             {/* Recipe Configuration Slide-out / Modal Drawer */}
             <RecipeDialog open={recipeOpen} onOpenChange={setRecipeOpen} variant={selectedVariantObject} productName={productDetails.name} />

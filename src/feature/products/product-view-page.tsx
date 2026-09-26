@@ -1,11 +1,13 @@
+import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Package, ArrowLeft, FileText, Layers, SlidersHorizontal, Pencil } from 'lucide-react';
+import { Package, ArrowLeft, FileText, Layers, SlidersHorizontal, Pencil, Eye } from 'lucide-react';
 
 import { Route } from '#/routes/admin/products/$id/index.tsx';
 import { getProductById } from '#/api/products.api.ts';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
+import RecipeViewDialog from './components/recipe-view-dialog.tsx';
 import type { IProductVariant, IVariantAttribute } from './products.types';
 import type { IModifierGroup, IModifierOption } from '#/feature/modifier/modifier.types.ts';
 
@@ -21,6 +23,14 @@ import { getFileUrl } from '#/utils/helper.ts';
 export default function ProductViewPage() {
     const { id } = Route.useParams();
     const navigate = useNavigate();
+
+    const [viewRecipeOpen, setViewRecipeOpen] = React.useState(false);
+    const [selectedVariantForView, setSelectedVariantForView] = React.useState<IProductVariant | null>(null);
+
+    const handleViewRecipe = (variant: IProductVariant) => {
+        setSelectedVariantForView(variant);
+        setViewRecipeOpen(true);
+    };
 
     const handleBack = () => {
         navigate({
@@ -220,12 +230,13 @@ export default function ProductViewPage() {
                                         <TableHead className="font-bold">Choice Attributes Combination</TableHead>
                                         <TableHead className="font-bold">Fulfillment Price</TableHead>
                                         <TableHead className="font-bold text-center">Recipe Setup</TableHead>
+                                        <TableHead className="font-bold text-right pr-6">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="font-medium text-foreground/85 divide-y divide-border/20">
                                     {product.variants.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">
+                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
                                                 No variations matrix configured yet.
                                             </TableCell>
                                         </TableRow>
@@ -249,6 +260,29 @@ export default function ProductViewPage() {
                                                         >
                                                             {v.recipe ? 'Configured' : 'No Recipe'}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        {v.recipe ? (
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="xs"
+                                                                onClick={() => handleViewRecipe(v)}
+                                                                className="h-7 text-xs font-semibold gap-1.5 border-border/70 hover:bg-muted text-foreground"
+                                                            >
+                                                                <Eye className="size-3.5 text-primary" /> View Recipe
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="xs"
+                                                                onClick={() => handleViewRecipe(v)}
+                                                                className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+                                                            >
+                                                                <Eye className="size-3.5" /> Details
+                                                            </Button>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             );
@@ -323,6 +357,15 @@ export default function ProductViewPage() {
                     </div>
                 </TabsContent>
             </Tabs>
+
+            {/* Dedicated View Recipe Dialog */}
+            <RecipeViewDialog
+                open={viewRecipeOpen}
+                onOpenChange={setViewRecipeOpen}
+                variant={selectedVariantForView}
+                productName={product.name}
+                onEdit={() => navigate({ to: `/admin/products/${product.id}/edit` })}
+            />
         </div>
     );
 }

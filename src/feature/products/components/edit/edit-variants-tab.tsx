@@ -1,7 +1,21 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Layers, Plus, Save, ChefHat, Trash2, Sparkles, ChevronDown, ChevronUp, Edit2, SlidersHorizontal, Check, AlertTriangle } from 'lucide-react';
+import {
+    Layers,
+    Plus,
+    Save,
+    ChefHat,
+    Trash2,
+    Sparkles,
+    ChevronDown,
+    ChevronUp,
+    Edit2,
+    SlidersHorizontal,
+    Check,
+    AlertTriangle,
+    Eye
+} from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
@@ -29,6 +43,7 @@ interface EditVariantsTabProps {
     onSaveVariants: () => void;
     isSaving: boolean;
     onOpenRecipe: (variant: IGridVariant) => void;
+    onOpenViewRecipe?: (variant: IGridVariant) => void;
     // Matrix generator props
     attributesData?: { data: IAttribute[] };
     activeAttributes: Record<string, boolean>;
@@ -50,6 +65,7 @@ export default function EditVariantsTab({
     onSaveVariants,
     isSaving,
     onOpenRecipe,
+    onOpenViewRecipe,
     attributesData,
     activeAttributes,
     setActiveAttributes,
@@ -178,7 +194,7 @@ export default function EditVariantsTab({
                             <TableRow>
                                 <TableHead className="font-bold text-foreground/80">Variant Combination</TableHead>
                                 <TableHead className="font-bold text-foreground/80 w-[160px]">Price (₱)</TableHead>
-                                <TableHead className="font-bold text-foreground/80 text-center w-[160px]">Recipe</TableHead>
+                                <TableHead className="font-bold text-foreground/80 text-center min-w-[200px]">Recipe</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -271,22 +287,42 @@ export default function EditVariantsTab({
                                                         variant="outline"
                                                         className={`text-xs font-semibold px-2 py-0.5 ${
                                                             row.recipeConfigured
-                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400'
+                                                                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400'
                                                         }`}
                                                     >
                                                         <ChefHat className="size-2.5 mr-1" />
                                                         {row.recipeConfigured ? 'Configured' : 'No Recipe'}
                                                     </Badge>
 
+                                                    {row.recipeConfigured && onOpenViewRecipe && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="xs"
+                                                            onClick={() => onOpenViewRecipe(row)}
+                                                            className="h-6 text-xs px-2 font-semibold border-border/70 hover:bg-muted gap-1 text-foreground"
+                                                            title="View Recipe Specifications"
+                                                        >
+                                                            <Eye className="size-3 text-primary" /> View
+                                                        </Button>
+                                                    )}
+
                                                     <Button
                                                         type="button"
                                                         variant="outline"
                                                         size="xs"
                                                         onClick={() => onOpenRecipe(row)}
-                                                        className="h-6 text-xs px-2 font-semibold border-border/70 hover:bg-muted"
+                                                        className="h-6 text-xs px-2 font-semibold border-border/70 hover:bg-muted gap-1"
+                                                        title={row.recipeConfigured ? 'Edit Recipe Build' : 'Setup Recipe Build'}
                                                     >
-                                                        {row.recipeConfigured ? 'Edit' : 'Setup'}
+                                                        {row.recipeConfigured ? (
+                                                            <>
+                                                                <Edit2 className="size-3" /> Edit
+                                                            </>
+                                                        ) : (
+                                                            'Setup'
+                                                        )}
                                                     </Button>
                                                 </div>
                                             </TableCell>
