@@ -67,11 +67,9 @@ export default function ProductEditPage() {
     const [activeAttributes, setActiveAttributes] = React.useState<Record<string, boolean>>({});
     const [selectedValuesMap, setSelectedValuesMap] = React.useState<Record<string, Array<{ id: string; value: string }>>>({});
     const [defaultPrice, setDefaultPrice] = React.useState<number>(0);
-    const [skuPrefix, setSkuPrefix] = React.useState<string>('');
 
     // Bulk action states
     const [bulkPriceInput, setBulkPriceInput] = React.useState<string>('');
-    const [bulkSkuPrefixInput, setBulkSkuPrefixInput] = React.useState<string>('');
 
     // Modifier group & options dialog states
     const [groupDialogOpen, setGroupDialogOpen] = React.useState(false);
@@ -169,7 +167,7 @@ export default function ProductEditPage() {
             setGridVariants(
                 productDetails.variants.map((v: IProductVariant) => ({
                     id: v.id,
-                    sku: v.sku || '',
+                    sku: v.sku ?? null,
                     price: v.price,
                     attributeValueIds: v.attributes.map((a: IVariantAttribute) => a.productAttributeValueId),
                     attributeValueLabels: v.attributes.map((a: IVariantAttribute) => a.attributeValue.value),
@@ -317,11 +315,8 @@ export default function ProductEditPage() {
                 );
 
                 if (!exists) {
-                    const skuSuffix = sortedCombo.map((c) => c.value.replace(/\s+/g, '').toUpperCase()).join('-');
-                    const generatedSku = skuPrefix.trim() ? `${skuPrefix.trim().toUpperCase()}-${skuSuffix}` : '';
-
                     next.push({
-                        sku: generatedSku,
+                        sku: null,
                         price: defaultPrice,
                         attributeValueIds,
                         attributeValueLabels,
@@ -464,8 +459,6 @@ export default function ProductEditPage() {
                         setSelectedValuesMap={setSelectedValuesMap}
                         defaultPrice={defaultPrice}
                         setDefaultPrice={setDefaultPrice}
-                        skuPrefix={skuPrefix}
-                        setSkuPrefix={setSkuPrefix}
                         onGenerateMatrix={generateMatrix}
                         bulkPriceInput={bulkPriceInput}
                         setBulkPriceInput={setBulkPriceInput}
@@ -475,21 +468,6 @@ export default function ProductEditPage() {
                                 setGridVariants((prev) => prev.map((v) => ({ ...v, price: priceNum })));
                                 setBulkPriceInput('');
                                 toast.success(`Updated price to ₱${priceNum.toFixed(2)} for all variants.`);
-                            }
-                        }}
-                        bulkSkuPrefixInput={bulkSkuPrefixInput}
-                        setBulkSkuPrefixInput={setBulkSkuPrefixInput}
-                        onApplyBulkSku={() => {
-                            const prefix = bulkSkuPrefixInput.trim().toUpperCase();
-                            if (prefix) {
-                                setGridVariants((prev) =>
-                                    prev.map((v) => ({
-                                        ...v,
-                                        sku: v.sku ? `${prefix}-${v.sku}` : `${prefix}-${v.attributeValueLabels.join('-').toUpperCase()}`
-                                    }))
-                                );
-                                setBulkSkuPrefixInput('');
-                                toast.success(`Appended SKU prefix "${prefix}" to all variants.`);
                             }
                         }}
                     />

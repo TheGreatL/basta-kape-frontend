@@ -16,7 +16,7 @@ import type { IAttribute } from '#/feature/product-settings/product-settings-typ
 
 export interface IGridVariant {
     id?: string;
-    sku: string;
+    sku?: string | null;
     price: number;
     attributeValueIds: string[];
     attributeValueLabels: string[];
@@ -37,16 +37,11 @@ interface EditVariantsTabProps {
     setSelectedValuesMap: React.Dispatch<React.SetStateAction<Record<string, Array<{ id: string; value: string }>>>>;
     defaultPrice: number;
     setDefaultPrice: (val: number) => void;
-    skuPrefix: string;
-    setSkuPrefix: (val: string) => void;
     onGenerateMatrix: () => void;
     // Bulk actions
     bulkPriceInput: string;
     setBulkPriceInput: (val: string) => void;
     onApplyBulkPrice: () => void;
-    bulkSkuPrefixInput: string;
-    setBulkSkuPrefixInput: (val: string) => void;
-    onApplyBulkSku: () => void;
 }
 
 export default function EditVariantsTab({
@@ -62,15 +57,10 @@ export default function EditVariantsTab({
     setSelectedValuesMap,
     defaultPrice,
     setDefaultPrice,
-    skuPrefix,
-    setSkuPrefix,
     onGenerateMatrix,
     bulkPriceInput,
     setBulkPriceInput,
-    onApplyBulkPrice,
-    bulkSkuPrefixInput,
-    setBulkSkuPrefixInput,
-    onApplyBulkSku
+    onApplyBulkPrice
 }: EditVariantsTabProps) {
     const [isMatrixOpen, setIsMatrixOpen] = React.useState(false);
     const [editingRowIdx, setEditingRowIdx] = React.useState<number | null>(null);
@@ -115,7 +105,7 @@ export default function EditVariantsTab({
                         Drink Variants & Recipe Mapping
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                        Set fulfillment prices, SKUs, and map ingredient recipes for inventory deduction per drink size.
+                        Set fulfillment prices and map ingredient recipes for inventory deduction per drink size.
                     </p>
                 </div>
 
@@ -165,32 +155,19 @@ export default function EditVariantsTab({
                 <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-foreground/80 uppercase">Configured Variants ({gridVariants.length})</h4>
 
-                    {/* Bulk price / SKU tools */}
+                    {/* Bulk price tool */}
                     {gridVariants.length > 1 && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <div className="flex items-center gap-1">
-                                <Input
-                                    type="number"
-                                    placeholder="Bulk Price"
-                                    value={bulkPriceInput}
-                                    onChange={(e) => setBulkPriceInput(e.target.value)}
-                                    className="h-7 text-xs w-[90px] bg-background/50"
-                                />
-                                <Button type="button" variant="outline" size="xs" onClick={onApplyBulkPrice} className="h-7 text-xs">
-                                    Apply All
-                                </Button>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Input
-                                    placeholder="SKU Prefix"
-                                    value={bulkSkuPrefixInput}
-                                    onChange={(e) => setBulkSkuPrefixInput(e.target.value)}
-                                    className="h-7 text-xs w-[100px] bg-background/50"
-                                />
-                                <Button type="button" variant="outline" size="xs" onClick={onApplyBulkSku} className="h-7 text-xs">
-                                    Prefix All
-                                </Button>
-                            </div>
+                        <div className="flex items-center gap-1">
+                            <Input
+                                type="number"
+                                placeholder="Bulk Price"
+                                value={bulkPriceInput}
+                                onChange={(e) => setBulkPriceInput(e.target.value)}
+                                className="h-7 text-xs w-[90px] bg-background/50"
+                            />
+                            <Button type="button" variant="outline" size="xs" onClick={onApplyBulkPrice} className="h-7 text-xs">
+                                Apply All
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -200,8 +177,7 @@ export default function EditVariantsTab({
                         <TableHeader className="bg-muted/20">
                             <TableRow>
                                 <TableHead className="font-bold text-foreground/80">Variant Combination</TableHead>
-                                <TableHead className="font-bold text-foreground/80 w-[150px]">SKU Code</TableHead>
-                                <TableHead className="font-bold text-foreground/80 w-[140px]">Price (₱)</TableHead>
+                                <TableHead className="font-bold text-foreground/80 w-[160px]">Price (₱)</TableHead>
                                 <TableHead className="font-bold text-foreground/80 text-center w-[160px]">Recipe</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
@@ -209,7 +185,7 @@ export default function EditVariantsTab({
                         <TableBody>
                             {gridVariants.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground italic">
+                                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
                                         No variants configured. Add a row below or open the Advanced Matrix Generator.
                                     </TableCell>
                                 </TableRow>
@@ -273,17 +249,6 @@ export default function EditVariantsTab({
                                                         <Edit2 className="size-3" /> Select Attributes
                                                     </Button>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    value={row.sku}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        setGridVariants((prev) => prev.map((r, i) => (i === idx ? { ...r, sku: val } : r)));
-                                                    }}
-                                                    placeholder="SKU"
-                                                    className="h-8 text-xs font-mono bg-background/50"
-                                                />
                                             </TableCell>
                                             <TableCell>
                                                 <div className="relative">
@@ -354,7 +319,7 @@ export default function EditVariantsTab({
                             setGridVariants((prev) => [
                                 ...prev,
                                 {
-                                    sku: '',
+                                    sku: null,
                                     price: 0,
                                     attributeValueIds: [],
                                     attributeValueLabels: [],
@@ -438,15 +403,6 @@ export default function EditVariantsTab({
                                     placeholder="₱0.00"
                                 />
                             </div>
-                            <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-muted-foreground uppercase block">SKU Prefix</span>
-                                <Input
-                                    value={skuPrefix}
-                                    onChange={(e) => setSkuPrefix(e.target.value)}
-                                    className="h-8 text-xs w-[120px] bg-background/50"
-                                    placeholder="e.g. ESP"
-                                />
-                            </div>
                         </div>
 
                         <Button type="button" onClick={onGenerateMatrix} className="h-8 px-3 text-xs font-semibold gap-1.5 shadow-2xs">
@@ -492,12 +448,10 @@ export default function EditVariantsTab({
                                 setGridVariants((prev) =>
                                     prev.map((r, i) => {
                                         if (i !== editingRowIdx) return r;
-                                        const defaultGeneratedSku = newLabels.length > 0 ? newLabels.join('-').toUpperCase().replace(/\s+/g, '') : '';
                                         return {
                                             ...r,
                                             attributeValueIds: newIds,
-                                            attributeValueLabels: newLabels,
-                                            sku: r.sku ? r.sku : defaultGeneratedSku
+                                            attributeValueLabels: newLabels
                                         };
                                     })
                                 );

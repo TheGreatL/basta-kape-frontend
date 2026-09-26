@@ -208,7 +208,7 @@ export default function ProductViewPage() {
                                     Active Variations List
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    List of sizes, variations, SKUs, prices, and recipe statuses configured for this product.
+                                    List of sizes, variations, prices, and recipe statuses configured for this product.
                                 </p>
                             </div>
                         </div>
@@ -217,7 +217,6 @@ export default function ProductViewPage() {
                             <Table className="text-xs">
                                 <TableHeader className="bg-muted/15 font-bold">
                                     <TableRow>
-                                        <TableHead className="font-bold">Variation SKU</TableHead>
                                         <TableHead className="font-bold">Choice Attributes Combination</TableHead>
                                         <TableHead className="font-bold">Fulfillment Price</TableHead>
                                         <TableHead className="font-bold text-center">Recipe Setup</TableHead>
@@ -226,7 +225,7 @@ export default function ProductViewPage() {
                                 <TableBody className="font-medium text-foreground/85 divide-y divide-border/20">
                                     {product.variants.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
+                                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">
                                                 No variations matrix configured yet.
                                             </TableCell>
                                         </TableRow>
@@ -237,7 +236,6 @@ export default function ProductViewPage() {
 
                                             return (
                                                 <TableRow key={v.id} className="hover:bg-muted/5">
-                                                    <TableCell className="font-mono text-xs font-bold">{v.sku || '-'}</TableCell>
                                                     <TableCell className="font-semibold text-foreground/90">{comboText}</TableCell>
                                                     <TableCell className="font-bold text-foreground">₱{v.price.toFixed(2)}</TableCell>
                                                     <TableCell className="text-center">

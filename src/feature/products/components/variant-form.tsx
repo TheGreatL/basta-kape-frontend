@@ -11,17 +11,15 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import type { IAttribute, IAttributeValue } from '#/feature/product-settings/product-settings-types.ts';
 
 interface VariantFormProps {
-    initialSku?: string | null;
     initialPrice?: number;
     initialValueIds?: string[];
-    onSubmit: (data: { sku: string | null; price: number; attributeValueIds: string[] }) => void;
+    onSubmit: (data: { sku?: string | null; price: number; attributeValueIds: string[] }) => void;
     onCancel: () => void;
     isPending?: boolean;
     submitLabel?: string;
 }
 
 export function VariantForm({
-    initialSku = '',
     initialPrice = 0,
     initialValueIds = [],
     onSubmit,
@@ -29,7 +27,6 @@ export function VariantForm({
     isPending = false,
     submitLabel = 'Add Variant'
 }: VariantFormProps) {
-    const [sku, setSku] = React.useState(initialSku || '');
     const [price, setPrice] = React.useState(initialPrice);
     // Maps attributeId -> attributeValueId
     const [selectedValues, setSelectedValues] = React.useState<Record<string, string>>({});
@@ -51,7 +48,7 @@ export function VariantForm({
             return;
         }
         onSubmit({
-            sku: sku.trim() || null,
+            sku: null,
             price: Number(price) || 0,
             attributeValueIds
         });
@@ -61,17 +58,7 @@ export function VariantForm({
         <form onSubmit={handleSubmit} className="border border-primary/20 bg-primary/5 p-4 rounded-xl space-y-4">
             <h4 className="text-xs font-bold uppercase text-primary/80">Configure Variant</h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-foreground/80">SKU (Optional)</Label>
-                    <Input
-                        placeholder="e.g. LAT-LRG-OAT"
-                        value={sku}
-                        onChange={(e) => setSku(e.target.value)}
-                        className="h-8 text-xs bg-background"
-                        disabled={isPending}
-                    />
-                </div>
+            <div>
                 <div className="space-y-1">
                     <Label className="text-xs font-semibold text-foreground/80">Price (Required)</Label>
                     <Input

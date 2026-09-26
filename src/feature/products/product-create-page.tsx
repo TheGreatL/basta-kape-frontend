@@ -197,10 +197,10 @@ export default function ProductCreatePage() {
         });
     };
 
-    const handleAddVariant = (data: { sku: string | null; price: number; attributeValueIds: string[] }) => {
+    const handleAddVariant = (data: { sku?: string | null; price: number; attributeValueIds: string[] }) => {
         const newVariant: LocalVariant = {
             tempId: generateId(),
-            sku: data.sku,
+            sku: data.sku ?? null,
             price: data.price,
             attributeValueIds: data.attributeValueIds
         };
@@ -208,9 +208,9 @@ export default function ProductCreatePage() {
         setIsAddingVariant(false);
     };
 
-    const handleUpdateVariant = (tempId: string, data: { sku: string | null; price: number; attributeValueIds: string[] }) => {
+    const handleUpdateVariant = (tempId: string, data: { sku?: string | null; price: number; attributeValueIds: string[] }) => {
         setLocalVariants((prev) =>
-            prev.map((v) => (v.tempId === tempId ? { ...v, sku: data.sku, price: data.price, attributeValueIds: data.attributeValueIds } : v))
+            prev.map((v) => (v.tempId === tempId ? { ...v, sku: data.sku ?? null, price: data.price, attributeValueIds: data.attributeValueIds } : v))
         );
         setEditingVariantId(null);
     };
@@ -561,9 +561,7 @@ export default function ProductCreatePage() {
                                     <ChefHat className="size-5 text-primary" />
                                     Pricing Variants & Recipe Specifications
                                 </h3>
-                                <p className="text-xs text-muted-foreground">
-                                    Attach size modifiers, SKU references, base prices, and custom ingredient line items.
-                                </p>
+                                <p className="text-xs text-muted-foreground">Attach size modifiers, base prices, and custom ingredient line items.</p>
                             </div>
                             {!isAddingVariant && !editingVariantId && (
                                 <Button
@@ -602,7 +600,6 @@ export default function ProductCreatePage() {
                                                 <div key={v.tempId} className="p-4 bg-muted/15">
                                                     <h4 className="text-xs font-bold text-foreground uppercase  mb-3">Edit Variant Settings</h4>
                                                     <VariantForm
-                                                        initialSku={v.sku}
                                                         initialPrice={v.price}
                                                         initialValueIds={v.attributeValueIds}
                                                         onSubmit={(data) => handleUpdateVariant(v.tempId, data)}
@@ -621,14 +618,6 @@ export default function ProductCreatePage() {
                                                 <div className="space-y-1.5 min-w-0">
                                                     <div className="flex items-center gap-2.5">
                                                         <span className="text-sm font-bold text-foreground">₱{v.price.toFixed(2)}</span>
-                                                        {v.sku && (
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="text-xs py-0 px-1.5 font-mono uppercase bg-muted/50 border-muted text-muted-foreground"
-                                                            >
-                                                                {v.sku}
-                                                            </Badge>
-                                                        )}
                                                         <Badge
                                                             className={`text-xs font-bold px-1.5 py-0 flex items-center gap-1 w-fit uppercase ${
                                                                 v.recipe

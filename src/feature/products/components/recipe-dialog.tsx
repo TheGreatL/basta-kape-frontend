@@ -31,7 +31,7 @@ import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type { IProduct, IProductVariant, IRecipe, IRecipeIngredient } from '../products.types';
-import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
+import type { IIngredient } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -320,7 +320,7 @@ export default function RecipeDialog({
                                                     const attrString = v.attributes.map((a: any) => a.attributeValue.value).join(', ');
                                                     return (
                                                         <SelectItem key={v.id} value={v.id} className="text-xs">
-                                                            {attrString || 'Standard'} (SKU: {v.sku || 'N/A'})
+                                                            {attrString || 'Standard'}
                                                         </SelectItem>
                                                     );
                                                 })}
