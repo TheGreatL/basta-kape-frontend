@@ -4,14 +4,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ArrowRight, Calculator, Check, Globe, Package, Scale, ArrowLeftRight } from 'lucide-react';
+import { ArrowRight, Calculator, Globe, Package, Scale, ArrowLeftRight } from 'lucide-react';
 
 import { createUnitConversion, updateUnitConversion, convertQuantity } from '#/api/unit-conversions.api.ts';
 import { getIngredientUnits, getIngredients } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import type { IUnitConversion } from '#/feature/inventory/unit-conversions/unit-conversions.types.ts';
-import type { IIngredientUnit, IIngredient } from '#/feature/inventory/inventory.types.ts';
+import type { IIngredient } from '#/feature/inventory/inventory.types.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -387,7 +387,7 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
     }, [conversion]);
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, factor }: { id: string; factor: number }) => updateUnitConversion(id, { factor }),
+        mutationFn: (data: { id: string; factor: number }) => updateUnitConversion(data.id, { factor: data.factor }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.UNIT_CONVERSIONS.LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });

@@ -23,7 +23,11 @@ export function DashboardProcurementHealth({ procurement, customers, dateRange }
                             Purchase order commitments and inventory replenishment spend
                         </CardDescription>
                     </div>
-                    <Link to="/admin/purchase-orders" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0">
+                    <Link
+                        to="/admin/purchase-orders"
+                        search={{} as any}
+                        className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0"
+                    >
                         Purchase Orders <ArrowUpRight className="size-3.5" />
                     </Link>
                 </CardHeader>
@@ -36,7 +40,7 @@ export function DashboardProcurementHealth({ procurement, customers, dateRange }
                             </div>
                             <div className="space-y-0.5">
                                 <h4 className="text-lg font-bold text-foreground">{procurement?.openPOCount ?? 0}</h4>
-                                <p className="text-[11px] text-muted-foreground font-semibold">
+                                <p className="text-xs text-muted-foreground font-semibold">
                                     ₱{(procurement?.openPOAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} value
                                 </p>
                             </div>
@@ -51,7 +55,7 @@ export function DashboardProcurementHealth({ procurement, customers, dateRange }
                                 <h4 className="text-lg font-bold text-foreground">
                                     ₱{(procurement?.procurementSpend ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground font-semibold">Received in {dateRange.label}</p>
+                                <p className="text-xs text-muted-foreground font-semibold">Received in {dateRange.label}</p>
                             </div>
                         </div>
                     </div>
@@ -82,7 +86,7 @@ export function DashboardProcurementHealth({ procurement, customers, dateRange }
                             </div>
                             <div className="space-y-0.5">
                                 <h4 className="text-lg font-bold text-foreground">{(customers?.totalCustomers ?? 0).toLocaleString()}</h4>
-                                <p className="text-[11px] text-muted-foreground font-semibold">Registered customer profiles</p>
+                                <p className="text-xs text-muted-foreground font-semibold">Registered customer profiles</p>
                             </div>
                         </div>
 
@@ -95,7 +99,7 @@ export function DashboardProcurementHealth({ procurement, customers, dateRange }
                                 <h4 className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                     +{(customers?.newCustomersInPeriod ?? 0).toLocaleString()}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground font-semibold">New patrons signed up</p>
+                                <p className="text-xs text-muted-foreground font-semibold">New patrons signed up</p>
                             </div>
                         </div>
                     </div>

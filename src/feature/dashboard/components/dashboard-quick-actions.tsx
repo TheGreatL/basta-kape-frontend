@@ -44,7 +44,7 @@ export function DashboardQuickActions({
                     </Link>
                 )}
                 {canReadMenu && (
-                    <Link to="/admin/menu">
+                    <Link to="/admin/menu" search={{} as any}>
                         <Button
                             variant="outline"
                             className="w-full text-xs font-bold gap-2 hover:bg-muted py-5 rounded-2xl border-border/50 cursor-pointer"

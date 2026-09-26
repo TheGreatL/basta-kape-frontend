@@ -1,5 +1,5 @@
-import * as z from 'zod';
-import { Clock, Coins, Wallet, Landmark } from 'lucide-react';
+import { z } from 'zod';
+import { Clock, Coins, Wallet } from 'lucide-react';
 import type { IPaginationParams } from '#/types/base.types';
 import type { IOrderDiscount } from '../store-settings/discounts.types';
 
@@ -132,7 +132,7 @@ export interface ICreatePaymentPayload {
     paymentMethod: TPaymentMethod;
     amountTendered?: number;
     paymentReferenceNumber?: string;
-    paymentProofPhoto?: string;
+    paymentProofPhoto?: string | null;
 }
 
 export interface IVoidLog {

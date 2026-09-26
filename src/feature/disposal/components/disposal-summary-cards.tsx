@@ -1,5 +1,5 @@
 import { TrendingDown, Cookie, Package, Layers, AlertOctagon } from 'lucide-react';
-import { Card, CardContent } from '#/components/ui/card.tsx';
+import { Card } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Skeleton } from '#/components/ui/skeleton.tsx';
 import type { IDisposalSummary } from '../disposal.types';

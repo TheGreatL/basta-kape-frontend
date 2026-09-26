@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Scale, Plus, Edit2, Trash2, Calculator, Search, ArrowRight, Globe, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calculator, Search, Globe, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getUnitConversions, deleteUnitConversion } from '#/api/unit-conversions.api.ts';

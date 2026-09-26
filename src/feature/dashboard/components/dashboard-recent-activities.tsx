@@ -28,7 +28,11 @@ export function DashboardRecentActivities({ activities = [] }: DashboardRecentAc
                         Live audit log of recent staff actions, updates, and operations
                     </CardDescription>
                 </div>
-                <Link to="/admin/activity-logs" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0">
+                <Link
+                    to="/admin/activity-logs"
+                    search={{} as any}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0"
+                >
                     All Logs <ArrowUpRight className="size-3.5" />
                 </Link>
             </CardHeader>
@@ -47,18 +51,14 @@ export function DashboardRecentActivities({ activities = [] }: DashboardRecentAc
                                     <div className="space-y-0.5">
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             <span className="text-xs font-bold text-foreground leading-tight">{item.title}</span>
-                                            <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
+                                            <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
                                                 <User className="size-2.5" /> {item.actorName}
                                             </span>
                                         </div>
-                                        {item.details && (
-                                            <p className="text-[11px] text-muted-foreground line-clamp-1 leading-snug">{item.details}</p>
-                                        )}
+                                        {item.details && <p className="text-xs text-muted-foreground line-clamp-1 leading-snug">{item.details}</p>}
                                     </div>
                                 </div>
-                                <span className="text-[10px] font-semibold text-muted-foreground shrink-0 mt-0.5">
-                                    {formatTimeAgo(item.createdAt)}
-                                </span>
+                                <span className="text-xs font-semibold text-muted-foreground shrink-0 mt-0.5">{formatTimeAgo(item.createdAt)}</span>
                             </div>
                         ))}
                     </div>

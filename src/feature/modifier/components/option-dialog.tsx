@@ -18,7 +18,7 @@ import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type { IModifierOption, IModifierRecipe, IModifierRecipeIngredient } from '../modifier.types';
-import type { IIngredient, IIngredientUnit } from '#/feature/inventory/inventory.types';
+import type { IIngredient } from '#/feature/inventory/inventory.types';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';

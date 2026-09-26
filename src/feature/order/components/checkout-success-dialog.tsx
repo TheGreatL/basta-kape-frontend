@@ -1,4 +1,4 @@
-import { CheckCircle2, Download, ArrowRight, Wallet, CreditCard, Coins, Landmark, Eye } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Wallet, Coins, Eye } from 'lucide-react';
 import type { IOrder } from '../order.types';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Button } from '#/components/ui/button.tsx';

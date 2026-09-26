@@ -25,7 +25,7 @@ export function DashboardOrdersQueue({ queueStats, recentOrders }: DashboardOrde
                     <CardDescription className="text-xs text-muted-foreground">Live barista queue and latest orders.</CardDescription>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <Link to="/admin/orders">
+                    <Link to="/admin/orders" search={{} as any}>
                         <Button variant="outline" size="sm" className="h-8 text-xs font-bold px-3">
                             All Orders
                         </Button>

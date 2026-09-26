@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, AlertTriangle, ArrowUpRight, Scale, ShieldAlert } from 'lucide-react';
+import { DollarSign, ArrowUpRight, Scale, ShieldAlert } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -48,7 +48,11 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                         Real-time gross margin, Cost of Goods Sold (COGS), ingredient waste loss, and bottom-line net profit.
                     </CardDescription>
                 </div>
-                <Link to="/admin/reports" className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0">
+                <Link
+                    to="/admin/reports"
+                    search={{} as any}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 shrink-0"
+                >
                     Detailed P&L Report <ArrowUpRight className="size-3.5" />
                 </Link>
             </CardHeader>
@@ -61,7 +65,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <span className="text-xs font-bold uppercase text-muted-foreground">Gross Profit</span>
                             <Badge
                                 variant="outline"
-                                className="text-emerald-700 bg-emerald-50 border-emerald-200 text-[10px] font-bold dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
+                                className="text-emerald-700 bg-emerald-50 border-emerald-200 text-xs font-bold dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
                             >
                                 {grossProfitMargin}% Margin
                             </Badge>
@@ -70,7 +74,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <h3 className="text-xl font-bold text-emerald-700 dark:text-emerald-400">
                                 ₱{grossProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground font-semibold">Net Sales minus Ingredient COGS</p>
+                            <p className="text-xs text-muted-foreground font-semibold">Net Sales minus Ingredient COGS</p>
                         </div>
                     </div>
 
@@ -84,7 +88,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <h3 className="text-xl font-bold text-foreground">
                                 ₱{cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground font-semibold">Total cost of recipe ingredients consumed</p>
+                            <p className="text-xs text-muted-foreground font-semibold">Total cost of recipe ingredients consumed</p>
                         </div>
                     </div>
 
@@ -98,7 +102,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">
                                 ₱{totalLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground font-semibold">Financial loss from spoiled/expired stock</p>
+                            <p className="text-xs text-muted-foreground font-semibold">Financial loss from spoiled/expired stock</p>
                         </div>
                     </div>
 
@@ -112,7 +116,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <span className="text-xs font-bold uppercase text-primary">Net Profit</span>
                             <Badge
                                 variant="outline"
-                                className={`text-[10px] font-bold ${
+                                className={`text-xs font-bold ${
                                     isHealthyNet
                                         ? 'text-primary border-primary/30 bg-primary/10'
                                         : 'text-rose-600 border-rose-300 bg-rose-50 dark:bg-rose-950 dark:text-rose-300'
@@ -125,7 +129,7 @@ export function DashboardProfitabilityCard({ profitability, isLoading, dateRange
                             <h3 className={`text-xl font-bold ${isHealthyNet ? 'text-primary' : 'text-rose-600'}`}>
                                 ₱{netProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground font-semibold">After COGS and inventory waste</p>
+                            <p className="text-xs text-muted-foreground font-semibold">After COGS and inventory waste</p>
                         </div>
                     </div>
                 </div>

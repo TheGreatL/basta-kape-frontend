@@ -57,7 +57,7 @@ export function DashboardBreakdown({ paymentBreakdown = [], channelBreakdown = [
                                         <div className="flex items-center gap-2 font-bold text-foreground">
                                             {getPaymentIcon(item.paymentMethod)}
                                             <span>{item.paymentMethod}</span>
-                                            <span className="text-[11px] font-semibold text-muted-foreground">
+                                            <span className="text-xs font-semibold text-muted-foreground">
                                                 ({item.count} {item.count === 1 ? 'txn' : 'txns'})
                                             </span>
                                         </div>
@@ -65,7 +65,7 @@ export function DashboardBreakdown({ paymentBreakdown = [], channelBreakdown = [
                                             <span className="font-bold text-foreground">
                                                 ₱{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
-                                            <span className="text-[11px] font-bold text-muted-foreground">{item.percentage}%</span>
+                                            <span className="text-xs font-bold text-muted-foreground">{item.percentage}%</span>
                                         </div>
                                     </div>
                                     <Progress value={item.percentage} className="h-2 [&>[data-slot=progress-indicator]]:bg-primary" />
@@ -99,7 +99,7 @@ export function DashboardBreakdown({ paymentBreakdown = [], channelBreakdown = [
                                         <div className="flex items-center gap-2 font-bold text-foreground">
                                             {getChannelIcon(item.channel)}
                                             <span>{formatChannelName(item.channel)}</span>
-                                            <span className="text-[11px] font-semibold text-muted-foreground">
+                                            <span className="text-xs font-semibold text-muted-foreground">
                                                 ({item.count} {item.count === 1 ? 'order' : 'orders'})
                                             </span>
                                         </div>
@@ -107,7 +107,7 @@ export function DashboardBreakdown({ paymentBreakdown = [], channelBreakdown = [
                                             <span className="font-bold text-foreground">
                                                 ₱{item.netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
-                                            <span className="text-[11px] font-bold text-muted-foreground">{item.percentage}%</span>
+                                            <span className="text-xs font-bold text-muted-foreground">{item.percentage}%</span>
                                         </div>
                                     </div>
                                     <Progress

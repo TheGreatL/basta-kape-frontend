@@ -1,20 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-    FileText,
-    CheckCircle,
-    Truck,
-    Plus,
-    Trash2,
-    History,
-    AlertCircle,
-    Check,
-    Calendar as CalendarIcon,
-    X,
-    FileCheck,
-    RotateCcw,
-    Send
-} from 'lucide-react';
+import { FileText, Truck, Plus, Trash2, History, AlertCircle, Check, Calendar as CalendarIcon, X, FileCheck, RotateCcw, Send } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -118,7 +104,6 @@ function ExpiryDatePicker({ value, onChange, placeholder = 'Pick date' }: Expiry
                             onChange(selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '');
                             setOpen(false);
                         }}
-                        initialFocus
                     />
                 </PopoverContent>
             </Popover>

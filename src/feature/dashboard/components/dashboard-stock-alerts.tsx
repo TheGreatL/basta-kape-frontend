@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Clock } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '#/components/ui/card.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -45,15 +45,15 @@ export function DashboardStockAlerts({ outOfStockCount, criticalCount, lowStockI
                 <div className="grid grid-cols-3 gap-2">
                     <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-2.5 flex flex-col items-center">
                         <span className="text-base sm:text-lg font-bold text-rose-500">{outOfStockCount}</span>
-                        <span className="text-[10px] sm:text-xs uppercase font-bold text-muted-foreground text-center">Out of Stock</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground text-center">Out of Stock</span>
                     </div>
                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-2.5 flex flex-col items-center">
                         <span className="text-base sm:text-lg font-bold text-amber-500">{criticalCount}</span>
-                        <span className="text-[10px] sm:text-xs uppercase font-bold text-muted-foreground text-center">Critical</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground text-center">Critical</span>
                     </div>
                     <div className="bg-orange-500/5 border border-orange-500/10 rounded-xl p-2.5 flex flex-col items-center">
                         <span className="text-base sm:text-lg font-bold text-orange-500">{expiringCount}</span>
-                        <span className="text-[10px] sm:text-xs uppercase font-bold text-muted-foreground text-center">Expiring &lt;48h</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground text-center">Expiring &lt;48h</span>
                     </div>
                 </div>
 
@@ -97,7 +97,7 @@ export function DashboardStockAlerts({ outOfStockCount, criticalCount, lowStockI
                             <h4 className="text-xs font-bold uppercase text-orange-600 dark:text-orange-400 flex items-center gap-1">
                                 <Clock className="size-3" /> Prepared Shelf Batches (&lt;48h)
                             </h4>
-                            <Link to="/admin/food-prep" className="text-[10px] font-bold text-primary hover:underline">
+                            <Link to="/admin/food-prep" search={{} as any} className="text-xs font-bold text-primary hover:underline">
                                 Food Prep
                             </Link>
                         </div>
@@ -111,16 +111,16 @@ export function DashboardStockAlerts({ outOfStockCount, criticalCount, lowStockI
                                         <div className="font-bold text-foreground truncate">
                                             {batch.productName}{' '}
                                             {batch.variantTitle && (
-                                                <span className="text-[10px] font-normal text-muted-foreground">({batch.variantTitle})</span>
+                                                <span className="text-xs font-normal text-muted-foreground">({batch.variantTitle})</span>
                                             )}
                                         </div>
-                                        <div className="text-[10px] text-muted-foreground font-mono">
+                                        <div className="text-xs text-muted-foreground font-mono">
                                             #{batch.batchNumber} • {batch.currentQuantity} servings left
                                         </div>
                                     </div>
                                     <Badge
                                         variant="outline"
-                                        className="shrink-0 text-[10px] font-bold text-orange-600 border-orange-300 bg-orange-50 dark:bg-orange-950 dark:text-orange-300"
+                                        className="shrink-0 text-xs font-bold text-orange-600 border-orange-300 bg-orange-50 dark:bg-orange-950 dark:text-orange-300"
                                     >
                                         Exp. {formatExpiry(batch.expiryDate)}
                                     </Badge>
