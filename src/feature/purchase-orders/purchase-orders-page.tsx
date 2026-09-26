@@ -2,7 +2,24 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Eye, Search, X, Calendar, User, Truck, Trash2, ShoppingCart, Send, XCircle, Pencil, Package, CheckSquare, Square } from 'lucide-react';
+import {
+    Plus,
+    Eye,
+    Search,
+    X,
+    Calendar,
+    User,
+    Truck,
+    Trash2,
+    ShoppingCart,
+    Send,
+    XCircle,
+    Pencil,
+    Package,
+    CheckSquare,
+    Square,
+    CheckCircle
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -56,6 +73,7 @@ export default function PurchaseOrdersPage() {
     const debouncedSearch = useDebounce(localSearch, 400);
 
     const [selectedPO, setSelectedPO] = React.useState<IPurchaseOrder | null>(null);
+    const [openReceiveOnDetails, setOpenReceiveOnDetails] = React.useState(false);
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
 
     // Form states for PO creation
@@ -353,7 +371,10 @@ export default function PurchaseOrdersPage() {
                                             variant="ghost"
                                             size="icon"
                                             className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                            onClick={() => setSelectedPO(po)}
+                                            onClick={() => {
+                                                setSelectedPO(po);
+                                                setOpenReceiveOnDetails(false);
+                                            }}
                                         >
                                             <Eye className="size-4" />
                                             <span className="sr-only">Inspect Details</span>
@@ -361,6 +382,29 @@ export default function PurchaseOrdersPage() {
                                     </TooltipTrigger>
                                     <TooltipContent side="top">Inspect Details</TooltipContent>
                                 </Tooltip>
+
+                                {/* Mark as Received / Complete (SENT only) */}
+                                {po.status === 'SENT' && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                                    onClick={() => {
+                                                        setSelectedPO(po);
+                                                        setOpenReceiveOnDetails(true);
+                                                    }}
+                                                >
+                                                    <CheckCircle className="size-4" />
+                                                    <span className="sr-only">Mark as Received</span>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">Mark as Received</TooltipContent>
+                                        </Tooltip>
+                                    </RequirePermission>
+                                )}
 
                                 {/* Edit PO (DRAFT only) */}
                                 {po.status === 'DRAFT' && (
@@ -857,7 +901,17 @@ export default function PurchaseOrdersPage() {
             </Dialog>
 
             {/* Inspect Detail Dialog */}
-            <PurchaseOrderDetailDialog open={!!selectedPO} onOpenChange={(open) => !open && setSelectedPO(null)} poId={selectedPO?.id || null} />
+            <PurchaseOrderDetailDialog
+                open={!!selectedPO}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedPO(null);
+                        setOpenReceiveOnDetails(false);
+                    }
+                }}
+                poId={selectedPO?.id || null}
+                initialOpenReceive={openReceiveOnDetails}
+            />
 
             {/* Update Purchase Order Dialog */}
             <UpdatePurchaseOrderDialog open={!!editingPOId} onOpenChange={(open) => !open && setEditingPOId(null)} poId={editingPOId} />
