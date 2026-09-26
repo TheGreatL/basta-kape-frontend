@@ -317,11 +317,15 @@ export default function PurchaseOrdersPage() {
             {
                 accessorKey: 'status',
                 header: 'Status',
-                cell: ({ row }) => (
-                    <Badge variant="outline" className={`text-xs font-semibold py-0.5 px-2 capitalize ${getStatusBadgeClass(row.original.status)}`}>
-                        {row.original.status.toLowerCase().replace('_', ' ')}
-                    </Badge>
-                )
+                cell: ({ row }) => {
+                    const st = row.original.status;
+                    const label = st === 'FINAL_DRAFT' ? 'Final Draft' : st === 'PARTIALLY_RECEIVED' ? 'Partially Received' : st.toLowerCase();
+                    return (
+                        <Badge variant="outline" className={`text-xs font-semibold py-0.5 px-2 capitalize ${getStatusBadgeClass(st)}`}>
+                            {label}
+                        </Badge>
+                    );
+                }
             },
             {
                 accessorKey: 'totalAmount',
@@ -670,7 +674,7 @@ export default function PurchaseOrdersPage() {
                             </div>
 
                             <Select value={status || 'all'} onValueChange={(val) => setSearchParams({ status: val === 'all' ? '' : val, page: 1 })}>
-                                <SelectTrigger className="h-9 min-w-[130px] bg-background/50 text-xs capitalize">
+                                <SelectTrigger className="h-9 min-w-[155px] bg-background/50 text-xs">
                                     <SelectValue placeholder="All Statuses" />
                                 </SelectTrigger>
                                 <SelectContent>
