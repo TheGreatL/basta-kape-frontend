@@ -397,10 +397,25 @@ export default function AppSidebar() {
     return (
         <SidebarComponent collapsible="icon">
             <SidebarHeader>
-                <div className="flex h-12 items-center gap-2 px-4">
-                    <img src={logo} alt={storeName} className="size-8 rounded-md object-contain" />
-                    <span className="font-bold text-lg truncate group-data-[collapsible=icon]:hidden">{storeName}</span>
-                </div>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            tooltip={storeName}
+                            className="hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:p-0!"
+                        >
+                            <Link to="/admin" className="flex items-center gap-2">
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg shrink-0">
+                                    <img src={logo} alt={storeName} className="size-8 rounded-md object-contain" />
+                                </div>
+                                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                                    <span className="font-bold text-lg truncate">{storeName}</span>
+                                </div>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarHeader>
             <SidebarSeparator />
             <SidebarContent>
