@@ -18,6 +18,60 @@ export interface DashboardSalesMetrics {
     averageOrderValue: number;
 }
 
+export interface DashboardProfitability {
+    grossSales: number;
+    netSales: number;
+    discountTotal: number;
+    cogs: number;
+    grossProfit: number;
+    grossProfitMargin: number;
+    totalLoss: number;
+    netProfit: number;
+    netProfitMargin: number;
+}
+
+export interface DashboardPaymentBreakdown {
+    paymentMethod: string;
+    amount: number;
+    count: number;
+    percentage: number;
+}
+
+export interface DashboardChannelBreakdown {
+    channel: string;
+    netTotal: number;
+    count: number;
+    percentage: number;
+}
+
+export interface DashboardProcurementSummary {
+    openPOCount: number;
+    openPOAmount: number;
+    procurementSpend: number;
+}
+
+export interface DashboardCustomerMetrics {
+    totalCustomers: number;
+    newCustomersInPeriod: number;
+}
+
+export interface DashboardRecentActivity {
+    id: string;
+    title: string;
+    details: string | null;
+    createdAt: string;
+    actorName: string;
+}
+
+export interface DashboardExpiringBatch {
+    id: string;
+    batchNumber: string;
+    productName: string;
+    variantTitle?: string | null;
+    currentQuantity: number;
+    expiryDate: string;
+}
+
 export interface DashboardLowStockItem {
     id: string;
     name: string;
@@ -44,11 +98,18 @@ export interface DashboardSummary {
     };
     salesToday?: DashboardSalesMetrics;
     salesOverview?: DashboardSalesMetrics;
+    profitability?: DashboardProfitability;
+    paymentBreakdown?: DashboardPaymentBreakdown[];
+    channelBreakdown?: DashboardChannelBreakdown[];
+    procurementSummary?: DashboardProcurementSummary;
+    customerMetrics?: DashboardCustomerMetrics;
+    recentActivities?: DashboardRecentActivity[];
     inventorySummary?: {
         totalItems: number;
         criticalCount: number;
         outOfStockCount: number;
         lowStockItems: DashboardLowStockItem[];
+        expiringPreparedBatches?: DashboardExpiringBatch[];
     };
     ordersSummary?: {
         queueStats: {

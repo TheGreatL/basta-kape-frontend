@@ -16,10 +16,14 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 // Modular Dashboard Subcomponents
 import { DashboardHeader } from './components/dashboard-header';
 import { DashboardSalesMetricsCards } from './components/dashboard-sales-metrics';
+import { DashboardProfitabilityCard } from './components/dashboard-profitability';
 import { DashboardSalesTrend } from './components/dashboard-sales-trend';
 import { DashboardTopProducts } from './components/dashboard-top-products';
+import { DashboardBreakdown } from './components/dashboard-breakdown';
 import { DashboardOrdersQueue } from './components/dashboard-orders-queue';
 import { DashboardStockAlerts } from './components/dashboard-stock-alerts';
+import { DashboardProcurementHealth } from './components/dashboard-procurement-health';
+import { DashboardRecentActivities } from './components/dashboard-recent-activities';
 
 import { getDashboardDateRange } from './dashboard.types';
 import type { TDashboardDateFilter, DashboardSummary } from './dashboard.types';
@@ -32,7 +36,7 @@ export default function DashboardPage() {
     const [activeFilter, setActiveFilter] = React.useState<TDashboardDateFilter>('today');
     const dateRange = React.useMemo(() => getDashboardDateRange(activeFilter), [activeFilter]);
 
-    // Check permissions dynamically
+    // Dynamic Permission Checks for Modular Dashboard Sections
     const canReadSales = React.useMemo(
         () =>
             hasPermission(permissions, appModules.SALES_MANAGEMENT, appPermissions.READ) ||
@@ -41,12 +45,19 @@ export default function DashboardPage() {
     );
 
     const canReadInventory = React.useMemo(() => hasPermission(permissions, appModules.INVENTORY_MANAGEMENT, appPermissions.READ), [permissions]);
+
     const canReadOrders = React.useMemo(
         () =>
             hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.READ) ||
             hasPermission(permissions, appModules.ORDER_QUEUE, appPermissions.READ),
         [permissions]
     );
+
+    const canReadPO = React.useMemo(() => hasPermission(permissions, appModules.PURCHASE_ORDERS_MANAGEMENT, appPermissions.READ), [permissions]);
+
+    const canReadCustomers = React.useMemo(() => hasPermission(permissions, appModules.CUSTOMERS_MANAGEMENT, appPermissions.READ), [permissions]);
+
+    const canReadActivityLogs = React.useMemo(() => hasPermission(permissions, appModules.ACTIVITY_LOGS, appPermissions.READ), [permissions]);
 
     // Consolidated Dashboard Summary query (updates with selected date filter)
     const {
@@ -110,7 +121,12 @@ export default function DashboardPage() {
             {/* 2. Key Sales Performance Cards (Filtered) */}
             {canReadSales && <DashboardSalesMetricsCards metrics={salesMetrics} isLoading={isSalesLoading} dateRange={dateRange} />}
 
-            {/* 3. Sales Trend & Top 5 Best-Selling Favorites (Filtered) */}
+            {/* 3. Profitability & Financial Health (Gross Margin, COGS, Wastage Loss, Net Profit) */}
+            {canReadSales && summary.profitability && (
+                <DashboardProfitabilityCard profitability={summary.profitability} isLoading={isLoading} dateRange={dateRange} />
+            )}
+
+            {/* 4. Sales Trend & Top 5 Best-Selling Favorites (Filtered) */}
             {canReadSales && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <DashboardSalesTrend dailyTrend={dailyTrend} isLoading={isSalesLoading} dateRange={dateRange} />
@@ -118,7 +134,12 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* 4. Real-time Kitchen Operations: Order Queue & Live Stock Alerts */}
+            {/* 5. Revenue Channels & Settlement Methods (Cash vs GCash & Dine-In vs Take-Out vs Delivery) */}
+            {canReadSales && (summary.paymentBreakdown || summary.channelBreakdown) && (
+                <DashboardBreakdown paymentBreakdown={summary.paymentBreakdown} channelBreakdown={summary.channelBreakdown} />
+            )}
+
+            {/* 6. Real-time Kitchen Operations: Order Queue & Live Stock Alerts */}
             {(canReadOrders || canReadInventory) && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {canReadOrders && summary.ordersSummary && (
@@ -130,10 +151,19 @@ export default function DashboardPage() {
                             outOfStockCount={summary.inventorySummary.outOfStockCount}
                             criticalCount={summary.inventorySummary.criticalCount}
                             lowStockItems={summary.inventorySummary.lowStockItems}
+                            expiringBatches={summary.inventorySummary.expiringPreparedBatches}
                         />
                     )}
                 </div>
             )}
+
+            {/* 7. Procurement & Customer Growth Summary */}
+            {(canReadPO || canReadCustomers) && (summary.procurementSummary || summary.customerMetrics) && (
+                <DashboardProcurementHealth procurement={summary.procurementSummary} customers={summary.customerMetrics} dateRange={dateRange} />
+            )}
+
+            {/* 8. Recent System Activity & Staff Oversight (Audit Trail) */}
+            {canReadActivityLogs && summary.recentActivities && <DashboardRecentActivities activities={summary.recentActivities} />}
         </div>
     );
 }
