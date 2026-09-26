@@ -85,3 +85,18 @@ export interface IMenuRecipeIngredient {
         abbreviation: string;
     };
 }
+
+export interface IGetBestSellersParams {
+    limit?: number;
+    dateFrom?: string;
+    dateTo?: string;
+    productCategoryId?: string;
+    productTypeId?: string;
+}
+
+export interface IBestSellerProduct extends IMenuProduct {
+    totalQuantitySold: number;
+    totalRevenue: number;
+    minPrice: number;
+    maxPrice: number;
+}

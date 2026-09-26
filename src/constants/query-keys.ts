@@ -45,7 +45,8 @@ const QUERY_KEY = {
         CATALOG: 'menu:catalog',
         PRODUCT_DETAILS: 'menu:product_details',
         CATEGORIES_LIST: 'menu:categories_list',
-        TYPES_LIST: 'menu:types_list'
+        TYPES_LIST: 'menu:types_list',
+        BEST_SELLERS: 'menu:best_sellers'
     },
     INVENTORY: {
         UNITS_LIST: 'inventory:units_list',

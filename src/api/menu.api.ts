@@ -1,7 +1,14 @@
 import { api } from './api';
 import { ApiError } from '../utils/error-handler';
 import type { IPaginatedResult } from '../types/base.types';
-import type { IGetMenuCatalogParams, IMenuProduct, IMenuCategory, IMenuProductType } from '../feature/menu/menu.types';
+import type {
+    IGetMenuCatalogParams,
+    IMenuProduct,
+    IMenuCategory,
+    IMenuProductType,
+    IGetBestSellersParams,
+    IBestSellerProduct
+} from '../feature/menu/menu.types';
 
 export const getMenuCatalog = async (params: IGetMenuCatalogParams): Promise<IPaginatedResult<IMenuProduct>> => {
     const query = new URLSearchParams();
@@ -48,5 +55,24 @@ export const getMenuTypes = async (): Promise<IMenuProductType[]> => {
         throw new ApiError('Failed to fetch menu product types', response.status, errorData);
     }
     const data: IMenuProductType[] = (await response.json()) || [];
+    return data;
+};
+
+export const getBestSellingProducts = async (params?: IGetBestSellersParams): Promise<IBestSellerProduct[]> => {
+    const query = new URLSearchParams();
+    if (params?.limit !== undefined) query.set('limit', String(params.limit));
+    if (params?.dateFrom) query.set('dateFrom', params.dateFrom);
+    if (params?.dateTo) query.set('dateTo', params.dateTo);
+    if (params?.productCategoryId) query.set('productCategoryId', params.productCategoryId);
+    if (params?.productTypeId) query.set('productTypeId', params.productTypeId);
+
+    const queryString = query.toString();
+    const url = queryString ? `/menu/best-sellers?${queryString}` : '/menu/best-sellers';
+    const response = await api.get(url);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch best selling products', response.status, errorData);
+    }
+    const data: IBestSellerProduct[] = (await response.json()) || [];
     return data;
 };

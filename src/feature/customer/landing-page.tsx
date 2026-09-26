@@ -1,10 +1,22 @@
 import { Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import { Coffee, ArrowRight, Star, Heart, ShieldCheck, Flame } from 'lucide-react';
 import { buttonVariants } from '#/components/ui/button.tsx';
 import { useStoreSettings } from '#/hooks/use-store-settings.ts';
+import { getBestSellingProducts } from '#/api/menu.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
+import type { IBestSellerProduct } from '#/feature/menu/menu.types.ts';
+import { Skeleton } from '#/components/ui/skeleton.tsx';
+import ProductCard from './components/product-card.tsx';
 
 export default function LandingPage() {
     const { storeName } = useStoreSettings();
+
+    // Query top best-selling products from the public menu API
+    const { data: bestSellers = [], isLoading: isBestSellersLoading } = useQuery<IBestSellerProduct[]>({
+        queryKey: [QUERY_KEY.MENU.BEST_SELLERS],
+        queryFn: () => getBestSellingProducts({ limit: 8 })
+    });
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -53,6 +65,79 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Best Sellers Section */}
+            {(isBestSellersLoading || bestSellers.length > 0) && (
+                <section className="py-20 bg-muted/20 border-b border-border/40">
+                    <div className="container mx-auto px-4">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-inset ring-amber-500/20 mb-3">
+                                    <Flame className="size-3.5 fill-amber-500 text-amber-500" />
+                                    <span>Community Favorites</span>
+                                </div>
+                                <h2 className="text-3xl md:text-4xl font-extrabold text-foreground">Best Selling Items</h2>
+                                <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-xl">
+                                    Handcrafted with precision. Discover our top-selling drinks and treats ordered most by our coffee lovers.
+                                </p>
+                            </div>
+                            <Link
+                                to="/products"
+                                className={buttonVariants({
+                                    variant: 'outline',
+                                    size: 'sm',
+                                    className: 'self-start md:self-auto gap-2 group'
+                                })}
+                            >
+                                <span>View Full Menu</span>
+                                <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                        </div>
+
+                        {isBestSellersLoading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={i} className="flex flex-col rounded-2xl border border-border/40 bg-card p-4 space-y-3">
+                                        <Skeleton className="aspect-square w-full rounded-xl" />
+                                        <Skeleton className="h-4 w-1/4" />
+                                        <Skeleton className="h-5 w-3/4" />
+                                        <Skeleton className="h-4 w-full" />
+                                        <div className="pt-4 border-t border-border/30 flex justify-between items-center">
+                                            <Skeleton className="h-5 w-20" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {bestSellers.map((product, index) => {
+                                    const badgeText =
+                                        index === 0
+                                            ? '#1 Best Seller'
+                                            : index === 1
+                                              ? '#2 Best Seller'
+                                              : index === 2
+                                                ? '#3 Best Seller'
+                                                : 'Best Seller';
+
+                                    return (
+                                        <ProductCard
+                                            key={product.id}
+                                            product={product}
+                                            badge={
+                                                <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-amber-500 text-stone-950 font-bold px-2 py-0.5 text-xs shadow-xs">
+                                                    <Flame className="size-3.5 fill-stone-950" />
+                                                    {badgeText}
+                                                </span>
+                                            }
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
 
             {/* Core Values / Features Grid */}
             <section className="py-20 bg-background">

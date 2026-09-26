@@ -18,7 +18,9 @@ import {
     Package,
     CheckSquare,
     Square,
-    CheckCircle
+    CheckCircle,
+    FileCheck,
+    RotateCcw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -152,7 +154,7 @@ export default function PurchaseOrdersPage() {
 
     // Mutation: Update PO Status
     const updateStatusMutation = useMutation({
-        mutationFn: ({ id, status: poStatus }: { id: string; status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED' }) =>
+        mutationFn: ({ id, status: poStatus }: { id: string; status: 'DRAFT' | 'FINAL_DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED' }) =>
             updatePurchaseOrderStatus(id, poStatus),
         onSuccess: (updatedPO) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
@@ -285,8 +287,12 @@ export default function PurchaseOrdersPage() {
         switch (poStatus) {
             case 'DRAFT':
                 return 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800';
+            case 'FINAL_DRAFT':
+                return 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/40';
             case 'SENT':
                 return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/40';
+            case 'PARTIALLY_RECEIVED':
+                return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40';
             case 'RECEIVED':
                 return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
             case 'CANCELLED':
@@ -313,7 +319,7 @@ export default function PurchaseOrdersPage() {
                 header: 'Status',
                 cell: ({ row }) => (
                     <Badge variant="outline" className={`text-xs font-semibold py-0.5 px-2 capitalize ${getStatusBadgeClass(row.original.status)}`}>
-                        {row.original.status.toLowerCase()}
+                        {row.original.status.toLowerCase().replace('_', ' ')}
                     </Badge>
                 )
             },
@@ -322,7 +328,7 @@ export default function PurchaseOrdersPage() {
                 header: 'Total Amount',
                 cell: ({ row }) => {
                     const po = row.original;
-                    if (po.status === 'DRAFT' || po.status === 'SENT' || po.totalAmount === 0) {
+                    if (po.status === 'DRAFT' || po.status === 'FINAL_DRAFT' || po.status === 'SENT' || po.totalAmount === 0) {
                         return (
                             <Badge variant="outline" className="text-xs font-semibold text-muted-foreground border-dashed bg-muted/20">
                                 Calculated upon delivery
@@ -383,8 +389,8 @@ export default function PurchaseOrdersPage() {
                                     <TooltipContent side="top">Inspect Details</TooltipContent>
                                 </Tooltip>
 
-                                {/* Mark as Received / Complete (SENT only) */}
-                                {po.status === 'SENT' && (
+                                {/* Mark as Received / Receive Delivery (SENT or PARTIALLY_RECEIVED) */}
+                                {(po.status === 'SENT' || po.status === 'PARTIALLY_RECEIVED') && (
                                     <RequirePermission module="Purchase Orders Management" action="update">
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -398,36 +404,61 @@ export default function PurchaseOrdersPage() {
                                                     }}
                                                 >
                                                     <CheckCircle className="size-4" />
-                                                    <span className="sr-only">Mark as Received</span>
+                                                    <span className="sr-only">Receive Delivery</span>
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent side="top">Mark as Received</TooltipContent>
+                                            <TooltipContent side="top">Receive Delivery</TooltipContent>
                                         </Tooltip>
                                     </RequirePermission>
                                 )}
 
-                                {/* Edit PO (DRAFT only) */}
+                                {/* Mark as Final Draft (DRAFT only) */}
                                 {po.status === 'DRAFT' && (
                                     <RequirePermission module="Purchase Orders Management" action="update">
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                                    onClick={() => setEditingPOId(po.id)}
-                                                >
-                                                    <Pencil className="size-4 animate-in duration-100" />
-                                                    <span className="sr-only">Edit PO</span>
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="top">Edit Draft PO</TooltipContent>
-                                        </Tooltip>
+                                        <AlertDialog>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                                            disabled={updateStatusMutation.isPending}
+                                                        >
+                                                            <FileCheck className="size-4" />
+                                                            <span className="sr-only">Mark as Final Draft</span>
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top">Mark as Final Draft</TooltipContent>
+                                            </Tooltip>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-bold text-foreground">
+                                                        Mark Purchase Order as Final Draft
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to mark purchase order{' '}
+                                                        <strong className="font-mono text-foreground">{po.poNumber}</strong> as Final Draft? This
+                                                        marks the order as reviewed and ready to send to the supplier.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        className="h-9 bg-primary text-primary-foreground hover:bg-primary/95"
+                                                        onClick={() => updateStatusMutation.mutate({ id: po.id, status: 'FINAL_DRAFT' })}
+                                                    >
+                                                        Mark as Final Draft
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </RequirePermission>
                                 )}
 
-                                {/* Mark as Sent (DRAFT only) */}
-                                {po.status === 'DRAFT' && (
+                                {/* Mark as Sent (FINAL_DRAFT only) */}
+                                {po.status === 'FINAL_DRAFT' && (
                                     <RequirePermission module="Purchase Orders Management" action="update">
                                         <AlertDialog>
                                             <Tooltip>
@@ -471,8 +502,75 @@ export default function PurchaseOrdersPage() {
                                     </RequirePermission>
                                 )}
 
-                                {/* Cancel PO (DRAFT or SENT) */}
-                                {(po.status === 'DRAFT' || po.status === 'SENT') && (
+                                {/* Revert to Draft (FINAL_DRAFT only) */}
+                                {po.status === 'FINAL_DRAFT' && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <AlertDialog>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                                            disabled={updateStatusMutation.isPending}
+                                                        >
+                                                            <RotateCcw className="size-4" />
+                                                            <span className="sr-only">Revert to Draft</span>
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top">Revert to Draft</TooltipContent>
+                                            </Tooltip>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-bold text-foreground">
+                                                        Revert Purchase Order to Draft
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to revert purchase order{' '}
+                                                        <strong className="font-mono text-foreground">{po.poNumber}</strong> back to Draft status for
+                                                        revisions?
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        className="h-9"
+                                                        onClick={() => updateStatusMutation.mutate({ id: po.id, status: 'DRAFT' })}
+                                                    >
+                                                        Revert to Draft
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </RequirePermission>
+                                )}
+
+                                {/* Edit PO (DRAFT or FINAL_DRAFT) */}
+                                {(po.status === 'DRAFT' || po.status === 'FINAL_DRAFT') && (
+                                    <RequirePermission module="Purchase Orders Management" action="update">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                                    onClick={() => setEditingPOId(po.id)}
+                                                >
+                                                    <Pencil className="size-4 animate-in duration-100" />
+                                                    <span className="sr-only">Edit PO</span>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">
+                                                {po.status === 'FINAL_DRAFT' ? 'Edit Final Draft PO' : 'Edit Draft PO'}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </RequirePermission>
+                                )}
+
+                                {/* Cancel PO (DRAFT, FINAL_DRAFT, or SENT) */}
+                                {(po.status === 'DRAFT' || po.status === 'FINAL_DRAFT' || po.status === 'SENT') && (
                                     <RequirePermission module="Purchase Orders Management" action="update">
                                         <AlertDialog>
                                             <Tooltip>
@@ -582,8 +680,14 @@ export default function PurchaseOrdersPage() {
                                     <SelectItem value="DRAFT" className="text-xs">
                                         Draft
                                     </SelectItem>
+                                    <SelectItem value="FINAL_DRAFT" className="text-xs">
+                                        Final Draft
+                                    </SelectItem>
                                     <SelectItem value="SENT" className="text-xs">
                                         Sent
+                                    </SelectItem>
+                                    <SelectItem value="PARTIALLY_RECEIVED" className="text-xs">
+                                        Partially Received
                                     </SelectItem>
                                     <SelectItem value="RECEIVED" className="text-xs">
                                         Received

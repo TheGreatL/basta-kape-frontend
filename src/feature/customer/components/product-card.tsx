@@ -4,9 +4,10 @@ import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 
 interface ProductCardProps {
     product: IMenuProduct;
+    badge?: React.ReactNode;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, badge }: ProductCardProps) {
     // Calculate price range
     const prices = product.variants.map((v: IMenuProductVariant) => v.price);
     const minPrice = prices.length ? Math.min(...prices) : 0;
@@ -32,6 +33,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         {product.type.name}
                     </span>
                 )}
+                {badge}
             </div>
 
             {/* Content */}

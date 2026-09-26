@@ -16,10 +16,38 @@ export interface IPurchaseOrderItem {
     };
 }
 
+export interface IPurchaseOrderBatch {
+    id: string;
+    ingredientId: string;
+    supplierId?: string | null;
+    quantityReceived: number;
+    currentQuantity: number;
+    unitCost: number;
+    totalCost: number;
+    batchNumber: string | null;
+    expiryDate: string | null;
+    receivedAt: string;
+    ingredient?: {
+        id: string;
+        name: string;
+        defaultUnit?: {
+            id?: string;
+            name: string;
+            abbreviation: string;
+        };
+    };
+    createdBy?: {
+        id: string;
+        username: string;
+        firstName: string;
+        lastName: string;
+    };
+}
+
 export interface IPurchaseOrder {
     id: string;
     poNumber: string;
-    status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED';
+    status: 'DRAFT' | 'FINAL_DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
     notes: string | null;
     totalAmount: number;
     supplierId: string;
@@ -36,6 +64,7 @@ export interface IPurchaseOrder {
     receivedAt: string | null;
     createdAt: string;
     items?: IPurchaseOrderItem[];
+    batches?: IPurchaseOrderBatch[];
     _count?: {
         items: number;
     };
@@ -105,16 +134,21 @@ export const createPurchaseOrder = async (data: {
 };
 
 export interface IUpdatePurchaseOrderStatusPayload {
-    status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED';
+    status: 'DRAFT' | 'FINAL_DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED';
+    closeOrder?: boolean;
+    deliveryBatchNumber?: string | null;
     items?: Array<{
         ingredientId: string;
-        unitCost: number;
+        quantityReceived?: number;
+        unitCost?: number;
+        batchNumber?: string | null;
+        expiryDate?: string | null;
     }>;
 }
 
 export const updatePurchaseOrderStatus = async (
     id: string,
-    data: IUpdatePurchaseOrderStatusPayload | 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED'
+    data: IUpdatePurchaseOrderStatusPayload | 'DRAFT' | 'FINAL_DRAFT' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
 ): Promise<IPurchaseOrder> => {
     const payload = typeof data === 'string' ? { status: data } : data;
     const response = await api.patch(`/purchase-orders/${id}/status`, payload);
