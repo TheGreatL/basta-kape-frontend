@@ -41,16 +41,23 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
 
     // Query: PO Details
     const { data: poDetails, isLoading: isDetailsLoading } = useQuery({
-        queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, 'edit-dialog', poId],
+        queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, poId],
         queryFn: () => getPurchaseOrderById(poId!),
         enabled: open && !!poId
     });
 
-    // Query: Supplier Ingredients for selected supplier
-    const { data: supplierIngredients, isLoading: isSupplierIngredientsLoading } = useQuery({
-        queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIER_INGREDIENTS, supplierId],
-        queryFn: () => getSupplierIngredients(supplierId),
-        enabled: !!supplierId
+    const activeSupplierId = supplierId || poDetails?.supplierId || '';
+
+    // Query: Supplier Ingredients for selected/active supplier
+    const {
+        data: supplierIngredients,
+        isLoading: isSupplierIngredientsLoading,
+        isFetched: isSupplierIngredientsFetched,
+        isError: isSupplierIngredientsError
+    } = useQuery({
+        queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIER_INGREDIENTS, activeSupplierId],
+        queryFn: () => getSupplierIngredients(activeSupplierId),
+        enabled: open && !!activeSupplierId
     });
 
     // Queries: Active ingredients list for general lookup and fallback
@@ -59,34 +66,6 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         queryFn: () => getIngredients({ page: 1, limit: 100, status: 'active' })
     });
     const ingredients = ingredientsData?.data || [];
-
-    // Initialize/sync form with PO Details and supplier ingredients
-    React.useEffect(() => {
-        if (poDetails && supplierIngredients !== undefined && !isInitialized) {
-            setSupplierId(poDetails.supplierId);
-            setNotes(poDetails.notes || '');
-
-            const supplierIngIdSet = new Set(supplierIngredients.map((si) => si.ingredientId));
-            const initialSupplierItems: ICreateItemInput[] = [];
-            const initialExtraItems: ICreateItemInput[] = [];
-
-            (poDetails.items || []).forEach((item) => {
-                const entry: ICreateItemInput = {
-                    ingredientId: item.ingredientId,
-                    quantity: item.quantity
-                };
-                if (supplierIngIdSet.has(item.ingredientId)) {
-                    initialSupplierItems.push(entry);
-                } else {
-                    initialExtraItems.push(entry);
-                }
-            });
-
-            setSupplierItems(initialSupplierItems);
-            setExtraItems(initialExtraItems);
-            setIsInitialized(true);
-        }
-    }, [poDetails, supplierIngredients, isInitialized]);
 
     // Reset form states on close
     React.useEffect(() => {
@@ -98,6 +77,44 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
             setIsInitialized(false);
         }
     }, [open]);
+
+    React.useEffect(() => {
+        setIsInitialized(false);
+    }, [poId]);
+
+    // Initialize/sync form with PO Details and supplier ingredients
+    React.useEffect(() => {
+        if (!open || !poDetails || isInitialized) return;
+
+        // If PO has a supplierId, wait until supplierIngredients query finishes (fetched or error)
+        if (poDetails.supplierId && !isSupplierIngredientsFetched && !isSupplierIngredientsError && isSupplierIngredientsLoading) {
+            return;
+        }
+
+        setSupplierId(poDetails.supplierId);
+        setNotes(poDetails.notes || '');
+
+        const currentSupplierIngredients = supplierIngredients || [];
+        const supplierIngIdSet = new Set(currentSupplierIngredients.map((si) => si.ingredientId));
+        const initialSupplierItems: ICreateItemInput[] = [];
+        const initialExtraItems: ICreateItemInput[] = [];
+
+        (poDetails.items || []).forEach((item) => {
+            const entry: ICreateItemInput = {
+                ingredientId: item.ingredientId,
+                quantity: item.quantity
+            };
+            if (supplierIngIdSet.has(item.ingredientId)) {
+                initialSupplierItems.push(entry);
+            } else {
+                initialExtraItems.push(entry);
+            }
+        });
+
+        setSupplierItems(initialSupplierItems);
+        setExtraItems(initialExtraItems);
+        setIsInitialized(true);
+    }, [open, poDetails, supplierIngredients, isSupplierIngredientsFetched, isSupplierIngredientsError, isSupplierIngredientsLoading, isInitialized]);
 
     // Mutation: Update PO
     const updatePOMutation = useMutation({
@@ -214,7 +231,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         });
     };
 
-    const isFormLoading = isDetailsLoading || (!isInitialized && !!poDetails?.supplierId && isSupplierIngredientsLoading);
+    const isFormLoading = isDetailsLoading || (!isInitialized && !!activeSupplierId && isSupplierIngredientsLoading);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -257,6 +274,11 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                 onChange={(val) => handleSupplierChange(val || '')}
                                 getOptionValue={(item) => item.id}
                                 getOptionLabel={(item) => `${item.name}`}
+                                selectedItem={
+                                    poDetails?.supplier
+                                        ? ({ id: poDetails.supplierId, name: poDetails.supplier.name } as ISupplierListItem)
+                                        : undefined
+                                }
                                 placeholder="Select Supplier"
                                 searchPlaceholder="Search suppliers..."
                                 className="h-9 text-xs bg-background/50"
@@ -404,8 +426,18 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                             {extraItems.length > 0 && (
                                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                                     {extraItems.map((item, index) => {
-                                        const selectedIng = ingredients.find((i: IIngredient) => i.id === item.ingredientId);
-                                        const unitAbbrev = selectedIng?.defaultUnit?.abbreviation || '';
+                                        const originalItem = poDetails?.items?.find((p) => p.ingredientId === item.ingredientId);
+                                        const selectedIng =
+                                            ingredients.find((i: IIngredient) => i.id === item.ingredientId) ||
+                                            (originalItem?.ingredient
+                                                ? ({
+                                                      id: item.ingredientId,
+                                                      name: originalItem.ingredient.name,
+                                                      defaultUnit: originalItem.ingredient.defaultUnit
+                                                  } as unknown as IIngredient)
+                                                : undefined);
+                                        const unitAbbrev =
+                                            selectedIng?.defaultUnit?.abbreviation || originalItem?.ingredient.defaultUnit?.abbreviation || '';
 
                                         return (
                                             <div key={index} className="flex items-end gap-2.5 p-2.5 border border-border/40 rounded-xl bg-muted/20">
@@ -429,7 +461,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                         onChange={(val) => handleExtraItemChange(index, 'ingredientId', val || '')}
                                                         getOptionValue={(i) => i.id}
                                                         getOptionLabel={(i) => `${i.name}`}
-                                                        selectedItem={ingredients.find((i) => i.id === item.ingredientId)}
+                                                        selectedItem={selectedIng}
                                                         placeholder="Select Ingredient"
                                                         searchPlaceholder="Search ingredients..."
                                                         className="h-8 text-xs bg-background/50"
