@@ -118,6 +118,12 @@ export interface IDelivery {
     id: string;
     ingredientId: string;
     supplierId: string | null;
+    purchaseOrderId?: string | null;
+    purchaseOrder?: {
+        id: string;
+        poNumber: string;
+        status?: string;
+    } | null;
     quantityReceived: number;
     currentQuantity: number;
     unitCost: number;
@@ -149,6 +155,7 @@ export interface IGetDeliveriesParams extends IPaginationParams {
 export interface ICreateDeliveryPayload {
     ingredientId: string;
     supplierId?: string | null;
+    purchaseOrderId?: string | null;
     quantityReceived: number;
     unitCost: number;
     batchNumber?: string;
@@ -159,6 +166,7 @@ export interface ICreateDeliveryPayload {
 
 export interface IUpdateDeliveryPayload {
     supplierId?: string | null;
+    purchaseOrderId?: string | null;
     quantityReceived?: number;
     unitCost?: number;
     batchNumber?: string;

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ArrowLeftRight, Plus, Calendar as CalendarIcon, Pencil, Eye, RotateCcw, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeftRight, Plus, Calendar as CalendarIcon, Pencil, Eye, RotateCcw, X, AlertTriangle, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
@@ -145,6 +145,32 @@ export default function InventoryTransactionPage() {
                 accessorKey: 'supplier.name',
                 header: 'Supplier',
                 cell: ({ row }) => <span className="text-xs text-muted-foreground font-medium">{row.original.supplier?.name || '—'}</span>
+            },
+            {
+                accessorKey: 'purchaseOrder.poNumber',
+                header: 'Source PO',
+                cell: ({ row }) => {
+                    const po = row.original.purchaseOrder;
+                    if (!po) {
+                        return <span className="text-xs text-muted-foreground italic">Manual / Direct</span>;
+                    }
+                    return (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate({
+                                    to: '/admin/purchase-orders' as any,
+                                    search: { search: po.poNumber } as any
+                                })
+                            }
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                            title={`View Purchase Order ${po.poNumber}`}
+                        >
+                            <FileText className="size-3" />
+                            {po.poNumber}
+                        </button>
+                    );
+                }
             },
             {
                 accessorKey: 'batchNumber',
@@ -299,7 +325,7 @@ export default function InventoryTransactionPage() {
                         <div className="flex flex-wrap items-center gap-2.5 w-full">
                             {/* Search Input */}
                             <Input
-                                placeholder="Search ingredient, batch #, supplier..."
+                                placeholder="Search ingredient, batch #, PO #, supplier..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
                                 className="h-9 w-full sm:w-[220px] bg-background/50 text-xs"

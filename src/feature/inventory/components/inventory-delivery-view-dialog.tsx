@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
-import { Truck, Calendar, User, PackageCheck, AlertTriangle, ShieldCheck, DollarSign, Tag, Sliders } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { Truck, Calendar, User, PackageCheck, AlertTriangle, ShieldCheck, DollarSign, Tag, Sliders, FileText, ExternalLink } from 'lucide-react';
 
 import type { IDelivery } from '../inventory.types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -15,6 +16,7 @@ interface DeliveryViewDialogProps {
 }
 
 export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdit, onAdjustStock }: DeliveryViewDialogProps) {
+    const navigate = useNavigate();
     if (!delivery) return null;
 
     const unitStr = delivery.ingredient?.defaultUnit
@@ -63,6 +65,48 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                             <span className="font-semibold text-foreground">{delivery.supplier?.name || 'Unassigned / Direct Purchase'}</span>
                         </div>
                     </div>
+
+                    {/* Linked Purchase Order Card */}
+                    {delivery.purchaseOrder ? (
+                        <div className="rounded-lg border bg-card p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                    <FileText className="size-3.5 text-primary" /> Originating Purchase Order
+                                </span>
+                                {delivery.purchaseOrder.status && (
+                                    <Badge variant="outline" className="text-xs font-semibold uppercase">
+                                        {delivery.purchaseOrder.status}
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="flex items-center justify-between pt-0.5">
+                                <span className="font-mono text-sm font-bold text-foreground">{delivery.purchaseOrder.poNumber}</span>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 text-xs gap-1 text-primary hover:text-primary/80 font-medium"
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate({
+                                            to: '/admin/purchase-orders' as any,
+                                            search: { search: delivery.purchaseOrder?.poNumber } as any
+                                        });
+                                    }}
+                                >
+                                    View PO
+                                    <ExternalLink className="size-3" />
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="rounded-lg border bg-muted/20 px-3 py-2 flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                <FileText className="size-3.5 text-muted-foreground" /> Source
+                            </span>
+                            <span className="text-xs text-muted-foreground italic">Direct / Manual Stock Entry</span>
+                        </div>
+                    )}
 
                     {/* Stock Metrics Grid */}
                     <div className="grid grid-cols-2 gap-3">

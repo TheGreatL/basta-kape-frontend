@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { CalendarIcon, Truck, Edit } from 'lucide-react';
+import { CalendarIcon, Truck, Edit, FileText } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 
 import { createDelivery, updateDelivery, getIngredients } from '#/api/inventory.api.ts';
@@ -179,6 +179,18 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                 </div>
                             ) : (
                                 <>
+                                    {isEditMode && deliveryToEdit?.purchaseOrder && (
+                                        <div className="flex items-center gap-2 p-2.5 rounded-lg border bg-muted/40 text-xs">
+                                            <FileText className="size-4 text-primary shrink-0" />
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <span className="text-muted-foreground">Source Purchase Order:</span>
+                                                <span className="font-mono font-semibold text-foreground">
+                                                    {deliveryToEdit.purchaseOrder.poNumber}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <FormField
                                         control={form.control}
                                         name="ingredientId"
