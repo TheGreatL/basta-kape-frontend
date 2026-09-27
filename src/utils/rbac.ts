@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router';
 import type { User, useAuth } from '../context/AuthContext';
-import { appModules, appPermissions   } from '../constants/rbac';
-import type {TAppModule, TAppPermission} from '../constants/rbac';
+import { appModules, appPermissions } from '../constants/rbac';
+import type { TAppModule, TAppPermission } from '../constants/rbac';
 
 export type Permission = {
     module: string;
