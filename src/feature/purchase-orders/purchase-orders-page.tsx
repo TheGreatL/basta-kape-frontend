@@ -170,20 +170,26 @@ export default function PurchaseOrdersPage() {
                 accessorKey: 'createdAt',
                 header: 'Date Created',
                 cell: ({ row }) => (
-                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
+                    <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
                         <Calendar className="size-3.5" />
-                        {format(new Date(row.original.createdAt), 'MMM dd, yyyy • hh:mm a')}
-                    </span>
+                        <div className="flex flex-col gap-1 ">
+                            <span>{format(new Date(row.original.createdAt), 'MMM dd, yyyy hh:mm a')}</span>
+                            <span>{format(new Date(row.original.createdAt), 'hh:mm a')}</span>
+                        </div>
+                    </div>
                 )
             },
             {
                 accessorKey: 'createdBy',
                 header: 'Created By',
                 cell: ({ row }) => (
-                    <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                         <User className="size-3 text-muted-foreground" />
-                        {`${row.original.createdBy.firstName} ${row.original.createdBy.lastName}`}
-                    </span>
+                        <div className="flex flex-col gap-1">
+                            <span>{row.original.createdBy.firstName}</span>
+                            <span>{row.original.createdBy.lastName}</span>
+                        </div>
+                    </div>
                 )
             },
             {
