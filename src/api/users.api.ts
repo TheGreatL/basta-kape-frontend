@@ -90,3 +90,12 @@ export const restoreUser = async (id: string): Promise<IUserListItem> => {
     }
     return response.json();
 };
+
+export const adminResetUserPassword = async (id: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.patch(`/users/${id}/reset-password`, { newPassword });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to reset user password', response.status, errorData);
+    }
+    return response.json();
+};

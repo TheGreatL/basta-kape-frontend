@@ -68,6 +68,15 @@ export const deleteCustomer = async (id: string): Promise<{ message: string }> =
     return response.json();
 };
 
+export const adminResetCustomerPassword = async (id: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.patch(`/customers/${id}/reset-password`, { newPassword });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to reset customer password', response.status, errorData);
+    }
+    return response.json();
+};
+
 // ==========================================
 // CART OPERATIONS ENDPOINTS
 // ==========================================

@@ -2,10 +2,10 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Users, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { getUsersList } from '#/api/users.api.ts';
+import { getUsersList, adminResetUserPassword } from '#/api/users.api.ts';
 import { getRolesList } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IUserListItem } from './users.types';
@@ -14,6 +14,7 @@ import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Avatar, AvatarImage, AvatarFallback } from '#/components/ui/avatar.tsx';
 import { Button } from '#/components/ui/button.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
@@ -22,6 +23,8 @@ import UserDeleteDialog from './components/user-delete-dialog.tsx';
 import { getFileUrl } from '#/utils/helper.ts';
 import UserRestoreDialog from './components/user-restore-dialog.tsx';
 import { useAuth } from '#/context/AuthContext.tsx';
+import { AdminResetPasswordDialog } from '#/components/admin/admin-reset-password-dialog.tsx';
+import type { AdminResetPasswordTarget } from '#/components/admin/admin-reset-password-dialog.tsx';
 
 interface IUserSearchSchema {
     page: number;
@@ -61,6 +64,10 @@ export default function UsersPage() {
     const [userToDelete, setUserToDelete] = React.useState<IUserListItem | null>(null);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
 
+    // Reset Password states
+    const [userToResetPassword, setUserToResetPassword] = React.useState<AdminResetPasswordTarget | null>(null);
+    const [isResetPasswordOpen, setIsResetPasswordOpen] = React.useState(false);
+
     // 1. Fetch Users List
     const { data: usersData, isLoading: isUsersLoading } = useQuery({
         queryKey: [QUERY_KEY.USERS.USERS_LIST, { page, pageSize, search, status, role }],
@@ -91,6 +98,17 @@ export default function UsersPage() {
         setIsDeleteOpen(true);
     };
 
+    const handleOpenResetPassword = (user: IUserListItem) => {
+        setUserToResetPassword({
+            id: user.id,
+            name: `${user.firstName} ${user.lastName}`,
+            username: user.username,
+            email: user.email,
+            type: 'user'
+        });
+        setIsResetPasswordOpen(true);
+    };
+
     // Table Columns definition
     const columns = React.useMemo<ColumnDef<IUserListItem>[]>(
         () => [
@@ -105,13 +123,14 @@ export default function UsersPage() {
                                 <AvatarImage src={getFileUrl(row.original.profilePhoto || undefined)} className="object-cover" />
                                 <AvatarFallback className="font-semibold text-xs bg-primary/10 text-primary">{initials || 'US'}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-foreground/90 leading-tight">
+                            <div className="flex flex-col min-w-0">
+                                <span className="font-semibold text-foreground/90 leading-tight truncate">
                                     {row.original.firstName} {row.original.lastName}
                                 </span>
-                                <span className="text-xs text-muted-foreground font-medium">
-                                    @{row.original.username} • {row.original.email}
-                                </span>
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs text-muted-foreground font-medium truncate">{row.original.username}</span>
+                                    <span className="text-xs text-muted-foreground font-medium truncate">{row.original.email}</span>
+                                </div>
                             </div>
                         </div>
                     );
@@ -149,6 +168,25 @@ export default function UsersPage() {
                 cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(new Date(row.original.createdAt), 'MMM d, yyyy')}</span>
             },
             {
+                id: 'status',
+                header: 'Account Status',
+                cell: ({ row }) => {
+                    const isArchived = !!row.original.deletedAt;
+                    return (
+                        <Badge
+                            variant="outline"
+                            className={`text-xs font-semibold capitalize bg-background py-0.5 px-2 ${
+                                isArchived
+                                    ? 'text-destructive border-destructive/20 bg-destructive/5'
+                                    : 'text-emerald-600 border-emerald-500/20 bg-emerald-50/20'
+                            }`}
+                        >
+                            {isArchived ? 'Archived' : 'Active'}
+                        </Badge>
+                    );
+                }
+            },
+            {
                 id: 'actions',
                 header: 'Actions',
                 cell: ({ row }) => (
@@ -161,7 +199,7 @@ export default function UsersPage() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors"
+                                        className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenView(row.original)}
                                     >
                                         <Eye className="size-4" />
@@ -169,24 +207,38 @@ export default function UsersPage() {
                                     </Button>
                                 </RequirePermission>
                                 {row.original.role?.name.toLowerCase() === 'customer' ? null : (
-                                    <RequirePermission module="Users Management" action="update">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                            onClick={() => handleOpenEdit(row.original)}
-                                        >
-                                            <Edit className="size-4" />
-                                            <span className="sr-only">Edit User</span>
-                                        </Button>
-                                    </RequirePermission>
+                                    <>
+                                        <RequirePermission module="Users Management" action="update">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-8 text-muted-foreground"
+                                                onClick={() => handleOpenEdit(row.original)}
+                                            >
+                                                <Edit className="size-4" />
+                                                <span className="sr-only">Edit User</span>
+                                            </Button>
+                                        </RequirePermission>
+                                        <RequirePermission module="Users Management" action="update">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-8 text-muted-foreground"
+                                                onClick={() => handleOpenResetPassword(row.original)}
+                                                title="Reset Password"
+                                            >
+                                                <KeyRound className="size-4" />
+                                                <span className="sr-only">Reset Password</span>
+                                            </Button>
+                                        </RequirePermission>
+                                    </>
                                 )}
                                 {auth.user?.id === row.original.id ? null : (
                                     <RequirePermission module="Users Management" action="delete">
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                            className="size-8 text-muted-foreground"
                                             onClick={() => handleOpenDelete(row.original)}
                                         >
                                             <Trash2 className="size-4" />
@@ -276,6 +328,14 @@ export default function UsersPage() {
 
             {/* DELETE CONFIRMATION DIALOG */}
             <UserDeleteDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen} user={userToDelete} />
+
+            {/* RESET PASSWORD DIALOG */}
+            <AdminResetPasswordDialog
+                open={isResetPasswordOpen}
+                onOpenChange={setIsResetPasswordOpen}
+                target={userToResetPassword}
+                onResetPassword={adminResetUserPassword}
+            />
         </div>
     );
 }

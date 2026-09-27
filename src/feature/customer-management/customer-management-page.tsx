@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Users, Calendar, Phone, RotateCcw } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Users, Calendar, Phone, RotateCcw, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -18,10 +18,12 @@ import {
     AlertDialogTrigger
 } from '#/components/ui/alert-dialog.tsx';
 
-import { getCustomers, restoreCustomer } from '#/api/customer.api.ts';
+import { getCustomers, restoreCustomer, adminResetCustomerPassword } from '#/api/customer.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ICustomerResponse } from '#/feature/customer/customer.types.ts';
+import { AdminResetPasswordDialog } from '#/components/admin/admin-reset-password-dialog.tsx';
+import type { AdminResetPasswordTarget } from '#/components/admin/admin-reset-password-dialog.tsx';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -75,6 +77,10 @@ export default function CustomerManagementPage() {
     const [customerToDelete, setCustomerToDelete] = React.useState<ICustomerResponse | null>(null);
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
 
+    // Reset Password states
+    const [customerToResetPassword, setCustomerToResetPassword] = React.useState<AdminResetPasswordTarget | null>(null);
+    const [isResetPasswordOpen, setIsResetPasswordOpen] = React.useState(false);
+
     // 1. Fetch Customers List
     const { data: customersData, isLoading: isCustomersLoading } = useQuery({
         queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST, { page, pageSize, search, status }],
@@ -104,6 +110,17 @@ export default function CustomerManagementPage() {
         setIsDeleteOpen(true);
     };
 
+    const handleOpenResetPassword = (customer: ICustomerResponse) => {
+        setCustomerToResetPassword({
+            id: customer.id,
+            name: `${customer.user.firstName} ${customer.user.lastName}`,
+            username: customer.user.username,
+            email: customer.user.email,
+            type: 'customer'
+        });
+        setIsResetPasswordOpen(true);
+    };
+
     // Table Columns definition
     const columns = React.useMemo<ColumnDef<ICustomerResponse>[]>(
         () => [
@@ -124,9 +141,10 @@ export default function CustomerManagementPage() {
                                 <span className="font-semibold text-foreground/90 leading-tight truncate">
                                     {row.original.user.firstName} {row.original.user.lastName}
                                 </span>
-                                <span className="text-xs text-muted-foreground font-medium truncate">
-                                    @{row.original.user.username} • {row.original.user.email}
-                                </span>
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs text-muted-foreground font-medium truncate">{row.original.user.username}</span>
+                                    <span className="text-xs text-muted-foreground font-medium truncate">{row.original.user.email}</span>
+                                </div>
                             </div>
                         </div>
                     );
@@ -144,7 +162,7 @@ export default function CustomerManagementPage() {
             },
             {
                 accessorKey: 'createdAt',
-                header: 'Date Configured',
+                header: 'Date Added',
                 cell: ({ row }) => (
                     <span className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
                         <Calendar className="size-3.5 text-muted-foreground" />
@@ -179,7 +197,7 @@ export default function CustomerManagementPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors rounded-lg border border-transparent hover:bg-muted"
+                                            className="size-8 text-muted-foreground"
                                             title="Restore Profile"
                                             disabled={restoreMutation.isPending}
                                         >
@@ -220,7 +238,7 @@ export default function CustomerManagementPage() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg border border-transparent hover:bg-muted"
+                                        className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenView(row.original)}
                                         title="View Details & Cart"
                                     >
@@ -232,7 +250,7 @@ export default function CustomerManagementPage() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg border border-transparent hover:bg-muted"
+                                        className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenEdit(row.original)}
                                         title="Edit Profile"
                                     >
@@ -240,11 +258,23 @@ export default function CustomerManagementPage() {
                                         <span className="sr-only">Edit Customer</span>
                                     </Button>
                                 </RequirePermission>
+                                <RequirePermission module="Customers Management" action="update">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground"
+                                        onClick={() => handleOpenResetPassword(row.original)}
+                                        title="Reset Password"
+                                    >
+                                        <KeyRound className="size-4" />
+                                        <span className="sr-only">Reset Password</span>
+                                    </Button>
+                                </RequirePermission>
                                 <RequirePermission module="Customers Management" action="delete">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 text-muted-foreground hover:text-destructive transition-colors rounded-lg border border-transparent hover:bg-muted"
+                                        className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenDelete(row.original)}
                                         title="Archive Profile"
                                     >
@@ -325,6 +355,14 @@ export default function CustomerManagementPage() {
 
             {/* DELETE CONFIRMATION DIALOG */}
             {isDeleteOpen && customerToDelete && <CustomerDeleteDialog open={true} onOpenChange={setIsDeleteOpen} customer={customerToDelete} />}
+
+            {/* RESET PASSWORD DIALOG */}
+            <AdminResetPasswordDialog
+                open={isResetPasswordOpen}
+                onOpenChange={setIsResetPasswordOpen}
+                target={customerToResetPassword}
+                onResetPassword={adminResetCustomerPassword}
+            />
         </div>
     );
 }

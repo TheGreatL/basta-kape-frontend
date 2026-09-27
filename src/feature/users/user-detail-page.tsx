@@ -4,11 +4,11 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { User, Shield, Calendar, Mail, Phone, Hash, ArrowLeft } from 'lucide-react';
+import { User, Shield, Calendar, Mail, Phone, Hash, ArrowLeft, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { getRolesList } from '#/api/rbac.api.ts';
-import { getUserById, updateUser } from '#/api/users.api.ts';
+import { getUserById, updateUser, adminResetUserPassword } from '#/api/users.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { useAuth } from '#/context/AuthContext.tsx';
@@ -17,6 +17,7 @@ import { updateUserSchema } from './users.schema.ts';
 import type { TUpdateUserSchema } from './users.schema.ts';
 import type { IUpdateUserPayload } from './users.types.ts';
 import UserAvatarUpload from './components/user-avatar-upload.tsx';
+import { AdminResetPasswordDialog } from '#/components/admin/admin-reset-password-dialog.tsx';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -113,6 +114,8 @@ export default function UserDetailPage() {
         queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USER_DETAILS, slug] });
     };
 
+    const [isResetPasswordOpen, setIsResetPasswordOpen] = React.useState(false);
+
     return (
         <div className="flex flex-col gap-6 ">
             {/* Header / Back Link */}
@@ -126,18 +129,32 @@ export default function UserDetailPage() {
                     <ArrowLeft className="size-4" />
                     Back to Staff Directory
                 </Button>
-                <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <User className="h-5 w-5 text-primary" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+                            <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-foreground">{hasUpdatePermission ? 'Edit User Profile' : 'View User Profile'}</h1>
+                            <p className="text-xs text-muted-foreground">
+                                {hasUpdatePermission
+                                    ? 'Modify user profile specifications, credentials, profile photo, and security roles.'
+                                    : 'Overview of staff credentials, profile data, history records, and security roles.'}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">{hasUpdatePermission ? 'Edit User Profile' : 'View User Profile'}</h1>
-                        <p className="text-xs text-muted-foreground">
-                            {hasUpdatePermission
-                                ? 'Modify user profile specifications, credentials, profile photo, and security roles.'
-                                : 'Overview of staff credentials, profile data, history records, and security roles.'}
-                        </p>
-                    </div>
+                    {hasUpdatePermission && userDetails && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsResetPasswordOpen(true)}
+                            className="gap-1.5 self-start sm:self-auto h-9"
+                        >
+                            <KeyRound className="size-4 text-primary" />
+                            Reset Password
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -384,6 +401,21 @@ export default function UserDetailPage() {
                         </div>
                     </div>
                 )
+            )}
+
+            {userDetails && (
+                <AdminResetPasswordDialog
+                    open={isResetPasswordOpen}
+                    onOpenChange={setIsResetPasswordOpen}
+                    target={{
+                        id: userDetails.id,
+                        name: `${userDetails.firstName} ${userDetails.lastName}`,
+                        username: userDetails.username,
+                        email: userDetails.email,
+                        type: 'user'
+                    }}
+                    onResetPassword={adminResetUserPassword}
+                />
             )}
         </div>
     );
