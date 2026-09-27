@@ -170,15 +170,22 @@ export default function ProductEditPage() {
     React.useEffect(() => {
         if (productDetails) {
             setGridVariants(
-                productDetails.variants.map((v: IProductVariant) => ({
-                    id: v.id,
-                    tempId: v.id,
-                    sku: v.sku ?? null,
-                    price: v.price,
-                    attributeValueIds: v.attributes.map((a: IVariantAttribute) => a.productAttributeValueId),
-                    attributeValueLabels: v.attributes.map((a: IVariantAttribute) => a.attributeValue.value),
-                    recipeConfigured: !!v.recipe
-                }))
+                productDetails.variants.map((v: IProductVariant) => {
+                    const sortedAttrs = [...v.attributes].sort((a, b) => {
+                        const nameA = a.attributeValue.attribute.name;
+                        const nameB = b.attributeValue.attribute.name;
+                        return nameA.localeCompare(nameB);
+                    });
+                    return {
+                        id: v.id,
+                        tempId: v.id,
+                        sku: v.sku ?? null,
+                        price: v.price,
+                        attributeValueIds: sortedAttrs.map((a: IVariantAttribute) => a.productAttributeValueId),
+                        attributeValueLabels: sortedAttrs.map((a: IVariantAttribute) => a.attributeValue.value),
+                        recipeConfigured: !!v.recipe
+                    };
+                })
             );
 
             // Populate active attributes & selectedValuesMap for the matrix generator inputs
@@ -349,37 +356,64 @@ export default function ProductEditPage() {
             [[]]
         );
 
-        setGridVariants((prev) => {
-            const next = [...prev];
-            combinations.forEach((combo) => {
-                const sortedCombo = [...combo].sort((a, b) => a.id.localeCompare(b.id));
-                const attributeValueIds = sortedCombo.map((c) => c.id);
-                const attributeValueLabels = sortedCombo.map((c) => c.value);
+        // Build normalized keys for existing variants to check against
+        const existingKeys = new Set(gridVariants.map((v) => [...v.attributeValueIds].sort().join(':')));
 
-                const exists = next.some(
-                    (v) =>
-                        v.attributeValueIds.length === attributeValueIds.length &&
-                        v.attributeValueIds
-                            .slice()
-                            .sort()
-                            .every((val, index) => val === attributeValueIds[index])
-                );
+        const newVariants: IGridVariant[] = [];
+        let skippedCount = 0;
 
-                if (!exists) {
-                    next.push({
-                        tempId: crypto.randomUUID(),
-                        sku: null,
-                        price: defaultPrice,
-                        attributeValueIds,
-                        attributeValueLabels,
-                        recipeConfigured: false
-                    });
-                }
+        combinations.forEach((combo) => {
+            const attributeValueIds = combo.map((c) => c.id);
+            const attributeValueLabels = combo.map((c) => c.value);
+            const comboKey = [...attributeValueIds].sort().join(':');
+
+            if (existingKeys.has(comboKey)) {
+                skippedCount++;
+                return;
+            }
+
+            existingKeys.add(comboKey);
+            newVariants.push({
+                tempId: crypto.randomUUID(),
+                sku: null,
+                price: defaultPrice,
+                attributeValueIds,
+                attributeValueLabels,
+                recipeConfigured: false
             });
-            return next;
         });
 
-        toast.success('Combinations Generated', { description: 'Generated combinations matrix. Save changes to sync.' });
+        if (newVariants.length === 0) {
+            toast.info('No New Variants', {
+                description: `All ${skippedCount} combination(s) already exist in the variants list.`
+            });
+            return;
+        }
+
+        setGridVariants((prev) => {
+            const combined = [...prev, ...newVariants];
+            combined.sort((a, b) => {
+                const maxLen = Math.max(a.attributeValueLabels.length, b.attributeValueLabels.length);
+                for (let i = 0; i < maxLen; i++) {
+                    const labelA = a.attributeValueLabels[i] ?? '';
+                    const labelB = b.attributeValueLabels[i] ?? '';
+                    const cmp = labelA.localeCompare(labelB, undefined, { numeric: true });
+                    if (cmp !== 0) return cmp;
+                }
+                return 0;
+            });
+            return combined;
+        });
+
+        if (skippedCount > 0) {
+            toast.success('Combinations Generated', {
+                description: `Added ${newVariants.length} new variant(s). ${skippedCount} existing combination(s) were skipped.`
+            });
+        } else {
+            toast.success('Combinations Generated', {
+                description: `Added ${newVariants.length} new variant(s). Save changes to sync.`
+            });
+        }
     };
 
     const handleSaveLocalRecipe = (recipeValues: ILocalRecipe) => {
