@@ -212,12 +212,12 @@ export function AdminResetPasswordDialog({ open, onOpenChange, target, onResetPa
                                 {mutation.isPending ? (
                                     <>
                                         <Spinner className="h-4 w-4" />
-                                        Updating Password...
+                                        Resetting...
                                     </>
                                 ) : (
                                     <>
                                         <KeyRound className="size-4" />
-                                        Set New Password
+                                        Reset Password
                                     </>
                                 )}
                             </Button>

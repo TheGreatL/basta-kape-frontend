@@ -47,7 +47,9 @@ export default function ProductsPage() {
         mutationFn: restoreProduct,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST] });
-            toast.success('Product successfully restored');
+            toast.success('Product Restored', {
+                description: 'The product has been restored successfully.'
+            });
         },
         onError: (err) => {
             toast.error('Failed to restore product', {
@@ -265,7 +267,7 @@ export default function ProductsPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
                                                 <RotateCcw className="size-5 text-emerald-600" />
-                                                Restore Menu Product
+                                                Restore Product
                                             </AlertDialogTitle>
                                             <AlertDialogDescription>
                                                 Are you sure you want to restore the product <strong>"{row.original.name}"</strong>? This will restore
@@ -326,7 +328,7 @@ export default function ProductsPage() {
                         <Package className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Menu Products Directory</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Products</h1>
                         <p className="text-xs text-muted-foreground">
                             Configure coffee recipes, beverage profiles, customization options, and custom choices.
                         </p>

@@ -44,10 +44,12 @@ export default function SuppliersPage() {
         mutationFn: restoreSupplier,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST] });
-            toast.success('Supplier profile successfully restored');
+            toast.success('Supplier Restored', {
+                description: 'The supplier has been restored successfully.'
+            });
         },
         onError: (err) => {
-            toast.error('Failed to restore supplier profile', {
+            toast.error('Failed to restore supplier', {
                 description: getErrorMessage(err)
             });
         }
@@ -196,7 +198,7 @@ export default function SuppliersPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
                                                 <RotateCcw className="size-5 text-emerald-600" />
-                                                Restore Supplier Profile
+                                                Restore Supplier
                                             </AlertDialogTitle>
                                             <AlertDialogDescription>
                                                 Are you sure you want to restore the supplier profile for <strong>"{row.original.name}"</strong>? This

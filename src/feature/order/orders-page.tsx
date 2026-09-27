@@ -326,7 +326,7 @@ export default function OrdersPage() {
                         <ShoppingCart className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Orders Log Tracker</h1>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Orders</h1>
                         <p className="text-xs text-muted-foreground">
                             Audit trails and paginated history logs for registered cashier checkout sessions.
                         </p>

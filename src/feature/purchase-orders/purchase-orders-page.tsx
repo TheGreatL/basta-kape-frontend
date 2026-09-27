@@ -84,7 +84,7 @@ export default function PurchaseOrdersPage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] }); // Invalidate inventory stock levels
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, updatedPO.id] });
-            toast.success(`Purchase order status updated to ${updatedPO.status}`);
+            toast.success('Purchase Order Updated', { description: `Purchase order status updated to ${updatedPO.status}.` });
         },
         onError: (err) => {
             toast.error('Failed to update status', {

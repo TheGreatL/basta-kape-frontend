@@ -245,14 +245,26 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, updatedPO.id] });
             toast.success(
                 updatedPO.status === 'RECEIVED'
-                    ? 'Purchase order delivery received and completed!'
+                    ? 'Delivery Completed'
                     : updatedPO.status === 'FINAL_DRAFT'
-                      ? 'Purchase order marked as final draft.'
+                      ? 'Final Draft Marked'
                       : updatedPO.status === 'SENT'
-                        ? 'Purchase order marked as sent to supplier.'
+                        ? 'Order Sent'
                         : updatedPO.status === 'DRAFT'
-                          ? 'Purchase order reverted to draft.'
-                          : 'Delivery batch recorded! Order marked as partially received.'
+                          ? 'Reverted to Draft'
+                          : 'Delivery Recorded',
+                {
+                    description:
+                        updatedPO.status === 'RECEIVED'
+                            ? 'Purchase order delivery received and completed!'
+                            : updatedPO.status === 'FINAL_DRAFT'
+                              ? 'Purchase order marked as final draft.'
+                              : updatedPO.status === 'SENT'
+                                ? 'Purchase order marked as sent to supplier.'
+                                : updatedPO.status === 'DRAFT'
+                                  ? 'Purchase order reverted to draft.'
+                                  : 'Delivery batch recorded! Order marked as partially received.'
+                }
             );
             setIsReceiveDialogOpen(false);
         },
@@ -339,7 +351,7 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             bonusItems.reduce((acc, b) => acc + (Number(b.quantityReceiving) || 0), 0);
 
         if (totalReceiving <= 0) {
-            toast.error('Please specify a received quantity greater than 0 for at least one item');
+            toast.error('Quantity Required', { description: 'Please specify a received quantity greater than 0 for at least one item.' });
             return;
         }
 
@@ -348,11 +360,11 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             const qty = Number(item.quantityReceiving);
             const cost = Number(item.unitCost);
             if (isNaN(qty) || qty < 0) {
-                toast.error(`Please enter a valid, non-negative quantity for ${item.ingredientName}`);
+                toast.error('Invalid Quantity', { description: `Please enter a valid, non-negative quantity for ${item.ingredientName}.` });
                 return;
             }
             if (isNaN(cost) || cost < 0) {
-                toast.error(`Please enter a valid, non-negative unit cost for ${item.ingredientName}`);
+                toast.error('Invalid Unit Cost', { description: `Please enter a valid, non-negative unit cost for ${item.ingredientName}.` });
                 return;
             }
         }
@@ -362,15 +374,15 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             const qty = Number(bonus.quantityReceiving);
             const cost = Number(bonus.unitCost);
             if (qty > 0 && !bonus.ingredientId) {
-                toast.error('Please select an ingredient for all bonus items');
+                toast.error('Ingredient Required', { description: 'Please select an ingredient for all bonus items.' });
                 return;
             }
             if (isNaN(qty) || qty < 0) {
-                toast.error('Please enter a valid, non-negative quantity for all bonus items');
+                toast.error('Invalid Quantity', { description: 'Please enter a valid, non-negative quantity for all bonus items.' });
                 return;
             }
             if (isNaN(cost) || cost < 0) {
-                toast.error('Bonus item unit cost must be a valid, non-negative number');
+                toast.error('Invalid Unit Cost', { description: 'Bonus item unit cost must be a valid, non-negative number.' });
                 return;
             }
         }

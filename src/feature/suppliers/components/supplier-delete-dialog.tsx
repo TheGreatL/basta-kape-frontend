@@ -24,8 +24,8 @@ export default function SupplierDeleteDialog({ open, onOpenChange, supplier }: S
         mutationFn: deleteSupplier,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST] });
-            toast.success('Supplier Profile Archived', {
-                description: 'The supplier profile has been successfully archived/soft-deleted.'
+            toast.success('Supplier Archived', {
+                description: 'The supplier has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -43,19 +43,19 @@ export default function SupplierDeleteDialog({ open, onOpenChange, supplier }: S
                 <DialogHeader className="space-y-2">
                     <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
                         <Truck className="size-5" />
-                        Archive Supplier Profile
+                        Archive Supplier
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to archive <strong className="text-foreground">"{supplier?.name}"</strong>? This will
-                        soft-delete their profile, moving them to the Archived suppliers tab.
+                        Are you sure you want to archive <strong className="text-foreground">"{supplier?.name}"</strong>? This will move them to the
+                        Archived suppliers tab.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="my-3 flex items-start gap-2.5 p-3 rounded-lg border border-warning/20 bg-warning/5 text-xs text-warning-foreground font-medium">
                     <Info className="size-4 shrink-0 text-warning mt-0.5" />
                     <span>
-                        Archived supplier profiles remain in the logs for historical audit records (such as purchase orders) but will not appear in
-                        the active directory.
+                        Archived suppliers remain in the logs for historical audit records (such as purchase orders) but will not appear in the active
+                        listing.
                     </span>
                 </div>
 

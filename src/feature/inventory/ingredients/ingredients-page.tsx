@@ -90,7 +90,7 @@ export default function IngredientsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Item Archived');
+            toast.success('Item Archived', { description: 'The inventory item has been archived successfully.' });
         },
         onError: (err) => toast.error('Failed to archive item', { description: getErrorMessage(err) })
     });
@@ -100,7 +100,7 @@ export default function IngredientsPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Item Restored');
+            toast.success('Item Restored', { description: 'The inventory item has been restored successfully.' });
         },
         onError: (err) => toast.error('Failed to restore item', { description: getErrorMessage(err) })
     });

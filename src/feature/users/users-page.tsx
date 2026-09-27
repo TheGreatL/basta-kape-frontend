@@ -203,7 +203,7 @@ export default function UsersPage() {
                                         onClick={() => handleOpenView(row.original)}
                                     >
                                         <Eye className="size-4" />
-                                        <span className="sr-only">View User</span>
+                                        <span className="sr-only">View Staff</span>
                                     </Button>
                                 </RequirePermission>
                                 {row.original.role?.name.toLowerCase() === 'customer' ? null : (
@@ -216,7 +216,7 @@ export default function UsersPage() {
                                                 onClick={() => handleOpenEdit(row.original)}
                                             >
                                                 <Edit className="size-4" />
-                                                <span className="sr-only">Edit User</span>
+                                                <span className="sr-only">Edit Staff</span>
                                             </Button>
                                         </RequirePermission>
                                         <RequirePermission module="Users Management" action="update">
@@ -242,7 +242,7 @@ export default function UsersPage() {
                                             onClick={() => handleOpenDelete(row.original)}
                                         >
                                             <Trash2 className="size-4" />
-                                            <span className="sr-only">Delete User</span>
+                                            <span className="sr-only">Archive Staff</span>
                                         </Button>
                                     </RequirePermission>
                                 )}
@@ -263,8 +263,8 @@ export default function UsersPage() {
                         <Users className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground leading-tight">Staff & Users</h1>
-                        <p className="text-xs text-muted-foreground">Manage employee accounts, role assignments, and login permissions.</p>
+                        <h1 className="text-2xl font-bold text-foreground leading-tight">Staff Management</h1>
+                        <p className="text-xs text-muted-foreground">Manage staff accounts, role assignments, and access permissions.</p>
                     </div>
                 </div>
 
@@ -272,7 +272,7 @@ export default function UsersPage() {
                     <RequirePermission module="Users Management" action="create">
                         <Button onClick={handleOpenCreate} className="h-9 gap-1.5 shadow-sm">
                             <Plus className="size-4" />
-                            Add New User
+                            Add New Staff
                         </Button>
                     </RequirePermission>
                 </div>
@@ -293,7 +293,7 @@ export default function UsersPage() {
                 filterContent={
                     <>
                         <Input
-                            placeholder="Search users..."
+                            placeholder="Search staff..."
                             value={localSearch}
                             onChange={(e) => setLocalSearch(e.target.value)}
                             className="h-9 w-full sm:w-[250px] bg-background/50"

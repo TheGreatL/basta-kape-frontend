@@ -25,7 +25,7 @@ export default function AttributeDeleteDialog({ open, onOpenChange, attribute }:
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST] });
             toast.success('Attribute Archived', {
-                description: 'The custom attribute has been successfully archived/soft-deleted.'
+                description: 'The custom attribute has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -46,8 +46,8 @@ export default function AttributeDeleteDialog({ open, onOpenChange, attribute }:
                         Archive Custom Attribute
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to archive <strong className="text-foreground">"{attribute?.name}"</strong>? This will
-                        soft-delete the attribute (and cascade to archive all its active child values).
+                        Are you sure you want to archive <strong className="text-foreground">"{attribute?.name}"</strong>? This will archive the
+                        attribute (and cascade to archive all its active child values).
                     </DialogDescription>
                 </DialogHeader>
 

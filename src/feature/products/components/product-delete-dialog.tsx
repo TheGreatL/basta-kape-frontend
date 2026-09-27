@@ -25,7 +25,7 @@ export default function ProductDeleteDialog({ open, onOpenChange, product }: Pro
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.PRODUCTS_LIST] });
             toast.success('Product Archived', {
-                description: 'The product has been successfully archived/soft-deleted.'
+                description: 'The product has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -47,11 +47,11 @@ export default function ProductDeleteDialog({ open, onOpenChange, product }: Pro
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-lg font-bold text-destructive">
                         <Trash2 className="size-5" />
-                        Archive Menu Product?
+                        Archive Product
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you sure you want to archive/soft-delete **{product?.name || 'this product'}**? This action will also soft-delete all
-                        child product variants and active option attributes linked to this product in the transaction.
+                        Are you sure you want to archive <strong>{product?.name || 'this product'}</strong>? This will also archive all child product
+                        variants and active option attributes linked to this product.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -65,7 +65,7 @@ export default function ProductDeleteDialog({ open, onOpenChange, product }: Pro
                                 <Spinner className="h-4 w-4" /> Archiving...
                             </div>
                         ) : (
-                            'Archive Product'
+                            'Confirm Archive'
                         )}
                     </Button>
                 </DialogFooter>

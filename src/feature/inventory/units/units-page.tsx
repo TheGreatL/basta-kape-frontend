@@ -96,7 +96,7 @@ export default function UnitsPage() {
         mutationFn: deleteIngredientUnit,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST] });
-            toast.success('Measurement Unit Archived');
+            toast.success('Measurement Unit Archived', { description: 'The measurement unit has been archived successfully.' });
         },
         onError: (err) => toast.error('Failed to archive unit', { description: getErrorMessage(err) })
     });
@@ -105,7 +105,7 @@ export default function UnitsPage() {
         mutationFn: restoreIngredientUnit,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST] });
-            toast.success('Measurement Unit Restored');
+            toast.success('Measurement Unit Restored', { description: 'The measurement unit has been restored successfully.' });
         },
         onError: (err) => toast.error('Failed to restore unit', { description: getErrorMessage(err) })
     });

@@ -129,7 +129,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDER_DETAILS, poId] });
-            toast.success('Purchase order updated successfully');
+            toast.success('Purchase Order Updated', { description: 'The purchase order has been updated successfully.' });
             onOpenChange(false);
         },
         onError: (err) => {
@@ -237,13 +237,13 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
     const handleSavePO = (e: React.FormEvent) => {
         e.preventDefault();
         if (!supplierId) {
-            toast.error('Please select a supplier');
+            toast.error('Supplier Required', { description: 'Please select a supplier.' });
             return;
         }
 
         const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0);
         if (validItems.length === 0) {
-            toast.error('Please select or add at least one line item with quantity > 0');
+            toast.error('Items Required', { description: 'Please select or add at least one line item with quantity > 0.' });
             return;
         }
 

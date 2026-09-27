@@ -25,7 +25,7 @@ export default function CategoryDeleteDialog({ open, onOpenChange, category }: C
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.CATEGORIES_LIST] });
             toast.success('Category Archived', {
-                description: 'The product category has been successfully archived/soft-deleted.'
+                description: 'The product category has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -46,8 +46,8 @@ export default function CategoryDeleteDialog({ open, onOpenChange, category }: C
                         Archive Product Category
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to archive <strong className="text-foreground">"{category?.name}"</strong>? This will
-                        soft-delete the category, moving it to the Archived categories list.
+                        Are you sure you want to archive <strong className="text-foreground">"{category?.name}"</strong>? This will archive the
+                        category, moving it to the Archived categories list.
                     </DialogDescription>
                 </DialogHeader>
 

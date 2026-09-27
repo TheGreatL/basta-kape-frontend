@@ -73,7 +73,7 @@ export default function CreatePurchaseOrderDialog({ open, onOpenChange }: Create
         mutationFn: createPurchaseOrder,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PURCHASE_ORDERS.PURCHASE_ORDERS_LIST] });
-            toast.success('Purchase order draft created successfully');
+            toast.success('Purchase Order Created', { description: 'Purchase order draft has been created successfully.' });
             onOpenChange(false);
             resetCreateForm();
         },
@@ -187,13 +187,13 @@ export default function CreatePurchaseOrderDialog({ open, onOpenChange }: Create
     const handleSavePO = (e: React.FormEvent) => {
         e.preventDefault();
         if (!supplierId) {
-            toast.error('Please select a supplier');
+            toast.error('Supplier Required', { description: 'Please select a supplier.' });
             return;
         }
 
         const validItems = allActiveItems.filter((item) => item.ingredientId && item.quantity > 0);
         if (validItems.length === 0) {
-            toast.error('Please select or add at least one line item with quantity > 0');
+            toast.error('Items Required', { description: 'Please select or add at least one line item with quantity > 0.' });
             return;
         }
 
@@ -469,7 +469,7 @@ export default function CreatePurchaseOrderDialog({ open, onOpenChange }: Create
                         disabled={createPOMutation.isPending}
                         className="h-9 w-32 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95"
                     >
-                        {createPOMutation.isPending ? 'Saving...' : 'Save Draft'}
+                        {createPOMutation.isPending ? 'Creating...' : 'Save Draft'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -140,7 +140,7 @@ export default function OrderViewPage() {
                         <button
                             onClick={handleBack}
                             className="p-1.5 rounded-lg border border-border/60 hover:bg-muted transition-colors shrink-0"
-                            title="Back to Orders Log"
+                            title="Back to Orders"
                         >
                             <ArrowLeft className="size-4 text-muted-foreground hover:text-foreground" />
                         </button>

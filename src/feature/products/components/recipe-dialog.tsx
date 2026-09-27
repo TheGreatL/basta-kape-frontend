@@ -172,7 +172,7 @@ export default function RecipeDialog({
                         _baseUnitName: (ing as unknown as { _baseUnitName?: string })._baseUnitName || ing._unitName
                     }))
                 });
-                toast.success('Recipe template copied successfully. Save changes to apply!');
+                toast.success('Recipe Template Copied', { description: 'Recipe template copied successfully. Save changes to apply.' });
                 return;
             }
 
@@ -195,7 +195,7 @@ export default function RecipeDialog({
                     };
                 })
             });
-            toast.success('Recipe template copied successfully. Save changes to apply!');
+            toast.success('Recipe Template Copied', { description: 'Recipe template copied successfully. Save changes to apply.' });
         } catch (err) {
             toast.error('Failed to copy recipe template', { description: getErrorMessage(err) });
         }
@@ -308,7 +308,7 @@ export default function RecipeDialog({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
-            toast.success('Recipe Created Successfully');
+            toast.success('Recipe Created', { description: 'The recipe has been created successfully.' });
             setIsEditing(false);
         },
         onError: (err) => {
@@ -321,7 +321,7 @@ export default function RecipeDialog({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
-            toast.success('Recipe Updated Successfully');
+            toast.success('Recipe Updated', { description: 'The recipe has been updated successfully.' });
             setIsEditing(false);
         },
         onError: (err) => {
@@ -334,7 +334,7 @@ export default function RecipeDialog({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
-            toast.success('Recipe Deleted Successfully');
+            toast.success('Recipe Archived', { description: 'The recipe has been archived successfully.' });
             setIsEditing(false);
         },
         onError: (err) => {
@@ -347,7 +347,7 @@ export default function RecipeDialog({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.VARIANT_RECIPE, variant?.id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
-            toast.success('Recipe Restored Successfully');
+            toast.success('Recipe Restored', { description: 'The recipe has been restored successfully.' });
         },
         onError: (err) => {
             toast.error('Failed to restore recipe', { description: getErrorMessage(err) });
@@ -748,7 +748,7 @@ export default function RecipeDialog({
                                 {recipe.deletedAt && (
                                     <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
                                         <AlertTriangle className="size-4 shrink-0 animate-bounce" />
-                                        <span>This recipe is archived / soft-deleted. Restore it to reactivate it.</span>
+                                        <span>This recipe is archived. Restore it to make it active.</span>
                                     </div>
                                 )}
 
@@ -881,17 +881,17 @@ export default function RecipeDialog({
                                                             disabled={deleteRecipeMutation.isPending}
                                                             className="h-9 border-destructive text-destructive hover:bg-destructive/10"
                                                         >
-                                                            <Trash2 className="size-4 mr-1.5" /> Delete Recipe
+                                                            <Trash2 className="size-4 mr-1.5" /> Archive Recipe
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
                                                             <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
                                                                 <Trash2 className="size-5 text-rose-500" />
-                                                                Delete Recipe
+                                                                Archive Recipe
                                                             </AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                Are you sure you want to delete this recipe? This action cannot be undone.
+                                                                Are you sure you want to archive this recipe? You can restore it later.
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
@@ -901,7 +901,7 @@ export default function RecipeDialog({
                                                                 onClick={() => deleteRecipeMutation.mutate()}
                                                                 className="h-9 font-bold"
                                                             >
-                                                                Delete Recipe
+                                                                Confirm Archive
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>

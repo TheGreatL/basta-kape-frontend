@@ -362,7 +362,7 @@ export default function ReportsPage() {
             });
         },
         onSuccess: (_, format) => {
-            toast.success(`Report exported as ${format === 'excel' ? 'Excel' : 'PDF'}`);
+            toast.success('Report Exported', { description: `Report exported as ${format === 'excel' ? 'Excel' : 'PDF'}.` });
         },
         onError: (error) => {
             toast.error('Failed to export report', {

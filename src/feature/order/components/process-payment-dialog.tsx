@@ -100,7 +100,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
     const approvePaymentMutation = useMutation({
         mutationFn: (paymentId: string) => updateTransactionReceipt(paymentId, {}),
         onSuccess: () => {
-            toast.success('Digital payment approved successfully');
+            toast.success('Payment Approved', { description: 'Digital payment approved successfully.' });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, order?.id] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, order?.id] });
@@ -120,7 +120,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
         try {
             const uploadRes = await uploadImageFile(file);
             paymentForm.setValue('paymentProofPhoto', uploadRes.url);
-            toast.success('Proof of payment uploaded successfully');
+            toast.success('Proof Uploaded', { description: 'Proof of payment uploaded successfully.' });
         } catch (err) {
             toast.error('Failed to upload image', {
                 description: getErrorMessage(err)
@@ -185,7 +185,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
             const status = err?.status || err?.statusCode;
             const msg = getErrorMessage(err);
             if (status === 409 || msg.includes('already exists')) {
-                toast.error('This GCash reference has already been used for another transaction.');
+                toast.error('Duplicate GCash Reference', { description: 'This GCash reference has already been used for another transaction.' });
             } else {
                 toast.error('Failed to process payment', {
                     description: msg
@@ -210,7 +210,8 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                             Process Order Payment
                         </DialogTitle>
                         <DialogDescription className="text-xs text-muted-foreground">
-                            Record payment for Ticket **{order.queueNumber}** (Customer: **{order.customerName || 'Walk-in'}**).
+                            Record payment for Ticket <strong>{order.queueNumber}</strong> (Customer:{' '}
+                            <strong>{order.customerName || 'Walk-in'}</strong>).
                         </DialogDescription>
                     </DialogHeader>
 

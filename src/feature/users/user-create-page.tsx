@@ -51,15 +51,15 @@ export default function UserCreatePage() {
         mutationFn: createUser,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
-            toast.success('User Profile Created', {
-                description: 'The new staff/user profile has been successfully configured and saved.'
+            toast.success('Staff Account Created', {
+                description: 'Account has been created successfully.'
             });
             navigate({
                 to: '/admin/users'
             });
         },
         onError: (error) => {
-            toast.error('Failed to create user', {
+            toast.error('Failed to create staff account', {
                 description: getErrorMessage(error)
             });
         }
@@ -89,15 +89,15 @@ export default function UserCreatePage() {
                     className="gap-1.5 self-start text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    Back to Staff Directory
+                    Back to Staff
                 </Button>
                 <div className="flex items-center gap-2">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                         <UserPlus className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Configure New User</h1>
-                        <p className="text-xs text-muted-foreground">Define account credentials, contact information, and security roles.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Add New Staff</h1>
+                        <p className="text-xs text-muted-foreground">Set up account credentials and contact information.</p>
                     </div>
                 </div>
             </div>
@@ -289,10 +289,10 @@ export default function UserCreatePage() {
                             <Button type="submit" disabled={createMutation.isPending || isRolesLoading} className="h-9">
                                 {createMutation.isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Saving...
+                                        <Spinner className="h-4 w-4" /> Creating...
                                     </div>
                                 ) : (
-                                    'Create Profile'
+                                    'Create Staff Account'
                                 )}
                             </Button>
                         </div>

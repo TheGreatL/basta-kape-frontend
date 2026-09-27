@@ -81,13 +81,13 @@ export default function UserDetailPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USER_DETAILS, slug] });
-            toast.success('User Profile Updated', {
-                description: 'The staff profile modifications have been successfully saved.'
+            toast.success('Staff Profile Updated', {
+                description: 'Profile has been updated successfully.'
             });
             navigate({ to: '/admin/users' });
         },
         onError: (error) => {
-            toast.error('Failed to update user', {
+            toast.error('Failed to update staff profile', {
                 description: getErrorMessage(error)
             });
         }
@@ -127,7 +127,7 @@ export default function UserDetailPage() {
                     className="gap-1.5 self-start text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    Back to Staff Directory
+                    Back to Staff
                 </Button>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -135,11 +135,13 @@ export default function UserDetailPage() {
                             <User className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-foreground">{hasUpdatePermission ? 'Edit User Profile' : 'View User Profile'}</h1>
+                            <h1 className="text-2xl font-bold text-foreground">
+                                {hasUpdatePermission ? 'Edit Staff Profile' : 'View Staff Profile'}
+                            </h1>
                             <p className="text-xs text-muted-foreground">
                                 {hasUpdatePermission
-                                    ? 'Modify user profile specifications, credentials, profile photo, and security roles.'
-                                    : 'Overview of staff credentials, profile data, history records, and security roles.'}
+                                    ? 'Update profile details, credentials, and photo.'
+                                    : 'View profile details, credentials, and activity history.'}
                             </p>
                         </div>
                     </div>
@@ -372,8 +374,7 @@ export default function UserDetailPage() {
                                             </div>
                                             {userDetails.deletedAt && (
                                                 <div className="sm:col-span-2 text-destructive font-semibold border-t pt-2 mt-2">
-                                                    <span>Archived / Soft Deleted At</span>:{' '}
-                                                    {format(new Date(userDetails.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                                    <span>Archived At</span>: {format(new Date(userDetails.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
                                                 </div>
                                             )}
                                         </div>
@@ -391,7 +392,7 @@ export default function UserDetailPage() {
                                                         <Spinner className="h-4 w-4" /> Saving...
                                                     </div>
                                                 ) : (
-                                                    'Save Updates'
+                                                    'Save Changes'
                                                 )}
                                             </Button>
                                         )}

@@ -340,7 +340,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                 modifierOptionIds: selectedModifierOptionIds
             });
         } catch {
-            toast.error('Failed to add item to cart. Please try again.');
+            toast.error('Failed to Add Item', { description: 'Could not add item to cart. Please try again.' });
         }
     };
 
@@ -506,7 +506,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                 } else {
                     const currentSelectedFromGroup = prev.filter((id: string) => groupOptionIds.includes(id));
                     if (currentSelectedFromGroup.length >= maxSelect) {
-                        toast.warning(`You can select at most ${maxSelect} option(s) for ${groupName}.`);
+                        toast.warning('Selection Limit Reached', { description: `You can select at most ${maxSelect} option(s) for ${groupName}.` });
                         return prev;
                     }
                     return [...prev, optionId];

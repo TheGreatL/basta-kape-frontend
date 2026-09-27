@@ -24,8 +24,8 @@ export default function RoleDeleteDialog({ open, onOpenChange, role }: RoleDelet
         mutationFn: deleteRole,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.RBAC.ROLES_LIST] });
-            toast.success('Role Deleted Successfully', {
-                description: 'The custom role has been soft-deleted.'
+            toast.success('Role Archived', {
+                description: 'The custom role has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -43,11 +43,11 @@ export default function RoleDeleteDialog({ open, onOpenChange, role }: RoleDelet
                 <DialogHeader className="space-y-2">
                     <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
                         <Trash2 className="size-5" />
-                        Delete Role Confirmation
+                        Archive Role
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to soft-delete the custom role <strong className="text-foreground">"{role?.name}"</strong>?
-                        This will instantly remove its associated nested operational permissions.
+                        Are you sure you want to archive the custom role <strong className="text-foreground">"{role?.name}"</strong>? This will
+                        instantly remove its associated nested operational permissions.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -74,10 +74,10 @@ export default function RoleDeleteDialog({ open, onOpenChange, role }: RoleDelet
                         {deleteMutation.isPending ? (
                             <div className="flex items-center gap-1">
                                 <Spinner className="h-4 w-4" />
-                                Deleting...
+                                Archiving...
                             </div>
                         ) : (
-                            'Confirm Delete'
+                            'Confirm Archive'
                         )}
                     </Button>
                 </DialogFooter>

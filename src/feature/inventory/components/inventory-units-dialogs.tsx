@@ -173,7 +173,7 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
                             <Button type="submit" disabled={createMutation.isPending || isLoading} className="h-9">
                                 {createMutation.isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Saving...
+                                        <Spinner className="h-4 w-4" /> Creating...
                                     </div>
                                 ) : (
                                     'Create Unit'

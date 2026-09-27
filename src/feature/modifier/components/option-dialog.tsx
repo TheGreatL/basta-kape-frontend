@@ -207,7 +207,9 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_OPTION_RECIPE, optionId] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
 
-            toast.success(option ? 'Option updated successfully' : 'Option added successfully');
+            toast.success(option ? 'Option Updated' : 'Option Added', {
+                description: option ? 'The option has been updated successfully.' : 'The option has been added successfully.'
+            });
             onOpenChange(false);
         } catch (err) {
             toast.error(option ? 'Failed to update option' : 'Failed to add option', {

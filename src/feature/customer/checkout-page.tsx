@@ -300,7 +300,7 @@ export default function CheckoutPage() {
             const status = (err as any)?.status || (err as any)?.statusCode;
             const msg = getErrorMessage(err);
             if (status === 409 || msg.includes('already exists')) {
-                toast.error('This GCash reference has already been used for another transaction.');
+                toast.error('Duplicate Reference Number', { description: 'This GCash reference has already been used for another transaction.' });
             } else {
                 toast.error('Failed to place order', {
                     description: msg

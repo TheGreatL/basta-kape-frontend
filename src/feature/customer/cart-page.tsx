@@ -144,7 +144,7 @@ export default function CartPage() {
 
     const handleCheckout = () => {
         if (selectedItems.length === 0) {
-            toast.error('Please select at least one item to checkout.');
+            toast.error('Selection Required', { description: 'Please select at least one item to checkout.' });
             return;
         }
 

@@ -31,10 +31,12 @@ export default function UserRestoreDialog({ user }: UserRestoreDialogProps) {
         mutationFn: restoreUser,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
-            toast.success('User profile successfully restored');
+            toast.success('Staff Account Restored', {
+                description: 'The account has been restored successfully.'
+            });
         },
         onError: (err) => {
-            toast.error('Failed to restore user profile', {
+            toast.error('Failed to restore staff account', {
                 description: getErrorMessage(err)
             });
         }
@@ -47,11 +49,11 @@ export default function UserRestoreDialog({ user }: UserRestoreDialogProps) {
                         variant="ghost"
                         size="icon"
                         className="size-8 text-muted-foreground hover:text-emerald-600 transition-colors"
-                        title="Restore User"
+                        title="Restore Staff"
                         disabled={restoreMutation.isPending}
                     >
                         <RotateCcw className="size-4" />
-                        <span className="sr-only">Restore User</span>
+                        <span className="sr-only">Restore Staff</span>
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

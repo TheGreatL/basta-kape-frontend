@@ -135,7 +135,7 @@ const getSidebarGroups = (
         label: 'People & Access',
         items: [
             { title: 'Customers', path: '/admin/customers', icon: 'users-round', module: appModules.CUSTOMERS_MANAGEMENT },
-            { title: 'Users', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
+            { title: 'Staff', path: '/admin/users', icon: 'users', module: appModules.USERS_MANAGEMENT },
             { title: 'Roles', path: '/admin/roles', icon: 'shield', module: appModules.ROLES_AND_PERMISSIONS, exact: true }
         ]
     },

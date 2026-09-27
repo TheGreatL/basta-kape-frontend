@@ -452,7 +452,9 @@ export default function ProductCustomizerDialog({
                                                 return { ...prev, [group.id]: [optionId] };
                                             } else {
                                                 if (current.length >= group.maxSelect) {
-                                                    toast.warning(`Maximum of ${group.maxSelect} selections allowed for ${group.name}.`);
+                                                    toast.warning('Selection Limit Reached', {
+                                                        description: `Maximum of ${group.maxSelect} selections allowed for ${group.name}.`
+                                                    });
                                                     return prev;
                                                 }
                                                 return { ...prev, [group.id]: [...current, optionId] };

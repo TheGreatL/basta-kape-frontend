@@ -210,7 +210,7 @@ export default function PosPage() {
     const handleProductClick = (product: IMenuProduct) => {
         // If product has 0 variants, block
         if (product.variants.length === 0) {
-            toast.error('No variants configured for this product.');
+            toast.error('No Variants Available', { description: 'No variants configured for this product.' });
             return;
         }
 
@@ -259,12 +259,14 @@ export default function PosPage() {
                 const selections = chosenModifiers[group.id] || [];
                 // Check minSelect validation
                 if (selections.length < group.minSelect) {
-                    toast.error(`Please select at least ${group.minSelect} option(s) for "${group.name}".`);
+                    toast.error('Selection Required', { description: `Please select at least ${group.minSelect} option(s) for "${group.name}".` });
                     return;
                 }
                 // Check maxSelect validation
                 if (selections.length > group.maxSelect) {
-                    toast.error(`Please select at most ${group.maxSelect} option(s) for "${group.name}".`);
+                    toast.error('Selection Limit Reached', {
+                        description: `Please select at most ${group.maxSelect} option(s) for "${group.name}".`
+                    });
                     return;
                 }
 
@@ -316,7 +318,7 @@ export default function PosPage() {
                 }
             });
             setIsConfigOpen(false);
-            toast.success(`Updated ${configProduct.name} in cart.`);
+            toast.success('Cart Updated', { description: `Updated ${configProduct.name} in cart.` });
             setEditingCartItemId(null);
         } else {
             setCart((prev) => {
@@ -334,7 +336,7 @@ export default function PosPage() {
                         ...updated[existingIndex],
                         quantity: newQty
                     };
-                    toast.success(`Updated ${configProduct.name} quantity to ${newQty}x.`);
+                    toast.success('Quantity Updated', { description: `Updated ${configProduct.name} quantity to ${newQty}x.` });
                     return updated;
                 } else {
                     const newCartItem: CartItem = {
@@ -345,7 +347,7 @@ export default function PosPage() {
                         quantity: configQuantity,
                         notes: trimmedNotes
                     };
-                    toast.success(`Added ${configQuantity}x ${configProduct.name} to checkout cart.`);
+                    toast.success('Item Added', { description: `Added ${configQuantity}x ${configProduct.name} to checkout cart.` });
                     return [...prev, newCartItem];
                 }
             });
@@ -391,14 +393,14 @@ export default function PosPage() {
         setDiscountRefId(refId || '');
         setDiscountRefName(refName || '');
         setIsDiscountOpen(false);
-        toast.success(`Discount "${discount.name}" applied to cart.`);
+        toast.success('Discount Applied', { description: `Discount "${discount.name}" applied to cart.` });
     };
 
     const handleRemoveDiscount = () => {
         setAppliedDiscount(null);
         setDiscountRefId('');
         setDiscountRefName('');
-        toast.info('Discount removed.');
+        toast.info('Discount Removed', { description: 'Discount removed from cart.' });
     };
 
     // -------------------------------------------------------------
@@ -502,7 +504,7 @@ export default function PosPage() {
             const status = err?.status || err?.statusCode;
             const msg = getErrorMessage(err);
             if (status === 409 || msg.includes('already exists')) {
-                toast.error('This GCash reference has already been used for another transaction.');
+                toast.error('Duplicate GCash Reference', { description: 'This GCash reference has already been used for another transaction.' });
             } else {
                 toast.error('POS Checkout Failed', {
                     description: msg
@@ -700,7 +702,7 @@ export default function PosPage() {
                             onClick={() => {
                                 if (itemToRemove) {
                                     setCart((prev) => prev.filter((i) => i.id !== itemToRemove.id));
-                                    toast.info(`Removed ${itemToRemove.product.name} from cart.`);
+                                    toast.info('Item Removed', { description: `Removed ${itemToRemove.product.name} from cart.` });
                                     setItemToRemove(null);
                                 }
                             }}
@@ -737,7 +739,7 @@ export default function PosPage() {
                                 setDiscountRefId('');
                                 setDiscountRefName('');
                                 setIsClearCartOpen(false);
-                                toast.info('Cart cleared.');
+                                toast.info('Cart Cleared', { description: 'All items have been removed from the cart.' });
                             }}
                             className="h-9 text-xs font-bold rounded-xl shadow-xs"
                         >

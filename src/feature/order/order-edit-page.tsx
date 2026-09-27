@@ -143,7 +143,7 @@ export default function OrderEditPage() {
             return removeDiscountFromOrder(orderId);
         },
         onSuccess: () => {
-            toast.success('Discount removed from order successfully.');
+            toast.success('Discount Removed', { description: 'Discount removed from order successfully.' });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, orderId] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
         },
@@ -193,7 +193,7 @@ export default function OrderEditPage() {
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, updated.id] });
-            toast.success(`Order status updated to ${updated.status}`);
+            toast.success('Status Updated', { description: `Order status updated to ${updated.status}.` });
             statusForm.reset({
                 status: undefined,
                 notes: ''
@@ -208,7 +208,7 @@ export default function OrderEditPage() {
     const approvePaymentMutation = useMutation({
         mutationFn: (paymentId: string) => updateTransactionReceipt(paymentId, {}),
         onSuccess: () => {
-            toast.success('Digital payment approved successfully');
+            toast.success('Payment Approved', { description: 'Digital payment approved successfully.' });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, orderId] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_PAYMENTS, orderId] });
@@ -220,7 +220,7 @@ export default function OrderEditPage() {
 
     const onApplyDiscountSubmit = (values: z.infer<typeof discountFormSchema>) => {
         if (isSelectedBIR && (!values.referenceId?.trim() || !values.referenceName?.trim())) {
-            toast.error('BIR compliance: Card ID and Holder Name are required.');
+            toast.error('BIR Compliance Required', { description: 'Card ID and Holder Name are required.' });
             return;
         }
         applyDiscountMutation.mutate({
@@ -345,7 +345,7 @@ export default function OrderEditPage() {
                         <button
                             onClick={handleBack}
                             className="p-1.5 rounded-lg border border-border/60 hover:bg-muted transition-colors shrink-0"
-                            title="Back to Orders Log"
+                            title="Back to Orders"
                         >
                             <ArrowLeft className="size-4 text-muted-foreground hover:text-foreground" />
                         </button>

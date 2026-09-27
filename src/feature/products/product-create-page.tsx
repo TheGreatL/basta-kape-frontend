@@ -280,7 +280,7 @@ export default function ProductCreatePage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Create Menu Product</h1>
-                        <p className="text-xs text-muted-foreground">Define the profile, category, variants, and recipes for the new menu item.</p>
+                        <p className="text-xs text-muted-foreground">Define the details, category, variants, and recipes for the new menu item.</p>
                     </div>
                 </div>
             </div>
@@ -578,7 +578,7 @@ export default function ProductCreatePage() {
                         {/* Variant Addition Inline */}
                         {isAddingVariant && (
                             <div className="bg-muted/10 border border-dashed border-primary/20 rounded-xl p-4 space-y-3">
-                                <h4 className="text-xs font-bold text-foreground uppercase ">Configure New Variant</h4>
+                                <h4 className="text-xs font-bold text-foreground uppercase ">Add New Variant</h4>
                                 <VariantForm onSubmit={handleAddVariant} onCancel={() => setIsAddingVariant(false)} submitLabel="Save Variant" />
                             </div>
                         )}
@@ -690,11 +690,11 @@ export default function ProductCreatePage() {
                 >
                     {saveMutation.isPending ? (
                         <div className="flex items-center gap-1.5">
-                            <Spinner className="h-4 w-4 animate-spin" /> Saving Product...
+                            <Spinner className="h-4 w-4 animate-spin" /> Creating Product...
                         </div>
                     ) : (
                         <div className="flex items-center gap-1.5">
-                            <Sparkles className="size-4" /> Save Product
+                            <Sparkles className="size-4" /> Create Product
                         </div>
                     )}
                 </Button>

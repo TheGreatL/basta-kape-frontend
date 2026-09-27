@@ -57,7 +57,7 @@ export default function OrderQueuePage() {
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
-            toast.success(`Order ${updated.queueNumber} updated to ${updated.status}`);
+            toast.success('Order Status Updated', { description: `Order ${updated.queueNumber} updated to ${updated.status}.` });
         },
         onError: (err) => {
             toast.error('Failed to transition order status', { description: getErrorMessage(err) });

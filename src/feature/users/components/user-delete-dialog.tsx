@@ -24,13 +24,13 @@ export default function UserDeleteDialog({ open, onOpenChange, user }: UserDelet
         mutationFn: deleteUser,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.USERS.USERS_LIST] });
-            toast.success('User Deactivated', {
-                description: 'The staff account has been soft-deleted and deactivated.'
+            toast.success('Staff Account Archived', {
+                description: 'The account has been archived successfully.'
             });
             onOpenChange(false);
         },
         onError: (error) => {
-            toast.error('Failed to delete user', {
+            toast.error('Failed to archive staff account', {
                 description: getErrorMessage(error)
             });
             onOpenChange(false);
@@ -43,20 +43,20 @@ export default function UserDeleteDialog({ open, onOpenChange, user }: UserDelet
                 <DialogHeader className="space-y-2">
                     <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
                         <UserX className="size-5" />
-                        Deactivate Staff Account
+                        Archive Staff Account
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to deactivate{' '}
+                        Are you sure you want to archive{' '}
                         <strong className="text-foreground">
                             "{user?.firstName} {user?.lastName}" ({user?.username})
                         </strong>
-                        ? This will soft-delete their profile, blocking them from accessing POS and Admin dashboard controls immediately.
+                        ? This will block them from accessing POS and Admin dashboard controls immediately.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="my-3 flex items-start gap-2.5 p-3 rounded-lg border border-warning/20 bg-warning/5 text-xs text-warning-foreground font-medium">
                     <Info className="size-4 shrink-0 text-warning mt-0.5" />
-                    <span>Deactivated profiles are preserved in the archived records database but cannot perform system transactions.</span>
+                    <span>Archived accounts are preserved in records but cannot perform system transactions.</span>
                 </div>
 
                 <DialogFooter className="mt-4 gap-2">
@@ -74,10 +74,10 @@ export default function UserDeleteDialog({ open, onOpenChange, user }: UserDelet
                         {deleteMutation.isPending ? (
                             <div className="flex items-center gap-1">
                                 <Spinner className="h-4 w-4" />
-                                Deactivating...
+                                Archiving...
                             </div>
                         ) : (
-                            'Confirm Deactivate'
+                            'Confirm Archive'
                         )}
                     </Button>
                 </DialogFooter>

@@ -112,7 +112,7 @@ export default function GroupDialog({ open, onOpenChange, group, targetProductId
         mutationFn: (payload: GroupFormValues) => createModifierGroup(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Customization group created successfully');
+            toast.success('Customization Group Created', { description: 'The customization group has been created successfully.' });
             onOpenChange(false);
         },
         onError: (err) => {
@@ -126,7 +126,7 @@ export default function GroupDialog({ open, onOpenChange, group, targetProductId
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUP_DETAILS, group?.id] });
-            toast.success('Customization group updated successfully');
+            toast.success('Customization Group Updated', { description: 'The customization group has been updated successfully.' });
             onOpenChange(false);
         },
         onError: (err) => {

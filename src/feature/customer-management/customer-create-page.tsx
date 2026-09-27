@@ -36,13 +36,13 @@ export default function CustomerCreatePage() {
         mutationFn: createCustomer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST] });
-            toast.success('Customer Profile Created', {
-                description: 'The new customer profile has been successfully saved.'
+            toast.success('Customer Account Created', {
+                description: 'Account has been created successfully.'
             });
             navigate({ to: '/admin/customers' });
         },
         onError: (error) => {
-            toast.error('Failed to create customer', {
+            toast.error('Failed to create customer account', {
                 description: getErrorMessage(error)
             });
         }
@@ -71,15 +71,15 @@ export default function CustomerCreatePage() {
                     className="gap-1.5 self-start text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    Back to Customers Directory
+                    Back to Customers
                 </Button>
                 <div className="flex items-center gap-2">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                         <UserPlus className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Configure New Customer</h1>
-                        <p className="text-xs text-muted-foreground">Define account credentials, contact information, and security settings.</p>
+                        <h1 className="text-2xl font-bold text-foreground">Add New Customer</h1>
+                        <p className="text-xs text-muted-foreground">Set up account credentials and contact information.</p>
                     </div>
                 </div>
             </div>
@@ -209,10 +209,10 @@ export default function CustomerCreatePage() {
                             <Button type="submit" disabled={createMutation.isPending} className="h-9">
                                 {createMutation.isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Saving...
+                                        <Spinner className="h-4 w-4" /> Creating...
                                     </div>
                                 ) : (
-                                    'Create Profile'
+                                    'Create Customer Account'
                                 )}
                             </Button>
                         </div>

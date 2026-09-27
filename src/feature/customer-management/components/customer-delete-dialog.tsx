@@ -24,13 +24,13 @@ export default function CustomerDeleteDialog({ open, onOpenChange, customer }: C
         mutationFn: () => deleteCustomer(customer!.id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST] });
-            toast.success('Customer Profile Archived', {
-                description: 'The customer profile has been successfully archived/soft-deleted.'
+            toast.success('Customer Account Archived', {
+                description: 'The account has been archived successfully.'
             });
             onOpenChange(false);
         },
         onError: (error) => {
-            toast.error('Failed to archive customer', {
+            toast.error('Failed to archive customer account', {
                 description: getErrorMessage(error)
             });
         }
@@ -47,12 +47,12 @@ export default function CustomerDeleteDialog({ open, onOpenChange, customer }: C
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-lg font-bold text-destructive">
                         <Trash2 className="size-5" />
-                        Archive Customer Profile?
+                        Archive Customer Account
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you sure you want to archive/soft-delete **
-                        {customer ? `${customer.user.firstName} ${customer.user.lastName}` : 'this customer'}**? This will soft-delete their customer
-                        profile and associate staff/user record in the transaction.
+                        Are you sure you want to archive{' '}
+                        <strong>{customer ? `${customer.user.firstName} ${customer.user.lastName}` : 'this customer'}</strong>? This will block them
+                        from placing orders and accessing their account.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -66,7 +66,7 @@ export default function CustomerDeleteDialog({ open, onOpenChange, customer }: C
                                 <Spinner className="h-4 w-4" /> Archiving...
                             </div>
                         ) : (
-                            'Archive Customer'
+                            'Confirm Archive'
                         )}
                     </Button>
                 </DialogFooter>

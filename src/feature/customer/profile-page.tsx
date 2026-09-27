@@ -54,10 +54,10 @@ export default function ProfilePage() {
             queryClient.invalidateQueries({
                 queryKey: [QUERY_KEY.CUSTOMERS.CURRENT_CUSTOMER]
             });
-            toast.success('Profile updated successfully');
+            toast.success('Profile Updated', { description: 'Your profile has been updated successfully.' });
         },
         onError: (err: Error) => {
-            toast.error(err.message || 'Failed to update profile');
+            toast.error('Update Failed', { description: err.message || 'Failed to update profile.' });
         }
     });
 
@@ -65,7 +65,7 @@ export default function ProfilePage() {
         e.preventDefault();
 
         if (!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim()) {
-            toast.error('First name, last name, username, and email are required.');
+            toast.error('Required Fields Missing', { description: 'First name, last name, username, and email are required.' });
             return;
         }
 

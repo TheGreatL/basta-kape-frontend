@@ -292,7 +292,7 @@ export default function ProductEditPage() {
         mutationFn: (groupId: string) => deleteModifierGroup(groupId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Customization group deleted');
+            toast.success('Customization Group Deleted', { description: 'The customization group has been deleted successfully.' });
         },
         onError: (err) => {
             toast.error('Failed to delete customization group', { description: getErrorMessage(err) });
@@ -304,7 +304,7 @@ export default function ProductEditPage() {
         mutationFn: (optionId: string) => deleteModifierOption(optionId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCTS.MODIFIER_GROUPS] });
-            toast.success('Customization choice deleted successfully');
+            toast.success('Customization Choice Deleted', { description: 'The customization choice has been deleted successfully.' });
         },
         onError: (err) => {
             toast.error('Failed to delete customization choice', { description: getErrorMessage(err) });
@@ -340,7 +340,7 @@ export default function ProductEditPage() {
         });
 
         if (selectedArrays.length === 0) {
-            toast.warning('Please select at least one attribute and its option values to generate.');
+            toast.warning('Selection Required', { description: 'Please select at least one attribute and its option values to generate.' });
             return;
         }
 
@@ -379,7 +379,7 @@ export default function ProductEditPage() {
             return next;
         });
 
-        toast.success(`Generated combinations matrix. Save changes to sync!`);
+        toast.success('Combinations Generated', { description: 'Generated combinations matrix. Save changes to sync.' });
     };
 
     const handleSaveLocalRecipe = (recipeValues: ILocalRecipe) => {
@@ -468,7 +468,7 @@ export default function ProductEditPage() {
     if (isError || !productDetails) {
         return (
             <div className="flex h-[75vh] w-full flex-col items-center justify-center gap-3">
-                <p className="text-sm text-rose-500 font-bold">Failed to load product details profile.</p>
+                <p className="text-sm text-rose-500 font-bold">Failed to load product details.</p>
                 <Button onClick={() => refetch()} variant="outline" size="sm" className="h-9 gap-1.5 font-bold">
                     <RotateCcw className="size-4" /> Try Again
                 </Button>
@@ -563,7 +563,7 @@ export default function ProductEditPage() {
                             if (!isNaN(priceNum)) {
                                 setGridVariants((prev) => prev.map((v) => ({ ...v, price: priceNum })));
                                 setBulkPriceInput('');
-                                toast.success(`Updated price to ₱${priceNum.toFixed(2)} for all variants.`);
+                                toast.success('Prices Updated', { description: `Updated price to ₱${priceNum.toFixed(2)} for all variants.` });
                             }
                         }}
                     />

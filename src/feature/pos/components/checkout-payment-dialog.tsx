@@ -97,7 +97,7 @@ export default function CheckoutPaymentDialog({
         try {
             const result = await uploadImageFile(file);
             setPaymentProofPhoto(result.url);
-            toast.success('Payment proof uploaded successfully.');
+            toast.success('Upload Successful', { description: 'Payment proof uploaded successfully.' });
         } catch (err: any) {
             toast.error('Failed to upload image', {
                 description: err?.message || 'Something went wrong.'

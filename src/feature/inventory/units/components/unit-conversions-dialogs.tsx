@@ -110,7 +110,7 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.UNIT_CONVERSIONS.LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Unit conversion rule created successfully');
+            toast.success('Unit Conversion Created', { description: 'The unit conversion rule has been created successfully.' });
             onOpenChange(false);
         },
         onError: (err) => {
@@ -456,7 +456,7 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.UNIT_CONVERSIONS.LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Unit conversion updated successfully');
+            toast.success('Unit Conversion Updated', { description: 'The unit conversion rule has been updated successfully.' });
             onOpenChange(false);
         },
         onError: (err) => {

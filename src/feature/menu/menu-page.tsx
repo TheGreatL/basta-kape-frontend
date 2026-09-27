@@ -118,7 +118,7 @@ export default function MenuPage() {
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Digital Menu Reference</h1>
                         <p className="text-xs text-muted-foreground">
-                            Browse active beverage profiles, size configurations, prices, and standard recipe builds.
+                            Browse active beverages, size configurations, prices, and standard recipe builds.
                         </p>
                     </div>
                 </div>

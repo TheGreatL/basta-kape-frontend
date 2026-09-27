@@ -85,7 +85,7 @@ export default function RoleCreatePage() {
                         <Shield className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Configure New Custom Role</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Add New Role</h1>
                         <p className="text-xs text-muted-foreground">
                             Define the name, functional description, and configure modular permission mappings.
                         </p>
@@ -161,7 +161,7 @@ export default function RoleCreatePage() {
                                     <Button type="submit" disabled={createMutation.isPending || isLoading} className="h-9">
                                         {createMutation.isPending ? (
                                             <div className="flex items-center gap-1">
-                                                <Spinner className="h-4 w-4" /> Saving...
+                                                <Spinner className="h-4 w-4" /> Creating...
                                             </div>
                                         ) : (
                                             'Create Role'

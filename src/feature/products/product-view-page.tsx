@@ -85,7 +85,7 @@ export default function ProductViewPage() {
                         <button
                             onClick={handleBack}
                             className="p-1.5 rounded-lg border border-border/60 hover:bg-muted transition-colors shrink-0"
-                            title="Back to Products Log"
+                            title="Back to Products"
                         >
                             <ArrowLeft className="size-4 text-muted-foreground hover:text-foreground" />
                         </button>
@@ -100,7 +100,7 @@ export default function ProductViewPage() {
                                 </Badge>
                             </h1>
                             <p className="text-xs text-muted-foreground pt-1">
-                                View only: Product basic profile, active categories, variations, and customizations.
+                                View only: Product basic details, active categories, variations, and customizations.
                             </p>
                         </div>
                     </div>
@@ -119,7 +119,7 @@ export default function ProductViewPage() {
             <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 max-w-[360px] rounded-xl h-10 border border-border/40 bg-muted/40 p-1 mb-4">
                     <TabsTrigger value="profile" className="text-xs font-semibold rounded-lg">
-                        Profile Details
+                        General Info
                     </TabsTrigger>
                     <TabsTrigger value="variants" className="text-xs font-semibold rounded-lg">
                         Variants Matrix

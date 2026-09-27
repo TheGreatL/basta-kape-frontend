@@ -84,7 +84,9 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.STORE_SETTINGS.DISCOUNTS_LIST] });
-            toast.success(isEdit ? 'Discount configuration updated' : 'Discount configuration created');
+            toast.success(isEdit ? 'Discount Updated' : 'Discount Created', {
+                description: isEdit ? 'The discount configuration has been updated.' : 'The discount configuration has been created.'
+            });
             onOpenChange(false);
         },
         onError: (err) => {
@@ -224,7 +226,7 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                 {mutation.isPending ? (
                                     <>
                                         <Spinner className="size-3.5 animate-spin" />
-                                        Saving configuration...
+                                        {isEdit ? 'Saving configuration...' : 'Creating...'}
                                     </>
                                 ) : isEdit ? (
                                     'Update Configuration'

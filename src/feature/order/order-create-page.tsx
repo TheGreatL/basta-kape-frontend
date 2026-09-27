@@ -267,7 +267,7 @@ export default function OrderCreatePage() {
 
     const handleAddItem = () => {
         if (!selectedProductId || !selectedVariantId) {
-            toast.error('Please select product and variant');
+            toast.error('Selection Required', { description: 'Please select a product and variant.' });
             return;
         }
 
@@ -278,11 +278,11 @@ export default function OrderCreatePage() {
         const selectedVForecast = forecastData?.find((f: IForecast) => f.variantId === selectedVariantId);
         if (selectedVForecast) {
             if (selectedVForecast.maxProduceable === 0) {
-                toast.error(`${selectedProduct.name} variant is out of stock!`);
+                toast.error('Out of Stock', { description: `${selectedProduct.name} variant is out of stock.` });
                 return;
             }
             if (typeof selectedVForecast.maxProduceable === 'number' && selectedQuantity > selectedVForecast.maxProduceable) {
-                toast.error(`Only ${selectedVForecast.maxProduceable} units of this variant are available.`);
+                toast.error('Insufficient Stock', { description: `Only ${selectedVForecast.maxProduceable} units of this variant are available.` });
                 return;
             }
         }
@@ -295,13 +295,13 @@ export default function OrderCreatePage() {
                 const selectedFromGroup = selectedModifierIds.filter((id) => groupOptionIds.includes(id));
 
                 if (group.isRequired && selectedFromGroup.length === 0) {
-                    toast.error(`Please select at least one option for ${group.name}.`);
+                    toast.error('Option Required', { description: `Please select at least one option for ${group.name}.` });
                     hasValidationError = true;
                 } else if (selectedFromGroup.length < group.minSelect) {
-                    toast.error(`Please select at least ${group.minSelect} option(s) for ${group.name}.`);
+                    toast.error('Option Required', { description: `Please select at least ${group.minSelect} option(s) for ${group.name}.` });
                     hasValidationError = true;
                 } else if (selectedFromGroup.length > group.maxSelect) {
-                    toast.error(`You can select at most ${group.maxSelect} option(s) for ${group.name}.`);
+                    toast.error('Selection Limit Reached', { description: `You can select at most ${group.maxSelect} option(s) for ${group.name}.` });
                     hasValidationError = true;
                 }
             }
@@ -312,7 +312,7 @@ export default function OrderCreatePage() {
             const modForecast = forecastData?.find((f: any) => f.variantId === modId);
             if (modForecast && modForecast.maxProduceable === 0) {
                 const cleanName = modForecast.name.replace('[Modifier] ', '');
-                toast.error(`Add-on "${cleanName}" is out of stock!`);
+                toast.error('Out of Stock', { description: `Add-on "${cleanName}" is out of stock.` });
                 hasValidationError = true;
             }
         }
@@ -416,7 +416,7 @@ export default function OrderCreatePage() {
     const onApplyDiscountSubmit = async (values: z.infer<typeof orderDiscountFormSchema>) => {
         if (!createdOrder) return;
         if (isSelectedBIR && (!values.referenceId?.trim() || !values.referenceName?.trim())) {
-            toast.error('BIR compliance: Card ID and Holder Name are required.');
+            toast.error('BIR Compliance Required', { description: 'Card ID and Holder Name are required.' });
             return;
         }
 
@@ -430,7 +430,7 @@ export default function OrderCreatePage() {
             const updatedOrder = await getOrderById(createdOrder.id);
             setCreatedOrder(updatedOrder);
 
-            toast.success('Discount applied successfully.');
+            toast.success('Discount Applied', { description: 'Discount has been applied successfully.' });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
         } catch (err) {
             toast.error('Failed to apply discount', {
@@ -446,7 +446,7 @@ export default function OrderCreatePage() {
             const updatedOrder = await getOrderById(createdOrder.id);
             setCreatedOrder(updatedOrder);
 
-            toast.success('Discount removed successfully.');
+            toast.success('Discount Removed', { description: 'Discount has been removed successfully.' });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             discountForm.reset();
         } catch (err) {
@@ -501,7 +501,7 @@ export default function OrderCreatePage() {
             const status = (err as any)?.status || (err as any)?.statusCode;
             const msg = getErrorMessage(err);
             if (status === 409 || msg.includes('already exists')) {
-                toast.error('This GCash reference has already been used for another transaction.');
+                toast.error('Duplicate GCash Reference', { description: 'This GCash reference has already been used for another transaction.' });
             } else {
                 toast.error('Failed to process payment', {
                     description: msg
@@ -1014,12 +1014,12 @@ export default function OrderCreatePage() {
                             type="button"
                             onClick={handleBack}
                             className="p-1.5 rounded-lg border border-border/60 hover:bg-muted transition-colors shrink-0"
-                            title="Back to Orders Log"
+                            title="Back to Orders"
                         >
                             <ArrowLeft className="size-4 text-muted-foreground hover:text-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold text-foreground leading-none">Create POS Order Session</h1>
+                            <h1 className="text-2xl font-bold text-foreground leading-none">Create POS Order</h1>
                             <p className="text-xs text-muted-foreground pt-1">
                                 Process walk-in transactions, guest orders, or customer profile checkouts.
                             </p>

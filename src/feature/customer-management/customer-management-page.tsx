@@ -44,10 +44,12 @@ export default function CustomerManagementPage() {
         mutationFn: restoreCustomer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST] });
-            toast.success('Customer profile successfully restored');
+            toast.success('Customer Account Restored', {
+                description: 'The account has been restored successfully.'
+            });
         },
         onError: (err) => {
-            toast.error('Failed to restore customer profile', {
+            toast.error('Failed to restore customer account', {
                 description: getErrorMessage(err)
             });
         }
@@ -198,7 +200,7 @@ export default function CustomerManagementPage() {
                                             variant="ghost"
                                             size="icon"
                                             className="size-8 text-muted-foreground"
-                                            title="Restore Profile"
+                                            title="Restore Customer"
                                             disabled={restoreMutation.isPending}
                                         >
                                             <RotateCcw className="size-4" />
@@ -240,7 +242,7 @@ export default function CustomerManagementPage() {
                                         size="icon"
                                         className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenView(row.original)}
-                                        title="View Details & Cart"
+                                        title="View Customer"
                                     >
                                         <Eye className="size-4" />
                                         <span className="sr-only">View Customer</span>
@@ -252,7 +254,7 @@ export default function CustomerManagementPage() {
                                         size="icon"
                                         className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenEdit(row.original)}
-                                        title="Edit Profile"
+                                        title="Edit Customer"
                                     >
                                         <Edit className="size-4" />
                                         <span className="sr-only">Edit Customer</span>
@@ -276,7 +278,7 @@ export default function CustomerManagementPage() {
                                         size="icon"
                                         className="size-8 text-muted-foreground"
                                         onClick={() => handleOpenDelete(row.original)}
-                                        title="Archive Profile"
+                                        title="Archive Customer"
                                     >
                                         <Trash2 className="size-4" />
                                         <span className="sr-only">Archive Customer</span>
@@ -300,10 +302,8 @@ export default function CustomerManagementPage() {
                         <Users className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Customer Profiles Directory</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Manage coffee shop customer profiles, credentials, contact information, and review active shopping carts.
-                        </p>
+                        <h1 className="text-2xl font-bold text-foreground">Customer Management</h1>
+                        <p className="text-xs text-muted-foreground">Manage customer profiles, credentials, and contact information.</p>
                     </div>
                 </div>
 

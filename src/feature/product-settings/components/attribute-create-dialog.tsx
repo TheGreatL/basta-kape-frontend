@@ -88,7 +88,7 @@ export default function AttributeCreateDialog({ open, onOpenChange }: AttributeC
                         )
                     );
                 } catch (err) {
-                    toast.error('Attribute created, but some option values failed to save');
+                    toast.error('Save Warning', { description: 'Attribute created, but some option values failed to save.' });
                 }
             }
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTES_LIST] });
@@ -224,7 +224,7 @@ export default function AttributeCreateDialog({ open, onOpenChange }: AttributeC
                             <Button type="submit" disabled={createMutation.isPending || isLoading} className="h-9">
                                 {createMutation.isPending ? (
                                     <div className="flex items-center gap-1">
-                                        <Spinner className="h-4 w-4" /> Saving...
+                                        <Spinner className="h-4 w-4" /> Creating...
                                     </div>
                                 ) : (
                                     'Create Attribute'

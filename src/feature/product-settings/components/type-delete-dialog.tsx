@@ -25,7 +25,7 @@ export default function TypeDeleteDialog({ open, onOpenChange, productType }: Ty
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.TYPES_LIST] });
             toast.success('Product Type Archived', {
-                description: 'The product type has been successfully archived/soft-deleted.'
+                description: 'The product type has been archived successfully.'
             });
             onOpenChange(false);
         },
@@ -46,8 +46,8 @@ export default function TypeDeleteDialog({ open, onOpenChange, productType }: Ty
                         Archive Product Type
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Are you absolutely sure you want to archive <strong className="text-foreground">"{productType?.name}"</strong>? This will
-                        soft-delete the classification, moving it to the Archived product types list.
+                        Are you sure you want to archive <strong className="text-foreground">"{productType?.name}"</strong>? This will archive the
+                        classification, moving it to the Archived product types list.
                     </DialogDescription>
                 </DialogHeader>
 

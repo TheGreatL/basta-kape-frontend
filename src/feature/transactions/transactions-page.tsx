@@ -83,13 +83,13 @@ export default function TransactionsPage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.TRANSACTIONS.TRANSACTIONS_LIST] });
             setSelectedTx(data);
             setManualRefNumber('');
-            toast.success('Receipt details updated successfully');
+            toast.success('Receipt Details Updated', { description: 'The transaction receipt details have been updated successfully.' });
         },
         onError: (err) => {
             const status = (err as any)?.status || (err as any)?.statusCode;
             const msg = getErrorMessage(err);
             if (status === 409 || msg.includes('already exists') || msg.toLowerCase().includes('already used')) {
-                toast.error('This GCash reference has already been used for another transaction.');
+                toast.error('Duplicate Reference', { description: 'This GCash reference has already been used for another transaction.' });
                 return;
             }
             toast.error('Failed to update receipt details', {

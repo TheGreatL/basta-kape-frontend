@@ -76,7 +76,7 @@ export default function CustomerDetailPage() {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.CUSTOMER_DETAILS, slug] });
             toast.success('Customer Profile Updated', {
-                description: 'Customer settings have been successfully modified.'
+                description: 'Profile has been updated successfully.'
             });
             // If username changed, redirect to new slug to keep URL in sync
             if (data.user.username !== slug) {
@@ -84,7 +84,7 @@ export default function CustomerDetailPage() {
             }
         },
         onError: (error) => {
-            toast.error('Failed to update customer', {
+            toast.error('Failed to update customer profile', {
                 description: getErrorMessage(error)
             });
         }
@@ -128,7 +128,7 @@ export default function CustomerDetailPage() {
                     The requested customer profile could not be loaded. They may have been fully deleted or the ID/username is incorrect.
                 </p>
                 <Button onClick={() => navigate({ to: '/admin/customers' })} variant="outline" className="mt-2 h-9">
-                    Back to Customers Directory
+                    Back to Customers
                 </Button>
             </div>
         );
@@ -145,7 +145,7 @@ export default function CustomerDetailPage() {
                     className="gap-1.5 self-start text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    Back to Customers Directory
+                    Back to Customers
                 </Button>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -158,8 +158,8 @@ export default function CustomerDetailPage() {
                             </h1>
                             <p className="text-xs text-muted-foreground">
                                 {hasUpdatePermission
-                                    ? 'Modify customer profile specifications, credentials, profile photo, and contact details.'
-                                    : 'Overview of customer credentials, profile data, history records, and contact details.'}
+                                    ? 'Update profile details, credentials, and photo.'
+                                    : 'View profile details, credentials, and activity history.'}
                             </p>
                         </div>
                     </div>
@@ -345,8 +345,7 @@ export default function CustomerDetailPage() {
                                     </div>
                                     {customerDetails.deletedAt && (
                                         <div className="sm:col-span-2 text-destructive font-semibold border-t pt-2 mt-2">
-                                            <span>Archived / Soft Deleted At</span>:{' '}
-                                            {format(new Date(customerDetails.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
+                                            <span>Archived At</span>: {format(new Date(customerDetails.deletedAt), 'MMMM dd, yyyy - hh:mm a')}
                                         </div>
                                     )}
                                 </div>
@@ -364,7 +363,7 @@ export default function CustomerDetailPage() {
                                                 <Spinner className="h-4 w-4 animate-spin" /> Saving...
                                             </div>
                                         ) : (
-                                            'Save Updates'
+                                            'Save Changes'
                                         )}
                                     </Button>
                                 )}

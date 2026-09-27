@@ -80,7 +80,7 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             toast.success('Raw Ingredient Registered', {
-                description: 'The new raw material profile and live stock record have been created.'
+                description: 'The new raw material item and live stock record have been created.'
             });
             onOpenChange(false);
         },
@@ -313,7 +313,7 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.INGREDIENTS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             toast.success('Item Details Updated', {
-                description: 'The item profile has been successfully modified.'
+                description: 'The item details have been successfully modified.'
             });
             onOpenChange(false);
         },

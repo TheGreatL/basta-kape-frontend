@@ -173,7 +173,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                 {effectiveRecipe.deletedAt && (
                                     <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
                                         <AlertTriangle className="size-4 shrink-0" />
-                                        <span>This recipe build is archived / soft-deleted and currently inactive.</span>
+                                        <span>This recipe build is archived and currently inactive.</span>
                                     </div>
                                 )}
 

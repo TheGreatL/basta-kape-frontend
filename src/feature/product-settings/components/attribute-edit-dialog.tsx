@@ -119,7 +119,7 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
         mutationFn: createAttributeValue,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTE_VALUES_LIST, attribute?.id] });
-            toast.success('Option Value Added');
+            toast.success('Option Value Added', { description: 'The new option value has been added.' });
             setNewValue('');
         },
         onError: (error) => {
@@ -131,7 +131,7 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
         mutationFn: ({ id, payload }: { id: string; payload: { value: string } }) => updateAttributeValue(id, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTE_VALUES_LIST, attribute?.id] });
-            toast.success('Option Value Saved');
+            toast.success('Option Value Saved', { description: 'The option value has been updated.' });
             setEditingValueId(null);
             setEditingValueText('');
         },
@@ -144,7 +144,7 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
         mutationFn: deleteAttributeValue,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTE_VALUES_LIST, attribute?.id] });
-            toast.success('Option Value Removed');
+            toast.success('Option Value Archived', { description: 'The option value has been archived.' });
         },
         onError: (error) => {
             toast.error('Failed to delete value', { description: getErrorMessage(error) });
@@ -155,7 +155,7 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
         mutationFn: restoreAttributeValue,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.PRODUCT_SETTINGS.ATTRIBUTE_VALUES_LIST, attribute?.id] });
-            toast.success('Option Value Restored');
+            toast.success('Option Value Restored', { description: 'The option value has been restored.' });
         },
         onError: (error) => {
             toast.error('Failed to restore value', { description: getErrorMessage(error) });
@@ -385,8 +385,8 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
                                                                                             </AlertDialogTitle>
                                                                                             <AlertDialogDescription>
                                                                                                 Are you sure you want to restore the option value{' '}
-                                                                                                <strong>"{val.value}"</strong>? This will reactivate
-                                                                                                the value for custom option modifiers.
+                                                                                                <strong>"{val.value}"</strong>? This will restore the
+                                                                                                value for custom option modifiers.
                                                                                             </AlertDialogDescription>
                                                                                         </AlertDialogHeader>
                                                                                         <AlertDialogFooter>
