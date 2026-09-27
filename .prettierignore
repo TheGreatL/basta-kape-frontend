@@ -2,3 +2,4 @@ package-lock.json
 
 yarn.lock
 .agents
+src/routeTree.gen.ts

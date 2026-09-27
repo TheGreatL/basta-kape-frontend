@@ -9,6 +9,7 @@ const config = {
     singleQuote: true,
     trailingComma: 'none',
     arrowParens: 'always',
-    bracketSpacing: true
+    bracketSpacing: true,
+    endOfLine: 'auto'
 };
 export default config;

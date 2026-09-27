@@ -4,13 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ArrowRight, Calculator, Globe, Package, Scale, ArrowLeftRight } from 'lucide-react';
+import { Calculator, Globe, Package, Scale, ArrowLeftRight } from 'lucide-react';
 
 import { createUnitConversion, updateUnitConversion, convertQuantity } from '#/api/unit-conversions.api.ts';
 import { getIngredientUnits, getIngredients } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { IUnitConversion } from '#/feature/inventory/unit-conversions/unit-conversions.types.ts';
+import type { IUnitConversion, IUpdateUnitConversionPayload } from '#/feature/inventory/unit-conversions/unit-conversions.types.ts';
 import type { IIngredient } from '#/feature/inventory/inventory.types.ts';
 
 import { Button } from '#/components/ui/button.tsx';
@@ -18,7 +18,6 @@ import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import { Badge } from '#/components/ui/badge.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 // =============================================================================
@@ -370,6 +369,33 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
 // 2. Edit Unit Conversion Dialog
 // =============================================================================
 
+const editConversionSchema = z
+    .object({
+        fromUnitId: z.string().min(1, 'Please select source unit'),
+        toUnitId: z.string().min(1, 'Please select target unit'),
+        factor: z.number({ error: 'Factor is required' }).positive('Factor must be greater than 0'),
+        scope: z.enum(['GLOBAL', 'INGREDIENT']),
+        ingredientId: z.string().optional().nullable()
+    })
+    .refine((data) => !data.fromUnitId || !data.toUnitId || data.fromUnitId !== data.toUnitId, {
+        message: 'Source and target units must be different',
+        path: ['toUnitId']
+    })
+    .refine(
+        (data) => {
+            if (data.scope === 'INGREDIENT') {
+                return !!data.ingredientId;
+            }
+            return true;
+        },
+        {
+            message: 'Please select an ingredient for ingredient-specific conversion',
+            path: ['ingredientId']
+        }
+    );
+
+type EditConversionValues = z.infer<typeof editConversionSchema>;
+
 interface UnitConversionEditDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -378,119 +404,320 @@ interface UnitConversionEditDialogProps {
 
 export function UnitConversionEditDialog({ open, onOpenChange, conversion }: UnitConversionEditDialogProps) {
     const queryClient = useQueryClient();
-    const [factor, setFactor] = React.useState<string | number>(1);
 
-    React.useEffect(() => {
-        if (conversion) {
-            setFactor(conversion.factor);
-        }
-    }, [conversion]);
+    // Fetch active units
+    const { data: unitsData } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { status: 'active', limit: 100 }],
+        queryFn: () => getIngredientUnits({ page: 1, limit: 100, status: 'active' }),
+        enabled: open
+    });
+    const units = unitsData?.data || [];
 
-    const updateMutation = useMutation({
-        mutationFn: (data: { id: string; factor: number }) => updateUnitConversion(data.id, { factor: data.factor }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.UNIT_CONVERSIONS.LIST] });
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
-            toast.success('Conversion factor updated successfully');
-            onOpenChange(false);
-        },
-        onError: (err) => {
-            toast.error('Failed to update factor', { description: getErrorMessage(err) });
+    const form = useForm<EditConversionValues>({
+        resolver: zodResolver(editConversionSchema),
+        defaultValues: {
+            fromUnitId: '',
+            toUnitId: '',
+            factor: 1,
+            scope: 'GLOBAL',
+            ingredientId: null
         }
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!conversion) return;
-        const num = parseFloat(String(factor));
-        if (isNaN(num) || num <= 0) {
-            toast.error('Factor must be a positive number greater than 0');
-            return;
+    React.useEffect(() => {
+        if (open && conversion) {
+            form.reset({
+                fromUnitId: conversion.fromUnitId,
+                toUnitId: conversion.toUnitId,
+                factor: conversion.factor,
+                scope: conversion.ingredientId ? 'INGREDIENT' : 'GLOBAL',
+                ingredientId: conversion.ingredientId || null
+            });
         }
-        updateMutation.mutate({ id: conversion.id, factor: num });
+    }, [open, conversion, form]);
+
+    const watchedFromUnitId = form.watch('fromUnitId');
+    const watchedToUnitId = form.watch('toUnitId');
+    const watchedFactor = form.watch('factor');
+    const watchedScope = form.watch('scope');
+
+    const handleSwapUnits = () => {
+        const from = form.getValues('fromUnitId');
+        const to = form.getValues('toUnitId');
+        form.setValue('fromUnitId', to, { shouldValidate: true });
+        form.setValue('toUnitId', from, { shouldValidate: true });
+    };
+
+    const fromUnit = units.find((u) => u.id === watchedFromUnitId);
+    const toUnit = units.find((u) => u.id === watchedToUnitId);
+
+    const updateMutation = useMutation({
+        mutationFn: (data: { id: string; payload: IUpdateUnitConversionPayload }) => updateUnitConversion(data.id, data.payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.UNIT_CONVERSIONS.LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
+            toast.success('Unit conversion updated successfully');
+            onOpenChange(false);
+        },
+        onError: (err) => {
+            toast.error('Failed to update conversion', { description: getErrorMessage(err) });
+        }
+    });
+
+    const onSubmit = (values: EditConversionValues) => {
+        if (!conversion) return;
+        updateMutation.mutate({
+            id: conversion.id,
+            payload: {
+                fromUnitId: values.fromUnitId,
+                toUnitId: values.toUnitId,
+                factor: Number(values.factor),
+                ingredientId: values.scope === 'INGREDIENT' ? values.ingredientId : null
+            }
+        });
     };
 
     if (!conversion) return null;
 
-    const fromAbbrev = conversion.fromUnit.abbreviation || conversion.fromUnit.name;
-    const toAbbrev = conversion.toUnit.abbreviation || conversion.toUnit.name;
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md w-full rounded-2xl p-6 overflow-hidden">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-lg w-full rounded-2xl max-h-[90vh] flex flex-col p-6 overflow-hidden">
+                <DialogHeader className="shrink-0">
                     <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                         <Scale className="size-5 text-primary" />
-                        Update Conversion Factor
+                        Edit Unit Conversion
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Adjust the multiplication ratio between {conversion.fromUnit.name} and {conversion.toUnit.name}.
+                        Modify source or target units, ingredient scope, or conversion multiplication ratio.
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 my-2">
-                    {/* Information summary */}
-                    <div className="p-3 bg-muted/20 border border-border/40 rounded-xl space-y-1.5">
-                        <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground font-medium">Scope:</span>
-                            {conversion.ingredient ? (
-                                <Badge variant="secondary" className="text-xs font-semibold">
-                                    Ingredient: {conversion.ingredient.name}
-                                </Badge>
-                            ) : (
-                                <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30">
-                                    Global Conversion
-                                </Badge>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col gap-4 overflow-y-auto pr-1 my-2">
+                        {/* Scope Toggle */}
+                        <FormField
+                            control={form.control}
+                            name="scope"
+                            render={({ field }) => (
+                                <FormItem className="space-y-1.5">
+                                    <FormLabel className="text-xs font-bold text-foreground">Conversion Scope</FormLabel>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                field.onChange('GLOBAL');
+                                                form.setValue('ingredientId', null);
+                                            }}
+                                            className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
+                                                field.value === 'GLOBAL'
+                                                    ? 'border-primary bg-primary/10 text-foreground'
+                                                    : 'border-border/60 bg-background/50 text-muted-foreground hover:bg-muted/20'
+                                            }`}
+                                        >
+                                            <Globe className="size-4 text-primary shrink-0" />
+                                            <div>
+                                                <span className="text-xs font-bold block">Global Conversion</span>
+                                                <span className="text-xs text-muted-foreground block">Applies to all ingredients</span>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => field.onChange('INGREDIENT')}
+                                            className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
+                                                field.value === 'INGREDIENT'
+                                                    ? 'border-primary bg-primary/10 text-foreground'
+                                                    : 'border-border/60 bg-background/50 text-muted-foreground hover:bg-muted/20'
+                                            }`}
+                                        >
+                                            <Package className="size-4 text-primary shrink-0" />
+                                            <div>
+                                                <span className="text-xs font-bold block">Ingredient Specific</span>
+                                                <span className="text-xs text-muted-foreground block">Applies to one item</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
                             )}
-                        </div>
-                        <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground font-medium">Units:</span>
-                            <span className="font-bold text-foreground">
-                                {conversion.fromUnit.name} ({fromAbbrev}) → {conversion.toUnit.name} ({toAbbrev})
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Factor input */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground">New Factor</label>
-                        <Input
-                            type="number"
-                            step="any"
-                            min="0.0001"
-                            value={factor}
-                            onChange={(e) => setFactor(e.target.value)}
-                            className="h-9 text-xs font-mono font-bold bg-background/50"
                         />
-                    </div>
 
-                    {/* Live Preview */}
-                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between text-xs font-bold font-mono text-primary">
-                        <span>1 {fromAbbrev}</span>
-                        <ArrowRight className="size-3.5" />
-                        <span>
-                            {parseFloat(String(factor)) || 0} {toAbbrev}
-                        </span>
-                    </div>
+                        {/* Specific Ingredient Select */}
+                        {watchedScope === 'INGREDIENT' && (
+                            <FormField
+                                control={form.control}
+                                name="ingredientId"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-bold text-foreground">Target Raw Ingredient</FormLabel>
+                                        <FormControl>
+                                            <InfiniteSelect<IIngredient>
+                                                queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
+                                                fetchFn={async ({ pageParam, query }) => {
+                                                    return getIngredients({
+                                                        page: pageParam || 1,
+                                                        limit: 20,
+                                                        search: query,
+                                                        status: 'active'
+                                                    });
+                                                }}
+                                                getItems={(page) => page.data}
+                                                getNextPageParam={(lastPage) => {
+                                                    return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
+                                                }}
+                                                value={field.value || ''}
+                                                onChange={(val) => field.onChange(val || null)}
+                                                getOptionValue={(item) => item.id}
+                                                getOptionLabel={(item) => item.name}
+                                                selectedItem={
+                                                    conversion.ingredient
+                                                        ? ({ id: conversion.ingredient.id, name: conversion.ingredient.name } as any)
+                                                        : undefined
+                                                }
+                                                placeholder="Choose raw ingredient..."
+                                                searchPlaceholder="Search ingredients..."
+                                                className="h-9 text-xs bg-background/50"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs text-muted-foreground">
+                                            This conversion rule will only take effect for this specific raw ingredient.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
-                    <DialogFooter className="pt-2 gap-2 sm:gap-0">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => onOpenChange(false)}
-                            className="h-9 w-24 rounded-lg text-xs font-bold"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            disabled={updateMutation.isPending}
-                            className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95"
-                        >
-                            {updateMutation.isPending ? 'Updating...' : 'Save Factor'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                        {/* Units Row */}
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                            {/* From Unit */}
+                            <div className="flex-1 w-full">
+                                <FormField
+                                    control={form.control}
+                                    name="fromUnitId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-bold text-foreground">1 Source Unit</FormLabel>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className="h-9 text-xs bg-background/50">
+                                                        <SelectValue placeholder="Source Unit..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {units.map((u) => (
+                                                        <SelectItem key={u.id} value={u.id} className="text-xs">
+                                                            {u.name} {u.abbreviation ? `(${u.abbreviation})` : ''}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Swap Button */}
+                            <div className="sm:pt-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={handleSwapUnits}
+                                    disabled={!watchedFromUnitId || !watchedToUnitId}
+                                    title="Swap Units"
+                                    className="size-8 rounded-full border-border/60 hover:bg-primary/10 hover:border-primary shrink-0"
+                                >
+                                    <ArrowLeftRight className="size-3.5 text-muted-foreground" />
+                                </Button>
+                            </div>
+
+                            {/* To Unit */}
+                            <div className="flex-1 w-full">
+                                <FormField
+                                    control={form.control}
+                                    name="toUnitId"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-bold text-foreground">Target Unit</FormLabel>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger className="h-9 text-xs bg-background/50">
+                                                        <SelectValue placeholder="Target Unit..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {units.map((u) => (
+                                                        <SelectItem key={u.id} value={u.id} className="text-xs">
+                                                            {u.name} {u.abbreviation ? `(${u.abbreviation})` : ''}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Factor Input */}
+                        <FormField
+                            control={form.control}
+                            name="factor"
+                            render={({ field }) => (
+                                <FormItem className="space-y-1.5">
+                                    <FormLabel className="text-xs font-bold text-foreground">Multiplier Factor</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="any"
+                                            min="0.0001"
+                                            placeholder="e.g. 4 or 1000"
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                                            className="h-9 text-xs font-mono font-bold bg-background/50"
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-xs text-muted-foreground">
+                                        How many target units equal 1 source unit.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Live Formula Preview Card */}
+                        <div className="p-3.5 bg-muted/30 border border-border/40 rounded-xl space-y-1">
+                            <span className="text-xs font-bold text-muted-foreground uppercase block">Conversion Formula Preview</span>
+                            <div className="flex items-center gap-2 text-sm font-bold text-foreground font-mono">
+                                <span>1 {fromUnit ? fromUnit.abbreviation || fromUnit.name : '[From Unit]'}</span>
+                                <span className="text-primary">=</span>
+                                <span>{parseFloat(String(watchedFactor)) || 0}</span>
+                                <span>{toUnit ? toUnit.abbreviation || toUnit.name : '[To Unit]'}</span>
+                            </div>
+                        </div>
+
+                        <DialogFooter className="shrink-0 pt-4 border-t border-border/40 gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => onOpenChange(false)}
+                                className="h-9 w-24 rounded-lg text-xs font-bold"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={updateMutation.isPending}
+                                className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95"
+                            >
+                                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
             </DialogContent>
         </Dialog>
     );

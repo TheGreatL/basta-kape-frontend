@@ -41,7 +41,10 @@ export interface ICreateUnitConversionPayload {
 }
 
 export interface IUpdateUnitConversionPayload {
-    factor: number;
+    fromUnitId?: string;
+    toUnitId?: string;
+    factor?: number;
+    ingredientId?: string | null;
 }
 
 export interface IConvertQuantityParams {
