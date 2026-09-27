@@ -27,7 +27,8 @@ import {
     deleteVariantRecipe,
     restoreVariantRecipe
 } from '#/api/products.api.ts';
-import { getIngredients, getIngredientUnits } from '#/api/inventory.api.ts';
+import { getIngredients } from '#/api/inventory.api.ts';
+import { useUnitConverter } from '#/hooks/use-unit-converter.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage, ApiError } from '#/utils/error-handler.ts';
 import type {
@@ -56,7 +57,9 @@ const recipeIngredientSchema = z.object({
     quantity: z.number().positive('Quantity must be greater than 0'),
     ingredientUnitId: z.string().uuid('Please select a valid unit'),
     _ingredientName: z.string().optional(),
-    _unitName: z.string().optional()
+    _unitName: z.string().optional(),
+    _baseUnitId: z.string().optional(),
+    _baseUnitName: z.string().optional()
 });
 
 const recipeFormSchema = z.object({
@@ -127,13 +130,8 @@ export default function RecipeDialog({
         enabled: open && !!variant?.productId
     });
 
-    // Query: Active Measurement Units for kitchen unit flexibility
-    const { data: activeUnitsData } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.UNITS_LIST, { status: 'active', limit: 100 }],
-        queryFn: () => getIngredientUnits({ page: 1, limit: 100, status: 'active' }),
-        enabled: open
-    });
-    const activeUnits = activeUnitsData?.data || [];
+    // Kitchen unit conversion helper
+    const { getCompatibleUnits, convertQuantity, unitMap } = useUnitConverter();
 
     const copyableOptions = React.useMemo(() => {
         if (availableCopyVariants && availableCopyVariants.length > 0) {
@@ -169,7 +167,9 @@ export default function RecipeDialog({
                         quantity: ing.quantity,
                         ingredientUnitId: ing.ingredientUnitId,
                         _ingredientName: ing._ingredientName,
-                        _unitName: ing._unitName
+                        _unitName: ing._unitName,
+                        _baseUnitId: (ing as unknown as { _baseUnitId?: string })._baseUnitId || ing.ingredientUnitId,
+                        _baseUnitName: (ing as unknown as { _baseUnitName?: string })._baseUnitName || ing._unitName
                     }))
                 });
                 toast.success('Recipe template copied successfully. Save changes to apply!');
@@ -180,13 +180,20 @@ export default function RecipeDialog({
             form.reset({
                 name: `${productName} Recipe (${variant?.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Custom'})`,
                 description: copiedRecipe.description || '',
-                ingredients: copiedRecipe.ingredients.map((ing) => ({
-                    ingredientId: ing.ingredientId,
-                    quantity: ing.quantity,
-                    ingredientUnitId: ing.ingredientUnitId,
-                    _ingredientName: ing.ingredient.name,
-                    _unitName: ing.unit.abbreviation || ing.unit.name
-                }))
+                ingredients: copiedRecipe.ingredients.map((ing) => {
+                    const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id || ing.ingredientUnitId;
+                    const baseUnitName =
+                        ing.ingredient.defaultUnit?.abbreviation || ing.ingredient.defaultUnit?.name || ing.unit.abbreviation || ing.unit.name;
+                    return {
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing.ingredient.name,
+                        _unitName: ing.unit.abbreviation || ing.unit.name,
+                        _baseUnitId: baseUnitId,
+                        _baseUnitName: baseUnitName
+                    };
+                })
             });
             toast.success('Recipe template copied successfully. Save changes to apply!');
         } catch (err) {
@@ -220,18 +227,37 @@ export default function RecipeDialog({
     React.useEffect(() => {
         if (isLocal) {
             if (localRecipe) {
-                form.reset(localRecipe);
+                form.reset({
+                    name: localRecipe.name,
+                    description: localRecipe.description || '',
+                    ingredients: localRecipe.ingredients.map((ing: ILocalRecipeIngredient) => ({
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing._ingredientName,
+                        _unitName: ing._unitName,
+                        _baseUnitId: (ing as unknown as { _baseUnitId?: string })._baseUnitId || ing.ingredientUnitId,
+                        _baseUnitName: (ing as unknown as { _baseUnitName?: string })._baseUnitName || ing._unitName
+                    }))
+                });
             } else if (recipe) {
                 form.reset({
                     name: recipe.name,
                     description: recipe.description || '',
-                    ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => ({
-                        ingredientId: ing.ingredientId,
-                        quantity: ing.quantity,
-                        ingredientUnitId: ing.ingredientUnitId,
-                        _ingredientName: ing.ingredient.name,
-                        _unitName: ing.unit.abbreviation || ing.unit.name
-                    }))
+                    ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => {
+                        const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id || ing.ingredientUnitId;
+                        const baseUnitName =
+                            ing.ingredient.defaultUnit?.abbreviation || ing.ingredient.defaultUnit?.name || ing.unit.abbreviation || ing.unit.name;
+                        return {
+                            ingredientId: ing.ingredientId,
+                            quantity: ing.quantity,
+                            ingredientUnitId: ing.ingredientUnitId,
+                            _ingredientName: ing.ingredient.name,
+                            _unitName: ing.unit.abbreviation || ing.unit.name,
+                            _baseUnitId: baseUnitId,
+                            _baseUnitName: baseUnitName
+                        };
+                    })
                 });
             } else {
                 const attrText = variant?.attributes
@@ -248,13 +274,20 @@ export default function RecipeDialog({
             form.reset({
                 name: recipe.name,
                 description: recipe.description || '',
-                ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => ({
-                    ingredientId: ing.ingredientId,
-                    quantity: ing.quantity,
-                    ingredientUnitId: ing.ingredientUnitId,
-                    _ingredientName: ing.ingredient.name,
-                    _unitName: ing.unit.abbreviation || ing.unit.name
-                }))
+                ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => {
+                    const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id || ing.ingredientUnitId;
+                    const baseUnitName =
+                        ing.ingredient.defaultUnit?.abbreviation || ing.ingredient.defaultUnit?.name || ing.unit.abbreviation || ing.unit.name;
+                    return {
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing.ingredient.name,
+                        _unitName: ing.unit.abbreviation || ing.unit.name,
+                        _baseUnitId: baseUnitId,
+                        _baseUnitName: baseUnitName
+                    };
+                })
             });
         } else {
             const attrText = variant?.attributes
@@ -341,13 +374,20 @@ export default function RecipeDialog({
             form.reset({
                 name: recipe.name,
                 description: recipe.description || '',
-                ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => ({
-                    ingredientId: ing.ingredientId,
-                    quantity: ing.quantity,
-                    ingredientUnitId: ing.ingredientUnitId,
-                    _ingredientName: ing.ingredient.name,
-                    _unitName: ing.unit.abbreviation || ing.unit.name
-                }))
+                ingredients: recipe.ingredients.map((ing: IRecipeIngredient) => {
+                    const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id || ing.ingredientUnitId;
+                    const baseUnitName =
+                        ing.ingredient.defaultUnit?.abbreviation || ing.ingredient.defaultUnit?.name || ing.unit.abbreviation || ing.unit.name;
+                    return {
+                        ingredientId: ing.ingredientId,
+                        quantity: ing.quantity,
+                        ingredientUnitId: ing.ingredientUnitId,
+                        _ingredientName: ing.ingredient.name,
+                        _unitName: ing.unit.abbreviation || ing.unit.name,
+                        _baseUnitId: baseUnitId,
+                        _baseUnitName: baseUnitName
+                    };
+                })
             });
             setIsEditing(false);
         } else {
@@ -451,7 +491,9 @@ export default function RecipeDialog({
                                                     quantity: 1,
                                                     ingredientUnitId: '',
                                                     _ingredientName: '',
-                                                    _unitName: ''
+                                                    _unitName: '',
+                                                    _baseUnitId: '',
+                                                    _baseUnitName: ''
                                                 })
                                             }
                                             className="h-8 text-xs gap-1 shadow-sm"
@@ -467,165 +509,220 @@ export default function RecipeDialog({
                                         </div>
                                     ) : (
                                         <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
-                                            {fields.map((field, index) => (
-                                                <div
-                                                    key={field.id}
-                                                    className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-muted/20 p-3.5 rounded-xl border border-border/40 relative"
-                                                >
-                                                    {/* Ingredient Select */}
-                                                    <div className="sm:col-span-5">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name={`ingredients.${index}.ingredientId`}
-                                                            render={({ field: selectField }) => (
-                                                                <FormItem>
-                                                                    <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                        Raw Ingredient
-                                                                    </FormLabel>
-                                                                    <FormControl>
-                                                                        <InfiniteSelect<IIngredient>
-                                                                            queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
-                                                                            fetchFn={async ({ pageParam, query }) => {
-                                                                                return getIngredients({
-                                                                                    page: pageParam || 1,
-                                                                                    limit: 20,
-                                                                                    search: query,
-                                                                                    status: 'active'
-                                                                                });
-                                                                            }}
-                                                                            getItems={(page) => page.data}
-                                                                            getNextPageParam={(lastPage) => {
-                                                                                return lastPage.meta.hasMore
-                                                                                    ? lastPage.meta.currentPage + 1
-                                                                                    : undefined;
-                                                                            }}
-                                                                            value={selectField.value}
-                                                                            onChange={(val, item) => {
-                                                                                selectField.onChange(val);
-                                                                                form.setValue(
-                                                                                    `ingredients.${index}._ingredientName`,
-                                                                                    item?.name || '',
-                                                                                    { shouldDirty: true }
-                                                                                );
-                                                                                if (item?.defaultUnit) {
+                                            {fields.map((field, index) => {
+                                                const watchedRow = watchedIngredients[index];
+                                                const currentIngredientId = watchedRow.ingredientId || field.ingredientId;
+                                                const currentBaseUnitId = watchedRow._baseUnitId || field._baseUnitId;
+                                                const currentBaseUnitName = watchedRow._baseUnitName || field._baseUnitName;
+                                                const currentUnitId = watchedRow.ingredientUnitId || field.ingredientUnitId;
+                                                const currentQty = Number(watchedRow.quantity) || 0;
+
+                                                const compatibleUnits = getCompatibleUnits(currentBaseUnitId, currentIngredientId);
+                                                const isConverted = Boolean(
+                                                    currentBaseUnitId && currentUnitId && currentUnitId !== currentBaseUnitId && currentQty > 0
+                                                );
+                                                const baseDeduction =
+                                                    isConverted && currentUnitId && currentBaseUnitId
+                                                        ? convertQuantity(currentUnitId, currentBaseUnitId, currentQty, currentIngredientId)
+                                                        : currentQty;
+
+                                                return (
+                                                    <div
+                                                        key={field.id}
+                                                        className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-muted/20 p-3.5 rounded-xl border border-border/40 relative"
+                                                    >
+                                                        {/* Ingredient Select */}
+                                                        <div className="sm:col-span-5">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name={`ingredients.${index}.ingredientId`}
+                                                                render={({ field: selectField }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Raw Ingredient
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <InfiniteSelect<IIngredient>
+                                                                                queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
+                                                                                fetchFn={async ({ pageParam, query }) => {
+                                                                                    return getIngredients({
+                                                                                        page: pageParam || 1,
+                                                                                        limit: 20,
+                                                                                        search: query,
+                                                                                        status: 'active'
+                                                                                    });
+                                                                                }}
+                                                                                getItems={(page) => page.data}
+                                                                                getNextPageParam={(lastPage) => {
+                                                                                    return lastPage.meta.hasMore
+                                                                                        ? lastPage.meta.currentPage + 1
+                                                                                        : undefined;
+                                                                                }}
+                                                                                value={selectField.value}
+                                                                                onChange={(val, item) => {
+                                                                                    selectField.onChange(val);
                                                                                     form.setValue(
-                                                                                        `ingredients.${index}.ingredientUnitId`,
-                                                                                        item.defaultUnit.id,
+                                                                                        `ingredients.${index}._ingredientName`,
+                                                                                        item?.name || '',
                                                                                         { shouldDirty: true }
                                                                                     );
-                                                                                    form.setValue(
-                                                                                        `ingredients.${index}._unitName`,
-                                                                                        item.defaultUnit.abbreviation || item.defaultUnit.name,
-                                                                                        { shouldDirty: true }
-                                                                                    );
+                                                                                    if (item?.defaultUnit) {
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}.ingredientUnitId`,
+                                                                                            item.defaultUnit.id,
+                                                                                            { shouldDirty: true }
+                                                                                        );
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}._unitName`,
+                                                                                            item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                            { shouldDirty: true }
+                                                                                        );
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}._baseUnitId`,
+                                                                                            item.defaultUnit.id,
+                                                                                            { shouldDirty: true }
+                                                                                        );
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}._baseUnitName`,
+                                                                                            item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                            { shouldDirty: true }
+                                                                                        );
+                                                                                    }
+                                                                                }}
+                                                                                getOptionValue={(item) => item.id}
+                                                                                getOptionLabel={(item) => item.name}
+                                                                                selectedItem={
+                                                                                    selectField.value &&
+                                                                                    (watchedIngredients[index]?._ingredientName ||
+                                                                                        field._ingredientName)
+                                                                                        ? ({
+                                                                                              id: selectField.value,
+                                                                                              name:
+                                                                                                  watchedIngredients[index]?._ingredientName ||
+                                                                                                  field._ingredientName
+                                                                                          } as IIngredient)
+                                                                                        : undefined
                                                                                 }
-                                                                            }}
-                                                                            getOptionValue={(item) => item.id}
-                                                                            getOptionLabel={(item) => item.name}
-                                                                            selectedItem={
-                                                                                selectField.value &&
-                                                                                (watchedIngredients[index]?._ingredientName || field._ingredientName)
-                                                                                    ? ({
-                                                                                          id: selectField.value,
-                                                                                          name:
-                                                                                              watchedIngredients[index]?._ingredientName ||
-                                                                                              field._ingredientName
-                                                                                      } as IIngredient)
-                                                                                    : undefined
-                                                                            }
-                                                                            placeholder="Choose ingredient..."
-                                                                            searchPlaceholder="Search ingredients..."
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
+                                                                                placeholder="Choose ingredient..."
+                                                                                searchPlaceholder="Search ingredients..."
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
 
-                                                    {/* Quantity Input */}
-                                                    <div className="sm:col-span-3">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name={`ingredients.${index}.quantity`}
-                                                            render={({ field: qtyField }) => (
-                                                                <FormItem>
-                                                                    <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                        Quantity
-                                                                    </FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            type="number"
-                                                                            step="any"
-                                                                            value={qtyField.value}
-                                                                            onChange={(e) =>
-                                                                                qtyField.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                                                                            }
-                                                                            className="h-9 bg-background/50"
-                                                                            placeholder="e.g. 1"
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
-
-                                                    {/* Unit Selection (Kitchen Units flexibility) */}
-                                                    <div className="sm:col-span-3">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name={`ingredients.${index}.ingredientUnitId`}
-                                                            render={({ field: unitField }) => (
-                                                                <FormItem>
-                                                                    <FormLabel className="text-xs font-semibold text-foreground/80">Unit</FormLabel>
-                                                                    <FormControl>
-                                                                        <Select
-                                                                            value={unitField.value}
-                                                                            onValueChange={(val) => {
-                                                                                unitField.onChange(val);
-                                                                                const found = activeUnits.find((u) => u.id === val);
-                                                                                if (found) {
-                                                                                    form.setValue(
-                                                                                        `ingredients.${index}._unitName`,
-                                                                                        found.abbreviation || found.name
-                                                                                    );
+                                                        {/* Quantity Input */}
+                                                        <div className="sm:col-span-3">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name={`ingredients.${index}.quantity`}
+                                                                render={({ field: qtyField }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Quantity
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                type="number"
+                                                                                step="any"
+                                                                                value={qtyField.value}
+                                                                                onChange={(e) =>
+                                                                                    qtyField.onChange(
+                                                                                        e.target.value === '' ? '' : Number(e.target.value)
+                                                                                    )
                                                                                 }
-                                                                            }}
-                                                                        >
-                                                                            <SelectTrigger className="h-9 bg-background/50 text-xs">
-                                                                                <SelectValue placeholder="Select unit..." />
-                                                                            </SelectTrigger>
-                                                                            <SelectContent>
-                                                                                {activeUnits.map((u) => (
-                                                                                    <SelectItem key={u.id} value={u.id} className="text-xs">
-                                                                                        {u.name} ({u.abbreviation})
-                                                                                    </SelectItem>
-                                                                                ))}
-                                                                            </SelectContent>
-                                                                        </Select>
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
+                                                                                className="h-9 bg-background/50"
+                                                                                placeholder="e.g. 1"
+                                                                            />
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
 
-                                                    {/* Delete Row Button */}
-                                                    <div className="sm:col-span-1 flex items-center justify-end w-full sm:pt-[24px]">
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => remove(index)}
-                                                            className="size-9 text-muted-foreground hover:text-destructive shrink-0 transition-colors"
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                            <span className="sr-only">Remove row</span>
-                                                        </Button>
+                                                        {/* Unit Selection (Compatible Units Only) */}
+                                                        <div className="sm:col-span-3">
+                                                            <FormField
+                                                                control={form.control}
+                                                                name={`ingredients.${index}.ingredientUnitId`}
+                                                                render={({ field: unitField }) => (
+                                                                    <FormItem>
+                                                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                                            Unit
+                                                                        </FormLabel>
+                                                                        <FormControl>
+                                                                            <Select
+                                                                                value={unitField.value}
+                                                                                disabled={!currentIngredientId}
+                                                                                onValueChange={(val) => {
+                                                                                    unitField.onChange(val);
+                                                                                    const found =
+                                                                                        compatibleUnits.find((u) => u.id === val) || unitMap.get(val);
+                                                                                    if (found) {
+                                                                                        form.setValue(
+                                                                                            `ingredients.${index}._unitName`,
+                                                                                            found.abbreviation || found.name
+                                                                                        );
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                <SelectTrigger className="h-9 bg-background/50 text-xs">
+                                                                                    <SelectValue
+                                                                                        placeholder={
+                                                                                            currentIngredientId
+                                                                                                ? 'Select unit...'
+                                                                                                : 'Select ingredient'
+                                                                                        }
+                                                                                    />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {compatibleUnits.map((u) => (
+                                                                                        <SelectItem key={u.id} value={u.id} className="text-xs">
+                                                                                            {u.name} ({u.abbreviation || u.name})
+                                                                                            {u.id === currentBaseUnitId && ' • Base'}
+                                                                                        </SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        </FormControl>
+                                                                        <FormMessage />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
+
+                                                        {/* Delete Row Button */}
+                                                        <div className="sm:col-span-1 flex items-center justify-end w-full sm:pt-[24px]">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => remove(index)}
+                                                                className="size-9 text-muted-foreground hover:text-destructive shrink-0 transition-colors"
+                                                            >
+                                                                <Trash2 className="size-4" />
+                                                                <span className="sr-only">Remove row</span>
+                                                            </Button>
+                                                        </div>
+
+                                                        {/* Live Base Deduction Info Badge */}
+                                                        {isConverted && (
+                                                            <div className="sm:col-span-12 -mt-1 flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
+                                                                <span className="font-semibold">↳ Base Deduction:</span>
+                                                                <span>
+                                                                    {Number(baseDeduction.toFixed(4)).toLocaleString()} {currentBaseUnitName}
+                                                                </span>
+                                                                <span className="text-[10px] text-muted-foreground">
+                                                                    (converted from {currentQty} {watchedRow._unitName || field._unitName})
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -674,17 +771,34 @@ export default function RecipeDialog({
                                             </div>
                                         ) : (
                                             <div className="divide-y divide-border/30">
-                                                {recipe.ingredients.map((ing: IRecipeIngredient) => (
-                                                    <div key={ing.id} className="flex justify-between items-center p-3 text-xs">
-                                                        <div className="font-semibold text-foreground/80">{ing.ingredient.name}</div>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="font-bold text-foreground/90 bg-background/50 border-border/40 py-0.5 px-2"
-                                                        >
-                                                            {ing.quantity} {ing.unit.abbreviation || ing.unit.name}
-                                                        </Badge>
-                                                    </div>
-                                                ))}
+                                                {recipe.ingredients.map((ing: IRecipeIngredient) => {
+                                                    const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id;
+                                                    const isDifferent = Boolean(baseUnitId && baseUnitId !== ing.ingredientUnitId);
+                                                    const baseQty =
+                                                        isDifferent && baseUnitId
+                                                            ? convertQuantity(ing.ingredientUnitId, baseUnitId, ing.quantity, ing.ingredientId)
+                                                            : ing.quantity;
+                                                    const baseUnitName = ing.ingredient.defaultUnit?.abbreviation || ing.ingredient.defaultUnit?.name;
+
+                                                    return (
+                                                        <div key={ing.id} className="flex justify-between items-center p-3 text-xs">
+                                                            <div>
+                                                                <span className="font-semibold text-foreground/80">{ing.ingredient.name}</span>
+                                                                {isDifferent && baseUnitName && (
+                                                                    <span className="text-[11px] text-amber-600 dark:text-amber-400 ml-2 font-medium">
+                                                                        (↳ {Number(baseQty.toFixed(4)).toLocaleString()} {baseUnitName} base)
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="font-bold text-foreground/90 bg-background/50 border-border/40 py-0.5 px-2"
+                                                            >
+                                                                {ing.quantity} {ing.unit.abbreviation || ing.unit.name}
+                                                            </Badge>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>

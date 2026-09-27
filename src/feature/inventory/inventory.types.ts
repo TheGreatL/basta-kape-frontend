@@ -123,6 +123,9 @@ export interface IDelivery {
     unitCost: number;
     totalCost: number;
     batchNumber: string | null;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
+    inputUnit?: IIngredientUnit | null;
     expiryDate: string | null;
     receivedAt: string;
     createdAt?: string;
@@ -150,6 +153,8 @@ export interface ICreateDeliveryPayload {
     unitCost: number;
     batchNumber?: string;
     expiryDate?: string | null;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
 }
 
 export interface IUpdateDeliveryPayload {
@@ -158,6 +163,8 @@ export interface IUpdateDeliveryPayload {
     unitCost?: number;
     batchNumber?: string;
     expiryDate?: string | null;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
 }
 
 // =============================================================================
@@ -171,6 +178,9 @@ export interface IAdjustment {
     quantity: number;
     type: TAdjustmentType;
     reason: string | null;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
+    inputUnit?: IIngredientUnit | null;
     createdAt: string;
     updatedAt?: string;
     ingredient?: IIngredient;
@@ -190,12 +200,16 @@ export interface ICreateAdjustmentPayload {
     quantity: number;
     type: TAdjustmentType;
     reason?: string;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
 }
 
 export interface IUpdateAdjustmentPayload {
     quantity?: number;
     type?: TAdjustmentType;
     reason?: string;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
 }
 
 export interface IGetForecastParams extends IPaginationParams {

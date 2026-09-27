@@ -24,6 +24,8 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
+import { useUnitConverter } from '#/hooks/use-unit-converter.ts';
+import { UnitQuantityInput } from '#/components/inventory/unit-quantity-input.tsx';
 import { cn } from '#/lib/utils.ts';
 
 export type TStockActionMode = 'ADD_STOCK' | 'LOG_WASTE' | 'CORRECTION';
@@ -71,9 +73,21 @@ export default function UnifiedStockDialog({
     currentSystemStock
 }: UnifiedStockDialogProps) {
     const queryClient = useQueryClient();
+    const { convertQuantity, unitMap } = useUnitConverter();
     const [mode, setMode] = React.useState<TStockActionMode>(initialMode);
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(preselectedIngredient || null);
     const [selectedSupplier, setSelectedSupplier] = React.useState<ISupplierListItem | null>(null);
+
+    // Preferred input unit & quantity states
+    const [selectedUnitId, setSelectedUnitId] = React.useState<string>(preselectedIngredient?.defaultUnit?.id || '');
+    const [preferredQuantity, setPreferredQuantity] = React.useState<number | ''>(0);
+    const [preferredCost, setPreferredCost] = React.useState<number | ''>(0);
+
+    const [wasteSelectedUnitId, setWasteSelectedUnitId] = React.useState<string>(preselectedIngredient?.defaultUnit?.id || '');
+    const [wastePreferredQty, setWastePreferredQty] = React.useState<number | ''>(0);
+
+    const [countSelectedUnitId, setCountSelectedUnitId] = React.useState<string>(preselectedIngredient?.defaultUnit?.id || '');
+    const [countPreferredQty, setCountPreferredQty] = React.useState<number | ''>(currentSystemStock ?? 0);
 
     const form = useForm<UnifiedFormValues>({
         resolver: zodResolver(unifiedFormSchema),
@@ -97,6 +111,14 @@ export default function UnifiedStockDialog({
             setMode(initialMode);
             setSelectedIngredient(preselectedIngredient || null);
             setSelectedSupplier(null);
+            const baseUnitId = preselectedIngredient?.defaultUnit?.id || '';
+            setSelectedUnitId(baseUnitId);
+            setPreferredQuantity(0);
+            setPreferredCost(0);
+            setWasteSelectedUnitId(baseUnitId);
+            setWastePreferredQty(0);
+            setCountSelectedUnitId(baseUnitId);
+            setCountPreferredQty(currentSystemStock ?? 0);
             form.reset({
                 mode: initialMode,
                 ingredientId: preselectedIngredient?.id || '',
@@ -143,6 +165,11 @@ export default function UnifiedStockDialog({
                             const currentCost = form.getValues('unitCost');
                             if (!currentCost || currentCost === 0 || supplierChanged) {
                                 form.setValue('unitCost', matched.unitCost);
+                                const factor =
+                                    selectedIngredient?.defaultUnit?.id && selectedUnitId
+                                        ? convertQuantity(selectedUnitId, selectedIngredient.defaultUnit.id, 1, matched.ingredientId)
+                                        : 1;
+                                setPreferredCost(Number((matched.unitCost * factor).toFixed(4)));
                             }
                         }
                     } else {
@@ -150,11 +177,12 @@ export default function UnifiedStockDialog({
                         form.setValue('ingredientId', '');
                         setSelectedIngredient(null);
                         form.setValue('unitCost', 0);
+                        setPreferredCost(0);
                     }
                 }
             }
         }
-    }, [mode, watchedSupplierId, watchedIngredientId, supplierIngredientsData, form]);
+    }, [mode, watchedSupplierId, watchedIngredientId, supplierIngredientsData, form, selectedIngredient, selectedUnitId, convertQuantity]);
 
     // Delivery mutation
     const deliveryMutation = useMutation({
@@ -220,7 +248,9 @@ export default function UnifiedStockDialog({
                 quantityReceived: values.quantityReceived,
                 unitCost: values.unitCost || 0,
                 batchNumber: values.batchNumber || undefined,
-                expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null
+                expiryDate: values.expiryDate ? new Date(values.expiryDate).toISOString() : null,
+                inputQuantity: typeof preferredQuantity === 'number' ? preferredQuantity : null,
+                inputUnitId: selectedUnitId || null
             });
         } else if (mode === 'LOG_WASTE') {
             if (!values.adjustmentQuantity || values.adjustmentQuantity <= 0) {
@@ -231,7 +261,9 @@ export default function UnifiedStockDialog({
                 ingredientId: values.ingredientId,
                 quantity: -Math.abs(values.adjustmentQuantity),
                 type: values.adjustmentType || 'WASTE',
-                reason: values.reason || undefined
+                reason: values.reason || undefined,
+                inputQuantity: typeof wastePreferredQty === 'number' ? -Math.abs(wastePreferredQty) : null,
+                inputUnitId: wasteSelectedUnitId || null
             });
         } else {
             if (values.actualPhysicalCount === undefined || values.actualPhysicalCount < 0) {
@@ -246,7 +278,11 @@ export default function UnifiedStockDialog({
     };
 
     const isPending = deliveryMutation.isPending || adjustmentMutation.isPending || physicalCountMutation.isPending;
-    const unitAbbr = selectedIngredient?.defaultUnit?.abbreviation || selectedIngredient?.defaultUnit?.name || '';
+    const baseUnit = selectedIngredient?.defaultUnit;
+    const unitAbbr = baseUnit?.abbreviation || baseUnit?.name || '';
+    const selectedUnitObj = unitMap.get(selectedUnitId) || baseUnit;
+    const selectedUnitAbbr = selectedUnitObj?.abbreviation || selectedUnitObj?.name || '';
+    const conversionFactor = baseUnit?.id && selectedUnitId ? convertQuantity(selectedUnitId, baseUnit.id, 1, selectedIngredient?.id) : 1;
     const watchActualCount = form.watch('actualPhysicalCount');
     const calculatedDiff = currentSystemStock !== undefined && watchActualCount !== undefined ? watchActualCount - currentSystemStock : undefined;
 
@@ -398,10 +434,15 @@ export default function UnifiedStockDialog({
                                                 onChange={(val, item) => {
                                                     field.onChange(val || '');
                                                     setSelectedIngredient(item || null);
+                                                    const baseId = item?.defaultUnit?.id || '';
+                                                    setSelectedUnitId(baseId);
+                                                    setWasteSelectedUnitId(baseId);
+                                                    setCountSelectedUnitId(baseId);
                                                     if (watchedSupplierId && supplierIngredientsData && val) {
                                                         const matched = supplierIngredientsData.find((si) => si.ingredientId === val);
                                                         if (matched && matched.unitCost != null && matched.unitCost > 0) {
                                                             form.setValue('unitCost', matched.unitCost);
+                                                            setPreferredCost(matched.unitCost);
                                                         }
                                                     }
                                                 }}
@@ -447,22 +488,74 @@ export default function UnifiedStockDialog({
                             {/* 🟢 MODE 1: ADD STOCK (DELIVERY) */}
                             {mode === 'ADD_STOCK' && (
                                 <>
+                                    <div className="space-y-1">
+                                        <UnitQuantityInput
+                                            label="Qty Received"
+                                            required
+                                            ingredientId={selectedIngredient?.id}
+                                            baseUnit={selectedIngredient?.defaultUnit}
+                                            value={preferredQuantity}
+                                            selectedUnitId={selectedUnitId}
+                                            onUnitChange={(newUnitId) => {
+                                                setSelectedUnitId(newUnitId);
+                                                if (baseUnit?.id) {
+                                                    const baseQty = convertQuantity(
+                                                        newUnitId,
+                                                        baseUnit.id,
+                                                        typeof preferredQuantity === 'number' ? preferredQuantity : 0,
+                                                        selectedIngredient?.id
+                                                    );
+                                                    form.setValue('quantityReceived', baseQty);
+
+                                                    const currentBaseCost = form.getValues('unitCost') || 0;
+                                                    const newFactor = convertQuantity(newUnitId, baseUnit.id, 1, selectedIngredient?.id);
+                                                    setPreferredCost(Number((currentBaseCost * newFactor).toFixed(4)));
+                                                }
+                                            }}
+                                            onQuantityChange={(inputQty, baseQty) => {
+                                                setPreferredQuantity(inputQty);
+                                                form.setValue('quantityReceived', baseQty);
+                                            }}
+                                        />
+                                        {form.formState.errors.quantityReceived && (
+                                            <p className="text-xs font-medium text-destructive">{form.formState.errors.quantityReceived.message}</p>
+                                        )}
+                                    </div>
+
                                     <div className="grid grid-cols-2 gap-4">
                                         <FormField
                                             control={form.control}
-                                            name="quantityReceived"
+                                            name="unitCost"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
+                                                    <div className="flex items-center justify-between">
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Unit Cost (₱{selectedUnitAbbr ? `/${selectedUnitAbbr}` : ''})
+                                                        </FormLabel>
+                                                    </div>
                                                     <FormControl>
                                                         <Input
                                                             type="number"
                                                             step="any"
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                            className="h-9 bg-background/50"
+                                                            min={0}
+                                                            placeholder="0.00"
+                                                            value={preferredCost === '' ? '' : preferredCost}
+                                                            onChange={(e) => {
+                                                                const raw = e.target.value;
+                                                                const val = raw === '' ? '' : Number(raw);
+                                                                setPreferredCost(val);
+                                                                const num = typeof val === 'number' ? val : 0;
+                                                                const baseCost = conversionFactor > 0 ? num / conversionFactor : 0;
+                                                                field.onChange(baseCost);
+                                                            }}
+                                                            className="h-9 bg-background/50 font-mono"
                                                         />
                                                     </FormControl>
+                                                    {selectedUnitId && baseUnit?.id && selectedUnitId !== baseUnit.id && (
+                                                        <span className="text-[11px] text-muted-foreground font-mono">
+                                                            ↳ Base: ₱{(field.value || 0).toFixed(4)}/{unitAbbr}
+                                                        </span>
+                                                    )}
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -470,38 +563,18 @@ export default function UnifiedStockDialog({
 
                                         <FormField
                                             control={form.control}
-                                            name="unitCost"
+                                            name="batchNumber"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/80">Unit Cost (₱)</FormLabel>
+                                                    <FormLabel className="font-semibold text-foreground/80">Lot / Batch Code</FormLabel>
                                                     <FormControl>
-                                                        <Input
-                                                            type="number"
-                                                            step="any"
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                            className="h-9 bg-background/50"
-                                                        />
+                                                        <Input placeholder="e.g. BATCH-A45" {...field} className="h-9 bg-background/50" />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
                                     </div>
-
-                                    <FormField
-                                        control={form.control}
-                                        name="batchNumber"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Lot / Batch Code</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="e.g. BATCH-A45" {...field} className="h-9 bg-background/50" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
 
                                     <FormField
                                         control={form.control}
@@ -574,34 +647,36 @@ export default function UnifiedStockDialog({
                                         )}
                                     />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="adjustmentQuantity"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <div className="flex items-center justify-between">
-                                                    <FormLabel className="font-semibold text-foreground/80">Deduction Quantity</FormLabel>
-                                                    {unitAbbr && (
-                                                        <span className="text-xs font-semibold text-rose-600 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
-                                                            Unit: {unitAbbr}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="any"
-                                                        placeholder="e.g. 500"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                        className="h-9 bg-background/50"
-                                                    />
-                                                </FormControl>
-                                                <p className="text-xs text-muted-foreground">Enter amount to deduct from active stock count.</p>
-                                                <FormMessage />
-                                            </FormItem>
+                                    <div className="space-y-1">
+                                        <UnitQuantityInput
+                                            label="Deduction Quantity"
+                                            required
+                                            ingredientId={selectedIngredient?.id}
+                                            baseUnit={selectedIngredient?.defaultUnit}
+                                            value={wastePreferredQty}
+                                            selectedUnitId={wasteSelectedUnitId}
+                                            onUnitChange={(newUnitId) => {
+                                                setWasteSelectedUnitId(newUnitId);
+                                                if (baseUnit?.id) {
+                                                    const baseQty = convertQuantity(
+                                                        newUnitId,
+                                                        baseUnit.id,
+                                                        typeof wastePreferredQty === 'number' ? wastePreferredQty : 0,
+                                                        selectedIngredient?.id
+                                                    );
+                                                    form.setValue('adjustmentQuantity', baseQty);
+                                                }
+                                            }}
+                                            onQuantityChange={(inputQty, baseQty) => {
+                                                setWastePreferredQty(inputQty);
+                                                form.setValue('adjustmentQuantity', baseQty);
+                                            }}
+                                        />
+                                        <p className="text-xs text-muted-foreground">Enter amount to deduct from active stock count.</p>
+                                        {form.formState.errors.adjustmentQuantity && (
+                                            <p className="text-xs font-medium text-destructive">{form.formState.errors.adjustmentQuantity.message}</p>
                                         )}
-                                    />
+                                    </div>
 
                                     <FormField
                                         control={form.control}
@@ -635,47 +710,47 @@ export default function UnifiedStockDialog({
                                         </div>
                                     )}
 
-                                    <FormField
-                                        control={form.control}
-                                        name="actualPhysicalCount"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <div className="flex items-center justify-between">
-                                                    <FormLabel className="font-semibold text-foreground/80">Actual Physical Count On Shelf</FormLabel>
-                                                    {unitAbbr && (
-                                                        <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
-                                                            Unit: {unitAbbr}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="any"
-                                                        placeholder="Enter actual counted units on shelf..."
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-                                                        className="h-9 bg-background/50"
-                                                    />
-                                                </FormControl>
-                                                {calculatedDiff !== undefined && (
-                                                    <p
-                                                        className={`text-xs font-semibold ${
-                                                            calculatedDiff === 0
-                                                                ? 'text-emerald-600'
-                                                                : calculatedDiff < 0
-                                                                  ? 'text-rose-600'
-                                                                  : 'text-primary'
-                                                        }`}
-                                                    >
-                                                        Net Discrepancy: {calculatedDiff > 0 ? '+' : ''}
-                                                        {calculatedDiff.toLocaleString()} {unitAbbr}
-                                                    </p>
-                                                )}
-                                                <FormMessage />
-                                            </FormItem>
+                                    <div className="space-y-1">
+                                        <UnitQuantityInput
+                                            label="Actual Physical Count On Shelf"
+                                            required
+                                            ingredientId={selectedIngredient?.id}
+                                            baseUnit={selectedIngredient?.defaultUnit}
+                                            value={countPreferredQty}
+                                            selectedUnitId={countSelectedUnitId}
+                                            onUnitChange={(newUnitId) => {
+                                                setCountSelectedUnitId(newUnitId);
+                                                if (baseUnit?.id) {
+                                                    const baseQty = convertQuantity(
+                                                        newUnitId,
+                                                        baseUnit.id,
+                                                        typeof countPreferredQty === 'number' ? countPreferredQty : 0,
+                                                        selectedIngredient?.id
+                                                    );
+                                                    form.setValue('actualPhysicalCount', baseQty);
+                                                }
+                                            }}
+                                            onQuantityChange={(inputQty, baseQty) => {
+                                                setCountPreferredQty(inputQty);
+                                                form.setValue('actualPhysicalCount', baseQty);
+                                            }}
+                                        />
+                                        {calculatedDiff !== undefined && (
+                                            <p
+                                                className={`text-xs font-semibold ${
+                                                    calculatedDiff === 0 ? 'text-emerald-600' : calculatedDiff < 0 ? 'text-rose-600' : 'text-primary'
+                                                }`}
+                                            >
+                                                Net Discrepancy: {calculatedDiff > 0 ? '+' : ''}
+                                                {calculatedDiff.toLocaleString()} {unitAbbr}
+                                            </p>
                                         )}
-                                    />
+                                        {form.formState.errors.actualPhysicalCount && (
+                                            <p className="text-xs font-medium text-destructive">
+                                                {form.formState.errors.actualPhysicalCount.message}
+                                            </p>
+                                        )}
+                                    </div>
                                 </>
                             )}
                         </div>

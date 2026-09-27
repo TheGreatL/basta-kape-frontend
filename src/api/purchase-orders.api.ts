@@ -7,9 +7,18 @@ export interface IPurchaseOrderItem {
     quantity: number;
     unitCost: number;
     totalCost: number;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
+    inputUnit?: {
+        id: string;
+        name: string;
+        abbreviation: string | null;
+    } | null;
     ingredient: {
+        id?: string;
         name: string;
         defaultUnit?: {
+            id?: string;
             name: string;
             abbreviation: string;
         };
@@ -25,6 +34,13 @@ export interface IPurchaseOrderBatch {
     unitCost: number;
     totalCost: number;
     batchNumber: string | null;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
+    inputUnit?: {
+        id: string;
+        name: string;
+        abbreviation: string | null;
+    } | null;
     expiryDate: string | null;
     receivedAt: string;
     ingredient?: {
@@ -123,6 +139,8 @@ export const createPurchaseOrder = async (data: {
         ingredientId: string;
         quantity: number;
         unitCost?: number;
+        inputQuantity?: number | null;
+        inputUnitId?: string | null;
     }>;
 }): Promise<IPurchaseOrder> => {
     const response = await api.post('/purchase-orders', data);
@@ -143,6 +161,8 @@ export interface IUpdatePurchaseOrderStatusPayload {
         unitCost?: number;
         batchNumber?: string | null;
         expiryDate?: string | null;
+        inputQuantity?: number | null;
+        inputUnitId?: string | null;
     }>;
 }
 
@@ -168,6 +188,8 @@ export const updatePurchaseOrder = async (
             ingredientId: string;
             quantity: number;
             unitCost?: number;
+            inputQuantity?: number | null;
+            inputUnitId?: string | null;
         }>;
     }
 ): Promise<IPurchaseOrder> => {

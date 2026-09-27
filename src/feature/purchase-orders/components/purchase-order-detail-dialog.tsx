@@ -18,6 +18,8 @@ import { Calendar } from '#/components/ui/calendar.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 import { cn } from '#/lib/utils.ts';
+import { UnitQuantityInput } from '#/components/inventory/unit-quantity-input.tsx';
+import { useUnitConverter } from '#/hooks/use-unit-converter.ts';
 import type { IPurchaseOrderItem, IPurchaseOrderBatch, IUpdatePurchaseOrderStatusPayload } from '#/api/purchase-orders.api.ts';
 import type { IIngredient } from '#/feature/inventory/inventory.types';
 
@@ -44,10 +46,13 @@ interface IOrderedReceiveItem {
     ingredientId: string;
     ingredientName: string;
     unit: string;
+    baseUnit?: { id?: string; name: string; abbreviation?: string | null };
     orderedQty: number;
     alreadyReceivedQty: number;
     remainingQty: number;
     quantityReceiving: number | '';
+    inputQuantity?: number | '';
+    inputUnitId?: string;
     unitCost: number | '';
     batchNumber: string;
     expiryDate: string;
@@ -58,7 +63,10 @@ interface IBonusReceiveItem {
     ingredientId: string;
     ingredientName: string;
     unit: string;
+    baseUnit?: { id?: string; name: string; abbreviation?: string | null };
     quantityReceiving: number | '';
+    inputQuantity?: number | '';
+    inputUnitId?: string;
     unitCost: number | '';
     batchNumber: string;
     expiryDate: string;
@@ -131,6 +139,7 @@ interface PurchaseOrderDetailDialogProps {
 
 export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, initialOpenReceive = false }: PurchaseOrderDetailDialogProps) {
     const queryClient = useQueryClient();
+    const { convertQuantity } = useUnitConverter();
 
     // Receive modal states
     const [isReceiveDialogOpen, setIsReceiveDialogOpen] = React.useState(false);
@@ -191,14 +200,26 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             const initialItems: IOrderedReceiveItem[] = (selectedPODetails.items || []).map((item) => {
                 const already = receivedMap[item.ingredientId] || 0;
                 const remaining = Math.max(0, item.quantity - already);
+                const baseUnit = item.ingredient.defaultUnit;
+                const prefUnitId = item.inputUnitId || baseUnit?.id || '';
+                const inputQty =
+                    item.inputQuantity && item.quantity > 0 && remaining > 0
+                        ? Number(((remaining / item.quantity) * item.inputQuantity).toFixed(4))
+                        : remaining > 0
+                          ? remaining
+                          : 0;
+
                 return {
                     ingredientId: item.ingredientId,
                     ingredientName: item.ingredient.name,
-                    unit: item.ingredient.defaultUnit?.abbreviation || '',
+                    unit: baseUnit?.abbreviation || '',
+                    baseUnit,
                     orderedQty: item.quantity,
                     alreadyReceivedQty: already,
                     remainingQty: remaining,
                     quantityReceiving: remaining > 0 ? remaining : 0,
+                    inputQuantity: inputQty,
+                    inputUnitId: prefUnitId,
                     unitCost: item.unitCost || 0,
                     batchNumber: '',
                     expiryDate: ''
@@ -254,10 +275,16 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
 
     const handleFillAllRemaining = () => {
         setOrderedItems((prev) =>
-            prev.map((item) => ({
-                ...item,
-                quantityReceiving: item.remainingQty > 0 ? item.remainingQty : 0
-            }))
+            prev.map((item) => {
+                const rem = item.remainingQty > 0 ? item.remainingQty : 0;
+                const inputQty =
+                    item.baseUnit?.id && item.inputUnitId ? convertQuantity(item.baseUnit.id, item.inputUnitId, rem, item.ingredientId) : rem;
+                return {
+                    ...item,
+                    quantityReceiving: rem,
+                    inputQuantity: Number(inputQty.toFixed(4))
+                };
+            })
         );
     };
 
@@ -265,7 +292,8 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
         setOrderedItems((prev) =>
             prev.map((item) => ({
                 ...item,
-                quantityReceiving: 0
+                quantityReceiving: 0,
+                inputQuantity: 0
             }))
         );
     };
@@ -280,6 +308,8 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                 ingredientName: '',
                 unit: '',
                 quantityReceiving: 1,
+                inputQuantity: 1,
+                inputUnitId: '',
                 unitCost: 0,
                 batchNumber: '',
                 expiryDate: ''
@@ -353,7 +383,9 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                     quantityReceived: Number(i.quantityReceiving),
                     unitCost: Number(i.unitCost),
                     batchNumber: i.batchNumber.trim() || deliveryRef.trim() || undefined,
-                    expiryDate: i.expiryDate ? new Date(i.expiryDate).toISOString() : undefined
+                    expiryDate: i.expiryDate ? new Date(i.expiryDate).toISOString() : undefined,
+                    inputQuantity: typeof i.inputQuantity === 'number' ? i.inputQuantity : Number(i.quantityReceiving),
+                    inputUnitId: i.inputUnitId || i.baseUnit?.id || null
                 })),
             ...bonusItems
                 .filter((b) => Number(b.quantityReceiving) > 0 && b.ingredientId)
@@ -362,7 +394,9 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                     quantityReceived: Number(b.quantityReceiving),
                     unitCost: Number(b.unitCost || 0),
                     batchNumber: b.batchNumber.trim() || deliveryRef.trim() || undefined,
-                    expiryDate: b.expiryDate ? new Date(b.expiryDate).toISOString() : undefined
+                    expiryDate: b.expiryDate ? new Date(b.expiryDate).toISOString() : undefined,
+                    inputQuantity: typeof b.inputQuantity === 'number' ? b.inputQuantity : Number(b.quantityReceiving),
+                    inputUnitId: b.inputUnitId || b.baseUnit?.id || null
                 }))
         ];
 
@@ -822,7 +856,24 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                                             type="button"
                                                             variant="ghost"
                                                             size="sm"
-                                                            onClick={() => handleUpdateOrderedItem(index, 'quantityReceiving', item.remainingQty)}
+                                                            onClick={() => {
+                                                                const rem = item.remainingQty;
+                                                                const inputQty =
+                                                                    item.baseUnit?.id && item.inputUnitId
+                                                                        ? convertQuantity(item.baseUnit.id, item.inputUnitId, rem, item.ingredientId)
+                                                                        : rem;
+                                                                setOrderedItems((prev) =>
+                                                                    prev.map((it, idx) =>
+                                                                        idx === index
+                                                                            ? {
+                                                                                  ...it,
+                                                                                  quantityReceiving: rem,
+                                                                                  inputQuantity: Number(inputQty.toFixed(4))
+                                                                              }
+                                                                            : it
+                                                                    )
+                                                                );
+                                                            }}
                                                             className="h-6 text-xs px-1.5 text-primary hover:text-primary/90 font-semibold"
                                                         >
                                                             Fill {item.remainingQty}
@@ -833,22 +884,28 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
 
                                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 border-t border-border/30">
                                                 <div className="space-y-1">
-                                                    <span className="text-xs font-semibold text-muted-foreground block">
-                                                        Qty Receiving Now {item.unit && `(${item.unit})`} *
-                                                    </span>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        step="any"
-                                                        value={item.quantityReceiving}
-                                                        onChange={(e) =>
-                                                            handleUpdateOrderedItem(
-                                                                index,
-                                                                'quantityReceiving',
-                                                                e.target.value === '' ? '' : parseFloat(e.target.value) || 0
-                                                            )
-                                                        }
-                                                        className="h-8 text-xs font-mono font-bold"
+                                                    <span className="text-xs font-semibold text-muted-foreground block">Qty Receiving Now *</span>
+                                                    <UnitQuantityInput
+                                                        compact
+                                                        min={0}
+                                                        ingredientId={item.ingredientId}
+                                                        baseUnit={item.baseUnit}
+                                                        value={item.inputQuantity ?? item.quantityReceiving}
+                                                        selectedUnitId={item.inputUnitId || item.baseUnit?.id}
+                                                        onQuantityChange={(inputQty, baseQty, unitId) => {
+                                                            setOrderedItems((prev) =>
+                                                                prev.map((it, idx) =>
+                                                                    idx === index
+                                                                        ? {
+                                                                              ...it,
+                                                                              quantityReceiving: baseQty,
+                                                                              inputQuantity: inputQty,
+                                                                              inputUnitId: unitId
+                                                                          }
+                                                                        : it
+                                                                )
+                                                            );
+                                                        }}
                                                     />
                                                 </div>
 
@@ -950,6 +1007,8 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                                                                   ingredientId: val || '',
                                                                                   ingredientName: item?.name || '',
                                                                                   unit: item?.defaultUnit?.abbreviation || '',
+                                                                                  baseUnit: item?.defaultUnit,
+                                                                                  inputUnitId: item?.defaultUnit?.id || '',
                                                                                   ingredient: item
                                                                               }
                                                                             : b
@@ -978,22 +1037,31 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-500/20">
                                                     <div className="space-y-1">
-                                                        <span className="text-xs font-semibold text-muted-foreground block">
-                                                            Qty Received {bonus.unit && `(${bonus.unit})`} *
-                                                        </span>
-                                                        <Input
-                                                            type="number"
-                                                            min="0.01"
-                                                            step="any"
-                                                            value={bonus.quantityReceiving}
-                                                            onChange={(e) =>
-                                                                handleUpdateBonusItem(
-                                                                    bonus.id,
-                                                                    'quantityReceiving',
-                                                                    e.target.value === '' ? '' : parseFloat(e.target.value) || 0
-                                                                )
+                                                        <span className="text-xs font-semibold text-muted-foreground block">Qty Received *</span>
+                                                        <UnitQuantityInput
+                                                            compact
+                                                            min={0.01}
+                                                            disabled={!bonus.ingredientId}
+                                                            ingredientId={bonus.ingredientId}
+                                                            baseUnit={bonus.baseUnit || bonus.ingredient?.defaultUnit}
+                                                            value={bonus.inputQuantity ?? bonus.quantityReceiving}
+                                                            selectedUnitId={
+                                                                bonus.inputUnitId || bonus.baseUnit?.id || bonus.ingredient?.defaultUnit?.id
                                                             }
-                                                            className="h-8 text-xs font-mono font-bold"
+                                                            onQuantityChange={(inputQty, baseQty, unitId) => {
+                                                                setBonusItems((prev) =>
+                                                                    prev.map((b) =>
+                                                                        b.id === bonus.id
+                                                                            ? {
+                                                                                  ...b,
+                                                                                  quantityReceiving: baseQty,
+                                                                                  inputQuantity: inputQty,
+                                                                                  inputUnitId: unitId
+                                                                              }
+                                                                            : b
+                                                                    )
+                                                                );
+                                                            }}
                                                         />
                                                     </div>
 

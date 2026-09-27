@@ -73,6 +73,12 @@ export interface IModifierRecipeIngredient {
     ingredient: {
         id: string;
         name: string;
+        ingredientUnitId?: string;
+        defaultUnit?: {
+            id: string;
+            name: string;
+            abbreviation: string | null;
+        };
     };
     unit: {
         id: string;

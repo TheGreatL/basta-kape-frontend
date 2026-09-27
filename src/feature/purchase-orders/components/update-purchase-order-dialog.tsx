@@ -9,18 +9,21 @@ import { getIngredients } from '#/api/inventory.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
-import { Input } from '#/components/ui/input.tsx';
 import { Textarea } from '#/components/ui/textarea.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '#/components/ui/dialog.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
+import { UnitQuantityInput } from '#/components/inventory/unit-quantity-input.tsx';
 import type { ISupplierListItem, ISupplierIngredient } from '#/feature/suppliers/suppliers.types';
 import type { IIngredient } from '#/feature/inventory/inventory.types';
 
 interface ICreateItemInput {
     ingredientId: string;
     quantity: number;
+    inputQuantity?: number | null;
+    inputUnitId?: string | null;
+    ingredient?: IIngredient | null;
 }
 
 interface UpdatePurchaseOrderDialogProps {
@@ -102,7 +105,10 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         (poDetails.items || []).forEach((item) => {
             const entry: ICreateItemInput = {
                 ingredientId: item.ingredientId,
-                quantity: item.quantity
+                quantity: item.quantity,
+                inputQuantity: item.inputQuantity ?? item.quantity,
+                inputUnitId: item.inputUnitId || item.ingredient.defaultUnit?.id,
+                ingredient: item.ingredient as unknown as IIngredient
             };
             if (supplierIngIdSet.has(item.ingredientId)) {
                 initialSupplierItems.push(entry);
@@ -180,23 +186,46 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
         }
     };
 
-    const handleUpdateSupplierItem = (ingredientId: string, quantity: number) => {
-        setSupplierItems((prev) => prev.map((item) => (item.ingredientId === ingredientId ? { ...item, quantity } : item)));
+    const handleUpdateSupplierItem = (ingredientId: string, inputQuantity: number, baseQuantity: number, inputUnitId: string) => {
+        setSupplierItems((prev) =>
+            prev.map((item) => (item.ingredientId === ingredientId ? { ...item, quantity: baseQuantity, inputQuantity, inputUnitId } : item))
+        );
     };
 
     const handleAddExtraItem = () => {
-        setExtraItems((prev) => [...prev, { ingredientId: '', quantity: 1 }]);
+        setExtraItems((prev) => [...prev, { ingredientId: '', quantity: 1, inputQuantity: 1, inputUnitId: '', ingredient: null }]);
     };
 
     const handleRemoveExtraItem = (index: number) => {
         setExtraItems((prev) => prev.filter((_, idx) => idx !== index));
     };
 
-    const handleExtraItemChange = (index: number, field: keyof ICreateItemInput, value: any) => {
+    const handleExtraItemIngredientChange = (index: number, ing: IIngredient | null) => {
         setExtraItems((prev) =>
             prev.map((item, idx) => {
                 if (idx !== index) return item;
-                return { ...item, [field]: value };
+                return {
+                    ...item,
+                    ingredient: ing,
+                    ingredientId: ing?.id || '',
+                    quantity: 1,
+                    inputQuantity: 1,
+                    inputUnitId: ing?.defaultUnit?.id || ''
+                };
+            })
+        );
+    };
+
+    const handleExtraItemQuantityChange = (index: number, inputQuantity: number, baseQuantity: number, inputUnitId: string) => {
+        setExtraItems((prev) =>
+            prev.map((item, idx) => {
+                if (idx !== index) return item;
+                return {
+                    ...item,
+                    quantity: baseQuantity,
+                    inputQuantity,
+                    inputUnitId
+                };
             })
         );
     };
@@ -225,7 +254,9 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                 notes: notes.trim() || null,
                 items: validItems.map((item) => ({
                     ingredientId: item.ingredientId,
-                    quantity: Number(item.quantity)
+                    quantity: Number(item.quantity),
+                    inputQuantity: item.inputQuantity !== undefined && item.inputQuantity !== null ? Number(item.inputQuantity) : null,
+                    inputUnitId: item.inputUnitId || null
                 }))
             }
         });
@@ -341,7 +372,6 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                     {supplierIngredients.map((si) => {
                                         const isSelected = supplierItems.some((item) => item.ingredientId === si.ingredientId);
                                         const poItem = supplierItems.find((item) => item.ingredientId === si.ingredientId);
-                                        const unitAbbrev = si.ingredient?.defaultUnit?.abbreviation || '';
 
                                         return (
                                             <div
@@ -373,19 +403,17 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                 </div>
 
                                                 {isSelected && (
-                                                    <div className="w-[120px] space-y-0.5 shrink-0">
-                                                        <span className="text-xs uppercase font-bold text-muted-foreground block">
-                                                            Qty {unitAbbrev && `(${unitAbbrev})`}
-                                                        </span>
-                                                        <Input
-                                                            type="number"
-                                                            min="0.01"
-                                                            step="any"
-                                                            value={poItem?.quantity ?? 1}
-                                                            onChange={(e) =>
-                                                                handleUpdateSupplierItem(si.ingredientId, parseFloat(e.target.value) || 0)
-                                                            }
-                                                            className="h-8 text-xs bg-background/80 font-bold"
+                                                    <div className="w-[180px] shrink-0">
+                                                        <UnitQuantityInput
+                                                            compact
+                                                            min={0.01}
+                                                            ingredientId={si.ingredientId}
+                                                            baseUnit={si.ingredient?.defaultUnit}
+                                                            value={poItem?.inputQuantity ?? poItem?.quantity ?? 1}
+                                                            selectedUnitId={poItem?.inputUnitId || si.ingredient?.defaultUnit?.id}
+                                                            onQuantityChange={(inputQty, baseQty, unitId) => {
+                                                                handleUpdateSupplierItem(si.ingredientId, inputQty, baseQty, unitId);
+                                                            }}
                                                         />
                                                     </div>
                                                 )}
@@ -428,6 +456,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                     {extraItems.map((item, index) => {
                                         const originalItem = poDetails?.items?.find((p) => p.ingredientId === item.ingredientId);
                                         const selectedIng =
+                                            item.ingredient ||
                                             ingredients.find((i: IIngredient) => i.id === item.ingredientId) ||
                                             (originalItem?.ingredient
                                                 ? ({
@@ -436,8 +465,6 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                       defaultUnit: originalItem.ingredient.defaultUnit
                                                   } as unknown as IIngredient)
                                                 : undefined);
-                                        const unitAbbrev =
-                                            selectedIng?.defaultUnit?.abbreviation || originalItem?.ingredient.defaultUnit?.abbreviation || '';
 
                                         return (
                                             <div key={index} className="flex items-end gap-2.5 p-2.5 border border-border/40 rounded-xl bg-muted/20">
@@ -458,7 +485,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                             return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
                                                         }}
                                                         value={item.ingredientId}
-                                                        onChange={(val) => handleExtraItemChange(index, 'ingredientId', val || '')}
+                                                        onChange={(_, ingItem) => handleExtraItemIngredientChange(index, ingItem || null)}
                                                         getOptionValue={(i) => i.id}
                                                         getOptionLabel={(i) => `${i.name}`}
                                                         selectedItem={selectedIng}
@@ -468,17 +495,18 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     />
                                                 </div>
 
-                                                <div className="w-[120px] space-y-1">
-                                                    <span className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
-                                                        Qty {unitAbbrev && `(${unitAbbrev})`}
-                                                    </span>
-                                                    <Input
-                                                        type="number"
-                                                        min="0.01"
-                                                        step="any"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleExtraItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                                                        className="h-8 text-xs bg-background/50 font-bold"
+                                                <div className="w-[180px] shrink-0">
+                                                    <UnitQuantityInput
+                                                        compact
+                                                        min={0.01}
+                                                        disabled={!selectedIng}
+                                                        ingredientId={selectedIng?.id}
+                                                        baseUnit={selectedIng?.defaultUnit}
+                                                        value={item.inputQuantity ?? item.quantity}
+                                                        selectedUnitId={item.inputUnitId || selectedIng?.defaultUnit?.id}
+                                                        onQuantityChange={(inputQty, baseQty, unitId) => {
+                                                            handleExtraItemQuantityChange(index, inputQty, baseQty, unitId);
+                                                        }}
                                                     />
                                                 </div>
 
