@@ -85,6 +85,8 @@ export default function OrdersPage() {
         switch (s) {
             case 'PENDING':
                 return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40';
+            case 'APPROVED':
+                return 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-900/40';
             case 'PREPARING':
                 return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/40';
             case 'READY':
@@ -376,6 +378,9 @@ export default function OrdersPage() {
                                     </SelectItem>
                                     <SelectItem value="PENDING" className="text-xs">
                                         Pending
+                                    </SelectItem>
+                                    <SelectItem value="APPROVED" className="text-xs">
+                                        Approved
                                     </SelectItem>
                                     <SelectItem value="PREPARING" className="text-xs">
                                         Preparing

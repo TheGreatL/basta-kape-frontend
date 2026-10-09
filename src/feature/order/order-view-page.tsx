@@ -57,6 +57,8 @@ export default function OrderViewPage() {
         switch (status) {
             case 'COMPLETED':
                 return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25';
+            case 'APPROVED':
+                return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/25';
             case 'PREPARING':
                 return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25 animate-pulse';
             case 'READY':
@@ -76,6 +78,13 @@ export default function OrderViewPage() {
                     colorClass: 'text-slate-600 dark:text-slate-400',
                     borderClass: 'border-slate-200 dark:border-slate-800',
                     bgClass: 'bg-slate-50 dark:bg-slate-950/40'
+                };
+            case 'APPROVED':
+                return {
+                    icon: <span className="size-2 rounded-full bg-violet-500" />,
+                    colorClass: 'text-violet-600 dark:text-violet-400',
+                    borderClass: 'border-violet-200 dark:border-violet-900/50',
+                    bgClass: 'bg-violet-50/50 dark:bg-violet-950/20'
                 };
             case 'PREPARING':
                 return {

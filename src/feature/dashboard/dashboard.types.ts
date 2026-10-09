@@ -83,7 +83,7 @@ export interface DashboardLowStockItem {
 export interface DashboardRecentOrder {
     id: string;
     queueNumber: string;
-    status: 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
+    status: 'PENDING' | 'APPROVED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
     orderType: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
     netTotal: number;
     customerName: string | null;

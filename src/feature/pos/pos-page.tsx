@@ -459,7 +459,7 @@ export default function PosPage() {
 
             // 4. Update status to PREPARING to show up in kitchen queue
             const finalOrder = await updateOrderStatus(order.id, {
-                status: 'PREPARING',
+                status: 'APPROVED',
                 notes: 'Checkout confirmed and paid at front register.'
             });
 

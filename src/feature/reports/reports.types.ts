@@ -21,7 +21,7 @@ export type ReportFilters = {
     productCategoryId?: string;
     productTypeId?: string;
     inventoryStatus?: 'SAFE' | 'CRITICAL' | 'OUT_OF_STOCK';
-    orderStatus?: 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
+    orderStatus?: 'PENDING' | 'APPROVED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
     orderType?: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
     groupBy?: 'daily' | 'transaction';
 };

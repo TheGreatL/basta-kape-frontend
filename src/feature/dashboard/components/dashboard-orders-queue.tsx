@@ -89,15 +89,18 @@ export function DashboardOrdersQueue({ queueStats, recentOrders }: DashboardOrde
                                                             ? 'default'
                                                             : order.status === 'PENDING'
                                                               ? 'secondary'
-                                                              : order.status === 'PREPARING'
-                                                                ? 'outline'
-                                                                : order.status === 'READY'
-                                                                  ? 'secondary'
-                                                                  : 'destructive'
+                                                              : order.status === 'APPROVED'
+                                                                ? 'secondary'
+                                                                : order.status === 'PREPARING'
+                                                                  ? 'outline'
+                                                                  : order.status === 'READY'
+                                                                    ? 'secondary'
+                                                                    : 'destructive'
                                                     }
                                                     className={cn(
                                                         'text-xs font-bold uppercase px-2 py-0.5 rounded-sm',
                                                         order.status === 'COMPLETED' && 'bg-emerald-500/10 text-emerald-600 border-transparent',
+                                                        order.status === 'APPROVED' && 'bg-violet-500/10 text-violet-600 border-transparent',
                                                         order.status === 'PREPARING' && 'bg-blue-500/10 text-blue-600 border-transparent',
                                                         order.status === 'READY' && 'bg-indigo-500/10 text-indigo-600 border-transparent',
                                                         order.status === 'PENDING' && 'bg-amber-500/10 text-amber-600 border-transparent'

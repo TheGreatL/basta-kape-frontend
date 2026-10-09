@@ -16,7 +16,7 @@ const searchParamsSchema = z.object({
     productCategoryId: z.string().catch(''),
     productTypeId: z.string().catch(''),
     inventoryStatus: z.enum(['SAFE', 'CRITICAL', 'OUT_OF_STOCK', '']).catch(''),
-    orderStatus: z.enum(['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED', '']).catch(''),
+    orderStatus: z.enum(['PENDING', 'APPROVED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED', '']).catch(''),
     orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY', '']).catch(''),
     groupBy: z.enum(['daily', 'transaction', '']).catch('')
 });

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, CreditCard, Volume2 } from 'lucide-react';
+import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getOrders, updateOrderStatus } from '#/api/orders.api.ts';
@@ -13,7 +13,6 @@ import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
-import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -27,9 +26,6 @@ export default function OrderQueuePage() {
     // Void dialog states
     const [voidOrderId, setVoidOrderId] = React.useState<string | null>(null);
     const [voidOrderNumber, setVoidOrderNumber] = React.useState<string | null>(null);
-
-    // Payment dialog states
-    const [paymentOrder, setPaymentOrder] = React.useState<IOrder | null>(null);
 
     // Timer state to force refresh the elapsed minutes ticker every 30 seconds
     const [, setTicker] = React.useState(0);
@@ -71,10 +67,10 @@ export default function OrderQueuePage() {
         });
     };
 
-    // Filter queue client side
+    // Filter queue client side (only approved, preparing, and ready orders)
     const activeOrders = React.useMemo(() => {
         if (!queueData?.data) return [];
-        return queueData.data.filter((order: IOrder) => order.status !== 'COMPLETED' && order.status !== 'CANCELLED');
+        return queueData.data.filter((order: IOrder) => order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && order.status !== 'PENDING');
     }, [queueData]);
 
     const filteredOrders = React.useMemo(() => {
@@ -86,7 +82,7 @@ export default function OrderQueuePage() {
     }, [activeOrders, searchQuery]);
 
     // Separate columns
-    const pendingOrders = React.useMemo(() => filteredOrders.filter((o: IOrder) => o.status === 'PENDING'), [filteredOrders]);
+    const approvedOrders = React.useMemo(() => filteredOrders.filter((o: IOrder) => o.status === 'APPROVED'), [filteredOrders]);
     const preparingOrders = React.useMemo(() => filteredOrders.filter((o: IOrder) => o.status === 'PREPARING'), [filteredOrders]);
     const readyOrders = React.useMemo(() => filteredOrders.filter((o: IOrder) => o.status === 'READY'), [filteredOrders]);
 
@@ -236,15 +232,16 @@ export default function OrderQueuePage() {
                         </Button>
                     </RequirePermission>
 
-                    {order.status === 'PENDING' && (
-                        <RequirePermission module="Point of Sale (POS)" action="create">
+                    {order.status === 'APPROVED' && (
+                        <RequirePermission module="Order Queue" action="update">
                             <Button
                                 size="sm"
-                                onClick={() => setPaymentOrder(order)}
-                                className="h-8.5 flex-1 gap-1.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                                disabled={updateStatusMutation.isPending}
+                                onClick={() => handleTransition(order.id, 'PREPARING')}
+                                className="h-8.5 flex-1 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                             >
-                                <CreditCard className="size-3.5 shrink-0" />
-                                Collect Payment
+                                <Coffee className="size-3.5 shrink-0" />
+                                Prepare
                             </Button>
                         </RequirePermission>
                     )}
@@ -264,7 +261,7 @@ export default function OrderQueuePage() {
                     )}
 
                     {order.status === 'READY' && (
-                        <RequirePermission module="Order Queue" action="update">
+                        <RequirePermission module="Sales Management" action="create">
                             <Button
                                 size="sm"
                                 disabled={updateStatusMutation.isPending}
@@ -356,27 +353,27 @@ export default function OrderQueuePage() {
                 </div>
             ) : (
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 overflow-hidden min-h-0">
-                    {/* COLUMN 1: PENDING */}
+                    {/* COLUMN 1: APPROVED */}
                     <div className="flex flex-col h-full overflow-hidden border border-border/45 rounded-xl bg-muted/10">
                         <div className="p-3.5 bg-muted/30 border-b border-border/45 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Pending</h3>
+                                <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                                <h3 className="text-xs font-bold uppercase text-foreground/80 ">Approved Orders</h3>
                             </div>
                             <Badge
                                 variant="secondary"
-                                className="text-xs font-bold py-0.5 px-2 bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                className="text-xs font-bold py-0.5 px-2 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20"
                             >
-                                {pendingOrders.length}
+                                {approvedOrders.length}
                             </Badge>
                         </div>
                         <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-                            {pendingOrders.length === 0 ? (
+                            {approvedOrders.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center py-20 text-center text-muted-foreground text-xs font-medium">
-                                    No pending orders.
+                                    No approved orders.
                                 </div>
                             ) : (
-                                pendingOrders.map((o: IOrder) => renderOrderCard(o))
+                                approvedOrders.map((o: IOrder) => renderOrderCard(o))
                             )}
                         </div>
                     </div>
@@ -440,9 +437,6 @@ export default function OrderQueuePage() {
                 orderId={voidOrderId}
                 orderNumber={voidOrderNumber}
             />
-
-            {/* Payment Modal */}
-            <ProcessPaymentDialog open={!!paymentOrder} onOpenChange={(open) => !open && setPaymentOrder(null)} order={paymentOrder} />
         </div>
     );
 }

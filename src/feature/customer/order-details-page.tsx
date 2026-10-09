@@ -80,7 +80,7 @@ export default function OrderDetailsPage() {
         );
     }
 
-    const orderStatuses: TOrderStatus[] = ['PENDING', 'PREPARING', 'READY', 'COMPLETED'];
+    const orderStatuses: TOrderStatus[] = ['PENDING', 'APPROVED', 'PREPARING', 'READY', 'COMPLETED'];
     const currentStatusIndex = orderStatuses.indexOf(order.status);
     const isCancelled = order.status === 'CANCELLED';
 
@@ -88,6 +88,8 @@ export default function OrderDetailsPage() {
         switch (status) {
             case 'PENDING':
                 return 'Order Placed';
+            case 'APPROVED':
+                return 'Approved';
             case 'PREPARING':
                 return 'Brewing / Preparing';
             case 'READY':
@@ -105,6 +107,8 @@ export default function OrderDetailsPage() {
         switch (status) {
             case 'PENDING':
                 return 'We have received your order and are waiting for validation.';
+            case 'APPROVED':
+                return 'Payment confirmed. Your order has been approved and queued.';
             case 'PREPARING':
                 return 'Our baristas are preparing your custom beverage and fresh pastry.';
             case 'READY':
@@ -122,6 +126,8 @@ export default function OrderDetailsPage() {
         switch (status) {
             case 'PENDING':
                 return <Clock className="size-5 text-amber-500" />;
+            case 'APPROVED':
+                return <CheckCircle2 className="size-5 text-indigo-500" />;
             case 'PREPARING':
                 return <Loader2 className="size-5 text-sky-500 animate-spin" />;
             case 'READY':
@@ -273,7 +279,9 @@ export default function OrderDetailsPage() {
                                                       : 'bg-background text-muted-foreground border-border'
                                             }`}
                                         >
-                                            {isActive && status === 'PREPARING' ? (
+                                            {isActive && status === 'APPROVED' ? (
+                                                <CheckCircle2 className="size-4 animate-pulse" />
+                                            ) : isActive && status === 'PREPARING' ? (
                                                 <Loader2 className="size-4 animate-spin" />
                                             ) : isActive && status === 'READY' ? (
                                                 <Volume2 className="size-4 animate-pulse" />

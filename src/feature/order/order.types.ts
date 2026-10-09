@@ -3,7 +3,7 @@ import { Clock, Coins, Wallet } from 'lucide-react';
 import type { IPaginationParams } from '#/types/base.types';
 import type { IOrderDiscount } from '../store-settings/discounts.types';
 
-export type TOrderStatus = 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
+export type TOrderStatus = 'PENDING' | 'APPROVED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
 export type TOrderType = 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
 export type TOrderSource = 'POS' | 'WEBSITE';
 

@@ -57,7 +57,7 @@ const discountFormSchema = z.object({
 });
 
 const statusFormSchema = z.object({
-    status: z.enum(['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
+    status: z.enum(['PENDING', 'APPROVED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
     notes: z.string().optional()
 });
 
@@ -245,6 +245,8 @@ export default function OrderEditPage() {
         switch (s) {
             case 'PENDING':
                 return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/40';
+            case 'APPROVED':
+                return 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-900/40';
             case 'PREPARING':
                 return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/40';
             case 'READY':
@@ -281,6 +283,13 @@ export default function OrderEditPage() {
                     colorClass: 'text-amber-600 dark:text-amber-450',
                     borderClass: 'border-amber-200 dark:border-amber-900/50',
                     bgClass: 'bg-amber-50 dark:bg-amber-950/40'
+                };
+            case 'APPROVED':
+                return {
+                    icon: <Check className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-violet-600 dark:text-violet-450',
+                    borderClass: 'border-violet-200 dark:border-violet-900/50',
+                    bgClass: 'bg-violet-50 dark:bg-violet-950/40'
                 };
             case 'PREPARING':
                 return {
@@ -893,6 +902,9 @@ export default function OrderEditPage() {
                                                                     <SelectContent className="rounded-xl">
                                                                         <SelectItem value="PENDING" className="text-xs">
                                                                             Pending
+                                                                        </SelectItem>
+                                                                        <SelectItem value="APPROVED" className="text-xs">
+                                                                            Approved
                                                                         </SelectItem>
                                                                         <SelectItem value="PREPARING" className="text-xs">
                                                                             Preparing

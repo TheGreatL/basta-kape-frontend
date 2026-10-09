@@ -29,6 +29,7 @@ const INVENTORY_STATUS_OPTIONS = [
 
 const ORDER_STATUS_OPTIONS = [
     { value: 'PENDING', label: 'Pending' },
+    { value: 'APPROVED', label: 'Approved' },
     { value: 'PREPARING', label: 'Preparing' },
     { value: 'READY', label: 'Ready' },
     { value: 'COMPLETED', label: 'Completed' },
