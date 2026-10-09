@@ -1,19 +1,42 @@
 import * as React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ShoppingCart, Eye, Calendar, Search, X, Store, Laptop, User, Plus, Printer, Download, Volume2, Pencil } from 'lucide-react';
+import {
+    ShoppingCart,
+    Eye,
+    Calendar,
+    Search,
+    X,
+    Store,
+    Laptop,
+    Plus,
+    Printer,
+    Download,
+    Pencil,
+    CreditCard,
+    Coffee,
+    Check,
+    CheckCircle2,
+    XCircle,
+    User,
+    Volume2
+} from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/orders/index.tsx';
-import { getOrders } from '#/api/orders.api.ts';
+import { getOrders, updateOrderStatus } from '#/api/orders.api.ts';
 import { getFrontendReference } from '#/utils/helper';
+import { getErrorMessage } from '#/utils/error-handler.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { IOrder, TOrderStatus, TOrderSource } from './order.types';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
 import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
 import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
+import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
+import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -26,6 +49,7 @@ import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
 import { appModules, appPermissions } from '#/constants/rbac.ts';
 
 export default function OrdersPage() {
+    const queryClient = useQueryClient();
     const { user } = useAuth();
     const permissions = React.useMemo(() => getUserPermissions(user), [user]);
     const canUpdateOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.UPDATE), [permissions]);
@@ -35,6 +59,36 @@ export default function OrdersPage() {
     const { page, pageSize, search, status, orderType, orderSource } = Route.useSearch();
     const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const [viewingFileName, setViewingFileName] = React.useState<string | undefined>(undefined);
+
+    // Dialog states for order actions
+    const [voidOrderId, setVoidOrderId] = React.useState<string | null>(null);
+    const [voidOrderNumber, setVoidOrderNumber] = React.useState<string | null>(null);
+    const [paymentOrder, setPaymentOrder] = React.useState<IOrder | null>(null);
+
+    // Mutation: Update Status
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ orderId, payload }: { orderId: string; payload: { status: TOrderStatus; notes?: string } }) =>
+            updateOrderStatus(orderId, payload),
+        onSuccess: (updated) => {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.QUEUE_COUNT] });
+            toast.success('Order Status Updated', {
+                description: `Order ${updated.queueNumber} updated to ${updated.status}.`
+            });
+        },
+        onError: (err) => {
+            toast.error('Failed to update order status', {
+                description: getErrorMessage(err)
+            });
+        }
+    });
+
+    const handleTransition = (orderId: string, targetStatus: TOrderStatus) => {
+        updateStatusMutation.mutate({
+            orderId,
+            payload: { status: targetStatus, notes: `Transitioned to ${targetStatus} via Orders Management` }
+        });
+    };
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -255,68 +309,155 @@ export default function OrdersPage() {
             {
                 id: 'actions',
                 header: 'Actions',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                            onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}` })}
-                            title="Inspect details"
-                        >
-                            <Eye className="size-4" />
-                            <span className="sr-only">Inspect details</span>
-                        </Button>
-                        {canUpdateOrders && (
+                cell: ({ row }) => {
+                    const order = row.original;
+                    return (
+                        <div className="flex items-center gap-1">
+                            {/* Contextual Action Button based on status */}
+                            {order.status === 'PENDING' && (
+                                <RequirePermission module="Point of Sale (POS)" action="create">
+                                    <Button
+                                        size="sm"
+                                        onClick={() => setPaymentOrder(order)}
+                                        className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-primary text-primary-foreground shadow-3xs hover:shadow-xs rounded-lg"
+                                        title="Collect Payment"
+                                    >
+                                        <CreditCard className="size-3.5 shrink-0" />
+                                        <span>Collect Payment</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
+                            {order.status === 'APPROVED' && (
+                                <RequirePermission module="Order Queue" action="update">
+                                    <Button
+                                        size="sm"
+                                        disabled={updateStatusMutation.isPending}
+                                        onClick={() => handleTransition(order.id, 'PREPARING')}
+                                        className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
+                                        title="Start Preparation"
+                                    >
+                                        <Coffee className="size-3.5 shrink-0" />
+                                        <span>Prepare</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
+                            {order.status === 'PREPARING' && (
+                                <RequirePermission module="Order Queue" action="update">
+                                    <Button
+                                        size="sm"
+                                        disabled={updateStatusMutation.isPending}
+                                        onClick={() => handleTransition(order.id, 'READY')}
+                                        className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
+                                        title="Mark Ready"
+                                    >
+                                        <Check className="size-3.5 stroke-[2.5] shrink-0" />
+                                        <span>Ready</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
+                            {order.status === 'READY' && (
+                                <RequirePermission module="Sales Management" action="create">
+                                    <Button
+                                        size="sm"
+                                        disabled={updateStatusMutation.isPending}
+                                        onClick={() => handleTransition(order.id, 'COMPLETED')}
+                                        className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
+                                        title="Mark Complete"
+                                    >
+                                        <CheckCircle2 className="size-3.5 shrink-0" />
+                                        <span>Done</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
+                            {/* Void Order Button */}
+                            {order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && (
+                                <RequirePermission module="Point of Sale (POS)" action="read">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors rounded-lg"
+                                        onClick={() => {
+                                            setVoidOrderId(order.id);
+                                            setVoidOrderNumber(order.queueNumber);
+                                        }}
+                                        title="Void Order"
+                                    >
+                                        <XCircle className="size-4 shrink-0" />
+                                        <span className="sr-only">Void Order</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
+                            {/* Inspect Details */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                onClick={() => globalNavigate({ to: `/admin/orders/${row.original.id}/edit` })}
-                                title="Edit order"
+                                className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg"
+                                onClick={() => globalNavigate({ to: `/admin/orders/${order.id}` })}
+                                title="Inspect details"
                             >
-                                <Pencil className="size-4" />
-                                <span className="sr-only">Edit order</span>
+                                <Eye className="size-4 shrink-0" />
+                                <span className="sr-only">Inspect details</span>
                             </Button>
-                        )}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+
+                            {/* Edit Order */}
+                            {canUpdateOrders && (
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="size-8 text-muted-foreground hover:text-primary transition-colors"
-                                    title="Receipt options"
+                                    className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg"
+                                    onClick={() => globalNavigate({ to: `/admin/orders/${order.id}/edit` })}
+                                    title="Edit order"
                                 >
-                                    <Printer className="size-4" />
-                                    <span className="sr-only">Receipt options</span>
+                                    <Pencil className="size-4 shrink-0" />
+                                    <span className="sr-only">Edit order</span>
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="rounded-xl" align="end">
-                                <DropdownMenuItem
-                                    onClick={async () => {
-                                        const blobUrl = await getReceiptPdfBlobUrl(row.original.id);
-                                        setViewingFileUrl(blobUrl);
-                                        setViewingFileName(`Receipt-${row.original.id.slice(0, 8).toUpperCase()}.pdf`);
-                                    }}
-                                    className="text-xs gap-2 font-semibold"
-                                >
-                                    <Eye className="size-3.5 text-muted-foreground" />
-                                    View Receipt
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => downloadReceiptPdf(row.original.id, `Receipt-${row.original.id.slice(0, 8).toUpperCase()}.pdf`)}
-                                    className="text-xs gap-2 font-semibold"
-                                >
-                                    <Download className="size-3.5 text-muted-foreground" />
-                                    Download Receipt
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )
+                            )}
+
+                            {/* Receipt options dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-muted-foreground hover:text-primary transition-colors rounded-lg"
+                                        title="Receipt options"
+                                    >
+                                        <Printer className="size-4 shrink-0" />
+                                        <span className="sr-only">Receipt options</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="rounded-xl" align="end">
+                                    <DropdownMenuItem
+                                        onClick={async () => {
+                                            const blobUrl = await getReceiptPdfBlobUrl(order.id);
+                                            setViewingFileUrl(blobUrl);
+                                            setViewingFileName(`Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`);
+                                        }}
+                                        className="text-xs gap-2 font-semibold"
+                                    >
+                                        <Eye className="size-3.5 text-muted-foreground" />
+                                        View Receipt
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => downloadReceiptPdf(order.id, `Receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`)}
+                                        className="text-xs gap-2 font-semibold"
+                                    >
+                                        <Download className="size-3.5 text-muted-foreground" />
+                                        Download Receipt
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    );
+                }
             }
         ],
-        [canUpdateOrders, globalNavigate]
+        [canUpdateOrders, globalNavigate, updateStatusMutation.isPending]
     );
 
     return (
@@ -458,6 +599,17 @@ export default function OrdersPage() {
                 fileName={viewingFileName}
                 title="Order Receipt PDF Preview"
             />
+
+            {/* Void Order Dialog */}
+            <VoidOrderDialog
+                open={!!voidOrderId}
+                onOpenChange={(open) => !open && setVoidOrderId(null)}
+                orderId={voidOrderId}
+                orderNumber={voidOrderNumber}
+            />
+
+            {/* Process Payment Dialog */}
+            <ProcessPaymentDialog open={!!paymentOrder} onOpenChange={(open) => !open && setPaymentOrder(null)} order={paymentOrder} />
         </div>
     );
 }
