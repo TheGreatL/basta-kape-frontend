@@ -72,19 +72,7 @@ export default function SalesSummaryWidget({ dateFrom, dateTo }: SalesSummaryWid
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 1. Net Sales */}
-            <div className="bg-card border border-border/60 rounded-2xl p-4 shadow-2xs bg-gradient-to-br from-primary/5 to-transparent space-y-2">
-                <div className="flex justify-between items-center text-primary">
-                    <span className="text-xs font-bold uppercase">Net Sales</span>
-                    <TrendingUp className="size-4 text-primary" />
-                </div>
-                <div className="space-y-0.5">
-                    <h3 className="text-lg font-bold text-primary">₱{summary.netSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h3>
-                    <span className="text-xs text-muted-foreground font-medium block truncate">Revenue after discounts</span>
-                </div>
-            </div>
-
-            {/* 2. Gross Sales */}
+            {/* 1. Gross Sales */}
             <div className="bg-card border border-border/60 rounded-2xl p-4 shadow-2xs space-y-2">
                 <div className="flex justify-between items-center text-muted-foreground">
                     <span className="text-xs font-bold uppercase">Total / Gross Sales</span>
@@ -97,6 +85,17 @@ export default function SalesSummaryWidget({ dateFrom, dateTo }: SalesSummaryWid
                     <span className="text-xs text-muted-foreground font-medium block truncate">
                         Discounts: ₱{summary.discountTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
+                </div>
+            </div>
+            {/* 2. Net Sales */}
+            <div className="bg-card border border-border/60 rounded-2xl p-4 shadow-2xs bg-gradient-to-br from-primary/5 to-transparent space-y-2">
+                <div className="flex justify-between items-center text-primary">
+                    <span className="text-xs font-bold uppercase">Net Sales</span>
+                    <TrendingUp className="size-4 text-primary" />
+                </div>
+                <div className="space-y-0.5">
+                    <h3 className="text-lg font-bold text-primary">₱{summary.netSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h3>
+                    <span className="text-xs text-muted-foreground font-medium block truncate">Revenue after discounts</span>
                 </div>
             </div>
 

@@ -258,7 +258,7 @@ export default function OrderQueuePage() {
                                 className="h-8.5 flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                             >
                                 <Check className="size-3.5 stroke-[2.5] shrink-0" />
-                                Mark Ready
+                                Ready
                             </Button>
                         </RequirePermission>
                     )}
@@ -272,7 +272,7 @@ export default function OrderQueuePage() {
                                 className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                             >
                                 <CheckCircle2 className="size-3.5 shrink-0" />
-                                Complete Order
+                                Done
                             </Button>
                         </RequirePermission>
                     )}

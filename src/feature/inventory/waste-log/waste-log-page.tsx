@@ -7,7 +7,7 @@ import { format, isValid } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
 import { Route } from '#/routes/admin/inventory/waste-log.tsx';
-import { getDisposals, getDisposalSummary } from '#/api/disposal.api.ts';
+import { getDisposals } from '#/api/disposal.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { IDisposalItem, DisposalCategory, DisposalReason } from '#/feature/disposal/disposal.types.ts';
@@ -20,8 +20,6 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
-
-import DisposalSummaryCards from '#/feature/disposal/components/disposal-summary-cards.tsx';
 import DisposalCategoryBadge from '#/feature/disposal/components/disposal-category-badge.tsx';
 import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 
@@ -112,19 +110,19 @@ export default function WasteLogPage() {
             setSearch({ startDate: '', endDate: '', page: 1 });
         }
     };
-
+    // @depracated
     // 1. Query: Financial Loss KPIs & Summary
-    const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
-        queryKey: [QUERY_KEY.DISPOSALS.SUMMARY, { category, reason, search: debouncedSearch, startDate, endDate }],
-        queryFn: () =>
-            getDisposalSummary({
-                category: category === 'ALL' ? undefined : (category as DisposalCategory),
-                reason: reason === 'ALL' ? undefined : (reason as DisposalReason),
-                search: debouncedSearch || undefined,
-                startDate: startDate || undefined,
-                endDate: endDate || undefined
-            })
-    });
+    // const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
+    //     queryKey: [QUERY_KEY.DISPOSALS.SUMMARY, { category, reason, search: debouncedSearch, startDate, endDate }],
+    //     queryFn: () =>
+    //         getDisposalSummary({
+    //             category: category === 'ALL' ? undefined : (category as DisposalCategory),
+    //             reason: reason === 'ALL' ? undefined : (reason as DisposalReason),
+    //             search: debouncedSearch || undefined,
+    //             startDate: startDate || undefined,
+    //             endDate: endDate || undefined
+    //         })
+    // });
 
     // 2. Query: Paginated Unified Disposals Audit Log
     const { data: disposalsData, isLoading: isDisposalsLoading } = useQuery({
@@ -281,7 +279,8 @@ export default function WasteLogPage() {
             </div>
 
             {/* Financial Loss KPIs */}
-            <DisposalSummaryCards summary={summaryData} isLoading={isSummaryLoading} />
+            {/* @Depracated*/}
+            {/* <DisposalSummaryCards summary={summaryData} isLoading={isSummaryLoading} /> */}
 
             {/* Audit Log Table */}
             <div className="space-y-4">

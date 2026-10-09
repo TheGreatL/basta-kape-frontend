@@ -1,4 +1,12 @@
-import { TrendingUp, DollarSign, Percent, ShoppingBag, Coffee, ArrowUpRight } from 'lucide-react';
+import {
+    TrendingUp,
+    ShoppingBag,
+    ArrowUpRight
+    // @deprecated Removed along with gross sales, discounts, and average order metrics
+    // DollarSign,
+    // Percent,
+    // Coffee
+} from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { Skeleton } from '#/components/ui/skeleton.tsx';
 import type { DashboardSalesMetrics, IDashboardDateRange } from '../dashboard.types';
@@ -19,8 +27,8 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                     <Skeleton className="h-6 w-48" />
                     <Skeleton className="h-4 w-32" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Array.from({ length: 2 }).map((_, i) => (
                         <div key={i} className="bg-card border border-border/60 rounded-2xl p-5 space-y-3">
                             <Skeleton className="h-3 w-20" />
                             <Skeleton className="h-7 w-32" />
@@ -32,11 +40,13 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
         );
     }
 
-    const grossSales = metrics?.grossSales ?? 0;
     const netSales = metrics?.netSales ?? 0;
-    const discountTotal = metrics?.discountTotal ?? 0;
     const orderCount = metrics?.orderCount ?? 0;
-    const averageOrderValue = metrics?.averageOrderValue ?? 0;
+
+    // @deprecated Gross sales, discounts, and average order value are deprecated on dashboard:
+    // const grossSales = metrics?.grossSales ?? 0;
+    // const discountTotal = metrics?.discountTotal ?? 0;
+    // const averageOrderValue = metrics?.averageOrderValue ?? 0;
 
     return (
         <div className="space-y-4">
@@ -52,11 +62,11 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Net Revenue (Key Highlighted Metric) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Total Sales (Net Revenue) */}
                 <div className="bg-card border border-primary/20 rounded-2xl p-5 shadow-2xs bg-gradient-to-br from-primary/5 to-transparent space-y-2">
                     <div className="flex justify-between items-center text-primary">
-                        <span className="text-xs font-bold uppercase">Net Revenue</span>
+                        <span className="text-xs font-bold uppercase">Total Sales</span>
                         <TrendingUp className="size-4 text-primary" />
                     </div>
                     <div className="space-y-0.5">
@@ -67,7 +77,23 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                     </div>
                 </div>
 
-                {/* Gross Sales */}
+                {/* Total Orders */}
+                <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
+                    <div className="flex justify-between items-center text-muted-foreground">
+                        <span className="text-xs font-bold uppercase">Total Orders</span>
+                        <ShoppingBag className="size-4 text-muted-foreground/80" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <h3 className="text-lg font-bold text-foreground">{orderCount.toLocaleString()}</h3>
+                        <span className="text-xs text-muted-foreground font-semibold">Paid order count</span>
+                    </div>
+                </div>
+
+                {/*
+                 * @deprecated Gross Sales
+                 * Deprecated per dashboard requirements to display only sales.
+                 */}
+                {/* 
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground">
                         <span className="text-xs font-bold uppercase">Gross Sales</span>
@@ -80,21 +106,13 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                         <span className="text-xs text-muted-foreground font-semibold">Before deductions</span>
                     </div>
                 </div>
+                */}
 
-                {/* Total Orders */}
-                <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
-                    <div className="flex justify-between items-center text-muted-foreground">
-                        <span className="text-xs font-bold uppercase">Total Orders</span>
-                        <ShoppingBag className="size-4 text-muted-foreground/80" />
-                    </div>
-                    <div className="space-y-0.5">
-                        <h3 className="text-lg font-bold text-foreground">{orderCount.toLocaleString()}</h3>
-                        {/* @deprecated: Previously "Completed order count" */}
-                        <span className="text-xs text-muted-foreground font-semibold">Paid order count</span>
-                    </div>
-                </div>
-
-                {/* Average Receipt */}
+                {/*
+                 * @deprecated Average Order
+                 * Deprecated per dashboard requirements to display only sales.
+                 */}
+                {/* 
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground">
                         <span className="text-xs font-bold uppercase">Average Order</span>
@@ -107,8 +125,13 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                         <span className="text-xs text-muted-foreground font-semibold">Avg ticket size</span>
                     </div>
                 </div>
+                */}
 
-                {/* Discounts Deducted */}
+                {/*
+                 * @deprecated Discounts Deducted
+                 * Deprecated per dashboard requirements to display only sales.
+                 */}
+                {/* 
                 <div className="bg-card border border-border/60 rounded-2xl p-5 shadow-2xs space-y-2">
                     <div className="flex justify-between items-center text-amber-600">
                         <span className="text-xs font-bold uppercase">Discounts</span>
@@ -121,6 +144,7 @@ export function DashboardSalesMetricsCards({ metrics, isLoading, dateRange }: Da
                         <span className="text-xs text-muted-foreground font-semibold">Deductions applied</span>
                     </div>
                 </div>
+                */}
             </div>
         </div>
     );

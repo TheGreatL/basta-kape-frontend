@@ -141,6 +141,14 @@ export default function CheckoutPage() {
         handleRemoveReceipt();
     }, [paymentMethod]);
 
+    // Automatically switch from CASH to GCASH if Take Out is selected
+    useEffect(() => {
+        if (orderType === 'TAKE_OUT' && paymentMethod === 'CASH') {
+            setPaymentMethod('GCASH');
+            setReferenceNumber('');
+        }
+    }, [orderType, paymentMethod]);
+
     const paymentOptions = useMemo(
         () => [
             {
@@ -233,6 +241,13 @@ export default function CheckoutPage() {
                 });
                 return;
             }
+        }
+
+        if (orderType === 'TAKE_OUT' && paymentMethod === 'CASH') {
+            toast.error('Cash payment not allowed', {
+                description: 'Cash payment is not permitted for Take Out orders. Please select GCash.'
+            });
+            return;
         }
 
         setIsSubmitting(true);
@@ -368,7 +383,13 @@ export default function CheckoutPage() {
                                     <button
                                         type="button"
                                         key={opt.value}
-                                        onClick={() => setOrderType(opt.value)}
+                                        onClick={() => {
+                                            setOrderType(opt.value);
+                                            if (opt.value === 'TAKE_OUT' && paymentMethod === 'CASH') {
+                                                setPaymentMethod('GCASH');
+                                                setReferenceNumber('');
+                                            }
+                                        }}
                                         className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all text-xs font-medium cursor-pointer ${
                                             isSelected
                                                 ? 'border-primary bg-primary/5 shadow-2xs text-primary'
@@ -462,23 +483,35 @@ export default function CheckoutPage() {
                             {paymentOptions.map((opt) => {
                                 const Icon = opt.icon;
                                 const isSelected = paymentMethod === opt.value;
+                                const isCashDisabled = opt.value === 'CASH' && orderType === 'TAKE_OUT';
                                 return (
                                     <button
                                         type="button"
                                         key={opt.value}
+                                        disabled={isCashDisabled}
                                         onClick={() => {
+                                            if (isCashDisabled) return;
                                             setPaymentMethod(opt.value);
                                             setReferenceNumber('');
                                         }}
-                                        className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all text-xs font-medium cursor-pointer ${
-                                            isSelected
-                                                ? 'border-primary bg-primary/5 shadow-2xs text-primary'
-                                                : 'border-border/60 hover:border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground'
+                                        className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all text-xs font-medium ${
+                                            isCashDisabled
+                                                ? 'opacity-40 cursor-not-allowed border-border/40 bg-muted/20 text-muted-foreground'
+                                                : isSelected
+                                                  ? 'border-primary bg-primary/5 shadow-2xs text-primary cursor-pointer'
+                                                  : 'border-border/60 hover:border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground cursor-pointer'
                                         }`}
                                     >
-                                        <Icon className={`size-6 mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                                        <span className="font-bold text-foreground mb-1">{opt.label}</span>
-                                        <span className="text-xs leading-tight text-muted-foreground/80">{opt.description}</span>
+                                        <Icon className={`size-6 mb-2 ${isSelected && !isCashDisabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                                        <span className="font-bold text-foreground mb-1">
+                                            {opt.label}
+                                            {isCashDisabled && (
+                                                <span className="block text-[10px] text-rose-500 font-semibold">(Disabled for Take Out)</span>
+                                            )}
+                                        </span>
+                                        <span className="text-xs leading-tight text-muted-foreground/80">
+                                            {isCashDisabled ? 'Cash payment is not allowed for take out orders.' : opt.description}
+                                        </span>
                                     </button>
                                 );
                             })}

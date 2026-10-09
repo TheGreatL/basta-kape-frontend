@@ -11,6 +11,11 @@ interface DashboardProfitabilityProps {
     dateRange: IDashboardDateRange;
 }
 
+/**
+ * @deprecated Expenses and profitability stats (COGS, wastage loss, gross margin, net profit)
+ * are deprecated on the dashboard per requirements to display only sales.
+ * Kept for reference or future detailed reporting.
+ */
 export function DashboardProfitabilityCard({ profitability, isLoading, dateRange }: DashboardProfitabilityProps) {
     if (isLoading) {
         return (

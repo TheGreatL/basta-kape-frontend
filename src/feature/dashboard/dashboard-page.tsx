@@ -16,7 +16,8 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 // Modular Dashboard Subcomponents
 import { DashboardHeader } from './components/dashboard-header';
 import { DashboardSalesMetricsCards } from './components/dashboard-sales-metrics';
-import { DashboardProfitabilityCard } from './components/dashboard-profitability';
+// @deprecated Expense & profitability statistics are deprecated on the dashboard to display only sales
+// import { DashboardProfitabilityCard } from './components/dashboard-profitability';
 import { DashboardSalesTrend } from './components/dashboard-sales-trend';
 import { DashboardTopProducts } from './components/dashboard-top-products';
 import { DashboardBreakdown } from './components/dashboard-breakdown';
@@ -122,9 +123,14 @@ export default function DashboardPage() {
             {canReadSales && <DashboardSalesMetricsCards metrics={salesMetrics} isLoading={isSalesLoading} dateRange={dateRange} />}
 
             {/* 3. Profitability & Financial Health (Gross Margin, COGS, Wastage Loss, Net Profit) */}
-            {canReadSales && summary.profitability && (
+            {/*
+             * @deprecated Expense statistics (Gross Margin, COGS, Wastage Loss, Net Profit)
+             * are deprecated on the dashboard per requirements to display only sales.
+             * Preserved for deprecation without deleting code.
+             */}
+            {/* {canReadSales && summary.profitability && (
                 <DashboardProfitabilityCard profitability={summary.profitability} isLoading={isLoading} dateRange={dateRange} />
-            )}
+            )} */}
 
             {/* 4. Sales Trend & Top 5 Best-Selling Favorites (Filtered) */}
             {canReadSales && (
