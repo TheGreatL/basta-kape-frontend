@@ -46,6 +46,9 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
+import { useAuth } from '#/context/AuthContext.tsx';
+import { getUserPermissions, hasPermission } from '#/utils/rbac.ts';
+import { appModules, appPermissions } from '#/constants/rbac.ts';
 import ProcessPaymentDialog from './components/process-payment-dialog.tsx';
 import VoidOrderDialog from './components/void-order-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
@@ -66,6 +69,13 @@ export default function OrderEditPage() {
     const { id: orderId } = Route.useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { user } = useAuth();
+    const permissions = React.useMemo(() => getUserPermissions(user), [user]);
+
+    const canUpdateOrders = React.useMemo(() => hasPermission(permissions, appModules.ORDERS_MANAGEMENT, appPermissions.UPDATE), [permissions]);
+    const canUpdateQueue = React.useMemo(() => hasPermission(permissions, appModules.ORDER_QUEUE, appPermissions.UPDATE), [permissions]);
+    const canCompleteSales = React.useMemo(() => hasPermission(permissions, appModules.SALES_MANAGEMENT, appPermissions.CREATE), [permissions]);
+
     const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const [viewingFileName, setViewingFileName] = React.useState<string | undefined>(undefined);
 
@@ -901,24 +911,36 @@ export default function OrderEditPage() {
                                                                         </SelectTrigger>
                                                                     </FormControl>
                                                                     <SelectContent className="rounded-xl">
-                                                                        <SelectItem value="PENDING" className="text-xs">
-                                                                            Pending
-                                                                        </SelectItem>
-                                                                        <SelectItem value="APPROVED" className="text-xs">
-                                                                            Approved
-                                                                        </SelectItem>
-                                                                        <SelectItem value="PREPARING" className="text-xs">
-                                                                            Preparing
-                                                                        </SelectItem>
-                                                                        <SelectItem value="READY" className="text-xs">
-                                                                            Ready
-                                                                        </SelectItem>
-                                                                        <SelectItem value="COMPLETED" className="text-xs">
-                                                                            Completed
-                                                                        </SelectItem>
-                                                                        <SelectItem value="CANCELLED" className="text-xs">
-                                                                            Cancelled
-                                                                        </SelectItem>
+                                                                        {canUpdateOrders && (
+                                                                            <>
+                                                                                <SelectItem value="PENDING" className="text-xs">
+                                                                                    Pending
+                                                                                </SelectItem>
+                                                                                <SelectItem value="APPROVED" className="text-xs">
+                                                                                    Approved
+                                                                                </SelectItem>
+                                                                            </>
+                                                                        )}
+                                                                        {(canUpdateQueue || canUpdateOrders) && (
+                                                                            <>
+                                                                                <SelectItem value="PREPARING" className="text-xs">
+                                                                                    Preparing
+                                                                                </SelectItem>
+                                                                                <SelectItem value="READY" className="text-xs">
+                                                                                    Ready
+                                                                                </SelectItem>
+                                                                            </>
+                                                                        )}
+                                                                        {(canCompleteSales || canUpdateOrders) && (
+                                                                            <SelectItem value="COMPLETED" className="text-xs">
+                                                                                Completed
+                                                                            </SelectItem>
+                                                                        )}
+                                                                        {canUpdateOrders && (
+                                                                            <SelectItem value="CANCELLED" className="text-xs">
+                                                                                Cancelled
+                                                                            </SelectItem>
+                                                                        )}
                                                                     </SelectContent>
                                                                 </Select>
                                                                 <FormMessage />
