@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useSearch } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Lock, Key, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
 
 import { resetPassword } from '@/api/auth.api';
 import { getErrorMessage } from '@/utils/error-handler';
@@ -18,10 +18,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function ResetPasswordPage() {
     const router = useRouter();
     const search = useSearch({ from: '/(auth)/reset-password' });
+    const hasToken = Boolean(search.token?.trim());
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { storeName } = useStoreSettings();
@@ -34,6 +36,12 @@ export default function ResetPasswordPage() {
             confirmNewPassword: ''
         }
     });
+
+    useEffect(() => {
+        if (search.token) {
+            form.setValue('token', search.token);
+        }
+    }, [search.token, form]);
 
     const resetPasswordMutation = useMutation({
         mutationKey: [QUERY_KEY.AUTH.LOGIN, 'reset-password'],
@@ -91,8 +99,12 @@ export default function ResetPasswordPage() {
                                 />
                             </Link>
                         </div>
-                        <CardTitle className="text-3xl font-bold">Reset Password</CardTitle>
-                        <CardDescription>Provide your reset token and your new account password</CardDescription>
+                        <CardTitle className="text-3xl font-bold">{hasToken ? 'Reset Password' : 'Invalid Reset Link'}</CardTitle>
+                        <CardDescription>
+                            {hasToken
+                                ? 'Enter your new account password below'
+                                : 'No reset token was found in the link. Please request a new reset link.'}
+                        </CardDescription>
                         {resetPasswordMutation.isError && (
                             <div className="rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive animate-in fade-in">
                                 {getErrorMessage(resetPasswordMutation.error, 'Token is invalid or has expired.')}
@@ -100,96 +112,91 @@ export default function ResetPasswordPage() {
                         )}
                     </CardHeader>
                     <CardContent>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                                <FormField
-                                    control={form.control}
-                                    name="token"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-foreground/80">Reset Token</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Input
-                                                        className="h-11 bg-background pl-10 font-mono text-sm"
-                                                        placeholder="Enter reset token"
-                                                        {...field}
-                                                    />
-                                                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="newPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-foreground/80">New Password</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Input
-                                                        className="h-11 bg-background pl-10 pr-10"
-                                                        type={showPassword ? 'text' : 'password'}
-                                                        placeholder="••••••••"
-                                                        {...field}
-                                                    />
-                                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                                                    >
-                                                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                                    </button>
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="confirmNewPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-foreground/80">Confirm New Password</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Input
-                                                        className="h-11 bg-background pl-10 pr-10"
-                                                        type={showConfirmPassword ? 'text' : 'password'}
-                                                        placeholder="••••••••"
-                                                        {...field}
-                                                    />
-                                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                                                    >
-                                                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                                    </button>
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <Button
-                                    type="submit"
-                                    className="w-full h-11 text-base font-semibold shadow-sm transition-all hover:scale-[1.02]"
-                                    disabled={resetPasswordMutation.isPending}
-                                >
-                                    {resetPasswordMutation.isPending ? 'Resetting password...' : 'Reset Password'}
+                        {!hasToken ? (
+                            <div className="space-y-4">
+                                <Alert variant="destructive">
+                                    <AlertCircle className="size-4" />
+                                    <AlertTitle>Missing Reset Token</AlertTitle>
+                                    <AlertDescription>
+                                        This password reset link is invalid or incomplete because the security token is missing. Please request a new
+                                        password reset link to continue.
+                                    </AlertDescription>
+                                </Alert>
+                                <Button asChild className="w-full h-11 text-base font-semibold">
+                                    <Link to="/forgot-password">Request Reset Link</Link>
                                 </Button>
-                            </form>
-                        </Form>
+                            </div>
+                        ) : (
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                                    <FormField
+                                        control={form.control}
+                                        name="newPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-foreground/80">New Password</FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Input
+                                                            className="h-11 bg-background pl-10 pr-10"
+                                                            type={showPassword ? 'text' : 'password'}
+                                                            placeholder="••••••••"
+                                                            {...field}
+                                                        />
+                                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPassword(!showPassword)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                                                        >
+                                                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                                        </button>
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmNewPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-foreground/80">Confirm New Password</FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Input
+                                                            className="h-11 bg-background pl-10 pr-10"
+                                                            type={showConfirmPassword ? 'text' : 'password'}
+                                                            placeholder="••••••••"
+                                                            {...field}
+                                                        />
+                                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                                                        >
+                                                            {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                                        </button>
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <Button
+                                        type="submit"
+                                        className="w-full h-11 text-base font-semibold shadow-sm transition-all hover:scale-[1.02]"
+                                        disabled={resetPasswordMutation.isPending}
+                                    >
+                                        {resetPasswordMutation.isPending ? 'Resetting password...' : 'Reset Password'}
+                                    </Button>
+                                </form>
+                            </Form>
+                        )}
                     </CardContent>
                     <CardFooter className="flex justify-center border-t p-6">
                         <Link
