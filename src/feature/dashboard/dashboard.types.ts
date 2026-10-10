@@ -113,7 +113,7 @@ export interface DashboardSummary {
     };
     ordersSummary?: {
         queueStats: {
-            pending: number;
+            approved: number;
             preparing: number;
             ready: number;
         };

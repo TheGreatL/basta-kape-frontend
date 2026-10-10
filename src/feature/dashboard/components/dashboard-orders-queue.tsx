@@ -9,7 +9,7 @@ import type { DashboardRecentOrder } from '../dashboard.types';
 
 interface DashboardOrdersQueueProps {
     queueStats: {
-        pending: number;
+        approved: number;
         preparing: number;
         ready: number;
     };
@@ -42,8 +42,8 @@ export function DashboardOrdersQueue({ queueStats, recentOrders }: DashboardOrde
                 <div className="grid grid-cols-3 gap-3">
                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 flex flex-col items-center justify-center">
                         <Clock className="size-4 text-amber-500 mb-1" />
-                        <span className="text-xl font-bold text-amber-500">{queueStats.pending}</span>
-                        <span className="text-xs uppercase font-bold text-muted-foreground">Pending</span>
+                        <span className="text-xl font-bold text-amber-500">{queueStats.approved}</span>
+                        <span className="text-xs uppercase font-bold text-muted-foreground">Approved</span>
                     </div>
                     <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3 flex flex-col items-center justify-center">
                         <Coffee className="size-4 text-blue-500 mb-1" />
