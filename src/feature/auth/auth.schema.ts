@@ -19,7 +19,8 @@ export const registerSchema = z
         firstName: z.string().min(2, 'First name is required'),
         middleName: z.string().optional(),
         lastName: z.string().min(2, 'Last name is required'),
-        phoneNumber: z.string().optional()
+        phoneNumber: z.string().optional(),
+        otp: z.string().optional()
     })
     .refine((data) => data.password === data.confirmPassword, {
         message: "Passwords don't match",

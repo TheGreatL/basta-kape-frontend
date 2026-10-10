@@ -71,3 +71,12 @@ export const changePassword = async (data: TChangePasswordSchema) => {
     }
     return response.json();
 };
+
+export const sendOtp = async (data: { email: string; firstName?: string; username?: string; type?: 'register' | 'general' }) => {
+    const response = await api.post('/auth/send-otp', data);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to send verification code', response.status, errorData);
+    }
+    return response.json();
+};
