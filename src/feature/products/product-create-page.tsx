@@ -12,6 +12,7 @@ import { getCategoriesList, getProductTypesList, getAttributesList, getAttribute
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import { productSchema } from './products.schema.ts';
+import { withGeneratedSkus } from './utils/sku.ts';
 import ProductPhotoUpload from './components/product-photo-upload.tsx';
 import { VariantForm } from './components/variant-form.tsx';
 import RecipeDialog from './components/recipe-dialog.tsx';
@@ -121,6 +122,29 @@ export default function ProductCreatePage() {
         }
     });
 
+    const productName = form.watch('name') || '';
+
+    /**
+     * Variant rows with their attribute labels resolved and a SKU generated for
+     * every row that does not have one yet.
+     *
+     * This is derived rather than stored so the SKU always tracks the current
+     * product name and option selection, and so the variant list already shows
+     * the SKU that will be saved. Labels are ordered by attribute name so the
+     * same combination always produces the same SKU.
+     */
+    const variantRowsWithSkus = React.useMemo(() => {
+        const withLabels = localVariants.map((v) => ({
+            ...v,
+            attributeValueLabels: [...v.attributeValueIds]
+                .map((valueId) => valueLookup[valueId])
+                .filter((entry): entry is { attrName: string; valText: string } => !!entry)
+                .sort((a, b) => a.attrName.localeCompare(b.attrName))
+                .map((entry) => entry.valText)
+        }));
+        return withGeneratedSkus(productName, withLabels);
+    }, [localVariants, productName, valueLookup]);
+
     const saveMutation = useMutation({
         mutationFn: async (values: ProductFormValues) => {
             const selectedCategory = categoriesData?.data.find((c: ICategory) => c.id === values.productCategoryId);
@@ -139,7 +163,7 @@ export default function ProductCreatePage() {
 
             // 2. Create variants & recipes
             try {
-                for (const localV of localVariants) {
+                for (const localV of variantRowsWithSkus) {
                     const newVar = await createProductVariant(newProduct.id, {
                         sku: localV.sku,
                         price: localV.price,
@@ -592,7 +616,7 @@ export default function ProductCreatePage() {
                                 </div>
                             ) : (
                                 <div className="divide-y divide-border/40">
-                                    {localVariants.map((v) => {
+                                    {variantRowsWithSkus.map((v) => {
                                         const isEditingThis = editingVariantId === v.tempId;
 
                                         if (isEditingThis) {
@@ -630,6 +654,16 @@ export default function ProductCreatePage() {
                                                         </Badge>
                                                     </div>
                                                     {renderLocalAttributeBadges(v.attributeValueIds)}
+                                                    {v.sku ? (
+                                                        <div className="flex items-center gap-1.5 pt-0.5">
+                                                            <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                                                SKU
+                                                            </span>
+                                                            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground/80">
+                                                                {v.sku}
+                                                            </code>
+                                                        </div>
+                                                    ) : null}
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">

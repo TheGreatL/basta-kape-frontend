@@ -13,6 +13,7 @@ import { getCategoriesList, getProductTypesList, getAttributesList } from '#/api
 import { getModifierGroups, deleteModifierGroup, deleteModifierOption } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
+import { withGeneratedSkus } from './utils/sku.ts';
 import { productSchema } from './products.schema.ts';
 import RecipeDialog from './components/recipe-dialog.tsx';
 import RecipeViewDialog from './components/recipe-view-dialog.tsx';
@@ -333,6 +334,17 @@ export default function ProductEditPage() {
         });
     };
 
+    const watchedProductName = form.watch('name') || productDetails?.name || '';
+
+    /**
+     * The variant rows with a SKU generated for every blank one.
+     *
+     * Rows that already carry a SKU — including everything loaded from the
+     * server — are left untouched, so saving only ever fills in the gaps and
+     * never rewrites a SKU that already exists.
+     */
+    const gridVariantsWithSkus = React.useMemo(() => withGeneratedSkus(watchedProductName, gridVariants), [gridVariants, watchedProductName]);
+
     // Cartesian Product Permutations Generator
     const generateMatrix = () => {
         const selectedArrays: Array<Array<{ id: string; value: string }>> = [];
@@ -551,6 +563,7 @@ export default function ProductEditPage() {
                 <TabsContent value="variants" className="focus-visible:outline-none">
                     <EditVariantsTab
                         gridVariants={gridVariants}
+                        rowsWithSkus={gridVariantsWithSkus}
                         setGridVariants={setGridVariants}
                         onSaveVariants={() => {
                             const seen = new Set<string>();
@@ -571,7 +584,7 @@ export default function ProductEditPage() {
                                 return;
                             }
 
-                            syncVariantsMutation.mutate({ variants: gridVariants });
+                            syncVariantsMutation.mutate({ variants: gridVariantsWithSkus });
                         }}
                         isSaving={syncVariantsMutation.isPending}
                         onOpenRecipe={(variant) => {

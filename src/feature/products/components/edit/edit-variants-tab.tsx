@@ -42,6 +42,11 @@ export interface IGridVariant {
 
 interface EditVariantsTabProps {
     gridVariants: IGridVariant[];
+    /**
+     * The same rows with a SKU generated for every blank one. Index-aligned with
+     * `gridVariants`; only used to render the read-only SKU column.
+     */
+    rowsWithSkus?: IGridVariant[];
     setGridVariants: React.Dispatch<React.SetStateAction<IGridVariant[]>>;
     onSaveVariants: () => void;
     isSaving: boolean;
@@ -64,6 +69,7 @@ interface EditVariantsTabProps {
 
 export default function EditVariantsTab({
     gridVariants,
+    rowsWithSkus,
     setGridVariants,
     onSaveVariants,
     isSaving,
@@ -196,6 +202,7 @@ export default function EditVariantsTab({
                         <TableHeader className="bg-muted/20">
                             <TableRow>
                                 <TableHead className="font-bold text-foreground/80">Variant Combination</TableHead>
+                                <TableHead className="font-bold text-foreground/80 w-[190px]">SKU</TableHead>
                                 <TableHead className="font-bold text-foreground/80 w-[160px]">Price (₱)</TableHead>
                                 <TableHead className="font-bold text-foreground/80 text-center min-w-[200px]">Recipe</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
@@ -204,7 +211,7 @@ export default function EditVariantsTab({
                         <TableBody>
                             {gridVariants.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
+                                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground italic">
                                         No variants configured. Add a row below or open the Advanced Matrix Generator.
                                     </TableCell>
                                 </TableRow>
@@ -268,6 +275,17 @@ export default function EditVariantsTab({
                                                         <Edit2 className="size-3" /> Select Attributes
                                                     </Button>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {/* Read-only: generated from the product name and the
+                                                    selected attributes, and persisted on save. */}
+                                                {rowsWithSkus?.[idx]?.sku || row.sku ? (
+                                                    <code className="block truncate rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground/80">
+                                                        {rowsWithSkus?.[idx]?.sku || row.sku}
+                                                    </code>
+                                                ) : (
+                                                    <span className="text-xs italic text-muted-foreground">—</span>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="relative">
