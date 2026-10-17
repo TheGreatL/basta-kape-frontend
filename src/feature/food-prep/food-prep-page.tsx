@@ -13,9 +13,11 @@ import DisposeBatchDialog from './components/dispose-batch-dialog.tsx';
 import { getDisplayStockSummary, getPreparedBatches } from '#/api/food-prep.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import { useSearch } from '@tanstack/react-router';
 import type { IDisplayStockItemSummary, IPreparedItemBatch, PreparedBatchStatus } from './food-prep.types';
 
 export default function FoodPrepPage() {
+    const searchParams = useSearch({ from: '/admin/food-prep' });
     const [activeTab, setActiveTab] = React.useState<string>('display-shelf');
 
     // Dialog state for recording bake / preparation batch
@@ -27,11 +29,11 @@ export default function FoodPrepPage() {
     const [selectedBatchForDispose, setSelectedBatchForDispose] = React.useState<IPreparedItemBatch | null>(null);
 
     // Batches table filter & pagination states
-    const [batchesPage, setBatchesPage] = React.useState(1);
-    const [batchesLimit, setBatchesLimit] = React.useState(10);
-    const [batchesSearch, setBatchesSearch] = React.useState('');
+    const [batchesPage, setBatchesPage] = React.useState<number>(searchParams.page);
+    const [batchesLimit, setBatchesLimit] = React.useState<number>(searchParams.limit);
+    const [batchesSearch, setBatchesSearch] = React.useState<string>(searchParams.search);
     const debouncedBatchesSearch = useDebounce(batchesSearch, 400);
-    const [batchesStatus, setBatchesStatus] = React.useState<PreparedBatchStatus | ''>('');
+    const [batchesStatus, setBatchesStatus] = React.useState<PreparedBatchStatus | ''>(searchParams.status as PreparedBatchStatus | '');
     const [expiringSoonFilter, setExpiringSoonFilter] = React.useState(false);
     const [selectedVariantFilter, setSelectedVariantFilter] = React.useState<string>('');
 

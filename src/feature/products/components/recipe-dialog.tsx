@@ -148,7 +148,11 @@ export default function RecipeDialog({
             .filter((v: IProductVariant) => v.id !== variant.id && !!v.recipe)
             .map((v: IProductVariant) => ({
                 id: v.id,
-                label: v.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Standard Item',
+                label:
+                    v.attributes
+                        .map((a: IVariantAttribute) => a.attributeValue.value)
+                        .filter(Boolean)
+                        .join(', ') || 'Standard Item',
                 localRecipe: null
             }));
     }, [availableCopyVariants, productDetailsData, variant]);
@@ -160,7 +164,12 @@ export default function RecipeDialog({
             if (foundLocal && foundLocal.localRecipe) {
                 const lr = foundLocal.localRecipe;
                 form.reset({
-                    name: `${productName} Recipe (${variant?.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Custom'})`,
+                    name: `${productName} Recipe (${
+                        variant?.attributes
+                            .map((a: IVariantAttribute) => a.attributeValue.value)
+                            .filter(Boolean)
+                            .join(', ') || 'Custom'
+                    })`,
                     description: lr.description || '',
                     ingredients: lr.ingredients.map((ing: ILocalRecipeIngredient) => ({
                         ingredientId: ing.ingredientId,
@@ -178,7 +187,12 @@ export default function RecipeDialog({
 
             const copiedRecipe = await getVariantRecipe(otherVariantId);
             form.reset({
-                name: `${productName} Recipe (${variant?.attributes.map((a: IVariantAttribute) => a.attributeValue.value).join(', ') || 'Custom'})`,
+                name: `${productName} Recipe (${
+                    variant?.attributes
+                        .map((a: IVariantAttribute) => a.attributeValue.value)
+                        .filter(Boolean)
+                        .join(', ') || 'Custom'
+                })`,
                 description: copiedRecipe.description || '',
                 ingredients: copiedRecipe.ingredients.map((ing) => {
                     const baseUnitId = ing.ingredient.ingredientUnitId || ing.ingredient.defaultUnit?.id || ing.ingredientUnitId;
@@ -511,10 +525,10 @@ export default function RecipeDialog({
                                         <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                                             {fields.map((field, index) => {
                                                 const watchedRow = watchedIngredients[index];
-                                                const currentIngredientId = watchedRow.ingredientId || field.ingredientId;
-                                                const currentBaseUnitId = watchedRow._baseUnitId || field._baseUnitId;
-                                                const currentBaseUnitName = watchedRow._baseUnitName || field._baseUnitName;
-                                                const currentUnitId = watchedRow.ingredientUnitId || field.ingredientUnitId;
+                                                const currentIngredientId = watchedRow.ingredientId || field.ingredientId || '';
+                                                const currentBaseUnitId = watchedRow._baseUnitId || field._baseUnitId || '';
+                                                const currentBaseUnitName = watchedRow._baseUnitName || field._baseUnitName || '';
+                                                const currentUnitId = watchedRow.ingredientUnitId || field.ingredientUnitId || '';
                                                 const currentQty = Number(watchedRow.quantity) || 0;
 
                                                 const compatibleUnits = getCompatibleUnits(currentBaseUnitId, currentIngredientId);
@@ -566,25 +580,30 @@ export default function RecipeDialog({
                                                                                         item?.name || '',
                                                                                         { shouldDirty: true }
                                                                                     );
-                                                                                    if (item?.defaultUnit) {
+                                                                                    const defaultUnit =
+                                                                                        item?.defaultUnit ||
+                                                                                        (item?.ingredientUnitId
+                                                                                            ? unitMap.get(item.ingredientUnitId)
+                                                                                            : undefined);
+                                                                                    if (defaultUnit) {
                                                                                         form.setValue(
                                                                                             `ingredients.${index}.ingredientUnitId`,
-                                                                                            item.defaultUnit.id,
+                                                                                            defaultUnit.id,
                                                                                             { shouldDirty: true }
                                                                                         );
                                                                                         form.setValue(
                                                                                             `ingredients.${index}._unitName`,
-                                                                                            item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                            defaultUnit.abbreviation || defaultUnit.name,
                                                                                             { shouldDirty: true }
                                                                                         );
                                                                                         form.setValue(
                                                                                             `ingredients.${index}._baseUnitId`,
-                                                                                            item.defaultUnit.id,
+                                                                                            defaultUnit.id,
                                                                                             { shouldDirty: true }
                                                                                         );
                                                                                         form.setValue(
                                                                                             `ingredients.${index}._baseUnitName`,
-                                                                                            item.defaultUnit.abbreviation || item.defaultUnit.name,
+                                                                                            defaultUnit.abbreviation || defaultUnit.name,
                                                                                             { shouldDirty: true }
                                                                                         );
                                                                                     }
@@ -593,13 +612,11 @@ export default function RecipeDialog({
                                                                                 getOptionLabel={(item) => item.name}
                                                                                 selectedItem={
                                                                                     selectField.value &&
-                                                                                    (watchedIngredients[index]?._ingredientName ||
-                                                                                        field._ingredientName)
+                                                                                    (watchedRow._ingredientName || field._ingredientName)
                                                                                         ? ({
                                                                                               id: selectField.value,
                                                                                               name:
-                                                                                                  watchedIngredients[index]?._ingredientName ||
-                                                                                                  field._ingredientName
+                                                                                                  watchedRow._ingredientName || field._ingredientName
                                                                                           } as IIngredient)
                                                                                         : undefined
                                                                                 }

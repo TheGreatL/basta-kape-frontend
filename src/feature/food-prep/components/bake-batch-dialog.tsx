@@ -49,7 +49,11 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
     // Fetch real-time live raw ingredients forecast for preselected item
     const { data: preselectedForecastData, isLoading: isPreselectedForecastLoading } = useQuery({
         queryKey: [QUERY_KEY.INVENTORY.FORECAST, 'bake-dialog-preselected', preselectedItem?.productVariantId],
-        queryFn: () => getProductionForecast({ search: preselectedItem?.productName || '' }),
+        queryFn: () =>
+            getProductionForecast({
+                search: preselectedItem?.productName || '',
+                preparationType: 'PREPARED_DISPLAY'
+            }),
         enabled: open && !!preselectedItem?.productVariantId
     });
 
@@ -172,8 +176,8 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                         Record Food Preparation / Bake Batch
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                        Log freshly prepared pastries or food into display stock. Raw recipe ingredients will be automatically deducted from
-                        inventory.
+                        Log freshly prepared pastries or food into display stock. Only items set to &quot;Prepared / Display Stock&quot; are eligible.
+                        Raw recipe ingredients will be automatically deducted from inventory.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -211,12 +215,13 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                     </div>
                                     <FormControl>
                                         <InfiniteSelect<IForecast>
-                                            queryKey={[QUERY_KEY.INVENTORY.FORECAST, 'bake-batch-forecast-select']}
+                                            queryKey={[QUERY_KEY.INVENTORY.FORECAST, 'bake-batch-forecast-select', 'PREPARED_DISPLAY']}
                                             fetchFn={async ({ pageParam, query }) => {
                                                 return getProductionForecast({
                                                     page: pageParam || 1,
                                                     limit: 20,
-                                                    search: query
+                                                    search: query,
+                                                    preparationType: 'PREPARED_DISPLAY'
                                                 });
                                             }}
                                             getItems={(page) => page.data}
@@ -224,6 +229,9 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                                 return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
                                             }}
                                             value={field.value}
+                                            placeholder="Select prepared display item..."
+                                            searchPlaceholder="Search display items (cookies, pastries, baked goods)..."
+                                            emptyText="No display stock items found. Only products set to 'Prepared / Display Stock' appear here."
                                             onChange={(val, item) => {
                                                 field.onChange(val || '');
                                                 setSelectedForecast(item || null);
@@ -281,8 +289,6 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                                       }
                                                     : undefined
                                             }
-                                            placeholder="Search & select food product variant..."
-                                            searchPlaceholder="Search products by name or SKU..."
                                             className="h-9 bg-background/50 rounded-xl text-xs"
                                         />
                                     </FormControl>

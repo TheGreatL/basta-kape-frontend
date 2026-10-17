@@ -143,19 +143,22 @@ export default function ProductEditPage() {
         (productDetails as any)?.productType?.id ||
         '';
 
+    const initialFormValues = React.useMemo<ProductFormValues | undefined>(() => {
+        if (!productDetails) return undefined;
+        return {
+            name: productDetails.name,
+            photo: productDetails.photo || '',
+            description: productDetails.description || '',
+            productCategoryId: categoryId,
+            productTypeId: typeId,
+            preparationType: productDetails.preparationType === 'PREPARED_DISPLAY' ? 'PREPARED_DISPLAY' : 'MADE_TO_ORDER',
+            defaultShelfLife: productDetails.defaultShelfLife ?? null
+        };
+    }, [productDetails, categoryId, typeId]);
+
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productSchema),
-        values: productDetails
-            ? {
-                  name: productDetails.name,
-                  photo: productDetails.photo || '',
-                  description: productDetails.description || '',
-                  productCategoryId: categoryId,
-                  productTypeId: typeId,
-                  preparationType: productDetails.preparationType || 'MADE_TO_ORDER',
-                  defaultShelfLife: productDetails.defaultShelfLife ?? null
-              }
-            : undefined,
+        values: initialFormValues,
         defaultValues: {
             name: '',
             photo: '',

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { Card, CardContent } from '#/components/ui/card.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -33,8 +34,25 @@ export default function DisplayStockGrid({ items, isLoading, onBakeItem, onViewI
                 <div>
                     <h4 className="text-sm font-bold text-foreground">No Display Items Configured</h4>
                     <p className="text-xs text-muted-foreground max-w-sm mt-1">
-                        Products set to &quot;Prepared / Display Inventory&quot; will appear on this station once configured in Products settings.
+                        Products set to &quot;Prepared / Display Stock&quot; will appear on this station once configured in Products settings.
                     </p>
+                </div>
+                <div className="pt-1">
+                    <Button asChild variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5">
+                        <Link
+                            to="/admin/products"
+                            search={{
+                                page: 1,
+                                pageSize: 10,
+                                search: '',
+                                status: 'active',
+                                productCategoryId: '',
+                                productTypeId: ''
+                            }}
+                        >
+                            Configure in Products
+                        </Link>
+                    </Button>
                 </div>
             </div>
         );

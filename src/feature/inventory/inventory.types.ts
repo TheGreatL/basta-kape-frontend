@@ -223,6 +223,7 @@ export interface IUpdateAdjustmentPayload {
 export interface IGetForecastParams extends IPaginationParams {
     search?: string;
     status?: 'all' | 'ready' | 'low' | 'out' | 'no_recipe';
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
 }
 
 export interface IForecastStats {
@@ -257,6 +258,7 @@ export interface IForecast {
         unit: string;
     } | null;
     ingredients: IForecastIngredient[];
+    preparationType?: 'MADE_TO_ORDER' | 'PREPARED_DISPLAY';
 }
 
 // =============================================================================

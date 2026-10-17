@@ -208,31 +208,33 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="font-semibold text-foreground/80 text-xs">Preparation Mode</FormLabel>
-                                                <Select value={field.value} onValueChange={field.onChange}>
+                                                <Select
+                                                    value={field.value}
+                                                    onValueChange={(val) => {
+                                                        if (val === 'MADE_TO_ORDER' || val === 'PREPARED_DISPLAY') {
+                                                            field.onChange(val);
+                                                        }
+                                                    }}
+                                                >
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50 rounded-xl text-xs font-semibold">
                                                             <SelectValue placeholder="Select preparation mode" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        <SelectItem value="MADE_TO_ORDER" className="text-xs">
-                                                            <div className="space-y-0.5">
-                                                                <div className="font-semibold">Made to Order</div>
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    Drinks & hot food; ingredients deducted at POS order time
-                                                                </div>
-                                                            </div>
+                                                        <SelectItem value="MADE_TO_ORDER" className="text-xs font-medium">
+                                                            Made to Order (Drinks & Hot Food)
                                                         </SelectItem>
-                                                        <SelectItem value="PREPARED_DISPLAY" className="text-xs">
-                                                            <div className="space-y-0.5">
-                                                                <div className="font-semibold">Prepared / Display Stock</div>
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    Cookies & pastries; baked in advance with shelf-life expiry tracking
-                                                                </div>
-                                                            </div>
+                                                        <SelectItem value="PREPARED_DISPLAY" className="text-xs font-medium">
+                                                            Prepared / Display Stock (Pastries & Baked Goods)
                                                         </SelectItem>
                                                     </SelectContent>
                                                 </Select>
+                                                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                                                    {field.value === 'PREPARED_DISPLAY'
+                                                        ? 'Stock is baked/prepared in advance into shelf-life batches. Raw ingredients are deducted during batch prep.'
+                                                        : 'Raw ingredients are deducted automatically from stock when customers place orders at POS.'}
+                                                </p>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

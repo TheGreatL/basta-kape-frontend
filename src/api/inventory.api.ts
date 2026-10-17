@@ -283,6 +283,7 @@ export const getProductionForecast = async (params?: IGetForecastParams): Promis
     if (params?.limit !== undefined) query.set('limit', String(params.limit));
     if (params?.search) query.set('search', params.search);
     if (params?.status && params.status !== 'all') query.set('status', params.status);
+    if (params?.preparationType) query.set('preparationType', params.preparationType);
 
     const response = await api.get(`/inventory/forecast?${query.toString()}`);
     if (!response.ok) {
