@@ -451,7 +451,7 @@ export default function CheckoutPaymentDialog({
                             isPending ||
                             (paymentMethod === 'CASH' && (cashTendered === '' || cashTendered < cartNetTotal)) ||
                             (paymentMethod !== 'CASH' && !referenceNumber.trim()) ||
-                            (paymentMethod === 'GCASH' && referenceNumber.trim().length !== 11)
+                            (paymentMethod === 'GCASH' && referenceNumber.trim().length !== 13)
                         }
                         className="h-8.5 text-xs font-bold px-5 bg-primary text-primary-foreground shadow-xs gap-1"
                     >
