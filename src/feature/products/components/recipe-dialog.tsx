@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
@@ -524,12 +525,12 @@ export default function RecipeDialog({
                                     ) : (
                                         <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                                             {fields.map((field, index) => {
-                                                const watchedRow = watchedIngredients[index];
-                                                const currentIngredientId = watchedRow.ingredientId || field.ingredientId || '';
-                                                const currentBaseUnitId = watchedRow._baseUnitId || field._baseUnitId || '';
-                                                const currentBaseUnitName = watchedRow._baseUnitName || field._baseUnitName || '';
-                                                const currentUnitId = watchedRow.ingredientUnitId || field.ingredientUnitId || '';
-                                                const currentQty = Number(watchedRow.quantity) || 0;
+                                                const watchedRow = watchedIngredients?.[index] ?? field;
+                                                const currentIngredientId = watchedRow?.ingredientId || field.ingredientId || '';
+                                                const currentBaseUnitId = watchedRow?._baseUnitId || field._baseUnitId || '';
+                                                const currentBaseUnitName = watchedRow?._baseUnitName || field._baseUnitName || '';
+                                                const currentUnitId = watchedRow?.ingredientUnitId || field.ingredientUnitId || '';
+                                                const currentQty = Number(watchedRow?.quantity ?? field.quantity) || 0;
 
                                                 const compatibleUnits = getCompatibleUnits(currentBaseUnitId, currentIngredientId);
                                                 const isConverted = Boolean(
@@ -612,11 +613,11 @@ export default function RecipeDialog({
                                                                                 getOptionLabel={(item) => item.name}
                                                                                 selectedItem={
                                                                                     selectField.value &&
-                                                                                    (watchedRow._ingredientName || field._ingredientName)
+                                                                                    (watchedRow?._ingredientName || field._ingredientName)
                                                                                         ? ({
                                                                                               id: selectField.value,
                                                                                               name:
-                                                                                                  watchedRow._ingredientName || field._ingredientName
+                                                                                                  watchedRow?._ingredientName || field._ingredientName
                                                                                           } as IIngredient)
                                                                                         : undefined
                                                                                 }
@@ -733,7 +734,7 @@ export default function RecipeDialog({
                                                                     {Number(baseDeduction.toFixed(4)).toLocaleString()} {currentBaseUnitName}
                                                                 </span>
                                                                 <span className="text-[10px] text-muted-foreground">
-                                                                    (converted from {currentQty} {watchedRow._unitName || field._unitName})
+                                                                    (converted from {currentQty} {watchedRow?._unitName || field._unitName})
                                                                 </span>
                                                             </div>
                                                         )}
