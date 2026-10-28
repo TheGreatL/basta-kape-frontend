@@ -28,10 +28,13 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#/components/ui/tooltip.tsx';
 import { useNavigate } from '@tanstack/react-router';
+import { useAuth } from '#/context/AuthContext.tsx';
 import RoleDeleteDialog from './role-delete-dialog.tsx';
 
 export default function RoleTable({ page, pageSize, search, status, onPaginationChange, onSearchChange, onStatusChange }: RoleTableProps) {
+    const { user } = useAuth();
     const queryClient = useQueryClient();
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -199,15 +202,38 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
                                               </Button>
                                           </RequirePermission>
                                           <RequirePermission module="Roles and Permissions" action="delete">
-                                              <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="size-8 text-muted-foreground hover:text-destructive transition-colors"
-                                                  onClick={() => handleOpenDelete(row.original)}
-                                              >
-                                                  <Archive className="size-4" />
-                                                  <span className="sr-only">Archive Role</span>
-                                              </Button>
+                                              {user?.roles.some((r) => r.name === row.original.name) ? (
+                                                  <TooltipProvider>
+                                                      <Tooltip>
+                                                          <TooltipTrigger asChild>
+                                                              <span className="inline-block cursor-not-allowed">
+                                                                  <Button
+                                                                      variant="ghost"
+                                                                      size="icon"
+                                                                      disabled
+                                                                      className="size-8 text-muted-foreground/40 pointer-events-none"
+                                                                  >
+                                                                      <Archive className="size-4" />
+                                                                      <span className="sr-only">Cannot archive your own active role</span>
+                                                                  </Button>
+                                                              </span>
+                                                          </TooltipTrigger>
+                                                          <TooltipContent>
+                                                              <p>You cannot archive your own active role</p>
+                                                          </TooltipContent>
+                                                      </Tooltip>
+                                                  </TooltipProvider>
+                                              ) : (
+                                                  <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      className="size-8 text-muted-foreground hover:text-destructive transition-colors"
+                                                      onClick={() => handleOpenDelete(row.original)}
+                                                  >
+                                                      <Archive className="size-4" />
+                                                      <span className="sr-only">Archive Role</span>
+                                                  </Button>
+                                              )}
                                           </RequirePermission>
                                       </>
                                   )}
@@ -216,7 +242,7 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
                 }
             }
         ],
-        [status, restoreMutation]
+        [status, restoreMutation, user]
     );
 
     return (
