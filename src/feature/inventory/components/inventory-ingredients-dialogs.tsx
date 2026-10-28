@@ -25,7 +25,7 @@ const ingredientFormSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must not exceed 100 characters'),
     type: z.enum(['INGREDIENT', 'PACKAGING_MATERIAL', 'SUPPLY']),
     ingredientUnitId: z.string().uuid('Please select a valid measurement unit'),
-    reorderPoint: z.number().min(0, 'Reorder point must be 0 or greater'),
+    reorderPoint: z.number().gt(0, 'Low stock alert level must be greater than 0'),
     description: z.string().max(500, 'Description must not exceed 500 characters').optional()
 });
 
@@ -211,6 +211,8 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                                 <FormControl>
                                                     <Input
                                                         type="number"
+                                                        min={0.01}
+                                                        step="any"
                                                         {...field}
                                                         onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
                                                         className="h-9 bg-background/50"
@@ -443,6 +445,8 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                                 <FormControl>
                                                     <Input
                                                         type="number"
+                                                        min={0.01}
+                                                        step="any"
                                                         {...field}
                                                         onChange={(e) => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
                                                         className="h-9 bg-background/50"

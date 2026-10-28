@@ -270,7 +270,7 @@ export default function ProductViewPage() {
                                                                 onClick={() => handleViewRecipe(v)}
                                                                 className="h-7 text-xs font-semibold gap-1.5 border-border/70 hover:bg-muted text-foreground"
                                                             >
-                                                                <Eye className="size-3.5 text-primary" /> View Recipe
+                                                                <Eye className="size-3.5 text-primary" /> View Ingredients/Bill of Materials (BOM)
                                                             </Button>
                                                         ) : (
                                                             <Button
