@@ -328,9 +328,6 @@ export default function TransactionsPage() {
                                     <SelectItem value="PENDING" className="text-xs">
                                         Pending
                                     </SelectItem>
-                                    <SelectItem value="FAILED" className="text-xs">
-                                        Failed
-                                    </SelectItem>
                                     <SelectItem value="REFUNDED" className="text-xs">
                                         Refunded
                                     </SelectItem>
