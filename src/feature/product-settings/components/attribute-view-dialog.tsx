@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Sparkles, Calendar, FileText, Plus, Trash2, Edit2, Check, X, ShieldAlert, RotateCcw } from 'lucide-react';
+import { Sparkles, Calendar, FileText, Plus, Archive, Edit2, Check, X, ShieldAlert, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -348,7 +348,7 @@ export default function AttributeViewDialog({ open, onOpenChange, attribute }: A
                                                                                 onClick={() => deleteValueMutation.mutate(val.id)}
                                                                                 disabled={deleteValueMutation.isPending}
                                                                             >
-                                                                                <Trash2 className="size-3.5" />
+                                                                                <Archive className="size-3.5" />
                                                                             </Button>
                                                                         )}
                                                                     </RequirePermission>

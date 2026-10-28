@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Users, Calendar, Phone, RotateCcw, KeyRound } from 'lucide-react';
+import { Plus, Edit, Archive, Eye, Users, Calendar, Phone, RotateCcw, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -280,7 +280,7 @@ export default function CustomerManagementPage() {
                                         onClick={() => handleOpenDelete(row.original)}
                                         title="Archive Customer"
                                     >
-                                        <Trash2 className="size-4" />
+                                        <Archive className="size-4" />
                                         <span className="sr-only">Archive Customer</span>
                                     </Button>
                                 </RequirePermission>

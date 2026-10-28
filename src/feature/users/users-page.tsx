@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Users, KeyRound } from 'lucide-react';
+import { Plus, Edit, Archive, Eye, Users, KeyRound } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { getUsersList, adminResetUserPassword } from '#/api/users.api.ts';
@@ -241,7 +241,7 @@ export default function UsersPage() {
                                             className="size-8 text-muted-foreground"
                                             onClick={() => handleOpenDelete(row.original)}
                                         >
-                                            <Trash2 className="size-4" />
+                                            <Archive className="size-4" />
                                             <span className="sr-only">Archive Staff</span>
                                         </Button>
                                     </RequirePermission>

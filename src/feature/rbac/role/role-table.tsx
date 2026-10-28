@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Edit, Trash2, Lock, Eye, RotateCcw } from 'lucide-react';
+import { Edit, Archive, Lock, Eye, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -205,8 +205,8 @@ export default function RoleTable({ page, pageSize, search, status, onPagination
                                                   className="size-8 text-muted-foreground hover:text-destructive transition-colors"
                                                   onClick={() => handleOpenDelete(row.original)}
                                               >
-                                                  <Trash2 className="size-4" />
-                                                  <span className="sr-only">Delete Role</span>
+                                                  <Archive className="size-4" />
+                                                  <span className="sr-only">Archive Role</span>
                                               </Button>
                                           </RequirePermission>
                                       </>

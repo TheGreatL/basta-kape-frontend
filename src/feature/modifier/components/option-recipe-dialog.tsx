@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar, RotateCcw } from 'lucide-react';
+import { ChefHat, Plus, Trash2, Edit2, Save, X, BookOpen, AlertTriangle, Calendar, RotateCcw, Archive } from 'lucide-react';
 
 import {
     AlertDialog,
@@ -703,13 +703,13 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                             disabled={deleteRecipeMutation.isPending}
                                                             className="h-9 border-destructive text-destructive hover:bg-destructive/10"
                                                         >
-                                                            <Trash2 className="size-4 mr-1.5" /> Archive Recipe
+                                                            <Archive className="size-4 mr-1.5" /> Archive Recipe
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
                                                             <AlertDialogTitle className="flex items-center gap-2 font-bold text-foreground">
-                                                                <Trash2 className="size-5 text-rose-500" />
+                                                                <Archive className="size-5 text-rose-500" />
                                                                 Archive Recipe
                                                             </AlertDialogTitle>
                                                             <AlertDialogDescription>

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Sparkles, Plus, Trash2, Edit2, Check, X, ShieldAlert, RotateCcw } from 'lucide-react';
+import { Sparkles, Plus, Archive, Edit2, Check, X, ShieldAlert, RotateCcw } from 'lucide-react';
 
 import {
     updateAttribute,
@@ -411,7 +411,7 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
                                                                                     onClick={() => deleteValueMutation.mutate(val.id)}
                                                                                     disabled={deleteValueMutation.isPending}
                                                                                 >
-                                                                                    <Trash2 className="size-3.5" />
+                                                                                    <Archive className="size-3.5" />
                                                                                 </Button>
                                                                             )}
                                                                         </RequirePermission>

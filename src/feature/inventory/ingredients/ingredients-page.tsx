@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Beef, Plus, Edit, Trash2, RotateCcw, Calendar } from 'lucide-react';
+import { Beef, Plus, Edit, Archive, RotateCcw, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -183,7 +183,7 @@ export default function IngredientsPage() {
                                         className="size-8 text-muted-foreground hover:text-destructive transition-colors"
                                         onClick={() => deleteIngredientMutation.mutate(row.original.id)}
                                     >
-                                        <Trash2 className="size-4" />
+                                        <Archive className="size-4" />
                                     </Button>
                                 </RequirePermission>
                             </>

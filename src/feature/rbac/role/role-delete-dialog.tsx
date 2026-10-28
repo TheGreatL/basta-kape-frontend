@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Trash2, Info } from 'lucide-react';
+import { Archive, Info } from 'lucide-react';
 
 import { deleteRole } from '#/api/rbac.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -42,7 +42,7 @@ export default function RoleDeleteDialog({ open, onOpenChange, role }: RoleDelet
             <DialogContent className="max-w-md bg-background p-6">
                 <DialogHeader className="space-y-2">
                     <DialogTitle className="flex items-center gap-2 text-destructive font-bold">
-                        <Trash2 className="size-5" />
+                        <Archive className="size-5" />
                         Archive Role
                     </DialogTitle>
                     <DialogDescription className="text-xs">

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Plus, Edit, Trash2, Eye, Truck, User, Phone, MapPin, Calendar, RotateCcw } from 'lucide-react';
+import { Plus, Edit, Archive, Eye, Truck, User, Phone, MapPin, Calendar, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -238,7 +238,7 @@ export default function SuppliersPage() {
                                         className="size-8 text-muted-foreground hover:text-destructive transition-colors"
                                         onClick={() => handleOpenDelete(row.original)}
                                     >
-                                        <Trash2 className="size-4" />
+                                        <Archive className="size-4" />
                                         <span className="sr-only">Archive Supplier</span>
                                     </Button>
                                 </RequirePermission>

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { Archive } from 'lucide-react';
 
 import { deleteProduct } from '#/api/products.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -46,7 +46,7 @@ export default function ProductDeleteDialog({ open, onOpenChange, product }: Pro
             <DialogContent className="max-w-md bg-background">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-lg font-bold text-destructive">
-                        <Trash2 className="size-5" />
+                        <Archive className="size-5" />
                         Archive Product
                     </DialogTitle>
                     <DialogDescription className="text-xs">
