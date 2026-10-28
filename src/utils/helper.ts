@@ -36,3 +36,28 @@ export const getFrontendReference = (createdAt: string | Date, queueNumber: stri
     const cleanQueue = queueNumber.replace('#', '');
     return `${yymmdd}-${cleanQueue}`;
 };
+
+const currencyFormatter = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+/**
+ * Formats a number to Philippine Peso money format:
+ * e.g. 1250.5 -> "₱1,250.50"
+ */
+export function formatCurrency(amount: number | string | null | undefined, includeSymbol = true): string {
+    const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
+    const validNum = isNaN(num) ? 0 : num;
+
+    if (!includeSymbol) {
+        return validNum.toLocaleString('en-PH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    return currencyFormatter.format(validNum);
+}

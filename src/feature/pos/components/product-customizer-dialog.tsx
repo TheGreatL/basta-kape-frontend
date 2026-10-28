@@ -4,8 +4,9 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
-import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError, formatCurrency } from '#/utils/helper.ts';
 import { toast } from 'sonner';
+import { cn } from '#/lib/utils.ts';
 import type { IMenuProduct, IMenuProductVariant } from '../../menu/menu.types';
 import type { IModifierGroup, IModifierOption } from '../../modifier/modifier.types';
 import type { IPaginatedResult } from '#/types/base.types';
@@ -110,6 +111,9 @@ export default function ProductCustomizerDialog({
     }, [selectedVariant, selectedModifierOptionIds, modifierGroupsData]);
 
     const isCurrentConfigExceeded = React.useMemo(() => {
+        if (!configQuantity || configQuantity < 1) {
+            return false;
+        }
         for (const ingredientId in selectedRequirements) {
             const required = selectedRequirements[ingredientId] * configQuantity;
             const available = ingredientInventoryMap[ingredientId] || 0;
@@ -119,6 +123,31 @@ export default function ProductCustomizerDialog({
         }
         return false;
     }, [selectedRequirements, configQuantity, ingredientInventoryMap]);
+
+    // Maximum units of the current variant + selected modifiers that can be made
+    const maxAvailableQuantity = React.useMemo(() => {
+        let maxQty: number | null = null;
+
+        // 1. Check recipe ingredient inventories
+        const reqKeys = Object.keys(selectedRequirements);
+        if (reqKeys.length > 0) {
+            for (const ingredientId of reqKeys) {
+                const perUnitReq = selectedRequirements[ingredientId];
+                if (perUnitReq > 0) {
+                    const available = ingredientInventoryMap[ingredientId] || 0;
+                    const possible = Math.floor(available / perUnitReq);
+                    maxQty = maxQty === null ? possible : Math.min(maxQty, possible);
+                }
+            }
+        }
+
+        // 2. Also constrain by selectedVariant.maxProduceable if numeric
+        if (typeof selectedVariant?.maxProduceable === 'number') {
+            maxQty = maxQty === null ? selectedVariant.maxProduceable : Math.min(maxQty, selectedVariant.maxProduceable);
+        }
+
+        return maxQty === null ? 9999 : Math.max(0, maxQty);
+    }, [selectedRequirements, ingredientInventoryMap, selectedVariant]);
 
     const checkOptionAvailability = (opt: any) => {
         // If option has no recipe or no ingredients, it's available
@@ -369,7 +398,7 @@ export default function ProductCustomizerDialog({
                         {selectedVariant && (
                             <div className="text-right shrink-0">
                                 <span className="text-2xs text-muted-foreground font-bold block uppercase">Base Price</span>
-                                <span className="text-sm font-bold text-primary font-mono">₱{selectedVariant.price.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-primary font-mono">{formatCurrency(selectedVariant.price)}</span>
                             </div>
                         )}
                     </div>
@@ -498,7 +527,7 @@ export default function ProductCustomizerDialog({
                                                             <span className="font-mono text-2xs opacity-85">
                                                                 {isAvailable
                                                                     ? option.price > 0
-                                                                        ? `+₱${option.price.toFixed(2)}`
+                                                                        ? `+${formatCurrency(option.price)}`
                                                                         : 'Free'
                                                                     : !isStockAvailable
                                                                       ? 'Out of Stock'
@@ -528,20 +557,76 @@ export default function ProductCustomizerDialog({
                         </div>
 
                         <div className="space-y-1 text-center">
-                            <span className="text-xs font-bold text-foreground/80 uppercase block">Quantity</span>
-                            <div className="flex items-center justify-center gap-3 border rounded-lg h-8.5 bg-background/50">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-foreground/80 uppercase block">Quantity</span>
+                                {maxAvailableQuantity < 9999 && (
+                                    <span
+                                        className={cn(
+                                            'text-2xs font-semibold px-1.5 py-0.5 rounded',
+                                            maxAvailableQuantity === 0
+                                                ? 'text-destructive bg-destructive/10'
+                                                : configQuantity > maxAvailableQuantity
+                                                  ? 'text-amber-600 bg-amber-500/10'
+                                                  : 'text-muted-foreground bg-muted'
+                                        )}
+                                    >
+                                        Max: {maxAvailableQuantity}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center justify-center gap-1.5 border rounded-lg h-8.5 bg-background/50 px-1">
                                 <button
                                     type="button"
-                                    onClick={() => setConfigQuantity((q) => Math.max(1, q - 1))}
-                                    className="p-1 rounded-md hover:bg-muted text-muted-foreground active:scale-95 cursor-pointer"
+                                    onClick={() => setConfigQuantity((q) => Math.max(1, (q || 1) - 1))}
+                                    disabled={configQuantity <= 1}
+                                    className="p-1 rounded-md hover:bg-muted text-muted-foreground active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                                 >
                                     <Minus className="size-3" />
                                 </button>
-                                <span className="text-xs font-bold w-6 text-center font-mono">{configQuantity}</span>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={maxAvailableQuantity < 9999 ? maxAvailableQuantity : undefined}
+                                    value={configQuantity === 0 ? '' : configQuantity}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '') {
+                                            setConfigQuantity(0);
+                                            return;
+                                        }
+                                        const parsed = parseInt(val, 10);
+                                        if (!isNaN(parsed)) {
+                                            if (maxAvailableQuantity < 9999 && parsed > maxAvailableQuantity) {
+                                                setConfigQuantity(maxAvailableQuantity);
+                                                toast.error('Exceeds Stock', {
+                                                    description: `Only ${maxAvailableQuantity} can be prepared with currently available ingredients.`
+                                                });
+                                            } else {
+                                                setConfigQuantity(Math.max(1, parsed));
+                                            }
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        if (!configQuantity || configQuantity < 1) {
+                                            setConfigQuantity(1);
+                                        }
+                                    }}
+                                    className="h-7 w-16 text-center font-mono font-bold text-xs p-1 bg-transparent border-0 shadow-none focus-visible:ring-1"
+                                />
                                 <button
                                     type="button"
-                                    onClick={() => setConfigQuantity((q) => q + 1)}
-                                    className="p-1 rounded-md hover:bg-muted text-muted-foreground active:scale-95 cursor-pointer"
+                                    onClick={() => {
+                                        const nextQty = (configQuantity || 0) + 1;
+                                        if (maxAvailableQuantity < 9999 && nextQty > maxAvailableQuantity) {
+                                            toast.error('Exceeds Stock', {
+                                                description: `Only ${maxAvailableQuantity} can be prepared with currently available ingredients.`
+                                            });
+                                            return;
+                                        }
+                                        setConfigQuantity(nextQty);
+                                    }}
+                                    disabled={maxAvailableQuantity < 9999 && configQuantity >= maxAvailableQuantity}
+                                    className="p-1 rounded-md hover:bg-muted text-muted-foreground active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                                 >
                                     <Plus className="size-3" />
                                 </button>
@@ -553,7 +638,7 @@ export default function ProductCustomizerDialog({
                 <DialogFooter className="px-6 py-3 border-t bg-muted/20 shrink-0 flex items-center justify-between">
                     <div className="text-left">
                         <span className="text-2xs text-muted-foreground font-bold block uppercase leading-none">Total Price</span>
-                        <span className="text-sm font-bold text-primary font-mono mt-0.5 block">₱{overallTotal.toFixed(2)}</span>
+                        <span className="text-sm font-bold text-primary font-mono mt-0.5 block">{formatCurrency(overallTotal)}</span>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="ghost" onClick={() => onOpenChange(false)} className="h-8.5 text-xs font-semibold">
