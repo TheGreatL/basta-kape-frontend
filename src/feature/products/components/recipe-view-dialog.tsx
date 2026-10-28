@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -188,7 +189,7 @@ export default function RecipeViewDialog({ open, onOpenChange, variant, productN
                                             <div className="text-right shrink-0">
                                                 <span className="text-xs font-bold text-muted-foreground uppercase block">Fulfillment Price</span>
                                                 <span className="text-sm font-bold text-foreground font-mono">
-                                                    ₱{Number(variant.price).toFixed(2)}
+                                                    {formatCurrency(Number(variant.price))}
                                                 </span>
                                             </div>
                                         )}

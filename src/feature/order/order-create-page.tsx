@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -728,7 +729,7 @@ export default function OrderCreatePage() {
 
                                             return (
                                                 <SelectItem key={v.id} value={v.id} className="text-xs">
-                                                    {label} — ₱{v.price.toFixed(2)}
+                                                    {label} — {formatCurrency(v.price)}
                                                     {stockSuffix}
                                                 </SelectItem>
                                             );
@@ -839,7 +840,7 @@ export default function OrderCreatePage() {
                                                                                 : ''
                                                                     }`}
                                                                 >
-                                                                    {opt.name} (+₱{opt.price.toFixed(2)}){stockLabel}
+                                                                    {opt.name} (+{formatCurrency(opt.price)}){stockLabel}
                                                                 </Button>
                                                             );
                                                         })}
@@ -935,7 +936,7 @@ export default function OrderCreatePage() {
                                         {item.notes && <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>}
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0">
-                                        <span className="font-bold text-foreground/90 text-sm">₱{item.totalPrice.toFixed(2)}</span>
+                                        <span className="font-bold text-foreground/90 text-sm">{formatCurrency(item.totalPrice)}</span>
                                     </div>
                                 </div>
                             );
@@ -964,7 +965,7 @@ export default function OrderCreatePage() {
                                     {item.notes && <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>}
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0">
-                                    <span className="font-bold text-foreground/90 text-sm">₱{(item.price * item.quantity).toFixed(2)}</span>
+                                    <span className="font-bold text-foreground/90 text-sm">{formatCurrency(item.price * item.quantity)}</span>
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -1066,11 +1067,11 @@ export default function OrderCreatePage() {
                                 <div className="space-y-2.5 pt-3 border-t border-border/30 text-xs">
                                     <div className="flex justify-between text-muted-foreground font-medium">
                                         <span>Items Subtotal:</span>
-                                        <span className="font-semibold text-foreground/80">₱{subtotal.toFixed(2)}</span>
+                                        <span className="font-semibold text-foreground/80">{formatCurrency(subtotal)}</span>
                                     </div>
                                     <div className="flex justify-between font-bold text-sm text-foreground pt-3 border-t border-dashed border-border/40">
                                         <span>Net Due Total:</span>
-                                        <span className="text-primary font-bold text-base">₱{subtotal.toFixed(2)}</span>
+                                        <span className="text-primary font-bold text-base">{formatCurrency(subtotal)}</span>
                                     </div>
                                 </div>
 
@@ -1189,7 +1190,7 @@ export default function OrderCreatePage() {
                                                 <span className="text-primary font-bold font-mono">
                                                     {createdOrder.discounts[0].discount?.type === 'PERCENTAGE'
                                                         ? `-${createdOrder.discounts[0].discount.value}%`
-                                                        : `-₱${(createdOrder.discounts[0].discount?.value ?? 0).toFixed(2)}`}
+                                                        : `-${formatCurrency(createdOrder.discounts[0].discount?.value ?? 0)}`}
                                                 </span>
                                             </div>
                                             {createdOrder.discounts[0].referenceId && (
@@ -1368,7 +1369,7 @@ export default function OrderCreatePage() {
                                                         </div>
                                                         <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl flex justify-between items-center text-xs font-semibold">
                                                             <span className="text-emerald-700">Change Due to Customer:</span>
-                                                            <span className="text-emerald-600 font-bold text-sm">₱{changeDue.toFixed(2)}</span>
+                                                            <span className="text-emerald-600 font-bold text-sm">{formatCurrency(changeDue)}</span>
                                                         </div>
                                                     </FormItem>
                                                 )}
@@ -1466,17 +1467,17 @@ export default function OrderCreatePage() {
                                         <div className="space-y-2.5 pt-4 border-t border-border/30">
                                             <div className="flex justify-between text-muted-foreground font-medium">
                                                 <span>Order Subtotal:</span>
-                                                <span className="font-semibold text-foreground/80">₱{createdOrder.subtotal.toFixed(2)}</span>
+                                                <span className="font-semibold text-foreground/80">{formatCurrency(createdOrder.subtotal)}</span>
                                             </div>
                                             <div className="flex justify-between text-muted-foreground font-medium">
                                                 <span>Discounts:</span>
                                                 <span className="font-semibold text-rose-600 dark:text-rose-400 font-mono">
-                                                    -₱{createdOrder.discountAmount.toFixed(2)}
+                                                    -{formatCurrency(createdOrder.discountAmount)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between font-bold text-sm text-foreground pt-3 border-t border-dashed border-border/40">
                                                 <span>Total Net Amount:</span>
-                                                <span className="text-primary font-bold text-base">₱{createdOrder.netTotal.toFixed(2)}</span>
+                                                <span className="text-primary font-bold text-base">{formatCurrency(createdOrder.netTotal)}</span>
                                             </div>
                                         </div>
 

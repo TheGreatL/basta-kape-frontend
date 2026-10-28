@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ShoppingCart, Plus, Trash2, Package, CheckSquare, Square } from 'lucide-react';
@@ -398,7 +399,7 @@ export default function UpdatePurchaseOrderDialog({ open, onOpenChange, poId }: 
                                                     </span>
                                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                                                         <span>Unit: {si.ingredient?.defaultUnit?.name || 'N/A'}</span>
-                                                        {si.unitCost ? <span>• Catalog Price: ₱{si.unitCost.toFixed(2)}</span> : null}
+                                                        {si.unitCost ? <span>• Catalog Price: {formatCurrency(si.unitCost)}</span> : null}
                                                     </div>
                                                 </div>
 

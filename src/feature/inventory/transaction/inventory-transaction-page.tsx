@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -226,7 +227,7 @@ export default function InventoryTransactionPage() {
             {
                 accessorKey: 'totalCost',
                 header: 'Total Cost',
-                cell: ({ row }) => <span className="text-sm font-bold text-foreground/90">₱{row.original.totalCost.toFixed(2)}</span>
+                cell: ({ row }) => <span className="text-sm font-bold text-foreground/90">{formatCurrency(row.original.totalCost)}</span>
             },
             {
                 accessorKey: 'receivedAt',

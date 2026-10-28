@@ -5,7 +5,7 @@ import { BookOpen, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
 import { getMenuProductById } from '#/api/menu.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError, formatCurrency } from '#/utils/helper.ts';
 import type { IMenuProduct, IMenuProductVariant } from '../menu.types';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -154,7 +154,7 @@ export default function MenuProductDetailsDialog({ open, onOpenChange, product }
                                             </div>
                                             <div className="text-right sm:text-right">
                                                 <span className="text-xs text-muted-foreground block font-medium uppercase">Price</span>
-                                                <span className="text-base font-bold text-primary">₱{activeVariant.price.toFixed(2)}</span>
+                                                <span className="text-base font-bold text-primary">{formatCurrency(activeVariant.price)}</span>
                                             </div>
                                         </div>
 

@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
@@ -349,7 +350,7 @@ export default function OrderDetailsPage() {
                                                     key={mod.id}
                                                     className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md mr-1.5"
                                                 >
-                                                    + {mod.modifierOption.name} (₱{mod.price.toFixed(2)})
+                                                    + {mod.modifierOption.name} ({formatCurrency(mod.price)})
                                                 </span>
                                             ))}
                                         </div>
@@ -360,8 +361,8 @@ export default function OrderDetailsPage() {
                                 </div>
 
                                 <div className="text-right shrink-0">
-                                    <span className="font-bold text-sm text-foreground">₱{item.totalPrice.toFixed(2)}</span>
-                                    <span className="block text-xs text-muted-foreground">₱{item.unitPrice.toFixed(2)} each</span>
+                                    <span className="font-bold text-sm text-foreground">{formatCurrency(item.totalPrice)}</span>
+                                    <span className="block text-xs text-muted-foreground">{formatCurrency(item.unitPrice)} each</span>
                                 </div>
                             </div>
                         ))}
@@ -376,13 +377,13 @@ export default function OrderDetailsPage() {
 
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Subtotal</span>
-                            <span className="font-medium text-foreground">₱{order.subtotal.toFixed(2)}</span>
+                            <span className="font-medium text-foreground">{formatCurrency(order.subtotal)}</span>
                         </div>
 
                         {order.discountAmount > 0 && (
                             <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
                                 <span>Discount</span>
-                                <span className="font-medium">-₱{order.discountAmount.toFixed(2)}</span>
+                                <span className="font-medium">-{formatCurrency(order.discountAmount)}</span>
                             </div>
                         )}
 
@@ -392,7 +393,7 @@ export default function OrderDetailsPage() {
                             <span className="font-bold text-base text-foreground">
                                 {order.paymentStatus === 'PAID' ? 'Total Paid' : 'Total Amount Due'}
                             </span>
-                            <span className="font-bold text-2xl text-primary ">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="font-bold text-2xl text-primary ">{formatCurrency(order.netTotal)}</span>
                         </div>
                     </div>
                 </div>
@@ -430,20 +431,20 @@ export default function OrderDetailsPage() {
                                     </div>
                                     <div className="flex justify-between items-center pb-2 border-b border-border/30">
                                         <span className="font-semibold text-muted-foreground">Amount Settled</span>
-                                        <span className="font-bold text-foreground">₱{payment.amount.toFixed(2)}</span>
+                                        <span className="font-bold text-foreground">{formatCurrency(payment.amount)}</span>
                                     </div>
                                     {payment.paymentMethod === 'CASH' ? (
                                         <>
                                             {payment.amountTendered !== null && payment.amountTendered !== undefined && (
                                                 <div className="flex justify-between items-center pb-2 border-b border-border/30">
                                                     <span className="font-semibold text-muted-foreground">Amount Tendered</span>
-                                                    <span className="font-medium text-foreground">₱{payment.amountTendered.toFixed(2)}</span>
+                                                    <span className="font-medium text-foreground">{formatCurrency(payment.amountTendered)}</span>
                                                 </div>
                                             )}
                                             {payment.amountChange !== null && payment.amountChange !== undefined && (
                                                 <div className="flex justify-between items-center">
                                                     <span className="font-semibold text-muted-foreground">Change Given</span>
-                                                    <span className="font-bold text-emerald-600">₱{payment.amountChange.toFixed(2)}</span>
+                                                    <span className="font-bold text-emerald-600">{formatCurrency(payment.amountChange)}</span>
                                                 </div>
                                             )}
                                         </>

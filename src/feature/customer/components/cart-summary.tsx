@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { CreditCard } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 
@@ -15,11 +16,11 @@ export default function CartSummary({ totalAmount, onCheckout, disabled }: CartS
             <div className="space-y-3 pt-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Subtotal</span>
-                    <span className="font-semibold text-foreground">₱{totalAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(totalAmount)}</span>
                 </div>
                 <div className="border-t border-border/40 pt-3 flex justify-between">
                     <span className="text-base font-bold text-foreground">Total</span>
-                    <span className="text-lg font-bold text-foreground">₱{totalAmount.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-foreground">{formatCurrency(totalAmount)}</span>
                 </div>
             </div>
 

@@ -18,7 +18,7 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getFileUrl, formatCurrency } from '#/utils/helper.ts';
 
 export default function ProductViewPage() {
     const { id } = Route.useParams();
@@ -248,7 +248,7 @@ export default function ProductViewPage() {
                                             return (
                                                 <TableRow key={v.id} className="hover:bg-muted/5">
                                                     <TableCell className="font-semibold text-foreground/90">{comboText}</TableCell>
-                                                    <TableCell className="font-bold text-foreground">₱{v.price.toFixed(2)}</TableCell>
+                                                    <TableCell className="font-bold text-foreground">{formatCurrency(v.price)}</TableCell>
                                                     <TableCell className="text-center">
                                                         <Badge
                                                             variant="outline"
@@ -343,7 +343,7 @@ export default function ProductViewPage() {
                                                             >
                                                                 <span className="text-foreground/90">{option.name}</span>
                                                                 <span className="font-bold text-primary font-mono text-xs">
-                                                                    +₱{option.price.toFixed(2)}
+                                                                    +{formatCurrency(option.price)}
                                                                 </span>
                                                             </div>
                                                         ))}

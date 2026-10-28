@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { SlidersHorizontal, Plus, Edit2, Trash2, Info } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
@@ -147,7 +148,7 @@ export default function EditCustomizationsTab({
                                                         <div>
                                                             <span className="font-semibold text-foreground/80">{opt.name}</span>
                                                             <span className="text-xs text-muted-foreground block font-bold">
-                                                                +₱{opt.price.toFixed(2)}
+                                                                +{formatCurrency(opt.price)}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-1">

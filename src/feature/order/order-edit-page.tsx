@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -132,7 +133,7 @@ export default function OrderEditPage() {
         },
         onSuccess: (res) => {
             toast.success(`Discount Applied`, {
-                description: `Successfully applied discount. Saved amount: ₱${res.amount.toFixed(2)}.`
+                description: `Successfully applied discount. Saved amount: ${formatCurrency(res.amount)}.`
             });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, orderId] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
@@ -497,7 +498,7 @@ export default function OrderEditPage() {
                                             </div>
 
                                             <span className="text-2xs text-muted-foreground font-medium block">
-                                                Base Variant Price: ₱{item.unitPrice.toFixed(2)}
+                                                Base Variant Price: {formatCurrency(item.unitPrice)}
                                             </span>
 
                                             {/* Modifiers badges */}
@@ -509,7 +510,7 @@ export default function OrderEditPage() {
                                                             variant="outline"
                                                             className="text-xs font-semibold bg-muted/20 py-0.5 px-2 text-muted-foreground border-border/50"
                                                         >
-                                                            + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
+                                                            + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
                                                         </Badge>
                                                     ))}
                                                 </div>
@@ -520,7 +521,7 @@ export default function OrderEditPage() {
                                                 <span className="text-2xs text-amber-600 font-semibold italic block pt-1">Note: "{item.notes}"</span>
                                             )}
                                         </div>
-                                        <span className="font-bold text-foreground/90 text-sm shrink-0">₱{item.totalPrice.toFixed(2)}</span>
+                                        <span className="font-bold text-foreground/90 text-sm shrink-0">{formatCurrency(item.totalPrice)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -535,13 +536,13 @@ export default function OrderEditPage() {
                             <div className="space-y-2.5 font-medium text-xs">
                                 <div className="flex justify-between text-muted-foreground">
                                     <span>Subtotal Amount:</span>
-                                    <span className="text-foreground/80 font-semibold">₱{orderDetails.subtotal.toFixed(2)}</span>
+                                    <span className="text-foreground/80 font-semibold">{formatCurrency(orderDetails.subtotal)}</span>
                                 </div>
 
                                 <div className="flex flex-col gap-1.5 text-muted-foreground border-b border-dashed border-border/20 pb-2">
                                     <div className="flex justify-between">
                                         <span>Applied Discounts:</span>
-                                        <span className="text-foreground/80 font-semibold">-₱{orderDetails.discountAmount.toFixed(2)}</span>
+                                        <span className="text-foreground/80 font-semibold">-{formatCurrency(orderDetails.discountAmount)}</span>
                                     </div>
                                     {orderDetails.discounts && orderDetails.discounts.length > 0 && (
                                         <div className="text-xs text-muted-foreground space-y-1 bg-background/50 p-2.5 rounded-xl border border-border/40">
@@ -557,7 +558,7 @@ export default function OrderEditPage() {
                                 </div>
                                 <div className="flex justify-between font-bold text-sm pt-2">
                                     <span className="text-foreground">Net Due Total:</span>
-                                    <span className="text-primary text-base font-bold">₱{orderDetails.netTotal.toFixed(2)}</span>
+                                    <span className="text-primary text-base font-bold">{formatCurrency(orderDetails.netTotal)}</span>
                                 </div>
                             </div>
                         </div>
@@ -592,18 +593,18 @@ export default function OrderEditPage() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Amount Settled:</span>
-                                                <span className="font-bold text-emerald-900 text-sm">₱{payment.amount.toFixed(2)}</span>
+                                                <span className="font-bold text-emerald-900 text-sm">{formatCurrency(payment.amount)}</span>
                                             </div>
                                             {payment.paymentMethod === 'CASH' ? (
                                                 <>
                                                     <div className="flex justify-between text-emerald-700">
                                                         <span>Tendered Cash:</span>
-                                                        <span>₱{(payment.amountTendered || 0).toFixed(2)}</span>
+                                                        <span>{formatCurrency(payment.amountTendered || 0)}</span>
                                                     </div>
                                                     <div className="flex justify-between text-emerald-700">
                                                         <span>Change Given:</span>
                                                         <span className="font-semibold text-emerald-900">
-                                                            ₱{(payment.amountChange || 0).toFixed(2)}
+                                                            {formatCurrency(payment.amountChange || 0)}
                                                         </span>
                                                     </div>
                                                 </>
@@ -750,7 +751,7 @@ export default function OrderEditPage() {
                                                                 {orderDetails.discounts[0].discount?.name}
                                                             </span>
                                                             <span className="text-muted-foreground font-semibold">
-                                                                Saved ₱{orderDetails.discountAmount.toFixed(2)}
+                                                                Saved {formatCurrency(orderDetails.discountAmount)}
                                                             </span>
                                                         </div>
                                                         <RequirePermission module="Point of Sale (POS)" action="delete">

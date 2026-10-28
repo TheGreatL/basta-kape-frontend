@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { ShoppingBagIcon, Trash2, ShoppingBag, Minus, Plus, Tag, ArrowRight, X, Pencil } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
@@ -149,11 +150,11 @@ export default function CartSidebar({
                                         {/* Price details */}
                                         <div className="text-right">
                                             <span className="text-xs font-bold text-foreground font-mono">
-                                                ₱{(itemPrice * item.quantity).toFixed(2)}
+                                                {formatCurrency(itemPrice * item.quantity)}
                                             </span>
                                             {item.quantity > 1 && (
                                                 <span className="text-xs text-muted-foreground font-mono block mt-0.5">
-                                                    ₱{itemPrice.toFixed(2)} ea
+                                                    {formatCurrency(itemPrice)} ea
                                                 </span>
                                             )}
                                         </div>
@@ -187,19 +188,19 @@ export default function CartSidebar({
                 <div className="space-y-1.5 text-2xs font-medium">
                     <div className="flex justify-between text-muted-foreground">
                         <span>Cart Subtotal:</span>
-                        <span className="font-mono">₱{cartSubtotal.toFixed(2)}</span>
+                        <span className="font-mono">{formatCurrency(cartSubtotal)}</span>
                     </div>
                     {appliedDiscount && (
                         <div className="flex justify-between text-primary font-semibold">
                             <span>Discount Deductions:</span>
-                            <span className="font-mono">-₱{discountAmount.toFixed(2)}</span>
+                            <span className="font-mono">-{formatCurrency(discountAmount)}</span>
                         </div>
                     )}
 
                     <Separator className="my-1.5 bg-border/40" />
                     <div className="flex justify-between items-center text-sm font-bold text-foreground">
                         <span>Grand Total:</span>
-                        <span className="font-mono text-primary text-base">₱{cartNetTotal.toFixed(2)}</span>
+                        <span className="font-mono text-primary text-base">{formatCurrency(cartNetTotal)}</span>
                     </div>
                 </div>
 

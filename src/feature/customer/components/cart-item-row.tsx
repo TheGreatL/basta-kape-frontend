@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { Trash2, Plus, Minus, Coffee } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -76,7 +77,7 @@ export default function CartItemRow({
                 <div className="text-xs font-bold text-primary uppercase">{product.category?.name || 'Beverage'}</div>
                 <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5">{product.name || 'Unknown Item'}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{variantLabel}</p>
-                <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">₱{(item.unitPrice + modifiersPrice).toFixed(2)}</div>
+                <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">{formatCurrency(item.unitPrice + modifiersPrice)}</div>
                 {item.notes && (
                     <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1.5 inline-block italic">
                         Note: {item.notes}
@@ -128,7 +129,7 @@ export default function CartItemRow({
                                                 }}
                                                 className="h-6 text-xs font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"
                                             >
-                                                {opt.name} (+₱{opt.price.toFixed(2)})
+                                                {opt.name} (+{formatCurrency(opt.price)})
                                             </Button>
                                         );
                                     })}
@@ -142,7 +143,7 @@ export default function CartItemRow({
             {/* Right action area / Prices */}
             <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 shrink-0 self-start sm:self-center">
                 {/* Price per unit (desktop only) */}
-                <div className="hidden sm:block text-sm font-medium text-muted-foreground">₱{(item.unitPrice + modifiersPrice).toFixed(2)}</div>
+                <div className="hidden sm:block text-sm font-medium text-muted-foreground">{formatCurrency(item.unitPrice + modifiersPrice)}</div>
 
                 {/* Quantity controls */}
                 <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5 bg-card">
@@ -157,7 +158,7 @@ export default function CartItemRow({
 
                 {/* Total item price */}
                 <div className="text-sm sm:text-base font-bold text-foreground w-16 text-right">
-                    ₱{((item.unitPrice + modifiersPrice) * item.quantity).toFixed(2)}
+                    {formatCurrency((item.unitPrice + modifiersPrice) * item.quantity)}
                 </div>
 
                 {/* Delete item button */}

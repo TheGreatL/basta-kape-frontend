@@ -4,7 +4,7 @@ import { Spinner } from '#/components/ui/spinner.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Card, CardDescription, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError, formatCurrency } from '#/utils/helper.ts';
 import type { IMenuProduct } from '../../menu/menu.types';
 import type { IPaginatedResult } from '#/types/base.types';
 
@@ -102,7 +102,7 @@ export default function ProductsGrid({ menuData, isMenuLoading, menuError, page,
                             </CardHeader>
                             <div className="p-3 pt-0 flex justify-between items-center mt-auto">
                                 <span className="text-xs text-muted-foreground font-semibold">{product.variants.length} Sizes</span>
-                                <span className="text-xs font-bold text-primary">₱{firstVariantPrice.toFixed(2)}</span>
+                                <span className="text-xs font-bold text-primary">{formatCurrency(firstVariantPrice)}</span>
                             </div>
                         </Card>
                     );

@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import type { IMenuProduct } from '../menu.types';
-import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError, formatCurrency } from '#/utils/helper.ts';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Button } from '#/components/ui/button.tsx';
 
@@ -20,12 +20,12 @@ export default function MenuProductCard({ product, onViewDetails }: MenuProductC
         }
 
         if (minPrice === maxPrice) {
-            return <span className="text-sm font-bold text-primary">₱{minPrice.toFixed(2)}</span>;
+            return <span className="text-sm font-bold text-primary">{formatCurrency(minPrice)}</span>;
         }
 
         return (
             <span className="text-sm font-bold text-primary">
-                ₱{minPrice.toFixed(2)} – ₱{maxPrice.toFixed(2)}
+                {formatCurrency(minPrice)} – {formatCurrency(maxPrice)}
             </span>
         );
     };

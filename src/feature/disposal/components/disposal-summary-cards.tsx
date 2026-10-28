@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { TrendingDown, Cookie, Package, Layers, AlertOctagon } from 'lucide-react';
 import { Card } from '#/components/ui/card.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
@@ -136,7 +137,7 @@ export default function DisposalSummaryCards({ summary, isLoading }: DisposalSum
                                 </div>
                                 <div className="mt-2 pt-1 border-t border-border/40 flex items-center justify-between">
                                     <span className="text-xs text-muted-foreground">Cost Loss</span>
-                                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">₱{item.totalCostLoss.toFixed(2)}</span>
+                                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">{formatCurrency(item.totalCostLoss)}</span>
                                 </div>
                             </div>
                         ))}

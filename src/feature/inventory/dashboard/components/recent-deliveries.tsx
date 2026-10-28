@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { useQuery } from '@tanstack/react-query';
 import { getInventoryDashboardRecentDeliveries } from '#/api/inventory.api';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -60,7 +61,7 @@ export default function RecentDeliveriesWidget() {
                                     <span className="text-sm font-bold text-emerald-600 block leading-tight">
                                         +{delivery.quantityReceived.toLocaleString()} {delivery.unitAbbreviation}
                                     </span>
-                                    <span className="text-xs text-muted-foreground font-mono">₱{delivery.totalCost.toFixed(2)}</span>
+                                    <span className="text-xs text-muted-foreground font-mono">{formatCurrency(delivery.totalCost)}</span>
                                 </div>
                             </div>
                         ))}

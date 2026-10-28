@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { CheckCircle2, Download, ArrowRight, Wallet, Coins, Eye } from 'lucide-react';
 import type { IOrder } from '../order.types';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -85,17 +86,17 @@ export default function CheckoutSuccessDialog({
                     <div className="border border-border/60 rounded-xl p-3.5 bg-card text-xs space-y-2.5">
                         <div className="flex justify-between font-medium text-muted-foreground">
                             <span>Subtotal:</span>
-                            <span className="text-foreground/85 font-semibold">₱{order.subtotal.toFixed(2)}</span>
+                            <span className="text-foreground/85 font-semibold">{formatCurrency(order.subtotal)}</span>
                         </div>
                         {order.discountAmount > 0 && (
                             <div className="flex justify-between font-medium text-rose-600 dark:text-rose-400">
                                 <span>Discount Amount:</span>
-                                <span className="font-semibold">-₱{order.discountAmount.toFixed(2)}</span>
+                                <span className="font-semibold">-{formatCurrency(order.discountAmount)}</span>
                             </div>
                         )}
                         <div className="flex justify-between font-bold text-foreground border-t border-dashed border-border/40 pt-2 text-sm">
                             <span>Net Total Amount:</span>
-                            <span className="text-primary font-bold">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="text-primary font-bold">{formatCurrency(order.netTotal)}</span>
                         </div>
                     </div>
 
@@ -112,11 +113,11 @@ export default function CheckoutSuccessDialog({
                             <>
                                 <div className="flex justify-between font-medium text-muted-foreground">
                                     <span>Amount Tendered:</span>
-                                    <span className="text-foreground font-semibold">₱{amountTendered.toFixed(2)}</span>
+                                    <span className="text-foreground font-semibold">{formatCurrency(amountTendered)}</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-emerald-700 dark:text-emerald-400 border-t border-dashed border-border/30 pt-2">
                                     <span>Change Due:</span>
-                                    <span className="text-sm font-bold">₱{changeDue.toFixed(2)}</span>
+                                    <span className="text-sm font-bold">{formatCurrency(changeDue)}</span>
                                 </div>
                             </>
                         )}

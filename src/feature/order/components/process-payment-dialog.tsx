@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -29,7 +30,7 @@ const createPaymentSchema = (netTotal: number) => {
                 amountTendered: z.number().min(0, 'Amount tendered must be non-negative')
             })
             .refine((data) => data.amountTendered >= netTotal, {
-                message: `Amount tendered must be at least the net total of ₱${netTotal.toFixed(2)}`,
+                message: `Amount tendered must be at least the net total of ${formatCurrency(netTotal)}`,
                 path: ['amountTendered']
             }),
         z.object({
@@ -172,7 +173,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
         },
         onSuccess: (payment) => {
             toast.success('Payment Processed Successfully', {
-                description: `Transaction logged via ${payment.paymentMethod}. Change due: ₱${(payment.amountChange || 0).toFixed(2)}.`
+                description: `Transaction logged via ${payment.paymentMethod}. Change due: ${formatCurrency(payment.amountChange || 0)}.`
             });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, order?.id] });
@@ -344,12 +345,12 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                 <div className="grid grid-cols-2 gap-3 p-3 bg-muted/20 border rounded-xl border-border/40">
                                                     <div className="flex flex-col text-left">
                                                         <span className="text-xs text-muted-foreground font-bold uppercase">Net Total</span>
-                                                        <span className="text-sm font-bold text-foreground mt-0.5">₱{netTotal.toFixed(2)}</span>
+                                                        <span className="text-sm font-bold text-foreground mt-0.5">{formatCurrency(netTotal)}</span>
                                                     </div>
                                                     <div className="flex flex-col text-right">
                                                         <span className="text-xs text-muted-foreground font-bold uppercase">Change Due</span>
                                                         <span className="text-sm font-extrabold text-emerald-600 mt-0.5">
-                                                            ₱{changeDue.toFixed(2)}
+                                                            {formatCurrency(changeDue)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -469,7 +470,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                             ) : (
                                                 <>
                                                     <CheckCircle2 className="size-4" />
-                                                    Confirm Payment of ₱{netTotal.toFixed(2)}
+                                                    Confirm Payment of {formatCurrency(netTotal)}
                                                 </>
                                             )}
                                         </Button>

@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { format } from 'date-fns';
 import { useNavigate } from '@tanstack/react-router';
 import { Truck, Calendar, User, PackageCheck, AlertTriangle, ShieldCheck, DollarSign, Tag, Sliders, FileText, ExternalLink } from 'lucide-react';
@@ -148,14 +149,14 @@ export default function DeliveryViewDialog({ open, onOpenChange, delivery, onEdi
                             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="size-3 text-primary" /> Unit Cost
                             </span>
-                            <p className="text-base font-bold text-foreground">₱{delivery.unitCost.toFixed(2)}</p>
+                            <p className="text-base font-bold text-foreground">{formatCurrency(delivery.unitCost)}</p>
                         </div>
 
                         <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
                             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="size-3 text-primary" /> Total Cost
                             </span>
-                            <p className="text-base font-bold text-foreground">₱{delivery.totalCost.toFixed(2)}</p>
+                            <p className="text-base font-bold text-foreground">{formatCurrency(delivery.totalCost)}</p>
                         </div>
                     </div>
 

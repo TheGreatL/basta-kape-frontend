@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { CheckCircle2, Download, ArrowRight, Wallet, Coins, Eye } from 'lucide-react';
 import type { IOrder } from '#/feature/order/order.types.ts';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
@@ -71,17 +72,17 @@ export default function CustomerCheckoutSuccessDialog({ open, onOpenChange, orde
                     <div className="border border-border/60 rounded-xl p-3.5 bg-card text-xs space-y-2.5">
                         <div className="flex justify-between font-medium text-muted-foreground">
                             <span>Subtotal:</span>
-                            <span className="text-foreground/85 font-semibold">₱{order.subtotal.toFixed(2)}</span>
+                            <span className="text-foreground/85 font-semibold">{formatCurrency(order.subtotal)}</span>
                         </div>
                         {order.discountAmount > 0 && (
                             <div className="flex justify-between font-medium text-rose-600 dark:text-rose-400">
                                 <span>Discount Amount:</span>
-                                <span className="font-semibold">-₱{order.discountAmount.toFixed(2)}</span>
+                                <span className="font-semibold">-{formatCurrency(order.discountAmount)}</span>
                             </div>
                         )}
                         <div className="flex justify-between font-bold text-foreground border-t border-dashed border-border/40 pt-2 text-sm">
                             <span>Total Amount Due:</span>
-                            <span className="text-primary font-bold">₱{order.netTotal.toFixed(2)}</span>
+                            <span className="text-primary font-bold">{formatCurrency(order.netTotal)}</span>
                         </div>
                     </div>
 

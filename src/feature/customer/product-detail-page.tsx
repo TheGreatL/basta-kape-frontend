@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -704,7 +705,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                                                         <span className="text-xs font-bold shrink-0">
                                                             {isAvailable
                                                                 ? opt.price > 0
-                                                                    ? `+₱${opt.price.toFixed(2)}`
+                                                                    ? `+${formatCurrency(opt.price)}`
                                                                     : 'Free'
                                                                 : !isStockAvailable
                                                                   ? 'Out of Stock'
@@ -787,7 +788,7 @@ export default function ProductDetailPage({ productId }: ProductDetailPageProps)
                         <div className="flex items-center justify-between">
                             <div>
                                 <span className="text-xs text-muted-foreground font-medium uppercase">Total Price</span>
-                                <div className="text-2xl font-bold text-foreground mt-0.5">₱{totalPrice.toFixed(2)}</div>
+                                <div className="text-2xl font-bold text-foreground mt-0.5">{formatCurrency(totalPrice)}</div>
                             </div>
 
                             {/* Quantity Controls */}

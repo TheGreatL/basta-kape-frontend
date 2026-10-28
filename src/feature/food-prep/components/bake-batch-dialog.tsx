@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -270,7 +271,7 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                                                 Unlimited
                                                             </Badge>
                                                         )}
-                                                        <span className="text-xs font-bold text-primary">₱{item.price.toFixed(2)}</span>
+                                                        <span className="text-xs font-bold text-primary">{formatCurrency(item.price)}</span>
                                                     </div>
                                                 </div>
                                             )}

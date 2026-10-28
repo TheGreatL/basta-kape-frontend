@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
@@ -617,11 +618,11 @@ export default function CheckoutPage() {
                             <div className="p-4 rounded-xl border border-border/60 bg-muted/20 text-xs text-muted-foreground leading-relaxed animate-in fade-in duration-200">
                                 {orderType === 'DELIVERY' ? (
                                     <span>
-                                        Please prepare the exact amount of <strong>₱{subtotal.toFixed(2)}</strong> for Cash on Delivery (COD).
+                                        Please prepare the exact amount of <strong>{formatCurrency(subtotal)}</strong> for Cash on Delivery (COD).
                                     </span>
                                 ) : (
                                     <span>
-                                        Please settle the payment of <strong>₱{subtotal.toFixed(2)}</strong> at the cashier counter upon pick-up.
+                                        Please settle the payment of <strong>{formatCurrency(subtotal)}</strong> at the cashier counter upon pick-up.
                                     </span>
                                 )}
                             </div>
@@ -700,11 +701,11 @@ export default function CheckoutPage() {
                                                 <h4 className="text-xs font-bold text-foreground truncate max-w-[150px]">
                                                     {item.productVariant.product.name}
                                                 </h4>
-                                                <span className="text-xs font-bold text-foreground shrink-0">₱{itemTotal.toFixed(2)}</span>
+                                                <span className="text-xs font-bold text-foreground shrink-0">{formatCurrency(itemTotal)}</span>
                                             </div>
                                             <div className="flex flex-col gap-0.5 text-xs text-muted-foreground font-semibold">
                                                 <span>
-                                                    Qty: {item.quantity} × ₱{(item.unitPrice + modifierPrice).toFixed(2)}
+                                                    Qty: {item.quantity} × {formatCurrency(item.unitPrice + modifierPrice)}
                                                 </span>
                                                 <span>Size: {getVariantLabel(item)}</span>
                                                 {modifierNames.length > 0 && (
@@ -726,11 +727,11 @@ export default function CheckoutPage() {
                         <div className="border-t border-border/50 pt-4 space-y-2.5 text-xs font-medium">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Subtotal</span>
-                                <span className="font-bold text-foreground">₱{subtotal.toFixed(2)}</span>
+                                <span className="font-bold text-foreground">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="border-t border-dashed border-border/40 pt-3 flex justify-between text-sm font-bold">
                                 <span className="text-foreground">Total Amount Due</span>
-                                <span className="text-primary font-bold">₱{subtotal.toFixed(2)}</span>
+                                <span className="text-primary font-bold">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-xs font-semibold text-muted-foreground pt-1">
                                 <span>Selected Payment</span>

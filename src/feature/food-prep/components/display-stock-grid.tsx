@@ -4,7 +4,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Cookie, Plus, Clock, Layers, AlertTriangle } from 'lucide-react';
 import ExpiryStatusBadge from './expiry-status-badge.tsx';
-import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { getProductPhotoUrl, handleProductImageError, formatCurrency } from '#/utils/helper.ts';
 import type { IDisplayStockItemSummary } from '../food-prep.types';
 
 interface DisplayStockGridProps {
@@ -91,7 +91,7 @@ export default function DisplayStockGrid({ items, isLoading, onBakeItem, onViewI
                                     <h4 className="text-sm font-bold text-foreground truncate leading-tight">{item.productName}</h4>
                                     <p className="text-xs text-muted-foreground truncate">{item.variantLabel || 'Standard Variant'}</p>
                                     <div className="flex items-center gap-2 pt-0.5">
-                                        <span className="text-xs font-bold text-primary">₱{item.price.toFixed(2)}</span>
+                                        <span className="text-xs font-bold text-primary">{formatCurrency(item.price)}</span>
                                         {item.sku && <span className="text-xs text-muted-foreground/70 truncate font-mono">{item.sku}</span>}
                                     </div>
                                 </div>

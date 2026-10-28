@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -645,7 +646,7 @@ export default function ProductCreatePage() {
                                             >
                                                 <div className="space-y-1.5 min-w-0">
                                                     <div className="flex items-center gap-2.5">
-                                                        <span className="text-sm font-bold text-foreground">₱{v.price.toFixed(2)}</span>
+                                                        <span className="text-sm font-bold text-foreground">{formatCurrency(v.price)}</span>
                                                         <Badge
                                                             className={`text-xs font-bold px-1.5 py-0 flex items-center gap-1 w-fit uppercase ${
                                                                 v.recipe

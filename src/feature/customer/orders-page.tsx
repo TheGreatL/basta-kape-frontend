@@ -11,7 +11,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
-import { getFrontendReference } from '#/utils/helper.ts';
+import { getFrontendReference, formatCurrency } from '#/utils/helper.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { TOrderStatus, IOrder } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
@@ -251,7 +251,7 @@ export default function OrdersPage() {
                                                                     </span>
                                                                 )}
                                                             </span>
-                                                            <span className="font-bold text-muted-foreground">₱{item.totalPrice.toFixed(2)}</span>
+                                                            <span className="font-bold text-muted-foreground">{formatCurrency(item.totalPrice)}</span>
                                                         </div>
 
                                                         {/* Add-ons/Modifiers */}
@@ -262,7 +262,7 @@ export default function OrdersPage() {
                                                                         key={mod.id}
                                                                         className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
                                                                     >
-                                                                        + {mod.modifierOption.name} (+₱{mod.price.toFixed(2)})
+                                                                        + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
                                                                     </span>
                                                                 ))}
                                                             </div>
@@ -278,7 +278,7 @@ export default function OrdersPage() {
                                     <div className="flex justify-between items-center mt-5 pt-4 border-t border-border/30">
                                         <div>
                                             <span className="text-xs text-muted-foreground">Total Amount</span>
-                                            <div className="text-lg font-bold text-foreground">₱{order.netTotal.toFixed(2)}</div>
+                                            <div className="text-lg font-bold text-foreground">{formatCurrency(order.netTotal)}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <DropdownMenu>

@@ -1,3 +1,4 @@
+import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -411,7 +412,7 @@ export default function PosPage() {
         mutationFn: async () => {
             if (cart.length === 0) throw new Error('Cart is empty.');
             if (paymentMethod === 'CASH' && (cashTendered === '' || cashTendered < cartNetTotal)) {
-                throw new Error(`Tendered cash must be at least the total of ₱${cartNetTotal.toFixed(2)}.`);
+                throw new Error(`Tendered cash must be at least the total of ${formatCurrency(cartNetTotal)}.`);
             }
             if (paymentMethod === 'GCASH') {
                 if (!referenceNumber.trim() || !/^\d{13}$/.test(referenceNumber.trim())) {

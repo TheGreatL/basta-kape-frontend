@@ -32,7 +32,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
-import { getFileUrl } from '#/utils/helper.ts';
+import { getFileUrl, formatCurrency } from '#/utils/helper.ts';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 import ProductDeleteDialog from './components/product-delete-dialog.tsx';
@@ -133,11 +133,11 @@ export default function ProductsPage() {
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
         if (minPrice === maxPrice) {
-            return <span className="font-semibold text-foreground/80">₱{minPrice.toFixed(2)}</span>;
+            return <span className="font-semibold text-foreground/80">{formatCurrency(minPrice)}</span>;
         }
         return (
             <span className="font-semibold text-foreground/80">
-                ₱{minPrice.toFixed(2)} – ₱{maxPrice.toFixed(2)}
+                {formatCurrency(minPrice)} – {formatCurrency(maxPrice)}
             </span>
         );
     };
