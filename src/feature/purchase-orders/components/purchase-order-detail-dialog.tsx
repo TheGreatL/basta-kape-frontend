@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, Truck, Plus, Trash2, History, AlertCircle, Check, Calendar as CalendarIcon, X, FileCheck, RotateCcw, Send } from 'lucide-react';
-import { format, parse, isValid } from 'date-fns';
+import { format, parse, isValid, addMonths, isBefore, startOfDay } from 'date-fns';
 import { toast } from 'sonner';
 
 import { getPurchaseOrderById, updatePurchaseOrderStatus } from '#/api/purchase-orders.api.ts';
@@ -77,9 +77,10 @@ interface ExpiryDatePickerProps {
     value?: string;
     onChange: (dateStr: string) => void;
     placeholder?: string;
+    minDate?: Date;
 }
 
-function ExpiryDatePicker({ value, onChange, placeholder = 'Pick date' }: ExpiryDatePickerProps) {
+function ExpiryDatePicker({ value, onChange, placeholder = 'Pick date', minDate }: ExpiryDatePickerProps) {
     const [open, setOpen] = React.useState(false);
 
     const date = React.useMemo(() => {
@@ -108,6 +109,7 @@ function ExpiryDatePicker({ value, onChange, placeholder = 'Pick date' }: Expiry
                     <Calendar
                         mode="single"
                         selected={date}
+                        disabled={minDate ? (day) => isBefore(startOfDay(day), startOfDay(minDate)) : undefined}
                         onSelect={(selectedDate) => {
                             onChange(selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '');
                             setOpen(false);
@@ -228,6 +230,8 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             setOrderedItems(initialItems);
         }
     }, [isReceiveDialogOpen, selectedPODetails, receivedMap]);
+
+    const minExpiryDate = React.useMemo(() => addMonths(startOfDay(new Date()), 1), []);
 
     // Mutation: Update PO Status & Record Received Batches
     const updateStatusMutation = useMutation({
@@ -356,6 +360,8 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
         }
 
         // Validate ordered items
+        const minExpiryDate = addMonths(startOfDay(new Date()), 1);
+
         for (const item of orderedItems) {
             const qty = Number(item.quantityReceiving);
             const cost = Number(item.unitCost);
@@ -366,6 +372,15 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             if (isNaN(cost) || cost < 0) {
                 toast.error('Invalid Unit Cost', { description: `Please enter a valid, non-negative unit cost for ${item.ingredientName}.` });
                 return;
+            }
+            if (qty > 0 && item.expiryDate) {
+                const parsedExpiry = startOfDay(new Date(item.expiryDate));
+                if (isBefore(parsedExpiry, minExpiryDate)) {
+                    toast.error('Invalid Expiration Date', {
+                        description: `Expiration date for "${item.ingredientName}" must be at least one month after the delivery date (${format(minExpiryDate, 'MMM dd, yyyy')}).`
+                    });
+                    return;
+                }
             }
         }
 
@@ -384,6 +399,16 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
             if (isNaN(cost) || cost < 0) {
                 toast.error('Invalid Unit Cost', { description: 'Bonus item unit cost must be a valid, non-negative number.' });
                 return;
+            }
+            if (qty > 0 && bonus.expiryDate) {
+                const parsedExpiry = startOfDay(new Date(bonus.expiryDate));
+                if (isBefore(parsedExpiry, minExpiryDate)) {
+                    const itemName = bonus.ingredient?.name || 'Bonus item';
+                    toast.error('Invalid Expiration Date', {
+                        description: `Expiration date for "${itemName}" must be at least one month after the delivery date (${format(minExpiryDate, 'MMM dd, yyyy')}).`
+                    });
+                    return;
+                }
             }
         }
 
@@ -956,6 +981,7 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                                         value={item.expiryDate}
                                                         onChange={(val) => handleUpdateOrderedItem(index, 'expiryDate', val)}
                                                         placeholder="Pick date"
+                                                        minDate={minExpiryDate}
                                                     />
                                                 </div>
                                             </div>
@@ -1112,6 +1138,7 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                                             value={bonus.expiryDate}
                                                             onChange={(val) => handleUpdateBonusItem(bonus.id, 'expiryDate', val)}
                                                             placeholder="Pick date"
+                                                            minDate={minExpiryDate}
                                                         />
                                                     </div>
                                                 </div>
