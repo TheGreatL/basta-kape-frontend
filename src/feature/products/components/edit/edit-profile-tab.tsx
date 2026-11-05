@@ -77,7 +77,9 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80">Product Name</FormLabel>
+                                        <FormLabel className="font-semibold text-foreground/80">
+                                            Product Name <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input placeholder="e.g. Spanish Latte" {...field} className="h-9 bg-background/50 rounded-xl" />
                                         </FormControl>
@@ -207,7 +209,9 @@ export default function EditProfileTab({ form, onSubmit, categoriesData, typesDa
                                         name="preparationType"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80 text-xs">Preparation Mode</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                    Preparation Mode <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select
                                                     value={field.value}
                                                     onValueChange={(val) => {

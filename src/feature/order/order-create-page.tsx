@@ -567,7 +567,9 @@ export default function OrderCreatePage() {
                             name="guestName"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="font-bold text-foreground/80">Guest Name</FormLabel>
+                                    <FormLabel className="font-bold text-foreground/80">
+                                        Guest Name <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="e.g. John, Table 5, Walk-in..."
@@ -586,7 +588,9 @@ export default function OrderCreatePage() {
                             name="customerId"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="font-bold text-foreground/80 block mb-1">Select Member Profile</FormLabel>
+                                    <FormLabel className="font-bold text-foreground/80 block mb-1">
+                                        Select Member Profile <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <InfiniteSelect
                                             queryKey={[QUERY_KEY.CUSTOMERS.SELECT_FOR_ORDER_CREATION]}
@@ -619,7 +623,9 @@ export default function OrderCreatePage() {
                         name="orderType"
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="font-bold text-foreground/80">Dining Option</FormLabel>
+                                <FormLabel className="font-bold text-foreground/80">
+                                    Dining Option <span className="text-rose-500">*</span>
+                                </FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
                                     <FormControl>
                                         <SelectTrigger className="h-9.5 bg-background/50 rounded-lg text-xs">
@@ -1352,7 +1358,9 @@ export default function OrderCreatePage() {
                                                 render={({ field }) => (
                                                     <FormItem className="space-y-3 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
                                                         <div className="space-y-1.5">
-                                                            <FormLabel className="font-bold text-foreground/80 block">Amount Tendered (₱)</FormLabel>
+                                                            <FormLabel className="font-bold text-foreground/80 block">
+                                                                Amount Tendered (₱) <span className="text-rose-500">*</span>
+                                                            </FormLabel>
                                                             <FormControl>
                                                                 <Input
                                                                     type="number"

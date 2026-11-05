@@ -109,7 +109,9 @@ export default function RoleCreatePage() {
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Role Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Role Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder="e.g. Cafe Manager, Senior Barista"

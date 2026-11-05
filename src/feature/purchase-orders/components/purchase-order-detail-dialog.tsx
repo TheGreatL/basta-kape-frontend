@@ -921,7 +921,9 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
 
                                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 border-t border-border/30">
                                                 <div className="space-y-1">
-                                                    <span className="text-xs font-semibold text-muted-foreground block">Qty Receiving Now *</span>
+                                                    <span className="text-xs font-semibold text-muted-foreground block">
+                                                        Qty Receiving Now <span className="text-rose-500">*</span>
+                                                    </span>
                                                     <UnitQuantityInput
                                                         compact
                                                         min={0}
@@ -1019,7 +1021,7 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex-1">
                                                         <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block mb-1">
-                                                            Select Complimentary Ingredient
+                                                            Select Complimentary Ingredient <span className="text-rose-500">*</span>
                                                         </span>
                                                         <InfiniteSelect<IIngredient>
                                                             queryKey={[QUERY_KEY.PURCHASE_ORDERS.ACTIVE_INGREDIENTS_LIST, 'bonus-select', bonus.id]}
@@ -1075,7 +1077,9 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-500/20">
                                                     <div className="space-y-1">
-                                                        <span className="text-xs font-semibold text-muted-foreground block">Qty Received *</span>
+                                                        <span className="text-xs font-semibold text-muted-foreground block">
+                                                            Qty Received <span className="text-rose-500">*</span>
+                                                        </span>
                                                         <UnitQuantityInput
                                                             compact
                                                             min={0.01}

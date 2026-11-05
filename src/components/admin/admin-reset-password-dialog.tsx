@@ -18,8 +18,9 @@ const resetPasswordFormSchema = z
         newPassword: z
             .string()
             .min(8, 'Password must be at least 8 characters long')
+            .max(100, 'Password must not exceed 100 characters')
             .regex(/^(?=.*[A-Z])(?=.*\d).+$/, 'Password must contain at least one uppercase letter and one number'),
-        confirmPassword: z.string().min(1, 'Please confirm the new password')
+        confirmPassword: z.string().min(1, 'Please confirm the new password').max(100, 'Password must not exceed 100 characters')
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'Passwords do not match',
@@ -131,7 +132,9 @@ export function AdminResetPasswordDialog({ open, onOpenChange, target, onResetPa
                             name="newPassword"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-xs font-semibold text-foreground/80">New Password</FormLabel>
+                                    <FormLabel className="text-xs font-semibold text-foreground/80">
+                                        New Password <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <div className="relative">
                                             <Input
@@ -164,7 +167,9 @@ export function AdminResetPasswordDialog({ open, onOpenChange, target, onResetPa
                             name="confirmPassword"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-xs font-semibold text-foreground/80">Confirm New Password</FormLabel>
+                                    <FormLabel className="text-xs font-semibold text-foreground/80">
+                                        Confirm New Password <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <div className="relative">
                                             <Input

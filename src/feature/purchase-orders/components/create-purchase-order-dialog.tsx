@@ -226,7 +226,9 @@ export default function CreatePurchaseOrderDialog({ open, onOpenChange }: Create
                 <form onSubmit={handleSavePO} className="flex-1 flex flex-col gap-4 overflow-y-auto pr-1 my-2 min-h-0">
                     {/* Supplier */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground">Supplier</label>
+                        <label className="text-xs font-bold text-foreground">
+                            Supplier <span className="text-rose-500">*</span>
+                        </label>
                         <InfiniteSelect<ISupplierListItem>
                             queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST]}
                             fetchFn={async ({ pageParam, query }) => {

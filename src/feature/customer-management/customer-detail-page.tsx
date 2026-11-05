@@ -206,7 +206,9 @@ export default function CustomerDetailPage() {
                                         name="firstName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">First Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    First Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder="John"
@@ -224,7 +226,9 @@ export default function CustomerDetailPage() {
                                         name="lastName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Last Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Last Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder="Doe"
@@ -267,8 +271,9 @@ export default function CustomerDetailPage() {
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input
-                                                        placeholder="+639171234567"
+                                                        placeholder="09171234567"
                                                         disabled={!hasUpdatePermission}
+                                                        maxLength={11}
                                                         {...field}
                                                         value={field.value || ''}
                                                         className="h-9 bg-background/50"
@@ -285,7 +290,7 @@ export default function CustomerDetailPage() {
                                             <FormItem>
                                                 <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
                                                     <Mail className="size-3.5 text-muted-foreground" />
-                                                    Email Address
+                                                    Email Address <span className="text-rose-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input
@@ -308,7 +313,7 @@ export default function CustomerDetailPage() {
                                             <FormItem>
                                                 <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
                                                     <Hash className="size-3.5 text-muted-foreground" />
-                                                    Username
+                                                    Username <span className="text-rose-500">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input

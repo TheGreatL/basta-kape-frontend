@@ -67,7 +67,9 @@ export default function ChangePasswordForm() {
                         name="oldPassword"
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="text-xs font-semibold text-muted-foreground">Current Password</FormLabel>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground">
+                                    Current Password <span className="text-rose-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
@@ -96,7 +98,9 @@ export default function ChangePasswordForm() {
                         name="newPassword"
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="text-xs font-semibold text-muted-foreground">New Password</FormLabel>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground">
+                                    New Password <span className="text-rose-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
@@ -125,7 +129,9 @@ export default function ChangePasswordForm() {
                         name="confirmNewPassword"
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="text-xs font-semibold text-muted-foreground">Confirm New Password</FormLabel>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground">
+                                    Confirm New Password <span className="text-rose-500">*</span>
+                                </FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Input

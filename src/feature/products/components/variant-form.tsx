@@ -60,7 +60,9 @@ export function VariantForm({
 
             <div>
                 <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-foreground/80">Price (Required)</Label>
+                    <Label className="text-xs font-semibold text-foreground/80">
+                        Price <span className="text-rose-500">*</span>
+                    </Label>
                     <Input
                         type="number"
                         min="0"

@@ -195,7 +195,9 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                         name="ingredientId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Raw Ingredient</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Raw Ingredient <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     {isEditMode ? (
                                                         <Input
@@ -254,7 +256,9 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                         name="type"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Adjustment Type</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Adjustment Type <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select value={field.value} onValueChange={field.onChange}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">
@@ -283,7 +287,7 @@ export default function AdjustmentDialog({ open, onOpenChange, preselectedIngred
                                                 <FormItem>
                                                     <div className="flex items-center justify-between">
                                                         <FormLabel className="font-semibold text-foreground/80">
-                                                            {isDiscrepancy ? 'Quantity Change' : 'Quantity'}
+                                                            {isDiscrepancy ? 'Quantity Change' : 'Quantity'} <span className="text-rose-500">*</span>
                                                         </FormLabel>
                                                         {unitAbbr && (
                                                             <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">

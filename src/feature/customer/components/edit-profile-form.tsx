@@ -43,7 +43,7 @@ export default function EditProfileForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="firstName">
-                        First Name *
+                        First Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="firstName"
@@ -55,7 +55,7 @@ export default function EditProfileForm({
 
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="lastName">
-                        Last Name *
+                        Last Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="lastName"
@@ -86,7 +86,8 @@ export default function EditProfileForm({
                     <Input
                         id="phoneNumber"
                         value={phoneNumber}
-                        placeholder="+639..."
+                        placeholder="09171234567"
+                        maxLength={11}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
                     />
@@ -98,7 +99,7 @@ export default function EditProfileForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="username">
-                        Username *
+                        Username <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="username"
@@ -110,7 +111,7 @@ export default function EditProfileForm({
 
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="email">
-                        Email Address *
+                        Email Address <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="email"

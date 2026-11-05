@@ -130,7 +130,9 @@ export default function CategoryEditDialog({ open, onOpenChange, category }: Cat
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Category Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Category Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Espresso Drinks" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>

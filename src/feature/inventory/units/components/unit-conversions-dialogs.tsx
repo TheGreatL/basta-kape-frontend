@@ -148,7 +148,9 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
                             name="scope"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="text-xs font-bold text-foreground">Conversion Scope</FormLabel>
+                                    <FormLabel className="text-xs font-bold text-foreground">
+                                        Conversion Scope <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
                                             type="button"
@@ -197,7 +199,9 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
                                 name="ingredientId"
                                 render={({ field }) => (
                                     <FormItem className="space-y-1.5">
-                                        <FormLabel className="text-xs font-bold text-foreground">Target Raw Ingredient</FormLabel>
+                                        <FormLabel className="text-xs font-bold text-foreground">
+                                            Target Raw Ingredient <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <InfiniteSelect<IIngredient>
                                                 queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
@@ -240,7 +244,9 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
                                     name="fromUnitId"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-bold text-foreground">From Unit (1 unit)</FormLabel>
+                                            <FormLabel className="text-xs font-bold text-foreground">
+                                                From Unit (1 unit) <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="h-9 text-xs bg-background/50">
@@ -282,7 +288,9 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
                                     name="toUnitId"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-bold text-foreground">To Base Unit</FormLabel>
+                                            <FormLabel className="text-xs font-bold text-foreground">
+                                                To Base Unit <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="h-9 text-xs bg-background/50">
@@ -310,7 +318,9 @@ export function UnitConversionCreateDialog({ open, onOpenChange }: UnitConversio
                             name="factor"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="text-xs font-bold text-foreground">Multiplier Factor</FormLabel>
+                                    <FormLabel className="text-xs font-bold text-foreground">
+                                        Multiplier Factor <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             type="number"
@@ -500,7 +510,9 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
                             name="scope"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="text-xs font-bold text-foreground">Conversion Scope</FormLabel>
+                                    <FormLabel className="text-xs font-bold text-foreground">
+                                        Conversion Scope <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
                                             type="button"
@@ -549,7 +561,9 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
                                 name="ingredientId"
                                 render={({ field }) => (
                                     <FormItem className="space-y-1.5">
-                                        <FormLabel className="text-xs font-bold text-foreground">Target Raw Ingredient</FormLabel>
+                                        <FormLabel className="text-xs font-bold text-foreground">
+                                            Target Raw Ingredient <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <InfiniteSelect<IIngredient>
                                                 queryKey={[QUERY_KEY.INVENTORY.INGREDIENTS_LIST]}
@@ -597,7 +611,9 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
                                     name="fromUnitId"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-bold text-foreground">1 Source Unit</FormLabel>
+                                            <FormLabel className="text-xs font-bold text-foreground">
+                                                1 Source Unit <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="h-9 text-xs bg-background/50">
@@ -640,7 +656,9 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
                                     name="toUnitId"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-xs font-bold text-foreground">Target Unit</FormLabel>
+                                            <FormLabel className="text-xs font-bold text-foreground">
+                                                Target Unit <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="h-9 text-xs bg-background/50">
@@ -668,7 +686,9 @@ export function UnitConversionEditDialog({ open, onOpenChange, conversion }: Uni
                             name="factor"
                             render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                    <FormLabel className="text-xs font-bold text-foreground">Multiplier Factor</FormLabel>
+                                    <FormLabel className="text-xs font-bold text-foreground">
+                                        Multiplier Factor <span className="text-rose-500">*</span>
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             type="number"

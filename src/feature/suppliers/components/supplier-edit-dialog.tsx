@@ -205,7 +205,9 @@ export default function SupplierEditDialog({ open, onOpenChange, supplier }: Sup
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Supplier Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Supplier Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Kape Beans Trading Co." {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
@@ -236,7 +238,12 @@ export default function SupplierEditDialog({ open, onOpenChange, supplier }: Sup
                                                 <FormItem>
                                                     <FormLabel className="font-semibold text-foreground/80">Contact Number</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="e.g. +639171234567" {...field} className="h-9 bg-background/50" />
+                                                        <Input
+                                                            placeholder="e.g. 09171234567"
+                                                            maxLength={11}
+                                                            {...field}
+                                                            className="h-9 bg-background/50"
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>

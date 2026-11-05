@@ -129,7 +129,9 @@ export default function DisposeBatchDialog({ open, onOpenChange, batch }: Dispos
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex items-center justify-between">
-                                            <FormLabel className="text-xs font-semibold text-foreground/80">Units to Discard</FormLabel>
+                                            <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                Units to Discard <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Button
                                                 type="button"
                                                 variant="ghost"
@@ -161,7 +163,9 @@ export default function DisposeBatchDialog({ open, onOpenChange, batch }: Dispos
                                 name="reason"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-xs font-semibold text-foreground/80">Disposal Reason</FormLabel>
+                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                            Disposal Reason <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <Select value={field.value} onValueChange={(val: PreparedAdjustmentType) => field.onChange(val)}>
                                             <FormControl>
                                                 <SelectTrigger className="h-9 bg-background/50 rounded-xl text-xs font-semibold">

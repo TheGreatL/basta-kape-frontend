@@ -264,7 +264,9 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Recipe Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Recipe Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder="e.g. Standard Oat Milk Customization Recipe"
@@ -300,7 +302,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                     <div className="flex items-center justify-between border-b pb-1">
                                         <h4 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
                                             <BookOpen className="size-4 text-primary" />
-                                            Ingredients Bill of Materials
+                                            Ingredients Bill of Materials <span className="text-rose-500">*</span>
                                         </h4>
                                         <Button
                                             type="button"
@@ -359,7 +361,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                                 render={({ field: selectField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Raw Ingredient
+                                                                            Raw Ingredient <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <InfiniteSelect<IIngredient>
@@ -444,7 +446,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                                 render={({ field: qtyField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Quantity
+                                                                            Quantity <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <Input
@@ -474,7 +476,7 @@ export default function OptionRecipeDialog({ open, onOpenChange, option }: Optio
                                                                 render={({ field: unitField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Unit
+                                                                            Unit <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <Select

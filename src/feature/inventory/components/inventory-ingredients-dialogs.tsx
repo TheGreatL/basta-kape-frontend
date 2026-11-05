@@ -131,7 +131,9 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Item Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Item Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         placeholder="e.g. Espresso Beans or 16oz Cold Cup"
@@ -149,7 +151,9 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="type"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Item Type / Category</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Item Type / Category <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">
@@ -172,7 +176,9 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="ingredientUnitId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Default Measurement Unit</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Default Measurement Unit <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <InfiniteSelect<IIngredientUnit>
                                                         queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST, selectedType]}
@@ -207,7 +213,9 @@ export function IngredientCreateDialog({ open, onOpenChange }: IngredientCreateD
                                         name="reorderPoint"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Low Stock Alert Level</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Low Stock Alert Level <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
@@ -368,7 +376,9 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Item Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Item Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Espresso Beans" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
@@ -382,7 +392,9 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="type"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Item Type / Category</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Item Type / Category <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">
@@ -405,7 +417,9 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="ingredientUnitId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Default Measurement Unit</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Default Measurement Unit <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <InfiniteSelect<IIngredientUnit>
                                                         queryKey={[QUERY_KEY.INVENTORY.UNITS_LIST, selectedType]}
@@ -441,7 +455,9 @@ export function IngredientEditDialog({ open, onOpenChange, ingredient }: Ingredi
                                         name="reorderPoint"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Low Stock Alert Level</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Low Stock Alert Level <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"

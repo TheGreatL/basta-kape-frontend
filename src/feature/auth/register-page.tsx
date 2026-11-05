@@ -185,7 +185,9 @@ export default function RegisterPage() {
                                                 name="firstName"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-foreground/80">First Name</FormLabel>
+                                                        <FormLabel className="text-foreground/80">
+                                                            First Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input className="h-11 bg-background" placeholder="John" {...field} />
                                                         </FormControl>
@@ -198,7 +200,9 @@ export default function RegisterPage() {
                                                 name="lastName"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-foreground/80">Last Name</FormLabel>
+                                                        <FormLabel className="text-foreground/80">
+                                                            Last Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input className="h-11 bg-background" placeholder="Doe" {...field} />
                                                         </FormControl>
@@ -229,7 +233,12 @@ export default function RegisterPage() {
                                                     <FormItem>
                                                         <FormLabel className="text-foreground/80">Phone Number (Optional)</FormLabel>
                                                         <FormControl>
-                                                            <Input className="h-11 bg-background" placeholder="09123456789" {...field} />
+                                                            <Input
+                                                                className="h-11 bg-background"
+                                                                placeholder="09123456789"
+                                                                maxLength={11}
+                                                                {...field}
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -242,7 +251,9 @@ export default function RegisterPage() {
                                             name="email"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-foreground/80">Email Address</FormLabel>
+                                                    <FormLabel className="text-foreground/80">
+                                                        Email Address <span className="text-rose-500">*</span>
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             className="h-11 bg-background"
@@ -261,7 +272,9 @@ export default function RegisterPage() {
                                             name="username"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-foreground/80">Username</FormLabel>
+                                                    <FormLabel className="text-foreground/80">
+                                                        Username <span className="text-rose-500">*</span>
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input className="h-11 bg-background" placeholder="johndoe" {...field} />
                                                     </FormControl>
@@ -276,7 +289,9 @@ export default function RegisterPage() {
                                                 name="password"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-foreground/80">Password</FormLabel>
+                                                        <FormLabel className="text-foreground/80">
+                                                            Password <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <div className="relative">
                                                                 <Input
@@ -303,7 +318,9 @@ export default function RegisterPage() {
                                                 name="confirmPassword"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-foreground/80">Confirm Password</FormLabel>
+                                                        <FormLabel className="text-foreground/80">
+                                                            Confirm Password <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <div className="relative">
                                                                 <Input

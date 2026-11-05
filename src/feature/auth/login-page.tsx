@@ -112,7 +112,9 @@ export default function LoginPage() {
                                     name="identifier"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-foreground/80">Email or Username</FormLabel>
+                                            <FormLabel className="text-foreground/80">
+                                                Email or Username <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input className="h-11 bg-background" placeholder="m@example.com" {...field} />
                                             </FormControl>
@@ -126,7 +128,9 @@ export default function LoginPage() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <div className="flex items-center justify-between">
-                                                <FormLabel className="text-foreground/80">Password</FormLabel>
+                                                <FormLabel className="text-foreground/80">
+                                                    Password <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Link
                                                     to="/forgot-password"
                                                     className="text-xs font-semibold text-primary hover:underline transition-colors"

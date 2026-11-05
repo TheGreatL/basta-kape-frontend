@@ -120,7 +120,9 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80 text-xs">Discount Name</FormLabel>
+                                        <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                            Discount Name <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="e.g. Senior Citizen or Soft Launch 10% Off"
@@ -139,7 +141,9 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                     name="type"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80 text-xs">Type</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                Type <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <Select value={field.value} onValueChange={field.onChange}>
                                                 <FormControl>
                                                     <SelectTrigger className="h-9 bg-background/50 text-xs">
@@ -165,7 +169,9 @@ export default function DiscountDialog({ open, onOpenChange, discount }: Discoun
                                     name="value"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80 text-xs">Value</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                Value <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"

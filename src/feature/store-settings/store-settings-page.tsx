@@ -36,9 +36,15 @@ import {
 const storeSettingsSchema = z.object({
     storeName: z.string().min(1, 'Store Name is required').max(100, 'Max 100 characters'),
     address: z.string().min(1, 'Address is required').max(500, 'Max 500 characters'),
-    contactNumber: z.string().max(50, 'Max 50 characters').nullable().optional(),
-    openingTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'),
-    closingTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'),
+    contactNumber: z.string().max(11, 'Max 11 characters').nullable().optional(),
+    openingTime: z
+        .string()
+        .max(5, 'Max 5 characters')
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'),
+    closingTime: z
+        .string()
+        .max(5, 'Max 5 characters')
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'),
     vatRate: z.number().min(0, 'VAT rate must be non-negative'),
     serviceCharge: z.number().min(0, 'Service charge must be non-negative')
 });
@@ -194,7 +200,9 @@ export default function StoreSettingsPage() {
                                                 name="storeName"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">Store Name</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Store Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input
                                                                 placeholder="e.g. Basta Kape"
@@ -219,8 +227,9 @@ export default function StoreSettingsPage() {
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
-                                                                placeholder="e.g. +63 917 123 4567"
+                                                                placeholder="e.g. 09171234567"
                                                                 disabled={!canUpdate}
+                                                                maxLength={11}
                                                                 {...field}
                                                                 value={field.value || ''}
                                                                 className="h-9 bg-background/50"
@@ -238,7 +247,7 @@ export default function StoreSettingsPage() {
                                                     <FormItem>
                                                         <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
                                                             <MapPin className="size-3.5 text-muted-foreground" />
-                                                            Store Location Address
+                                                            Store Location Address <span className="text-rose-500">*</span>
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
@@ -276,7 +285,9 @@ export default function StoreSettingsPage() {
                                                 name="openingTime"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">Opening Time</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Opening Time <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input type="time" disabled={!canUpdate} {...field} className="h-9 bg-background/50" />
                                                         </FormControl>
@@ -290,7 +301,9 @@ export default function StoreSettingsPage() {
                                                 name="closingTime"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">Closing Time</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Closing Time <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input type="time" disabled={!canUpdate} {...field} className="h-9 bg-background/50" />
                                                         </FormControl>

@@ -214,7 +214,9 @@ export default function AttributeEditDialog({ open, onOpenChange, attribute }: A
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Attribute Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Attribute Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Sugar Level" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>

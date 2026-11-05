@@ -117,7 +117,9 @@ export default function TypeEditDialog({ open, onOpenChange, productType }: Type
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Type Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Type Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Iced Beverage" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>

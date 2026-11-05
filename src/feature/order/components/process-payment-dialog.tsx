@@ -38,6 +38,7 @@ const createPaymentSchema = (netTotal: number) => {
             paymentReferenceNumber: z
                 .string()
                 .trim()
+                .max(13, 'GCash reference number must be exactly 13 digits')
                 .regex(/^\d{13}$/, 'GCash reference number must be exactly 13 digits'),
             paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional().nullable()
         })
@@ -323,7 +324,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                         <FormItem>
                                                             <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5 text-xs">
                                                                 <Coins className="size-3.5 text-muted-foreground" />
-                                                                Amount Paid (₱)
+                                                                Amount Paid (₱) <span className="text-rose-500">*</span>
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input
@@ -366,7 +367,7 @@ export default function ProcessPaymentDialog({ open, onOpenChange, order, onSucc
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                                GCash Reference Number (13 Digits)
+                                                                GCash Reference Number (13 Digits) <span className="text-rose-500">*</span>
                                                             </FormLabel>
                                                             <FormControl>
                                                                 <Input

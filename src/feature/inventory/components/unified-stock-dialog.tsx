@@ -384,7 +384,8 @@ export default function UnifiedStockDialog({
                                     <FormItem>
                                         <div className="flex items-center justify-between">
                                             <FormLabel className="font-semibold text-foreground/80">
-                                                {mode === 'ADD_STOCK' && watchedSupplierId ? 'Supplied Ingredient' : 'Raw Ingredient'}
+                                                {mode === 'ADD_STOCK' && watchedSupplierId ? 'Supplied Ingredient' : 'Raw Ingredient'}{' '}
+                                                <span className="text-rose-500">*</span>
                                             </FormLabel>
                                             {mode === 'ADD_STOCK' && watchedSupplierId && supplierIngredientsData && (
                                                 <span className="text-xs font-semibold text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
@@ -627,7 +628,9 @@ export default function UnifiedStockDialog({
                                         name="adjustmentType"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Waste Reason Category</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Waste Reason Category <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select value={field.value} onValueChange={field.onChange}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">

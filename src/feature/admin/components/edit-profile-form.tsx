@@ -43,7 +43,7 @@ export default function AdminEditProfileForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="admin-firstName">
-                        First Name *
+                        First Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="admin-firstName"
@@ -55,7 +55,7 @@ export default function AdminEditProfileForm({
 
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="admin-lastName">
-                        Last Name *
+                        Last Name <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="admin-lastName"
@@ -86,7 +86,8 @@ export default function AdminEditProfileForm({
                     <Input
                         id="admin-phoneNumber"
                         value={phoneNumber}
-                        placeholder="+639..."
+                        placeholder="09171234567"
+                        maxLength={11}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
                     />
@@ -98,7 +99,7 @@ export default function AdminEditProfileForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="admin-username">
-                        Username *
+                        Username <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="admin-username"
@@ -110,7 +111,7 @@ export default function AdminEditProfileForm({
 
                 <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground" htmlFor="admin-email">
-                        Email Address *
+                        Email Address <span className="text-rose-500">*</span>
                     </label>
                     <Input
                         id="admin-email"

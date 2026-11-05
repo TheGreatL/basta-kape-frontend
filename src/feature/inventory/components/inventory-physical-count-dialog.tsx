@@ -114,7 +114,8 @@ export default function PhysicalCountDialog({ open, onOpenChange, inventory }: P
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-semibold text-foreground/80">
-                                                Actual Count Quantity ({inventory.ingredient.defaultUnit.abbreviation})
+                                                Actual Count Quantity ({inventory.ingredient.defaultUnit.abbreviation}){' '}
+                                                <span className="text-rose-500">*</span>
                                             </FormLabel>
                                             <FormControl>
                                                 <Input

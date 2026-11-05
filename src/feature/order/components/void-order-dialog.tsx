@@ -159,7 +159,7 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                                 <div className="space-y-1">
                                     <label className="font-bold text-foreground/80 flex items-center gap-1">
                                         <Lock className="size-3 text-muted-foreground" />
-                                        Supervisor ID / Email
+                                        Supervisor ID / Email <span className="text-rose-500">*</span>
                                     </label>
                                     <Input
                                         placeholder="e.g. storemanager"
@@ -170,7 +170,9 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="font-bold text-foreground/80 block">Password</label>
+                                    <label className="font-bold text-foreground/80 block">
+                                        Password <span className="text-rose-500">*</span>
+                                    </label>
                                     <Input
                                         type="password"
                                         placeholder="••••••••"
@@ -194,7 +196,9 @@ export default function VoidOrderDialog({ open, onOpenChange, orderId, orderNumb
 
                     <div className="space-y-1">
                         <div className="flex justify-between items-center">
-                            <label className="font-bold text-foreground/80">Stated Reason for Void</label>
+                            <label className="font-bold text-foreground/80">
+                                Stated Reason for Void <span className="text-rose-500">*</span>
+                            </label>
                             <span
                                 className={`text-xs font-semibold ${reason.length < 3 || reason.length > 1000 ? 'text-amber-500' : 'text-muted-foreground'}`}
                             >

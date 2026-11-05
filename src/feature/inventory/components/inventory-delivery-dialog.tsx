@@ -196,7 +196,9 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                         name="ingredientId"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Raw Ingredient</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Raw Ingredient <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     {isEditMode ? (
                                                         <Input
@@ -282,7 +284,9 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="flex items-center justify-between">
-                                                        <FormLabel className="font-semibold text-foreground/80">Qty Received</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Qty Received <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         {isEditMode && (
                                                             <span className="text-xs text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
                                                                 Locked
@@ -313,7 +317,9 @@ export default function DeliveryDialog({ open, onOpenChange, preselectedIngredie
                                             name="unitCost"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/80">Unit Cost (₱)</FormLabel>
+                                                    <FormLabel className="font-semibold text-foreground/80">
+                                                        Unit Cost (₱) <span className="text-rose-500">*</span>
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             type="number"

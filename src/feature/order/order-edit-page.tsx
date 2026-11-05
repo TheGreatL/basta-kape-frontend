@@ -57,13 +57,13 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 const discountFormSchema = z.object({
     discountId: z.string().min(1, 'Please select a discount'),
-    referenceId: z.string().optional(),
-    referenceName: z.string().optional()
+    referenceId: z.string().max(50, 'Reference ID must not exceed 50 characters').optional(),
+    referenceName: z.string().max(100, 'Reference name must not exceed 100 characters').optional()
 });
 
 const statusFormSchema = z.object({
     status: z.enum(['PENDING', 'APPROVED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
-    notes: z.string().optional()
+    notes: z.string().max(500, 'Notes must not exceed 500 characters').optional()
 });
 
 export default function OrderEditPage() {
@@ -778,7 +778,7 @@ export default function OrderEditPage() {
                                                                 render={({ field }) => (
                                                                     <FormItem className="space-y-1.5">
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Select Discount
+                                                                            Select Discount <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <Select value={field.value} onValueChange={field.onChange}>
                                                                             <FormControl>
@@ -814,7 +814,8 @@ export default function OrderEditPage() {
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
                                                                                     <FormLabel className="text-xs font-bold text-foreground/75 block">
-                                                                                        Reference Number / Card ID
+                                                                                        Reference Number / Card ID{' '}
+                                                                                        {isSelectedBIR && <span className="text-rose-500">*</span>}
                                                                                     </FormLabel>
                                                                                     <FormControl>
                                                                                         <Input
@@ -834,7 +835,8 @@ export default function OrderEditPage() {
                                                                             render={({ field }) => (
                                                                                 <FormItem className="space-y-1">
                                                                                     <FormLabel className="text-xs font-bold text-foreground/75 block">
-                                                                                        Cardholder / Reference Name
+                                                                                        Cardholder / Reference Name{' '}
+                                                                                        {isSelectedBIR && <span className="text-rose-500">*</span>}
                                                                                     </FormLabel>
                                                                                     <FormControl>
                                                                                         <Input

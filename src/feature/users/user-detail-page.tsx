@@ -195,7 +195,9 @@ export default function UserDetailPage() {
                                                 name="firstName"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">First Name</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            First Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input
                                                                 placeholder="John"
@@ -213,7 +215,9 @@ export default function UserDetailPage() {
                                                 name="lastName"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">Last Name</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Last Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input
                                                                 placeholder="Doe"
@@ -256,8 +260,9 @@ export default function UserDetailPage() {
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
-                                                                placeholder="+639171234567"
+                                                                placeholder="09171234567"
                                                                 disabled={!hasUpdatePermission}
+                                                                maxLength={11}
                                                                 {...field}
                                                                 value={field.value || ''}
                                                                 className="h-9 bg-background/50"

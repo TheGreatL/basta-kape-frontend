@@ -114,7 +114,9 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Unit Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Unit Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Grams" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
@@ -142,7 +144,9 @@ export function UnitCreateDialog({ open, onOpenChange }: UnitCreateDialogProps) 
                                         name="category"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Applicable Category</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Applicable Category <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">
@@ -281,7 +285,9 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Unit Name</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Unit Name <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g. Grams" {...field} className="h-9 bg-background/50" />
                                                 </FormControl>
@@ -309,7 +315,9 @@ export function UnitEditDialog({ open, onOpenChange, unit }: UnitEditDialogProps
                                         name="category"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-semibold text-foreground/80">Applicable Category</FormLabel>
+                                                <FormLabel className="font-semibold text-foreground/80">
+                                                    Applicable Category <span className="text-rose-500">*</span>
+                                                </FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger className="h-9 bg-background/50">

@@ -96,7 +96,9 @@ export default function CustomerCreatePage() {
                                     name="firstName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">First Name</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                First Name <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="John" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -109,7 +111,9 @@ export default function CustomerCreatePage() {
                                     name="lastName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Last Name</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Last Name <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Doe" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -138,7 +142,8 @@ export default function CustomerCreatePage() {
                                             <FormLabel className="font-semibold text-foreground/80">Phone Number (Optional)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="+639171234567"
+                                                    placeholder="09171234567"
+                                                    maxLength={11}
                                                     {...field}
                                                     value={field.value || ''}
                                                     className="h-9 bg-background/50"
@@ -159,7 +164,9 @@ export default function CustomerCreatePage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Email Address</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Email Address <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="john.doe@gmail.com" type="email" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -172,7 +179,9 @@ export default function CustomerCreatePage() {
                                     name="username"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Username</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Username <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="johndoe" {...field} className="h-9 bg-background/50" />
                                             </FormControl>

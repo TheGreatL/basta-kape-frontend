@@ -158,11 +158,11 @@ export interface IVoidLog {
 export const orderCreateFormSchema = z
     .object({
         customerType: z.enum(['GUEST', 'MEMBER']),
-        guestName: z.string().optional(),
+        guestName: z.string().max(100, 'Guest name must not exceed 100 characters').optional(),
         customerId: z.string().nullable().optional(),
-        buzzerId: z.string().optional(),
+        buzzerId: z.string().max(20, 'Buzzer ID must not exceed 20 characters').optional(),
         orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY']),
-        notes: z.string().optional(),
+        notes: z.string().max(500, 'Notes must not exceed 500 characters').optional(),
         items: z
             .array(
                 z.object({
@@ -171,7 +171,7 @@ export const orderCreateFormSchema = z
                     sku: z.string().nullable(),
                     price: z.number(),
                     quantity: z.number(),
-                    notes: z.string().optional(),
+                    notes: z.string().max(500, 'Notes must not exceed 500 characters').optional(),
                     modifierOptionIds: z.array(z.string()).optional(),
                     modifierNames: z.array(z.string()).optional()
                 })
@@ -197,8 +197,8 @@ export const orderCreateFormSchema = z
 
 export const orderDiscountFormSchema = z.object({
     discountId: z.string().min(1, 'Please select a discount'),
-    referenceId: z.string().optional(),
-    referenceName: z.string().optional()
+    referenceId: z.string().max(50, 'Reference ID must not exceed 50 characters').optional(),
+    referenceName: z.string().max(100, 'Reference name must not exceed 100 characters').optional()
 });
 
 export const GCashPaymentSchema = z.object({
@@ -206,8 +206,9 @@ export const GCashPaymentSchema = z.object({
     paymentReferenceNumber: z
         .string()
         .trim()
+        .max(13, 'GCash reference number must be exactly 13 digits')
         .regex(/^\d{13}$/, 'GCash reference number must be exactly 13 digits'),
-    paymentProofPhoto: z.string().optional().nullable()
+    paymentProofPhoto: z.string().max(1000, 'Max 1000 characters').optional().nullable()
 });
 
 export const CashPaymentSchema = z.object({
@@ -220,7 +221,7 @@ export const createOrderPaymentSchema = (netTotal: number) => {
         .object({
             paymentMethod: z.enum(['UNPAID', 'CASH', 'GCASH']),
             amountTendered: z.number().optional(),
-            referenceNumber: z.string().optional(),
+            referenceNumber: z.string().max(13, 'GCash reference number must be 13 digits').optional(),
             receiptFile: z.any().nullable().optional()
         })
         .superRefine((data, ctx) => {

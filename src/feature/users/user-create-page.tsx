@@ -114,7 +114,9 @@ export default function UserCreatePage() {
                                     name="firstName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">First Name</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                First Name <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="John" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -127,7 +129,9 @@ export default function UserCreatePage() {
                                     name="lastName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Last Name</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Last Name <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Doe" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -156,7 +160,8 @@ export default function UserCreatePage() {
                                             <FormLabel className="font-semibold text-foreground/80">Phone Number (Optional)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="+639171234567"
+                                                    placeholder="09171234567"
+                                                    maxLength={11}
                                                     {...field}
                                                     value={field.value || ''}
                                                     className="h-9 bg-background/50"
@@ -177,7 +182,9 @@ export default function UserCreatePage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Email Address</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Email Address <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="john.doe@bastakape.com"
@@ -195,7 +202,9 @@ export default function UserCreatePage() {
                                     name="username"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-semibold text-foreground/80">Username</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Username <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input placeholder="johndoe" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -208,7 +217,9 @@ export default function UserCreatePage() {
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem className="sm:col-span-2">
-                                            <FormLabel className="font-semibold text-foreground/80">Password</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Password <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input type="password" placeholder="••••••••" {...field} className="h-9 bg-background/50" />
                                             </FormControl>
@@ -224,7 +235,7 @@ export default function UserCreatePage() {
                             <div className="flex items-center justify-between border-b pb-2">
                                 <h2 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
                                     <Shield className="size-4 text-primary" />
-                                    Security Role Assignment
+                                    Security Role Assignment <span className="text-rose-500">*</span>
                                 </h2>
                                 <span className="text-xs text-muted-foreground font-medium">Select a security role.</span>
                             </div>

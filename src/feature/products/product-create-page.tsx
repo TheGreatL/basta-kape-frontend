@@ -371,7 +371,9 @@ export default function ProductCreatePage() {
                                                 name="name"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="font-semibold text-foreground/80">Product Name</FormLabel>
+                                                        <FormLabel className="font-semibold text-foreground/80">
+                                                            Product Name <span className="text-rose-500">*</span>
+                                                        </FormLabel>
                                                         <FormControl>
                                                             <Input
                                                                 placeholder="e.g. Spanish Latte"
@@ -506,7 +508,7 @@ export default function ProductCreatePage() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormLabel className="font-semibold text-foreground/80 text-xs">
-                                                                    Preparation Mode
+                                                                    Preparation Mode <span className="text-rose-500">*</span>
                                                                 </FormLabel>
                                                                 <Select
                                                                     value={field.value}

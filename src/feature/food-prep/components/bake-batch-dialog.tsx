@@ -191,7 +191,9 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="flex items-center justify-between">
-                                        <FormLabel className="text-xs font-semibold text-foreground/80">Food Item & Variant</FormLabel>
+                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                            Food Item & Variant <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         {isPreselectedForecastLoading ? (
                                             <span className="text-xs text-muted-foreground animate-pulse">Checking raw stock...</span>
                                         ) : typeof currentMaxProduceable === 'number' ? (
@@ -325,7 +327,9 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex items-center justify-between">
-                                            <FormLabel className="text-xs font-semibold text-foreground/80">Quantity Prepared</FormLabel>
+                                            <FormLabel className="text-xs font-semibold text-foreground/80">
+                                                Quantity Prepared <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             {typeof currentMaxProduceable === 'number' && (
                                                 <span className="text-xs text-muted-foreground">
                                                     Stock left:{' '}
@@ -391,7 +395,9 @@ export default function BakeBatchDialog({ open, onOpenChange, preselectedItem }:
                                 name="shelfLifeMinutes"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-xs font-semibold text-foreground/80">Shelf Life Validity (Minutes)</FormLabel>
+                                        <FormLabel className="text-xs font-semibold text-foreground/80">
+                                            Shelf Life Validity (Minutes) <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"

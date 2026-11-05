@@ -167,7 +167,9 @@ export default function GroupDialog({ open, onOpenChange, group, targetProductId
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80">Group Name</FormLabel>
+                                        <FormLabel className="font-semibold text-foreground/80">
+                                            Group Name <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input placeholder="e.g. Milk Alternatives, Sweetness Level" {...field} className="h-9" />
                                         </FormControl>
@@ -196,7 +198,9 @@ export default function GroupDialog({ open, onOpenChange, group, targetProductId
                                     name="minSelect"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-col">
-                                            <FormLabel className="font-semibold text-foreground/80">Min Options</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Min Options <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -217,7 +221,9 @@ export default function GroupDialog({ open, onOpenChange, group, targetProductId
                                     name="maxSelect"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-col">
-                                            <FormLabel className="font-semibold text-foreground/80">Max Options</FormLabel>
+                                            <FormLabel className="font-semibold text-foreground/80">
+                                                Max Options <span className="text-rose-500">*</span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"

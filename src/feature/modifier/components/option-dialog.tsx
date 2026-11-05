@@ -41,8 +41,8 @@ const optionFormObjectSchema = z.object({
     name: z.string().min(1, 'Name must be at least 1 character').max(100, 'Name must not exceed 100 characters'),
     price: z.number().min(0, 'Price must be 0 or more'),
     hasRecipe: z.boolean(),
-    recipeName: z.string(),
-    recipeDescription: z.string(),
+    recipeName: z.string().max(100, 'Recipe name must not exceed 100 characters'),
+    recipeDescription: z.string().max(500, 'Description must not exceed 500 characters'),
     ingredients: z.array(recipeIngredientSchema)
 });
 
@@ -245,7 +245,9 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80">Option Name</FormLabel>
+                                        <FormLabel className="font-semibold text-foreground/80">
+                                            Option Name <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input placeholder="e.g. Oat Milk, Extra Shot" {...field} className="h-9" disabled={isSaving} />
                                         </FormControl>
@@ -259,7 +261,9 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                 name="price"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="font-semibold text-foreground/80">Additional Price (₱)</FormLabel>
+                                        <FormLabel className="font-semibold text-foreground/80">
+                                            Additional Price (₱) <span className="text-rose-500">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
@@ -302,7 +306,9 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                             name="recipeName"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-semibold text-foreground/80 text-xs">Recipe Name</FormLabel>
+                                                    <FormLabel className="font-semibold text-foreground/80 text-xs">
+                                                        Recipe Name <span className="text-rose-500">*</span>
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             placeholder="e.g. Oat Milk Customization Recipe"
@@ -341,7 +347,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                         <div className="flex items-center justify-between border-b pb-1.5">
                                             <h4 className="text-xs font-bold text-foreground/80 flex items-center gap-1.5">
                                                 <BookOpen className="size-4 text-primary" />
-                                                Stock Deductions (Ingredients BOM)
+                                                Stock Deductions (Ingredients BOM) <span className="text-rose-500">*</span>
                                             </h4>
                                             <Button
                                                 type="button"
@@ -374,7 +380,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                                 render={({ field: selectField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Raw Ingredient
+                                                                            Raw Ingredient <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <InfiniteSelect<IIngredient>
@@ -436,7 +442,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                                 render={({ field: qtyField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Quantity
+                                                                            Quantity <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <Input
@@ -467,7 +473,7 @@ export default function OptionDialog({ open, onOpenChange, groupId, option }: Op
                                                                 render={({ field: unitField }) => (
                                                                     <FormItem>
                                                                         <FormLabel className="text-xs font-semibold text-foreground/80">
-                                                                            Unit
+                                                                            Unit <span className="text-rose-500">*</span>
                                                                         </FormLabel>
                                                                         <FormControl>
                                                                             <Select
