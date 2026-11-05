@@ -751,7 +751,7 @@ export default function PurchaseOrderDetailDialog({ open, onOpenChange, poId, in
                                             className="h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1.5 shadow-sm"
                                         >
                                             <Send className="size-3.5" />
-                                            Mark as Sent
+                                            Mark as PO
                                         </Button>
                                         <Button
                                             size="sm"

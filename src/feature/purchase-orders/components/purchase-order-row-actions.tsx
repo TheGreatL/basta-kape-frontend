@@ -115,7 +115,7 @@ export default function PurchaseOrderRowActions({
                     </RequirePermission>
                 )}
 
-                {/* Mark as Sent (FINAL_DRAFT only) */}
+                {/* Mark as PO (FINAL_DRAFT only) */}
                 {po.status === 'FINAL_DRAFT' && (
                     <RequirePermission module="Purchase Orders Management" action="update">
                         <AlertDialog>
@@ -129,11 +129,11 @@ export default function PurchaseOrderRowActions({
                                             disabled={isUpdatingStatus}
                                         >
                                             <Send className="size-4" />
-                                            <span className="sr-only">Mark as Sent</span>
+                                            <span className="sr-only">Mark as PO</span>
                                         </Button>
                                     </AlertDialogTrigger>
                                 </TooltipTrigger>
-                                <TooltipContent side="top">Mark as Sent</TooltipContent>
+                                <TooltipContent side="top">Mark as PO</TooltipContent>
                             </Tooltip>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -150,7 +150,7 @@ export default function PurchaseOrderRowActions({
                                         className="h-9 bg-primary text-primary-foreground hover:bg-primary/95"
                                         onClick={() => onUpdateStatus({ id: po.id, status: 'SENT' })}
                                     >
-                                        Mark as Sent
+                                        Mark as PO
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
