@@ -29,7 +29,7 @@ import PurchaseOrderRowActions from './components/purchase-order-row-actions';
 export default function PurchaseOrdersPage() {
     const navigate = useNavigate({ from: '/admin/purchase-orders' });
     const queryClient = useQueryClient();
-    const { page, pageSize, search, status, supplierId } = Route.useSearch();
+    const { page, pageSize, search, status, supplierId, create } = Route.useSearch();
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [localSearch, setLocalSearch] = React.useState(search || '');
@@ -37,7 +37,7 @@ export default function PurchaseOrdersPage() {
 
     const [selectedPO, setSelectedPO] = React.useState<IPurchaseOrder | null>(null);
     const [openReceiveOnDetails, setOpenReceiveOnDetails] = React.useState(false);
-    const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+    const [isCreateOpen, setIsCreateOpen] = React.useState(Boolean(create));
     const [editingPOId, setEditingPOId] = React.useState<string | null>(null);
 
     const setSearchParams = (updates: Record<string, any>) => {
@@ -45,6 +45,13 @@ export default function PurchaseOrdersPage() {
             search: (prev: any) => ({ ...prev, ...updates })
         });
     };
+
+    React.useEffect(() => {
+        if (create) {
+            setIsCreateOpen(true);
+            setSearchParams({ create: undefined });
+        }
+    }, [create]);
 
     React.useEffect(() => {
         setLocalSearch(search || '');

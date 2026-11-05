@@ -8,7 +8,8 @@ const searchParamsSchema = z.object({
     pageSize: z.number().catch(10),
     search: z.string().catch(''),
     status: z.enum(['DRAFT', 'FINAL_DRAFT', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED', '']).catch(''),
-    supplierId: z.string().catch('')
+    supplierId: z.string().catch(''),
+    create: z.boolean().optional().catch(false)
 });
 
 export const Route = createFileRoute('/admin/purchase-orders')({
