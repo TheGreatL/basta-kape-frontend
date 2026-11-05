@@ -1,4 +1,3 @@
-import { LayoutDashboard } from 'lucide-react';
 import OverviewCardsWidget from './components/overview-cards';
 import ExpiringSoonWidget from './components/expiring-soon';
 import WasteBreakdownWidget from './components/waste-breakdown';
@@ -11,9 +10,6 @@ export default function InventoryDashboardPage() {
             {/* Header */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <LayoutDashboard className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Inventory Dashboard</h1>
                         <p className="text-xs text-muted-foreground">

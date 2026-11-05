@@ -283,9 +283,6 @@ export default function OrderQueuePage() {
             {/* Header / Filter Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <Coffee className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Live Order Queue</h1>
                         <p className="text-xs text-muted-foreground">

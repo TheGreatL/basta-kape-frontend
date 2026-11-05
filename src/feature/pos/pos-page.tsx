@@ -529,9 +529,6 @@ export default function PosPage() {
             {/* Page Header */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0 text-left">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <Monitor className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                         <h1 className="text-xl font-bold text-foreground leading-tight">POS Sales Checkout</h1>
                         <p className="text-xs text-muted-foreground">Process customer payments, beverage custom orders, and generate prints.</p>

@@ -260,9 +260,6 @@ export default function WasteLogPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600">
-                        <Trash2 className="h-5 w-5" />
-                    </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">Unified Waste & Loss Log</h1>
                         <p className="text-xs text-muted-foreground">

@@ -303,9 +303,6 @@ export default function ProductCreatePage() {
                     <ArrowLeft className="size-3.5" /> Back to Products
                 </Button>
                 <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                        <PlusCircle className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Create Menu Product</h1>
                         <p className="text-xs text-muted-foreground">Define the details, category, variants, and recipes for the new menu item.</p>

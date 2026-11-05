@@ -200,9 +200,6 @@ export default function StockLevelsPage() {
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
-                        <Package className="h-5 w-5 text-primary" />
-                    </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Stock Levels</h1>
                         <p className="text-xs text-muted-foreground">Live inventory stock readings with alert statuses ranked by criticality.</p>
