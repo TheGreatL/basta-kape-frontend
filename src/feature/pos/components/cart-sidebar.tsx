@@ -1,5 +1,5 @@
-import { formatCurrency } from '#/utils/helper.ts';
-import { ShoppingBagIcon, Trash2, ShoppingBag, Minus, Plus, Tag, ArrowRight, X, Pencil } from 'lucide-react';
+import { formatCurrency, getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
+import { ShoppingBagIcon, Trash2, ShoppingBag, Minus, Plus, Tag, ArrowRight, X, Pencil, Coffee } from 'lucide-react';
 import { Button } from '#/components/ui/button.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
 import type { IDiscount } from '../../store-settings/discounts.types';
@@ -89,8 +89,20 @@ export default function CartSidebar({
                             const itemPrice = getCartItemPrice(item);
                             return (
                                 <div key={item.id} className="py-3 flex flex-col gap-2">
-                                    <div className="flex justify-between items-start gap-2">
-                                        <div className="min-w-0">
+                                    <div className="flex justify-between items-start gap-2.5">
+                                        <div className="size-10 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0 flex items-center justify-center">
+                                            {item.product.photo ? (
+                                                <img
+                                                    src={getProductPhotoUrl(item.product.photo)}
+                                                    alt={item.product.name}
+                                                    onError={handleProductImageError}
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <Coffee className="size-4 text-muted-foreground stroke-[1.5]" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
                                             <span className="text-xs font-bold text-foreground leading-tight block">{item.product.name}</span>
                                             {variantLabel && (
                                                 <span className="text-xs font-semibold text-muted-foreground mt-0.5 block leading-none">

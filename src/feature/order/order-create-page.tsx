@@ -1,8 +1,8 @@
-import { formatCurrency } from '#/utils/helper.ts';
+import { formatCurrency, getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Trash2, Upload, ArrowLeft, ShoppingBag, Tag, CreditCard, CheckCircle2, Printer, FileText, Download, Volume2 } from 'lucide-react';
+import { Trash2, Upload, ArrowLeft, ShoppingBag, Tag, CreditCard, CheckCircle2, Printer, FileText, Download, Volume2, Coffee } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -345,6 +345,7 @@ export default function OrderCreatePage() {
             {
                 productVariantId: selectedVariantId,
                 name: displayName,
+                photo: selectedProduct.photo,
                 sku: variant.sku,
                 price: variant.price + modifiersPrice,
                 quantity: selectedQuantity,
@@ -927,19 +928,35 @@ export default function OrderCreatePage() {
                                     key={item.id}
                                     className="flex items-start justify-between gap-4 border border-border/30 bg-background/50 hover:bg-background/80 p-3.5 rounded-xl transition-colors text-xs"
                                 >
-                                    <div className="min-w-0 space-y-1">
-                                        <div className="font-bold text-foreground truncate">
-                                            {displayName} <span className="text-muted-foreground font-semibold">x{item.quantity}</span>
+                                    <div className="flex items-start gap-3 min-w-0">
+                                        <div className="size-10 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                            {item.variant.product.photo ? (
+                                                <img
+                                                    src={getProductPhotoUrl(item.variant.product.photo)}
+                                                    alt={item.variant.product.name}
+                                                    onError={handleProductImageError}
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <Coffee className="size-4 text-muted-foreground/40" />
+                                            )}
                                         </div>
-                                        {item.variant.sku && (
-                                            <span className="text-2xs font-mono text-muted-foreground block">{item.variant.sku}</span>
-                                        )}
-                                        {item.modifiers.length > 0 && (
-                                            <span className="text-2xs text-muted-foreground font-semibold block">
-                                                Addons: {item.modifiers.map((m: any) => m.modifierOption.name).join(', ')}
-                                            </span>
-                                        )}
-                                        {item.notes && <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>}
+                                        <div className="min-w-0 space-y-1">
+                                            <div className="font-bold text-foreground truncate">
+                                                {displayName} <span className="text-muted-foreground font-semibold">x{item.quantity}</span>
+                                            </div>
+                                            {item.variant.sku && (
+                                                <span className="text-2xs font-mono text-muted-foreground block">{item.variant.sku}</span>
+                                            )}
+                                            {item.modifiers.length > 0 && (
+                                                <span className="text-2xs text-muted-foreground font-semibold block">
+                                                    Addons: {item.modifiers.map((m: any) => m.modifierOption.name).join(', ')}
+                                                </span>
+                                            )}
+                                            {item.notes && (
+                                                <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0">
                                         <span className="font-bold text-foreground/90 text-sm">{formatCurrency(item.totalPrice)}</span>
@@ -958,17 +975,31 @@ export default function OrderCreatePage() {
                                 key={idx}
                                 className="flex items-start justify-between gap-4 border border-border/30 bg-background/50 hover:bg-background/80 p-3.5 rounded-xl transition-colors text-xs"
                             >
-                                <div className="min-w-0 space-y-1">
-                                    <div className="font-bold text-foreground truncate">
-                                        {item.name} <span className="text-muted-foreground font-semibold">x{item.quantity}</span>
+                                <div className="flex items-start gap-3 min-w-0">
+                                    <div className="size-10 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                        {item.photo ? (
+                                            <img
+                                                src={getProductPhotoUrl(item.photo)}
+                                                alt={item.name}
+                                                onError={handleProductImageError}
+                                                className="size-full object-cover"
+                                            />
+                                        ) : (
+                                            <Coffee className="size-4 text-muted-foreground/40" />
+                                        )}
                                     </div>
-                                    {item.sku && <span className="text-2xs font-mono text-muted-foreground block">{item.sku}</span>}
-                                    {item.modifierNames && item.modifierNames.length > 0 && (
-                                        <span className="text-2xs text-muted-foreground font-semibold block">
-                                            Addons: {item.modifierNames.join(', ')}
-                                        </span>
-                                    )}
-                                    {item.notes && <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>}
+                                    <div className="min-w-0 space-y-1">
+                                        <div className="font-bold text-foreground truncate">
+                                            {item.name} <span className="text-muted-foreground font-semibold">x{item.quantity}</span>
+                                        </div>
+                                        {item.sku && <span className="text-2xs font-mono text-muted-foreground block">{item.sku}</span>}
+                                        {item.modifierNames && item.modifierNames.length > 0 && (
+                                            <span className="text-2xs text-muted-foreground font-semibold block">
+                                                Addons: {item.modifierNames.join(', ')}
+                                            </span>
+                                        )}
+                                        {item.notes && <span className="text-2xs text-amber-600 block italic font-medium">Note: "{item.notes}"</span>}
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0">
                                     <span className="font-bold text-foreground/90 text-sm">{formatCurrency(item.price * item.quantity)}</span>

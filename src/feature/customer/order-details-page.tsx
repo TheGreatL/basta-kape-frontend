@@ -27,7 +27,7 @@ import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
-import { getFileUrl, getFrontendReference } from '#/utils/helper';
+import { getFileUrl, getFrontendReference, getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
 import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
@@ -329,35 +329,49 @@ export default function OrderDetailsPage() {
                     <div className="divide-y divide-border/40">
                         {order.items?.map((item: IOrderItem) => (
                             <div key={item.id} className="p-5 flex justify-between gap-4">
-                                <div className="space-y-1">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="font-bold text-base text-foreground">{item.variant.product.name}</span>
-                                        <span className="text-xs text-muted-foreground font-semibold">x{item.quantity}</span>
+                                <div className="flex items-start gap-3.5 min-w-0">
+                                    <div className="size-14 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                        {item.variant.product.photo ? (
+                                            <img
+                                                src={getProductPhotoUrl(item.variant.product.photo)}
+                                                alt={item.variant.product.name}
+                                                onError={handleProductImageError}
+                                                className="size-full object-cover"
+                                            />
+                                        ) : (
+                                            <Coffee className="size-6 text-muted-foreground/40" />
+                                        )}
                                     </div>
-
-                                    {/* Variant descriptor attributes */}
-                                    {item.variant.attributes && item.variant.attributes.length > 0 && (
-                                        <div className="text-xs text-muted-foreground font-medium">
-                                            Option: {item.variant.attributes.map((attr: any) => attr.attributeValue?.value).join(' / ')}
+                                    <div className="space-y-1 min-w-0">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="font-bold text-base text-foreground">{item.variant.product.name}</span>
+                                            <span className="text-xs text-muted-foreground font-semibold">x{item.quantity}</span>
                                         </div>
-                                    )}
 
-                                    {/* Modifiers breakdown */}
-                                    {item.modifiers.length > 0 && (
-                                        <div className="pt-1.5 space-y-1">
-                                            {item.modifiers.map((mod: IOrderItemModifier) => (
-                                                <span
-                                                    key={mod.id}
-                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md mr-1.5"
-                                                >
-                                                    + {mod.modifierOption.name} ({formatCurrency(mod.price)})
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
+                                        {/* Variant descriptor attributes */}
+                                        {item.variant.attributes && item.variant.attributes.length > 0 && (
+                                            <div className="text-xs text-muted-foreground font-medium">
+                                                Option: {item.variant.attributes.map((attr: any) => attr.attributeValue?.value).join(' / ')}
+                                            </div>
+                                        )}
 
-                                    {/* Line item comments */}
-                                    {item.notes && <p className="text-xs text-muted-foreground/80 italic pt-1">Instructions: "{item.notes}"</p>}
+                                        {/* Modifiers breakdown */}
+                                        {item.modifiers.length > 0 && (
+                                            <div className="pt-1.5 space-y-1">
+                                                {item.modifiers.map((mod: IOrderItemModifier) => (
+                                                    <span
+                                                        key={mod.id}
+                                                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md mr-1.5"
+                                                    >
+                                                        + {mod.modifierOption.name} ({formatCurrency(mod.price)})
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Line item comments */}
+                                        {item.notes && <p className="text-xs text-muted-foreground/80 italic pt-1">Instructions: "{item.notes}"</p>}
+                                    </div>
                                 </div>
 
                                 <div className="text-right shrink-0">

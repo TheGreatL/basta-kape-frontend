@@ -32,7 +32,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
-import { getFileUrl, formatCurrency } from '#/utils/helper.ts';
+import { getFileUrl, formatCurrency, handleProductImageError } from '#/utils/helper.ts';
 import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
 
 import ProductDeleteDialog from './components/product-delete-dialog.tsx';
@@ -152,8 +152,9 @@ export default function ProductsPage() {
                         <div className="size-11 rounded-lg overflow-hidden border border-border/80 bg-muted shrink-0 flex items-center justify-center">
                             {row.original.photo ? (
                                 <img
-                                    src={row.original.photo.startsWith('http') ? row.original.photo : getFileUrl(row.original.photo)}
+                                    src={getFileUrl(row.original.photo)}
                                     alt={row.original.name}
+                                    onError={handleProductImageError}
                                     className="size-full object-cover"
                                 />
                             ) : (

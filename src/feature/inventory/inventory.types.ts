@@ -246,6 +246,7 @@ export interface IForecast {
     variantId: string;
     productId: string;
     name: string;
+    photo?: string | null;
     sku: string | null;
     price: number;
     hasRecipe: boolean;

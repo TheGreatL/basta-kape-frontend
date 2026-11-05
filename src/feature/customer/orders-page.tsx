@@ -11,7 +11,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
-import { getFrontendReference, formatCurrency } from '#/utils/helper.ts';
+import { getFrontendReference, formatCurrency, getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import type { TOrderStatus, IOrder } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
@@ -237,36 +237,52 @@ export default function OrdersPage() {
                                             {/* Order Items List */}
                                             <div className="mt-3 space-y-2 pt-3 border-t border-dashed border-border/40">
                                                 {order.items?.map((item) => (
-                                                    <div key={item.id} className="text-xs space-y-1">
-                                                        <div className="flex justify-between items-baseline text-foreground">
-                                                            <span className="font-semibold text-foreground">
-                                                                {item.quantity}x {item.variant.product.name}
-                                                                {item.variant.attributes && item.variant.attributes.length > 0 && (
-                                                                    <span className="text-muted-foreground font-normal ml-1">
-                                                                        (
-                                                                        {item.variant.attributes
-                                                                            .map((attr: any) => attr.attributeValue?.value)
-                                                                            .join(' / ')}
-                                                                        )
-                                                                    </span>
-                                                                )}
-                                                            </span>
-                                                            <span className="font-bold text-muted-foreground">{formatCurrency(item.totalPrice)}</span>
+                                                    <div key={item.id} className="text-xs flex items-start gap-2.5">
+                                                        <div className="size-8 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                                            {item.variant.product.photo ? (
+                                                                <img
+                                                                    src={getProductPhotoUrl(item.variant.product.photo)}
+                                                                    alt={item.variant.product.name}
+                                                                    onError={handleProductImageError}
+                                                                    className="size-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <Coffee className="size-4 text-muted-foreground/40" />
+                                                            )}
                                                         </div>
-
-                                                        {/* Add-ons/Modifiers */}
-                                                        {item.modifiers.length > 0 && (
-                                                            <div className="pl-3 flex flex-wrap gap-1">
-                                                                {item.modifiers.map((mod) => (
-                                                                    <span
-                                                                        key={mod.id}
-                                                                        className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
-                                                                    >
-                                                                        + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
-                                                                    </span>
-                                                                ))}
+                                                        <div className="flex-1 min-w-0 space-y-1">
+                                                            <div className="flex justify-between items-baseline text-foreground gap-2">
+                                                                <span className="font-semibold text-foreground truncate">
+                                                                    {item.quantity}x {item.variant.product.name}
+                                                                    {item.variant.attributes && item.variant.attributes.length > 0 && (
+                                                                        <span className="text-muted-foreground font-normal ml-1">
+                                                                            (
+                                                                            {item.variant.attributes
+                                                                                .map((attr: any) => attr.attributeValue?.value)
+                                                                                .join(' / ')}
+                                                                            )
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                                <span className="font-bold text-muted-foreground shrink-0">
+                                                                    {formatCurrency(item.totalPrice)}
+                                                                </span>
                                                             </div>
-                                                        )}
+
+                                                            {/* Add-ons/Modifiers */}
+                                                            {item.modifiers.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {item.modifiers.map((mod) => (
+                                                                        <span
+                                                                            key={mod.id}
+                                                                            className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/10"
+                                                                        >
+                                                                            + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>

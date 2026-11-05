@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { getFileUrl } from '#/utils/helper';
+import { getFileUrl, handleProductImageError } from '#/utils/helper';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ICartItemResponse } from '../customer.types.ts';
@@ -63,8 +63,9 @@ export default function CartItemRow({
             <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center shrink-0">
                 {product.photo ? (
                     <img
-                        src={product.photo.startsWith('http') ? product.photo : getFileUrl(product.photo)}
+                        src={getFileUrl(product.photo)}
                         alt={product.name}
+                        onError={handleProductImageError}
                         className="h-full w-full object-cover"
                     />
                 ) : (

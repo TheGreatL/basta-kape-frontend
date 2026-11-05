@@ -28,6 +28,7 @@ import { Route } from '#/routes/admin/inventory/projections.tsx';
 import { getProductionForecast } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IForecast } from '../inventory.types';
 
 export default function ProjectionsPage() {
@@ -269,22 +270,35 @@ export default function ProjectionsPage() {
                                 >
                                     {/* Card Header */}
                                     <CardHeader className="p-4 flex flex-row items-start justify-between gap-3 border-b border-border/20 bg-muted/20">
-                                        <div className="space-y-1 min-w-0 flex-1">
-                                            <div className="flex items-center gap-1.5">
-                                                {isModifier ? (
-                                                    <Sparkles className="size-3.5 text-primary shrink-0" />
-                                                ) : (
-                                                    <Coffee className="size-3.5 text-primary shrink-0" />
-                                                )}
+                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                            {isModifier ? (
+                                                <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                                    <Sparkles className="size-4 text-primary" />
+                                                </div>
+                                            ) : item.photo ? (
+                                                <div className="size-9 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0">
+                                                    <img
+                                                        src={getProductPhotoUrl(item.photo)}
+                                                        alt={item.name}
+                                                        onError={handleProductImageError}
+                                                        className="size-full object-cover"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                                    <Coffee className="size-4 text-primary" />
+                                                </div>
+                                            )}
+                                            <div className="space-y-0.5 min-w-0 flex-1">
                                                 <CardTitle className="text-sm font-bold text-foreground truncate leading-tight">
                                                     {item.name}
                                                 </CardTitle>
+                                                {item.sku && (
+                                                    <CardDescription className="text-xs text-muted-foreground font-mono">
+                                                        SKU: {item.sku}
+                                                    </CardDescription>
+                                                )}
                                             </div>
-                                            {item.sku && (
-                                                <CardDescription className="text-xs text-muted-foreground font-mono pl-5">
-                                                    SKU: {item.sku}
-                                                </CardDescription>
-                                            )}
                                         </div>
 
                                         {/* Production Capacity Badge */}

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Search, Trash2, Clock, RotateCcw } from 'lucide-react';
+import { Search, Trash2, Clock, RotateCcw, Cookie } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 
 import DataTable from '#/components/data-table/data-table.tsx';
@@ -8,6 +8,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import ExpiryStatusBadge from './expiry-status-badge.tsx';
 import type { IPreparedItemBatch, PreparedBatchStatus } from '../food-prep.types';
 import type { IPaginatedResult } from '#/types/base.types';
@@ -72,13 +73,28 @@ export default function PreparedBatchesTable({
                 header: 'Product / Variant',
                 cell: ({ row }) => {
                     const batch = row.original;
-                    const variantLabel = batch.variant?.sku ? `SKU: ${batch.variant.sku}` : 'Standard';
+                    const sku = batch.productVariant?.sku || batch.variant?.sku;
+                    const variantLabel = sku ? `SKU: ${sku}` : 'Standard';
                     return (
-                        <div className="space-y-0.5">
-                            <div className="text-xs font-bold text-foreground truncate max-w-[220px]">
-                                {batch.product?.name || 'Prepared Food Item'}
+                        <div className="flex items-center gap-2.5">
+                            <div className="size-9 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0 flex items-center justify-center">
+                                {batch.product?.photo ? (
+                                    <img
+                                        src={getProductPhotoUrl(batch.product.photo)}
+                                        alt={batch.product.name}
+                                        onError={handleProductImageError}
+                                        className="size-full object-cover"
+                                    />
+                                ) : (
+                                    <Cookie className="size-4 text-muted-foreground stroke-[1.5]" />
+                                )}
                             </div>
-                            <div className="text-xs text-muted-foreground font-mono">{variantLabel}</div>
+                            <div className="space-y-0.5 min-w-0">
+                                <div className="text-xs font-bold text-foreground truncate max-w-[220px]">
+                                    {batch.product?.name || 'Prepared Food Item'}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-mono">{variantLabel}</div>
+                            </div>
                         </div>
                     );
                 }

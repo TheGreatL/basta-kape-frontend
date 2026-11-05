@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Trash2, AlertTriangle, FileText } from 'lucide-react';
+import { Trash2, AlertTriangle, FileText, Cookie } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
@@ -19,6 +19,7 @@ import type { TDisposeBatchSchema } from '../food-prep.schema';
 import { disposePreparedBatch } from '#/api/food-prep.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
+import { getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IPreparedItemBatch, PreparedAdjustmentType } from '../food-prep.types';
 
 interface DisposeBatchDialogProps {
@@ -107,16 +108,30 @@ export default function DisposeBatchDialog({ open, onOpenChange, batch }: Dispos
                 </DialogHeader>
 
                 {/* Batch Context Card */}
-                <div className="bg-muted/20 border border-border/40 rounded-xl p-3 space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-foreground">{batch.batchNumber}</span>
-                        <Badge variant="outline" className="text-xs font-semibold">
-                            {batch.currentQuantity} Available
-                        </Badge>
+                <div className="bg-muted/20 border border-border/40 rounded-xl p-3 flex items-center gap-3 text-xs">
+                    <div className="size-10 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0 flex items-center justify-center">
+                        {batch.product?.photo ? (
+                            <img
+                                src={getProductPhotoUrl(batch.product.photo)}
+                                alt={batch.product.name}
+                                onError={handleProductImageError}
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <Cookie className="size-4 text-muted-foreground stroke-[1.5]" />
+                        )}
                     </div>
-                    <p className="text-muted-foreground font-medium truncate">
-                        {batch.product?.name} ({batch.variant?.sku || 'Standard Variant'})
-                    </p>
+                    <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono font-bold text-foreground">{batch.batchNumber}</span>
+                            <Badge variant="outline" className="text-xs font-semibold">
+                                {batch.currentQuantity} Available
+                            </Badge>
+                        </div>
+                        <p className="text-muted-foreground font-medium truncate">
+                            {batch.product?.name} ({batch.productVariant?.sku || batch.variant?.sku || 'Standard Variant'})
+                        </p>
+                    </div>
                 </div>
 
                 <Form {...form}>

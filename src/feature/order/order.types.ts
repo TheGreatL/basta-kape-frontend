@@ -168,6 +168,7 @@ export const orderCreateFormSchema = z
                 z.object({
                     productVariantId: z.string(),
                     name: z.string(),
+                    photo: z.string().nullable().optional(),
                     sku: z.string().nullable(),
                     price: z.number(),
                     quantity: z.number(),

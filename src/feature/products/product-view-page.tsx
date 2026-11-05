@@ -18,7 +18,7 @@ import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { getFileUrl, formatCurrency } from '#/utils/helper.ts';
+import { getFileUrl, formatCurrency, handleProductImageError } from '#/utils/helper.ts';
 
 export default function ProductViewPage() {
     const { id } = Route.useParams();
@@ -194,6 +194,7 @@ export default function ProductViewPage() {
                                         <img
                                             src={getFileUrl(product.photo)}
                                             alt={product.name}
+                                            onError={handleProductImageError}
                                             className="w-full max-h-[180px] object-cover rounded-xl border border-border/50 shadow-3xs"
                                         />
                                     ) : (

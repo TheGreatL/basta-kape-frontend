@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Camera, Loader2, Image as ImageIcon } from 'lucide-react';
 import { uploadProductPhoto } from '#/api/products.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import { getFileUrl } from '#/utils/helper';
+import { getFileUrl, handleProductImageError } from '#/utils/helper';
 
 interface ProductPhotoUploadProps {
     currentPhotoUrl: string | null | undefined;
@@ -81,7 +81,7 @@ export function ProductPhotoUpload({ currentPhotoUrl, onUploadSuccess, readOnly 
                 }`}
             >
                 {displayUrl ? (
-                    <img src={getFileUrl(displayUrl)} alt="Product Photo" className="size-full object-cover" />
+                    <img src={getFileUrl(displayUrl)} alt="Product Photo" onError={handleProductImageError} className="size-full object-cover" />
                 ) : (
                     <div className="flex flex-col size-full items-center justify-center text-muted-foreground gap-1">
                         <ImageIcon className="size-8 stroke-[1.5]" />

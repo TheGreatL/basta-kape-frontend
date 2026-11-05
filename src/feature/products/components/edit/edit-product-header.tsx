@@ -2,6 +2,7 @@ import { ArrowLeft, Package, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '#/components/ui/button.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
+import { getFileUrl, handleProductImageError } from '#/utils/helper.ts';
 import type { IProduct } from '../../products.types.ts';
 
 interface EditProductHeaderProps {
@@ -25,8 +26,17 @@ export default function EditProductHeader({ product, onBack }: EditProductHeader
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 shrink-0 shadow-2xs">
-                        <Package className="h-5 w-5 text-primary" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl overflow-hidden bg-primary/10 border border-primary/20 shrink-0 shadow-2xs">
+                        {product.photo ? (
+                            <img
+                                src={getFileUrl(product.photo)}
+                                alt={product.name}
+                                onError={handleProductImageError}
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <Package className="h-5 w-5 text-primary" />
+                        )}
                     </div>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">

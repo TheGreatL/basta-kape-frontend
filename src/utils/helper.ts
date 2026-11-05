@@ -5,7 +5,9 @@ import defaultProductImage from '#/assets/default.png';
 export function getFileUrl(path: string | undefined | null, fallback?: string) {
     if (!path) return fallback;
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) return path;
-    return `${env.VITE_BUCKET_URL}${path}`;
+    const baseUrl = env.VITE_BUCKET_URL.replace(/\/+$/, '');
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
 }
 
 export function getProductPhotoUrl(path: string | undefined | null) {

@@ -19,7 +19,8 @@ import {
     XCircle,
     ChefHat,
     Eye,
-    Check
+    Check,
+    Coffee
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -32,7 +33,7 @@ import { Route } from '#/routes/admin/orders/$id/edit.tsx';
 import { getOrderById, updateOrderStatus, getOrderPayments } from '#/api/orders.api.ts';
 import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
 import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
-import { getFileUrl, getFrontendReference } from '#/utils/helper';
+import { getFileUrl, getFrontendReference, getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import { getDiscountsConfig, applyDiscountToOrder, removeDiscountFromOrder } from '#/api/discounts.api.ts';
 import { updateTransactionReceipt } from '#/api/transactions.api.ts';
 import type { IDiscount } from '../store-settings/discounts.types';
@@ -491,35 +492,51 @@ export default function OrderEditPage() {
                             <div className="border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20 bg-background/30">
                                 {orderDetails.items?.map((item: IOrderItem) => (
                                     <div key={item.id} className="p-4 flex items-start justify-between gap-4">
-                                        <div className="min-w-0 space-y-1">
-                                            <div className="font-bold text-foreground/90 leading-snug text-sm">
-                                                {item.variant.product.name}
-                                                <span className="text-muted-foreground font-semibold ml-2">x{item.quantity}</span>
+                                        <div className="flex items-start gap-3 min-w-0">
+                                            <div className="size-11 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                                {item.variant.product.photo ? (
+                                                    <img
+                                                        src={getProductPhotoUrl(item.variant.product.photo)}
+                                                        alt={item.variant.product.name}
+                                                        onError={handleProductImageError}
+                                                        className="size-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Coffee className="size-5 text-muted-foreground/40" />
+                                                )}
                                             </div>
-
-                                            <span className="text-2xs text-muted-foreground font-medium block">
-                                                Base Variant Price: {formatCurrency(item.unitPrice)}
-                                            </span>
-
-                                            {/* Modifiers badges */}
-                                            {item.modifiers.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 pt-1.5">
-                                                    {item.modifiers.map((mod: IOrderItemModifier) => (
-                                                        <Badge
-                                                            key={mod.id}
-                                                            variant="outline"
-                                                            className="text-xs font-semibold bg-muted/20 py-0.5 px-2 text-muted-foreground border-border/50"
-                                                        >
-                                                            + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
-                                                        </Badge>
-                                                    ))}
+                                            <div className="min-w-0 space-y-1">
+                                                <div className="font-bold text-foreground/90 leading-snug text-sm">
+                                                    {item.variant.product.name}
+                                                    <span className="text-muted-foreground font-semibold ml-2">x{item.quantity}</span>
                                                 </div>
-                                            )}
 
-                                            {/* Item Notes */}
-                                            {item.notes && (
-                                                <span className="text-2xs text-amber-600 font-semibold italic block pt-1">Note: "{item.notes}"</span>
-                                            )}
+                                                <span className="text-2xs text-muted-foreground font-medium block">
+                                                    Base Variant Price: {formatCurrency(item.unitPrice)}
+                                                </span>
+
+                                                {/* Modifiers badges */}
+                                                {item.modifiers.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 pt-1.5">
+                                                        {item.modifiers.map((mod: IOrderItemModifier) => (
+                                                            <Badge
+                                                                key={mod.id}
+                                                                variant="outline"
+                                                                className="text-xs font-semibold bg-muted/20 py-0.5 px-2 text-muted-foreground border-border/50"
+                                                            >
+                                                                + {mod.modifierOption.name} (+{formatCurrency(mod.price)})
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Item Notes */}
+                                                {item.notes && (
+                                                    <span className="text-2xs text-amber-600 font-semibold italic block pt-1">
+                                                        Note: "{item.notes}"
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <span className="font-bold text-foreground/90 text-sm shrink-0">{formatCurrency(item.totalPrice)}</span>
                                     </div>

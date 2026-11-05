@@ -63,6 +63,11 @@ export interface IPreparedItemBatch {
         sku: string | null;
         price: number;
     };
+    productVariant?: {
+        id: string;
+        sku: string | null;
+        price: number;
+    };
 }
 
 export interface IGetPreparedBatchesParams extends IPaginationParams {

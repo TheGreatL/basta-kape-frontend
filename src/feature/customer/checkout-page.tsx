@@ -1,4 +1,4 @@
-import { formatCurrency } from '#/utils/helper.ts';
+import { formatCurrency, getProductPhotoUrl, handleProductImageError } from '#/utils/helper.ts';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
@@ -696,6 +696,18 @@ export default function CheckoutPage() {
 
                                 return (
                                     <div key={item.id} className="flex gap-3 py-2 border-b border-border/30 last:border-0 last:pb-0">
+                                        <div className="size-12 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                            {item.productVariant.product.photo ? (
+                                                <img
+                                                    src={getProductPhotoUrl(item.productVariant.product.photo)}
+                                                    alt={item.productVariant.product.name}
+                                                    onError={handleProductImageError}
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <Coffee className="size-5 text-muted-foreground/40" />
+                                            )}
+                                        </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start mb-0.5">
                                                 <h4 className="text-xs font-bold text-foreground truncate max-w-[150px]">
