@@ -71,7 +71,6 @@ export default function OrderCreatePage() {
     });
 
     const customerType = orderForm.watch('customerType');
-    const orderType = orderForm.watch('orderType');
     const orderItems = orderForm.watch('items');
 
     // Query: Discounts catalog
@@ -386,7 +385,7 @@ export default function OrderCreatePage() {
                 notes: values.notes || undefined,
                 customerId: values.customerType === 'MEMBER' ? values.customerId : null,
                 customerName: customerNameVal || 'Walk-in',
-                buzzerId: (values.orderType === 'DINE_IN' || values.orderType === 'TAKE_OUT') && values.buzzerId ? values.buzzerId : undefined,
+                buzzerId: values.buzzerId || undefined,
                 items: values.items.map((item) => ({
                     productVariantId: item.productVariantId,
                     quantity: item.quantity,
@@ -640,9 +639,6 @@ export default function OrderCreatePage() {
                                         <SelectItem value="TAKE_OUT" className="text-xs">
                                             Take Out
                                         </SelectItem>
-                                        <SelectItem value="DELIVERY" className="text-xs">
-                                            Delivery
-                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -650,28 +646,26 @@ export default function OrderCreatePage() {
                         )}
                     />
 
-                    {(orderType === 'DINE_IN' || orderType === 'TAKE_OUT') && (
-                        <FormField
-                            control={orderForm.control}
-                            name="buzzerId"
-                            render={({ field }) => (
-                                <FormItem className="space-y-1.5 animate-in slide-in-from-top-1 duration-150">
-                                    <FormLabel className="font-bold text-foreground/80 flex items-center gap-1">
-                                        <Volume2 className="size-3.5" /> Pager / Buzzer ID (Optional)
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="e.g. 12, 45..."
-                                            {...field}
-                                            disabled={disabled}
-                                            className="h-9.5 bg-background/50 rounded-lg text-xs font-semibold"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
+                    <FormField
+                        control={orderForm.control}
+                        name="buzzerId"
+                        render={({ field }) => (
+                            <FormItem className="space-y-1.5 animate-in slide-in-from-top-1 duration-150">
+                                <FormLabel className="font-bold text-foreground/80 flex items-center gap-1">
+                                    <Volume2 className="size-3.5" /> Pager / Buzzer ID (Optional)
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="e.g. 12, 45..."
+                                        {...field}
+                                        disabled={disabled}
+                                        className="h-9.5 bg-background/50 rounded-lg text-xs font-semibold"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </div>
             </div>
         );

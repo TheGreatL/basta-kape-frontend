@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, Volume2 } from 'lucide-react';
+import { Clock, Check, CheckCircle2, XCircle, Coffee, Search, RefreshCw, Volume2, Truck, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getOrders, updateOrderStatus } from '#/api/orders.api.ts';
@@ -70,7 +70,10 @@ export default function OrderQueuePage() {
     // Filter queue client side (only approved, preparing, and ready orders)
     const activeOrders = React.useMemo(() => {
         if (!queueData?.data) return [];
-        return queueData.data.filter((order: IOrder) => order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && order.status !== 'PENDING');
+        return queueData.data.filter(
+            (order: IOrder) =>
+                order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && order.status !== 'PENDING' && order.status !== 'DISPATCHED'
+        );
     }, [queueData]);
 
     const filteredOrders = React.useMemo(() => {
@@ -179,6 +182,46 @@ export default function OrderQueuePage() {
                         <span className="text-xs font-bold text-foreground/90 truncate">{order.customerName || 'Walk-in Customer'}</span>
                     </div>
 
+                    {/* Courier / Rider Details (for Delivery orders) */}
+                    {order.orderType === 'DELIVERY' && (
+                        <div className="text-xs bg-primary/5 border border-primary/15 p-2.5 rounded-lg space-y-1">
+                            <div className="font-bold text-primary flex items-center gap-1 text-[11px] uppercase">
+                                <Truck className="size-3 shrink-0" />
+                                Courier Details
+                            </div>
+                            {order.riderName || order.riderPlate || order.riderVehicle || order.trackingLink ? (
+                                <div className="space-y-0.5 text-[11px] text-foreground/90">
+                                    <div>
+                                        <span className="text-muted-foreground font-semibold">Rider:</span>{' '}
+                                        <span className="font-bold">{order.riderName || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground font-semibold">Plate / Vehicle:</span>{' '}
+                                        <span className="font-bold font-mono">{order.riderPlate || '—'}</span>
+                                        {order.riderVehicle ? ` (${order.riderVehicle})` : ''}
+                                    </div>
+                                    {order.trackingLink && (
+                                        <a
+                                            href={order.trackingLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-primary font-bold hover:underline pt-0.5"
+                                        >
+                                            <span>Open Tracking Link</span>
+                                            <ExternalLink className="size-3 shrink-0" />
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-[11px] text-muted-foreground italic">
+                                    {order.status === 'READY'
+                                        ? 'Awaiting rider submission from customer...'
+                                        : 'Customer will submit rider details once Ready for Pickup.'}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     {/* Overall Notes (if available) */}
                     {order.notes && (
                         <div className="text-xs text-amber-700 bg-amber-500/5 border border-amber-500/10 p-2 rounded-lg font-medium leading-relaxed">
@@ -260,19 +303,38 @@ export default function OrderQueuePage() {
                         </RequirePermission>
                     )}
 
-                    {order.status === 'READY' && (
-                        <RequirePermission module="Sales Management" action="create">
+                    {order.status === 'READY' &&
+                        (order.orderType === 'DELIVERY' ? (
                             <Button
                                 size="sm"
-                                disabled={updateStatusMutation.isPending}
-                                onClick={() => handleTransition(order.id, 'COMPLETED')}
-                                className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                                disabled={
+                                    updateStatusMutation.isPending ||
+                                    !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                }
+                                title={
+                                    !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                        ? 'Waiting for customer to submit courier details'
+                                        : 'Hand over to Courier (Mark Dispatched)'
+                                }
+                                onClick={() => handleTransition(order.id, 'DISPATCHED')}
+                                className="h-8.5 flex-1 gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
                             >
-                                <CheckCircle2 className="size-3.5 shrink-0" />
-                                Done
+                                <Truck className="size-3.5 shrink-0" />
+                                Dispatch
                             </Button>
-                        </RequirePermission>
-                    )}
+                        ) : (
+                            <RequirePermission module="Sales Management" action="create">
+                                <Button
+                                    size="sm"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={() => handleTransition(order.id, 'COMPLETED')}
+                                    className="h-8.5 flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                                >
+                                    <CheckCircle2 className="size-3.5 shrink-0" />
+                                    Done
+                                </Button>
+                            </RequirePermission>
+                        ))}
                 </div>
             </div>
         );

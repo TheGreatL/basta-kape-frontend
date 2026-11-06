@@ -8,7 +8,6 @@ import {
     Truck,
     Utensils,
     ChevronLeft,
-    MapPin,
     Phone,
     User,
     Receipt,
@@ -79,7 +78,6 @@ export default function CheckoutPage() {
 
     // Form states
     const [orderType, setOrderType] = useState<TOrderType>('DINE_IN');
-    const [address, setAddress] = useState('');
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -142,9 +140,9 @@ export default function CheckoutPage() {
         handleRemoveReceipt();
     }, [paymentMethod]);
 
-    // Automatically switch from CASH to GCASH if Take Out is selected
+    // Automatically switch from CASH to GCASH if Take Out or Delivery is selected
     useEffect(() => {
-        if (orderType === 'TAKE_OUT' && paymentMethod === 'CASH') {
+        if ((orderType === 'TAKE_OUT' || orderType === 'DELIVERY') && paymentMethod === 'CASH') {
             setPaymentMethod('GCASH');
             setReferenceNumber('');
         }
@@ -154,8 +152,8 @@ export default function CheckoutPage() {
         () => [
             {
                 value: 'CASH' as const,
-                label: orderType === 'DELIVERY' ? 'Cash on Delivery (COD)' : 'Over the Counter (Cash)',
-                description: orderType === 'DELIVERY' ? 'Pay cash to our rider' : 'Pay cash or card at the counter',
+                label: 'Over the Counter (Cash)',
+                description: 'Pay cash or card at the counter',
                 icon: Wallet
             },
             {
@@ -165,7 +163,7 @@ export default function CheckoutPage() {
                 icon: Smartphone
             }
         ],
-        [orderType]
+        []
     );
 
     // Pre-populate customer details once loaded from the me api endpoint
@@ -222,13 +220,6 @@ export default function CheckoutPage() {
         e.preventDefault();
         if (!customer && !authUser && !meUser) return;
 
-        if (orderType === 'DELIVERY' && !address.trim()) {
-            toast.error('Delivery Address Required', {
-                description: 'Please input a delivery address to complete your order.'
-            });
-            return;
-        }
-
         if (paymentMethod === 'GCASH') {
             if (!referenceNumber.trim() || !/^\d{13}$/.test(referenceNumber.trim())) {
                 toast.error('Payment Reference Number Required', {
@@ -244,9 +235,9 @@ export default function CheckoutPage() {
             }
         }
 
-        if (orderType === 'TAKE_OUT' && paymentMethod === 'CASH') {
+        if ((orderType === 'TAKE_OUT' || orderType === 'DELIVERY') && paymentMethod === 'CASH') {
             toast.error('Cash payment not allowed', {
-                description: 'Cash payment is not permitted for Take Out orders. Please select GCash.'
+                description: `Cash payment is not permitted for ${orderType === 'DELIVERY' ? 'Delivery' : 'Take Out'} orders. Please select GCash.`
             });
             return;
         }
@@ -264,13 +255,11 @@ export default function CheckoutPage() {
             }
 
             // Compile final order instructions notes
-            const paymentLabel =
-                paymentMethod === 'CASH' ? (orderType === 'DELIVERY' ? 'Cash on Delivery (COD)' : 'Over the Counter (Cash)') : paymentMethod;
+            const paymentLabel = paymentMethod === 'CASH' ? 'Over the Counter (Cash)' : paymentMethod;
 
             const paymentNotes = `Payment Method: ${paymentLabel}${paymentMethod !== 'CASH' && referenceNumber ? ` (Ref: ${referenceNumber.trim()})` : ''}${uploadedUrl ? `\nPayment Receipt: ${uploadedUrl}` : ''}`;
 
             const finalNotes = [
-                orderType === 'DELIVERY' ? `Delivery Address: ${address.trim()}` : '',
                 phoneNumber ? `Contact Phone: ${phoneNumber.trim()}` : '',
                 paymentNotes,
                 notes.trim() ? `Instructions: ${notes.trim()}` : ''
@@ -386,7 +375,7 @@ export default function CheckoutPage() {
                                         key={opt.value}
                                         onClick={() => {
                                             setOrderType(opt.value);
-                                            if (opt.value === 'TAKE_OUT' && paymentMethod === 'CASH') {
+                                            if ((opt.value === 'TAKE_OUT' || opt.value === 'DELIVERY') && paymentMethod === 'CASH') {
                                                 setPaymentMethod('GCASH');
                                                 setReferenceNumber('');
                                             }
@@ -405,20 +394,16 @@ export default function CheckoutPage() {
                             })}
                         </div>
 
-                        {/* Delivery Address Field (shown conditionally) */}
+                        {/* Delivery Courier Information Notice */}
                         {orderType === 'DELIVERY' && (
-                            <div className="pt-2 space-y-1.5 animate-in fade-in slide-in-from-top-3 duration-200">
-                                <label className="font-bold text-foreground/80 flex items-center gap-1.5 text-xs">
-                                    <MapPin className="size-4 text-primary" />
-                                    Delivery Address <span className="text-rose-500">*</span>
-                                </label>
-                                <Input
-                                    placeholder="House/Unit #, Street name, Barangay, City, Landmark..."
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    className="h-10 text-xs rounded-xl bg-background/50 border-border/60"
-                                    required
-                                />
+                            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground leading-relaxed flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <Truck className="size-4 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                    <span className="font-bold text-foreground block mb-0.5">Self-Booked Courier Delivery</span>
+                                    Once your order reaches <strong>Ready for Pickup</strong> status, please book your preferred 3rd-party courier and
+                                    submit the rider details (Rider Name, Plate Number, Vehicle, and Tracking Link URL) on your{' '}
+                                    <strong>Order Tracking</strong> page.
+                                </div>
                             </div>
                         )}
                     </div>
@@ -432,11 +417,14 @@ export default function CheckoutPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="font-bold text-foreground/80 block text-xs">Customer Name</label>
+                                <label className="font-bold text-foreground/80 block text-xs">
+                                    Customer Name <span className="text-rose-500">*</span>
+                                </label>
                                 <Input
                                     placeholder="Enter recipient's name"
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
+                                    maxLength={100}
                                     className="h-10 text-xs rounded-xl bg-background/50 border-border/60"
                                     required
                                 />
@@ -451,7 +439,8 @@ export default function CheckoutPage() {
                                     <Input
                                         placeholder="e.g. 0917XXXXXXX"
                                         value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                        maxLength={11}
                                         className="pl-9 h-10 text-xs rounded-xl bg-background/50 border-border/60"
                                         required={orderType === 'DELIVERY'}
                                     />
@@ -484,7 +473,7 @@ export default function CheckoutPage() {
                             {paymentOptions.map((opt) => {
                                 const Icon = opt.icon;
                                 const isSelected = paymentMethod === opt.value;
-                                const isCashDisabled = opt.value === 'CASH' && orderType === 'TAKE_OUT';
+                                const isCashDisabled = opt.value === 'CASH' && (orderType === 'TAKE_OUT' || orderType === 'DELIVERY');
                                 return (
                                     <button
                                         type="button"
@@ -507,11 +496,15 @@ export default function CheckoutPage() {
                                         <span className="font-bold text-foreground mb-1">
                                             {opt.label}
                                             {isCashDisabled && (
-                                                <span className="block text-[10px] text-rose-500 font-semibold">(Disabled for Take Out)</span>
+                                                <span className="block text-[10px] text-rose-500 font-semibold">
+                                                    (Disabled for {orderType === 'DELIVERY' ? 'Delivery' : 'Take Out'})
+                                                </span>
                                             )}
                                         </span>
                                         <span className="text-xs leading-tight text-muted-foreground/80">
-                                            {isCashDisabled ? 'Cash payment is not allowed for take out orders.' : opt.description}
+                                            {isCashDisabled
+                                                ? `Only GCash payment is available for ${orderType === 'DELIVERY' ? 'delivery' : 'take out'} orders.`
+                                                : opt.description}
                                         </span>
                                     </button>
                                 );
@@ -646,8 +639,8 @@ export default function CheckoutPage() {
                                     Payment Methods
                                 </h3>
                                 <p className="text-muted-foreground leading-relaxed">
-                                    We support <strong>Cash on Delivery (COD)</strong>, <strong>GCash</strong>, and <strong>Over-the-Counter</strong>{' '}
-                                    payments. Cash/GCash details are verified by baristas before preparation.
+                                    We support <strong>GCash</strong> (required for Take Out and Delivery) and <strong>Over-the-Counter</strong>{' '}
+                                    payments for Dine In. Payment details are verified before preparation.
                                 </p>
                             </div>
 

@@ -6,6 +6,7 @@ import type {
     IOrder,
     ICreateOrderPayload,
     IUpdateOrderStatusPayload,
+    IUpdateOrderCourierPayload,
     IOrderPayment,
     ICreatePaymentPayload
 } from '../feature/order/order.types';
@@ -50,6 +51,24 @@ export const updateOrderStatus = async (id: string, payload: IUpdateOrderStatusP
     if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new ApiError('Failed to modify order preparation status', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const updateOrderCourier = async (id: string, payload: IUpdateOrderCourierPayload): Promise<IOrder> => {
+    const response = await api.patch(`/orders/${id}/courier`, payload);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to submit courier details', response.status, errorData);
+    }
+    return response.json();
+};
+
+export const completeDeliveryOrder = async (id: string): Promise<IOrder> => {
+    const response = await api.patch(`/orders/${id}/complete`, {});
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to mark delivery order as completed', response.status, errorData);
     }
     return response.json();
 };

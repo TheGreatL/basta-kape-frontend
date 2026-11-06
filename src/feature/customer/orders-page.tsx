@@ -24,6 +24,7 @@ const STATUS_FILTERS: Array<{ label: string; value: TOrderStatus | 'ALL' }> = [
     { label: 'Approved', value: 'APPROVED' },
     { label: 'Preparing', value: 'PREPARING' },
     { label: 'Ready', value: 'READY' },
+    { label: 'Dispatched', value: 'DISPATCHED' },
     { label: 'Completed', value: 'COMPLETED' },
     { label: 'Cancelled', value: 'CANCELLED' }
 ];
@@ -69,6 +70,8 @@ export default function OrdersPage() {
                 return 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
             case 'READY':
                 return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 animate-pulse';
+            case 'DISPATCHED':
+                return 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20';
             case 'COMPLETED':
                 return 'bg-stone-500/10 text-stone-600 dark:text-stone-400 border-stone-500/20';
             case 'CANCELLED':
@@ -224,7 +227,7 @@ export default function OrdersPage() {
                                                 variant="outline"
                                                 className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusStyle(order.status)}`}
                                             >
-                                                {order.status}
+                                                {order.status === 'READY' && order.orderType === 'DELIVERY' ? 'READY FOR PICKUP' : order.status}
                                             </Badge>
                                         </div>
 

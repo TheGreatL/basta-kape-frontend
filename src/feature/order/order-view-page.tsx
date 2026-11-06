@@ -2,7 +2,20 @@ import { formatCurrency } from '#/utils/helper.ts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { TrendingUp, CheckCircle2, ArrowLeft, Printer, Download, Volume2, CreditCard, AlertCircle, Eye, Coffee } from 'lucide-react';
+import {
+    TrendingUp,
+    CheckCircle2,
+    ArrowLeft,
+    Printer,
+    Download,
+    Volume2,
+    CreditCard,
+    AlertCircle,
+    Eye,
+    Coffee,
+    Truck,
+    ExternalLink
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '#/lib/utils.ts';
 
@@ -64,6 +77,8 @@ export default function OrderViewPage() {
                 return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25 animate-pulse';
             case 'READY':
                 return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25';
+            case 'DISPATCHED':
+                return 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/25';
             case 'CANCELLED':
                 return 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/25';
             default:
@@ -100,6 +115,13 @@ export default function OrderViewPage() {
                     colorClass: 'text-amber-600 dark:text-amber-400',
                     borderClass: 'border-amber-200 dark:border-amber-900/50',
                     bgClass: 'bg-amber-50/50 dark:bg-amber-950/20'
+                };
+            case 'DISPATCHED':
+                return {
+                    icon: <span className="size-2 rounded-full bg-teal-500" />,
+                    colorClass: 'text-teal-600 dark:text-teal-400',
+                    borderClass: 'border-teal-200 dark:border-teal-900/50',
+                    bgClass: 'bg-teal-50/50 dark:bg-teal-950/20'
                 };
             case 'COMPLETED':
                 return {
@@ -158,7 +180,9 @@ export default function OrderViewPage() {
                             <h1 className="text-2xl font-bold text-foreground leading-none flex items-center gap-2">
                                 Order {orderDetails.queueNumber}
                                 <Badge variant="outline" className={`font-bold capitalize py-0.5 px-2.5 ${getStatusBadgeClass(orderDetails.status)}`}>
-                                    {orderDetails.status.toLowerCase()}
+                                    {orderDetails.status === 'READY' && orderDetails.orderType === 'DELIVERY'
+                                        ? 'Ready for Pickup'
+                                        : orderDetails.status.toLowerCase()}
                                 </Badge>
                             </h1>
                             <p className="text-xs text-muted-foreground pt-1">
@@ -254,6 +278,52 @@ export default function OrderViewPage() {
                                 <div className="font-semibold text-foreground text-sm pt-0.5">{orderDetails.customerName || 'Walk-in Customer'}</div>
                             </div>
                         </div>
+
+                        {/* Courier / Rider Details for Delivery Orders */}
+                        {orderDetails.orderType === 'DELIVERY' && (
+                            <div className="border border-primary/20 bg-primary/5 p-4 rounded-xl space-y-3">
+                                <div className="flex items-center gap-1.5">
+                                    <Truck className="size-4 text-primary" />
+                                    <h4 className="font-bold text-foreground uppercase text-xs">Courier / Rider Details</h4>
+                                </div>
+                                {orderDetails.riderName || orderDetails.riderPlate || orderDetails.riderVehicle || orderDetails.trackingLink ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Rider Name</span>
+                                            <span className="font-bold text-foreground">{orderDetails.riderName || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Plate Number</span>
+                                            <span className="font-bold text-foreground font-mono uppercase">{orderDetails.riderPlate || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Vehicle</span>
+                                            <span className="font-bold text-foreground">{orderDetails.riderVehicle || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Tracking Link</span>
+                                            {orderDetails.trackingLink ? (
+                                                <a
+                                                    href={orderDetails.trackingLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 font-bold text-primary hover:underline break-all"
+                                                >
+                                                    <span className="truncate max-w-[140px]">{orderDetails.trackingLink}</span>
+                                                    <ExternalLink className="size-3 shrink-0" />
+                                                </a>
+                                            ) : (
+                                                <span className="font-bold text-foreground">—</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic">
+                                        Awaiting courier details from customer (customer submits once order is Ready for Pickup).
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {/* Master Order Notes */}
                         {orderDetails.notes && (

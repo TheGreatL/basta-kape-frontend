@@ -20,7 +20,9 @@ import {
     ChefHat,
     Eye,
     Check,
-    Coffee
+    Coffee,
+    Truck,
+    ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -63,7 +65,7 @@ const discountFormSchema = z.object({
 });
 
 const statusFormSchema = z.object({
-    status: z.enum(['PENDING', 'APPROVED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
+    status: z.enum(['PENDING', 'APPROVED', 'PREPARING', 'READY', 'DISPATCHED', 'COMPLETED', 'CANCELLED']).optional(),
     notes: z.string().max(500, 'Notes must not exceed 500 characters').optional()
 });
 
@@ -264,6 +266,8 @@ export default function OrderEditPage() {
                 return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/40';
             case 'READY':
                 return 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-900/40';
+            case 'DISPATCHED':
+                return 'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-400 dark:border-cyan-900/40';
             case 'COMPLETED':
                 return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
             case 'CANCELLED':
@@ -317,6 +321,13 @@ export default function OrderEditPage() {
                     colorClass: 'text-teal-600 dark:text-teal-450',
                     borderClass: 'border-teal-200 dark:border-teal-900/50',
                     bgClass: 'bg-teal-50 dark:bg-teal-950/40'
+                };
+            case 'DISPATCHED':
+                return {
+                    icon: <Truck className="size-3 h-3 shrink-0" />,
+                    colorClass: 'text-cyan-600 dark:text-cyan-450',
+                    borderClass: 'border-cyan-200 dark:border-cyan-900/50',
+                    bgClass: 'bg-cyan-50 dark:bg-cyan-950/40'
                 };
             case 'COMPLETED':
                 return {
@@ -375,7 +386,9 @@ export default function OrderEditPage() {
                             <h1 className="text-2xl font-bold text-foreground leading-none flex flex-wrap items-center gap-2">
                                 Order Inspection Details
                                 <Badge variant="outline" className={`font-bold capitalize py-0.5 px-2.5 ${getStatusBadgeClass(orderDetails.status)}`}>
-                                    {orderDetails.status.toLowerCase()}
+                                    {orderDetails.status === 'READY' && orderDetails.orderType === 'DELIVERY'
+                                        ? 'Ready for Pickup'
+                                        : orderDetails.status.toLowerCase()}
                                 </Badge>
                                 <Badge
                                     variant="outline"
@@ -477,6 +490,52 @@ export default function OrderEditPage() {
                                 <div className="font-semibold text-foreground text-sm pt-0.5">{orderDetails.customerName || 'Walk-in Customer'}</div>
                             </div>
                         </div>
+
+                        {/* Courier / Rider Details for Delivery Orders */}
+                        {orderDetails.orderType === 'DELIVERY' && (
+                            <div className="border border-primary/20 bg-primary/5 p-4 rounded-xl space-y-3">
+                                <div className="flex items-center gap-1.5">
+                                    <Truck className="size-4 text-primary" />
+                                    <h4 className="font-bold text-foreground uppercase text-xs">Courier / Rider Details</h4>
+                                </div>
+                                {orderDetails.riderName || orderDetails.riderPlate || orderDetails.riderVehicle || orderDetails.trackingLink ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Rider Name</span>
+                                            <span className="font-bold text-foreground">{orderDetails.riderName || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Plate Number</span>
+                                            <span className="font-bold text-foreground font-mono uppercase">{orderDetails.riderPlate || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Vehicle</span>
+                                            <span className="font-bold text-foreground">{orderDetails.riderVehicle || '—'}</span>
+                                        </div>
+                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                            <span className="text-muted-foreground font-semibold block text-[11px]">Tracking Link</span>
+                                            {orderDetails.trackingLink ? (
+                                                <a
+                                                    href={orderDetails.trackingLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 font-bold text-primary hover:underline break-all"
+                                                >
+                                                    <span className="truncate max-w-[140px]">{orderDetails.trackingLink}</span>
+                                                    <ExternalLink className="size-3 shrink-0" />
+                                                </a>
+                                            ) : (
+                                                <span className="font-bold text-foreground">—</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic">
+                                        Awaiting courier details from customer (customer submits once order is Ready for Pickup).
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {/* Master Order Notes */}
                         {orderDetails.notes && (
@@ -947,10 +1006,34 @@ export default function OrderEditPage() {
                                                                                     Preparing
                                                                                 </SelectItem>
                                                                                 <SelectItem value="READY" className="text-xs">
-                                                                                    Ready
+                                                                                    {orderDetails.orderType === 'DELIVERY'
+                                                                                        ? 'Ready for Pickup'
+                                                                                        : 'Ready'}
                                                                                 </SelectItem>
                                                                             </>
                                                                         )}
+                                                                        {orderDetails.orderType === 'DELIVERY' &&
+                                                                            (canUpdateQueue || canUpdateOrders || canCompleteSales) && (
+                                                                                <SelectItem
+                                                                                    value="DISPATCHED"
+                                                                                    disabled={
+                                                                                        !(
+                                                                                            orderDetails.riderName &&
+                                                                                            orderDetails.riderPlate &&
+                                                                                            orderDetails.riderVehicle &&
+                                                                                            orderDetails.trackingLink
+                                                                                        )
+                                                                                    }
+                                                                                    className="text-xs"
+                                                                                >
+                                                                                    {orderDetails.riderName &&
+                                                                                    orderDetails.riderPlate &&
+                                                                                    orderDetails.riderVehicle &&
+                                                                                    orderDetails.trackingLink
+                                                                                        ? 'Dispatched'
+                                                                                        : 'Dispatched (Courier details required)'}
+                                                                                </SelectItem>
+                                                                            )}
                                                                         {(canCompleteSales || canUpdateOrders) && (
                                                                             <SelectItem value="COMPLETED" className="text-xs">
                                                                                 Completed

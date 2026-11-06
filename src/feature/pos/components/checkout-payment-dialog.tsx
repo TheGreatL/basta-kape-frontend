@@ -26,8 +26,8 @@ interface CheckoutPaymentDialogProps {
     setSelectedCustomerId: (id: string) => void;
     buzzerId: string;
     setBuzzerId: (id: string) => void;
-    orderType: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
-    setOrderType: (type: 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY') => void;
+    orderType: 'DINE_IN' | 'TAKE_OUT';
+    setOrderType: (type: 'DINE_IN' | 'TAKE_OUT') => void;
     paymentMethod: 'CASH' | 'GCASH';
     setPaymentMethod: (method: 'CASH' | 'GCASH') => void;
     cashTendered: number | '';
@@ -209,9 +209,6 @@ export default function CheckoutPaymentDialog({
                                         </SelectItem>
                                         <SelectItem value="TAKE_OUT" className="text-xs">
                                             Take-Out / Pickup
-                                        </SelectItem>
-                                        <SelectItem value="DELIVERY" className="text-xs">
-                                            Store Delivery
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>

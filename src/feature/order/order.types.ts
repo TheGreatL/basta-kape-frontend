@@ -3,9 +3,12 @@ import { Clock, Coins, Wallet } from 'lucide-react';
 import type { IPaginationParams } from '#/types/base.types';
 import type { IOrderDiscount } from '../store-settings/discounts.types';
 
-export type TOrderStatus = 'PENDING' | 'APPROVED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
+export type TOrderStatus = 'PENDING' | 'APPROVED' | 'PREPARING' | 'READY' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 export type TOrderType = 'DINE_IN' | 'TAKE_OUT' | 'DELIVERY';
 export type TOrderSource = 'POS' | 'WEBSITE';
+
+export const RIDER_VEHICLES = ['Bike', 'Motorcycle', 'Car', 'Other Transportation Service'] as const;
+export type TRiderVehicle = (typeof RIDER_VEHICLES)[number];
 
 export interface IGetOrdersParams extends IPaginationParams {
     search?: string;
@@ -75,6 +78,10 @@ export interface IOrder {
     netTotal: number;
     customerId: string | null;
     customerName: string | null;
+    riderName?: string | null;
+    riderPlate?: string | null;
+    riderVehicle?: TRiderVehicle | string | null;
+    trackingLink?: string | null;
     cashierSessionId: string | null;
     createdAt: string;
     updatedAt: string;
@@ -94,6 +101,10 @@ export interface ICreateOrderPayload {
     customerId?: string | null;
     customerName?: string;
     buzzerId?: string | null;
+    riderName?: string | null;
+    riderPlate?: string | null;
+    riderVehicle?: TRiderVehicle | null;
+    trackingLink?: string | null;
     paymentMethod?: 'CASH' | 'GCASH' | null;
     paymentReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
@@ -108,6 +119,13 @@ export interface ICreateOrderPayload {
 export interface IUpdateOrderStatusPayload {
     status: TOrderStatus;
     notes?: string;
+}
+
+export interface IUpdateOrderCourierPayload {
+    riderName: string;
+    riderPlate: string;
+    riderVehicle: TRiderVehicle;
+    trackingLink: string;
 }
 
 export type PaymentMethod = 'CASH' | 'GCASH';
@@ -161,7 +179,7 @@ export const orderCreateFormSchema = z
         guestName: z.string().max(100, 'Guest name must not exceed 100 characters').optional(),
         customerId: z.string().nullable().optional(),
         buzzerId: z.string().max(20, 'Buzzer ID must not exceed 20 characters').optional(),
-        orderType: z.enum(['DINE_IN', 'TAKE_OUT', 'DELIVERY']),
+        orderType: z.enum(['DINE_IN', 'TAKE_OUT']),
         notes: z.string().max(500, 'Notes must not exceed 500 characters').optional(),
         items: z
             .array(

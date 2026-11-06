@@ -87,7 +87,7 @@ export default function PosPage() {
     const [guestName, setGuestName] = React.useState('Walk-in Customer');
     const [selectedCustomerId, setSelectedCustomerId] = React.useState<string>('');
     const [buzzerId, setBuzzerId] = React.useState('');
-    const [orderType, setOrderType] = React.useState<'DINE_IN' | 'TAKE_OUT' | 'DELIVERY'>('DINE_IN');
+    const [orderType, setOrderType] = React.useState<'DINE_IN' | 'TAKE_OUT'>('DINE_IN');
     const [paymentMethod, setPaymentMethod] = React.useState<'CASH' | 'GCASH'>('CASH');
     const [cashTendered, setCashTendered] = React.useState<number | ''>('');
     const [referenceNumber, setReferenceNumber] = React.useState('');

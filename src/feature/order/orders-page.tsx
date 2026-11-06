@@ -20,7 +20,9 @@ import {
     CheckCircle2,
     XCircle,
     User,
-    Volume2
+    Volume2,
+    Truck,
+    ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -145,6 +147,8 @@ export default function OrdersPage() {
                 return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/40';
             case 'READY':
                 return 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-900/40';
+            case 'DISPATCHED':
+                return 'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-400 dark:border-cyan-900/40';
             case 'COMPLETED':
                 return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
             case 'CANCELLED':
@@ -228,6 +232,31 @@ export default function OrdersPage() {
                                 <Volume2 className="size-3 animate-pulse text-amber-500" /> Buzzer: #{row.original.buzzerId}
                             </span>
                         )}
+                        {row.original.orderType === 'DELIVERY' &&
+                            (row.original.riderName || row.original.riderPlate || row.original.riderVehicle || row.original.trackingLink) && (
+                                <div className="mt-1 pt-1 border-t border-border/40 text-[11px] text-muted-foreground space-y-0.5">
+                                    <div className="flex items-center gap-1 font-semibold text-foreground/85">
+                                        <Truck className="size-3 text-primary shrink-0" />
+                                        <span>
+                                            {row.original.riderName || 'Rider'}
+                                            {row.original.riderPlate ? ` • ${row.original.riderPlate}` : ''}
+                                            {row.original.riderVehicle ? ` (${row.original.riderVehicle})` : ''}
+                                        </span>
+                                    </div>
+                                    {row.original.trackingLink && (
+                                        <a
+                                            href={row.original.trackingLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
+                                        >
+                                            <span>Tracking Link</span>
+                                            <ExternalLink className="size-2.5" />
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                     </div>
                 )
             },
@@ -236,7 +265,9 @@ export default function OrdersPage() {
                 header: 'Status',
                 cell: ({ row }) => (
                     <Badge variant="outline" className={`text-xs font-semibold py-0.5 px-2 capitalize ${getStatusBadgeClass(row.original.status)}`}>
-                        {row.original.status.toLowerCase()}
+                        {row.original.status === 'READY' && row.original.orderType === 'DELIVERY'
+                            ? 'Ready for Pickup'
+                            : row.original.status.toLowerCase()}
                     </Badge>
                 )
             },
@@ -358,7 +389,43 @@ export default function OrdersPage() {
                                 </RequirePermission>
                             )}
 
-                            {order.status === 'READY' && (
+                            {order.status === 'READY' &&
+                                (order.orderType === 'DELIVERY' ? (
+                                    <RequirePermission module="Sales Management" action="create">
+                                        <Button
+                                            size="sm"
+                                            disabled={
+                                                updateStatusMutation.isPending ||
+                                                !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                            }
+                                            onClick={() => handleTransition(order.id, 'DISPATCHED')}
+                                            className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
+                                            title={
+                                                !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                                    ? 'Waiting for customer to submit courier details'
+                                                    : 'Hand over to Courier (Mark Dispatched)'
+                                            }
+                                        >
+                                            <Truck className="size-3.5 shrink-0" />
+                                            <span>Dispatch</span>
+                                        </Button>
+                                    </RequirePermission>
+                                ) : (
+                                    <RequirePermission module="Sales Management" action="create">
+                                        <Button
+                                            size="sm"
+                                            disabled={updateStatusMutation.isPending}
+                                            onClick={() => handleTransition(order.id, 'COMPLETED')}
+                                            className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
+                                            title="Mark Complete"
+                                        >
+                                            <CheckCircle2 className="size-3.5 shrink-0" />
+                                            <span>Done</span>
+                                        </Button>
+                                    </RequirePermission>
+                                ))}
+
+                            {order.status === 'DISPATCHED' && (
                                 <RequirePermission module="Sales Management" action="create">
                                     <Button
                                         size="sm"
@@ -525,6 +592,9 @@ export default function OrdersPage() {
                                     </SelectItem>
                                     <SelectItem value="READY" className="text-xs">
                                         Ready
+                                    </SelectItem>
+                                    <SelectItem value="DISPATCHED" className="text-xs">
+                                        Dispatched
                                     </SelectItem>
                                     <SelectItem value="COMPLETED" className="text-xs">
                                         Completed
