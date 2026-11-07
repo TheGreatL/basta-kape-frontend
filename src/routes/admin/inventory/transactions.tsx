@@ -7,7 +7,9 @@ const searchParamsSchema = z.object({
     page: z.number().optional().default(1),
     pageSize: z.number().optional().default(10),
     search: z.string().optional().default(''),
+    type: z.string().optional().default(''),
     supplierId: z.string().optional(),
+    ingredientId: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional()
 });

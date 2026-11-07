@@ -1,19 +1,17 @@
-import { formatCurrency } from '#/utils/helper.ts';
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { ArrowLeftRight, Plus, Calendar as CalendarIcon, Pencil, Eye, RotateCcw, X, AlertTriangle, FileText } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, RotateCcw, X, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 
 import { Route } from '#/routes/admin/inventory/transactions.tsx';
-import { getDeliveries } from '#/api/inventory.api.ts';
-import { getSuppliersList } from '#/api/suppliers.api.ts';
+import { getStockTransactions } from '#/api/inventory.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { useDebounce } from '#/hooks/use-debounce.ts';
-import type { IDelivery, IIngredient } from '../inventory.types.ts';
-import type { ISupplierListItem } from '#/feature/suppliers/suppliers.types';
+import type { IStockTransaction, TStockTransactionType, IIngredient } from '../inventory.types.ts';
+import { cn } from '#/lib/utils.ts';
 
 import DataTable from '#/components/data-table/data-table.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
@@ -21,16 +19,73 @@ import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
-import { InfiniteSelect } from '#/components/ui/infinite-select.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
+import { Badge } from '#/components/ui/badge.tsx';
 
-import DeliveryDialog from '../components/inventory-delivery-dialog.tsx';
-import DeliveryViewDialog from '../components/inventory-delivery-view-dialog.tsx';
 import UnifiedStockDialog from '../components/unified-stock-dialog.tsx';
 import type { TStockActionMode } from '../components/unified-stock-dialog.tsx';
 
+function renderTransactionTypeBadge(type: TStockTransactionType) {
+    switch (type) {
+        case 'DELIVERY':
+            return (
+                <Badge
+                    variant="outline"
+                    className="border-emerald-500/30 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
+                    Delivery / Stock In
+                </Badge>
+            );
+        case 'SALE':
+            return (
+                <Badge variant="outline" className="border-sky-500/30 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+                    Order Sale
+                </Badge>
+            );
+        case 'WASTE':
+            return (
+                <Badge variant="outline" className="border-rose-500/30 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                    Waste
+                </Badge>
+            );
+        case 'SPOILED':
+            return (
+                <Badge variant="outline" className="border-amber-500/30 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                    Spoiled
+                </Badge>
+            );
+        case 'EXPIRED':
+            return (
+                <Badge variant="outline" className="border-orange-500/30 bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300">
+                    Expired
+                </Badge>
+            );
+        case 'THEFT':
+            return (
+                <Badge variant="outline" className="border-purple-500/30 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
+                    Theft
+                </Badge>
+            );
+        case 'PROMOTIONAL_USE':
+            return (
+                <Badge variant="outline" className="border-indigo-500/30 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    Promo
+                </Badge>
+            );
+        case 'PHYSICAL_COUNT_CORRECTION':
+            return (
+                <Badge variant="outline" className="border-slate-500/30 bg-slate-50 text-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
+                    Count Correction
+                </Badge>
+            );
+        default:
+            return <Badge variant="outline">{type}</Badge>;
+    }
+}
+
 export default function InventoryTransactionPage() {
     const navigate = useNavigate({ from: '/admin/inventory/transactions' });
-    const { page, pageSize, search, supplierId, startDate, endDate } = Route.useSearch();
+    const { page, pageSize, search, type, startDate, endDate } = Route.useSearch();
 
     const setSearch = (updates: Record<string, any>) => {
         navigate({
@@ -52,13 +107,9 @@ export default function InventoryTransactionPage() {
     }, [debouncedSearch, search]);
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [deliveryOpen, setDeliveryOpen] = React.useState(false);
     const [unifiedOpen, setUnifiedOpen] = React.useState(false);
     const [unifiedMode, setUnifiedMode] = React.useState<TStockActionMode>('ADD_STOCK');
     const [selectedIngredient, setSelectedIngredient] = React.useState<IIngredient | null>(null);
-    const [deliveryToEdit, setDeliveryToEdit] = React.useState<IDelivery | null>(null);
-    const [deliveryToView, setDeliveryToView] = React.useState<IDelivery | null>(null);
-    const [viewOpen, setViewOpen] = React.useState(false);
 
     // Date range state for UI Popover Calendar
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>(() => {
@@ -99,28 +150,28 @@ export default function InventoryTransactionPage() {
         }
     };
 
-    // Query: Deliveries with filters
-    const { data: deliveriesData, isLoading } = useQuery({
-        queryKey: [QUERY_KEY.INVENTORY.DELIVERIES_LIST, { page, pageSize, search, supplierId, startDate, endDate }],
+    // Query: Stock Transactions with filters (both additions and deductions)
+    const { data: txData, isLoading } = useQuery({
+        queryKey: [QUERY_KEY.INVENTORY.TRANSACTIONS_LIST, { page, pageSize, search, type, startDate, endDate }],
         queryFn: () =>
-            getDeliveries({
+            getStockTransactions({
                 page,
                 limit: pageSize,
-                search,
-                supplierId: supplierId || undefined,
+                search: search || undefined,
+                type: type && type !== 'ALL' ? type : undefined,
                 startDate: startDate || undefined,
                 endDate: endDate || undefined
             })
     });
 
-    const hasActiveFilters = Boolean(supplierId || startDate || endDate || localSearch);
+    const hasActiveFilters = Boolean(type || startDate || endDate || localSearch);
 
     const handleResetFilters = () => {
         setLocalSearch('');
         setDateRange(undefined);
         setSearch({
             search: '',
-            supplierId: '',
+            type: '',
             startDate: '',
             endDate: '',
             page: 1
@@ -128,157 +179,119 @@ export default function InventoryTransactionPage() {
     };
 
     // Streamlined Essential Columns
-    const columns = React.useMemo<ColumnDef<IDelivery>[]>(
+    const columns = React.useMemo<ColumnDef<IStockTransaction>[]>(
         () => [
             {
-                accessorKey: 'ingredient.name',
-                header: 'Ingredient',
+                accessorKey: 'createdAt',
+                header: 'Date & Time',
                 cell: ({ row }) => (
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-foreground/90 text-sm">{row.original.ingredient?.name || '—'}</span>
-                        {row.original.ingredient?.defaultUnit && (
-                            <span className="text-xs text-muted-foreground">
-                                Unit: {row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}
-                            </span>
-                        )}
-                    </div>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
+                        <CalendarIcon className="size-3 text-muted-foreground/70" />
+                        {format(new Date(row.original.createdAt), 'MMM d, yyyy HH:mm')}
+                    </span>
                 )
             },
             {
-                accessorKey: 'supplier.name',
-                header: 'Supplier',
-                cell: ({ row }) => <span className="text-xs text-muted-foreground font-medium">{row.original.supplier?.name || '—'}</span>
-            },
-            {
-                accessorKey: 'purchaseOrder.poNumber',
-                header: 'Source PO',
+                accessorKey: 'batch.ingredient.name',
+                header: 'Ingredient',
                 cell: ({ row }) => {
-                    const po = row.original.purchaseOrder;
-                    if (!po) {
-                        return <span className="text-xs text-muted-foreground italic">Manual / Direct</span>;
-                    }
+                    const ingredient = row.original.batch?.ingredient;
+                    const defaultUnit = ingredient?.defaultUnit;
                     return (
-                        <button
-                            type="button"
-                            onClick={() =>
-                                navigate({
-                                    to: '/admin/purchase-orders' as any,
-                                    search: { search: po.poNumber } as any
-                                })
-                            }
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                            title={`View Purchase Order ${po.poNumber}`}
-                        >
-                            <FileText className="size-3" />
-                            {po.poNumber}
-                        </button>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-foreground/90 text-sm">{ingredient?.name || '—'}</span>
+                            {defaultUnit && (
+                                <span className="text-xs text-muted-foreground">Base Unit: {defaultUnit.abbreviation || defaultUnit.name}</span>
+                            )}
+                        </div>
                     );
                 }
             },
             {
-                accessorKey: 'batchNumber',
-                header: 'Batch / Lot',
-                cell: ({ row }) => <span className="text-xs font-mono font-medium text-foreground/80">{row.original.batchNumber || '—'}</span>
+                accessorKey: 'type',
+                header: 'Type',
+                cell: ({ row }) => renderTransactionTypeBadge(row.original.type)
             },
             {
-                accessorKey: 'expiryDate',
-                header: 'Expiration Date',
+                accessorKey: 'quantityChange',
+                header: 'Quantity Change',
                 cell: ({ row }) => {
-                    const expiryDate = row.original.expiryDate;
-                    if (!expiryDate) return <span className="text-xs text-muted-foreground">—</span>;
-
-                    const expiry = new Date(expiryDate);
-                    const now = new Date();
-                    const isExpired = expiry < now;
-                    const isExpiringSoon = expiry.getTime() - now.getTime() < 7 * 24 * 60 * 60 * 1000 && !isExpired;
-
-                    if (isExpired) {
-                        return (
-                            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                                <AlertTriangle className="size-3.5 shrink-0" />
-                                {format(expiry, 'MMM d, yyyy')} (Expired)
-                            </span>
-                        );
-                    }
-                    if (isExpiringSoon) {
-                        return (
-                            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                <AlertTriangle className="size-3.5 shrink-0" />
-                                {format(expiry, 'MMM d, yyyy')} (Soon)
-                            </span>
-                        );
-                    }
-                    return <span className="text-xs text-foreground/80 font-medium">{format(expiry, 'MMM d, yyyy')}</span>;
-                }
-            },
-            {
-                accessorKey: 'quantityReceived',
-                header: 'Qty Received',
-                cell: ({ row }) => {
-                    const unitStr = row.original.ingredient?.defaultUnit
-                        ? ` ${row.original.ingredient.defaultUnit.abbreviation || row.original.ingredient.defaultUnit.name}`
-                        : '';
+                    const qty = row.original.quantityChange;
+                    const defaultUnit = row.original.batch?.ingredient?.defaultUnit;
+                    const unitStr = defaultUnit ? ` ${defaultUnit.abbreviation || defaultUnit.name}` : '';
+                    const isPositive = qty > 0;
                     return (
-                        <span className="text-sm font-bold text-emerald-600">
-                            +{row.original.quantityReceived.toLocaleString()}
+                        <span
+                            className={cn(
+                                'text-sm font-bold whitespace-nowrap',
+                                isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                            )}
+                        >
+                            {isPositive ? `+${qty.toLocaleString()}` : qty.toLocaleString()}
                             <span className="text-xs font-normal text-muted-foreground">{unitStr}</span>
                         </span>
                     );
                 }
             },
             {
-                accessorKey: 'totalCost',
-                header: 'Total Cost',
-                cell: ({ row }) => <span className="text-sm font-bold text-foreground/90">{formatCurrency(row.original.totalCost)}</span>
+                accessorKey: 'batch.batchNumber',
+                header: 'Batch / Lot',
+                cell: ({ row }) => {
+                    const batchNum = row.original.batch?.batchNumber;
+                    if (!batchNum) return <span className="text-xs text-muted-foreground">—</span>;
+                    return <span className="text-xs font-mono font-medium text-foreground/80">{batchNum}</span>;
+                }
             },
             {
-                accessorKey: 'receivedAt',
-                header: 'Received At',
-                cell: ({ row }) => (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <CalendarIcon className="size-3" />
-                        {format(new Date(row.original.receivedAt), 'MMM d, yyyy HH:mm')}
-                    </span>
-                )
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                                setDeliveryToView(row.original);
-                                setViewOpen(true);
-                            }}
-                            className="size-8 text-muted-foreground hover:text-primary"
-                            title="View Delivery Details"
-                        >
-                            <Eye className="size-4" />
-                        </Button>
+                accessorKey: 'reason',
+                header: 'Reference / Reason',
+                cell: ({ row }) => {
+                    const reason = row.original.reason;
+                    const po = row.original.batch?.purchaseOrder;
+                    const supplier = row.original.batch?.supplier;
 
-                        <RequirePermission module="Inventory Management" action="update">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setDeliveryToEdit(row.original);
-                                    setSelectedIngredient(null);
-                                    setDeliveryOpen(true);
-                                }}
-                                className="size-8 text-muted-foreground hover:text-foreground"
-                                title="Edit Delivery Record"
-                            >
-                                <Pencil className="size-4" />
-                            </Button>
-                        </RequirePermission>
-                    </div>
-                )
+                    return (
+                        <div className="flex flex-col gap-1 max-w-[280px]">
+                            <span className="text-xs text-foreground/80 leading-snug line-clamp-2">{reason || 'No description provided'}</span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                {po && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            navigate({
+                                                to: '/admin/purchase-orders' as any,
+                                                search: { search: po.poNumber } as any
+                                            })
+                                        }
+                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                        title={`View Purchase Order ${po.poNumber}`}
+                                    >
+                                        <FileText className="size-2.5" />
+                                        {po.poNumber}
+                                    </button>
+                                )}
+                                {supplier && (
+                                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                                        Supplier: {supplier.name}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                }
+            },
+            {
+                accessorKey: 'createdBy',
+                header: 'Logged By',
+                cell: ({ row }) => {
+                    const user = row.original.createdBy;
+                    if (!user) return <span className="text-xs text-muted-foreground italic">System / Auto</span>;
+                    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
+                    return <span className="text-xs text-foreground/80 font-medium">{fullName || user.username || 'Staff'}</span>;
+                }
             }
         ],
-        []
+        [navigate]
     );
 
     return (
@@ -288,7 +301,7 @@ export default function InventoryTransactionPage() {
                     <div>
                         <h1 className="text-2xl font-bold text-foreground leading-tight">Inventory Transactions</h1>
                         <p className="text-xs text-muted-foreground">
-                            Complete audit ledger of raw material replenishments, supplier deliveries, and stock movements.
+                            Complete audit ledger of raw material replenishments, order sales deductions, and stock adjustments.
                         </p>
                     </div>
                 </div>
@@ -312,8 +325,8 @@ export default function InventoryTransactionPage() {
             <div className="space-y-4">
                 <DataTable
                     columns={columns}
-                    data={deliveriesData?.data || []}
-                    pageCount={deliveriesData?.meta.pageCount || 1}
+                    data={txData?.data || []}
+                    pageCount={txData?.meta.pageCount || 1}
                     pageIndex={page - 1}
                     pageSize={pageSize}
                     onPaginationChange={(idx, size) => setSearch({ page: idx + 1, pageSize: size })}
@@ -325,35 +338,30 @@ export default function InventoryTransactionPage() {
                         <div className="flex flex-wrap items-center gap-2.5 w-full">
                             {/* Search Input */}
                             <Input
-                                placeholder="Search ingredient, batch #, PO #, supplier..."
+                                placeholder="Search ingredient, reason, batch #, PO #..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className="h-9 w-full sm:w-[220px] bg-background/50 text-xs"
+                                className="h-9 w-full sm:w-[240px] bg-background/50 text-xs"
                             />
 
-                            {/* Supplier Filter */}
+                            {/* Transaction Type Filter */}
                             <div className="w-full sm:w-[200px]">
-                                <InfiniteSelect<ISupplierListItem>
-                                    queryKey={[QUERY_KEY.SUPPLIERS.SUPPLIERS_LIST]}
-                                    fetchFn={async ({ pageParam, query }) => {
-                                        return getSuppliersList({
-                                            page: pageParam || 1,
-                                            limit: 20,
-                                            search: query,
-                                            status: 'active'
-                                        });
-                                    }}
-                                    getItems={(resPage) => resPage.data}
-                                    getNextPageParam={(lastPage) => {
-                                        return lastPage.meta.hasMore ? lastPage.meta.currentPage + 1 : undefined;
-                                    }}
-                                    value={supplierId || ''}
-                                    onChange={(val) => setSearch({ supplierId: val || '', page: 1 })}
-                                    getOptionValue={(item) => item.id}
-                                    getOptionLabel={(item) => item.name}
-                                    placeholder="Filter by Supplier..."
-                                    searchPlaceholder="Search suppliers..."
-                                />
+                                <Select value={type || 'ALL'} onValueChange={(val) => setSearch({ type: val === 'ALL' ? '' : val, page: 1 })}>
+                                    <SelectTrigger className="h-9 bg-background/50 text-xs">
+                                        <SelectValue placeholder="All Transaction Types" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Transaction Types</SelectItem>
+                                        <SelectItem value="DELIVERY">Deliveries / Stock In (+)</SelectItem>
+                                        <SelectItem value="SALE">Order Sales (-)</SelectItem>
+                                        <SelectItem value="WASTE">Waste (-)</SelectItem>
+                                        <SelectItem value="SPOILED">Spoiled (-)</SelectItem>
+                                        <SelectItem value="EXPIRED">Expired (-)</SelectItem>
+                                        <SelectItem value="THEFT">Theft (-)</SelectItem>
+                                        <SelectItem value="PROMOTIONAL_USE">Promo Use (-)</SelectItem>
+                                        <SelectItem value="PHYSICAL_COUNT_CORRECTION">Count Corrections (±)</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Date Range Picker Popover using UI Calendar */}
@@ -375,7 +383,7 @@ export default function InventoryTransactionPage() {
                                                     e.stopPropagation();
                                                     handleRangeSelect(undefined);
                                                 }}
-                                                className="ml-1 hover:text-foreground p-0.5 rounded-full"
+                                                className="ml-auto hover:text-foreground p-0.5 rounded-full hover:bg-muted"
                                             >
                                                 <X className="size-3" />
                                             </span>
@@ -415,41 +423,6 @@ export default function InventoryTransactionPage() {
                 onOpenChange={setUnifiedOpen}
                 initialMode={unifiedMode}
                 preselectedIngredient={selectedIngredient}
-            />
-
-            {/* View Details Dialog */}
-            <DeliveryViewDialog
-                open={viewOpen}
-                onOpenChange={setViewOpen}
-                delivery={deliveryToView}
-                onEdit={() => {
-                    if (deliveryToView) {
-                        setDeliveryToEdit(deliveryToView);
-                        setSelectedIngredient(null);
-                        setDeliveryOpen(true);
-                    }
-                }}
-                onAdjustStock={() => {
-                    if (deliveryToView?.ingredient) {
-                        setSelectedIngredient(deliveryToView.ingredient);
-                        setUnifiedMode('LOG_WASTE');
-                        setUnifiedOpen(true);
-                    }
-                }}
-            />
-
-            {/* Edit Delivery Dialog */}
-            <DeliveryDialog
-                open={deliveryOpen}
-                onOpenChange={(open) => {
-                    setDeliveryOpen(open);
-                    if (!open) {
-                        setDeliveryToEdit(null);
-                        setSelectedIngredient(null);
-                    }
-                }}
-                preselectedIngredient={selectedIngredient}
-                deliveryToEdit={deliveryToEdit}
             />
         </div>
     );

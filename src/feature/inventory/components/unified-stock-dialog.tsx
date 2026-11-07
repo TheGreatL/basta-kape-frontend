@@ -189,6 +189,7 @@ export default function UnifiedStockDialog({
         mutationFn: createDelivery,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.DELIVERIES_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.TRANSACTIONS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
             toast.success('Stock Replenishment Logged', {
@@ -206,6 +207,7 @@ export default function UnifiedStockDialog({
         mutationFn: createAdjustment,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.ADJUSTMENTS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.TRANSACTIONS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
             toast.success('Stock Adjustment Logged', {
@@ -224,6 +226,7 @@ export default function UnifiedStockDialog({
             updatePhysicalCount(ingredientId, currentQuantity),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.LEVELS_LIST] });
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.TRANSACTIONS_LIST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.FORECAST] });
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY.INVENTORY.ADJUSTMENTS_LIST] });
             toast.success('Physical Count Audit Saved', {

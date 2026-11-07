@@ -152,6 +152,61 @@ export interface IGetDeliveriesParams extends IPaginationParams {
     endDate?: string;
 }
 
+// =============================================================================
+// Stock Transactions (Audit Ledger)
+// =============================================================================
+export type TStockTransactionType = 'DELIVERY' | 'SALE' | 'WASTE' | 'SPOILED' | 'EXPIRED' | 'THEFT' | 'PROMOTIONAL_USE' | 'PHYSICAL_COUNT_CORRECTION';
+
+export interface IStockTransaction {
+    id: string;
+    batchId: string;
+    quantityChange: number;
+    type: TStockTransactionType;
+    reason: string | null;
+    createdById: string | null;
+    createdAt: string;
+    batch?: {
+        id: string;
+        batchNumber?: string | null;
+        expiryDate?: string | null;
+        unitCost?: number;
+        totalCost?: number;
+        ingredient?: {
+            id: string;
+            name: string;
+            type?: TItemType;
+            defaultUnit?: {
+                id: string;
+                name: string;
+                abbreviation?: string | null;
+            } | null;
+        };
+        supplier?: {
+            id: string;
+            name: string;
+        } | null;
+        purchaseOrder?: {
+            id: string;
+            poNumber: string;
+            status?: string;
+        } | null;
+    };
+    createdBy?: {
+        id: string;
+        firstName?: string | null;
+        lastName?: string | null;
+        username?: string | null;
+    } | null;
+}
+
+export interface IGetStockTransactionsParams extends IPaginationParams {
+    search?: string;
+    type?: string;
+    ingredientId?: string;
+    startDate?: string;
+    endDate?: string;
+}
+
 export interface ICreateDeliveryPayload {
     ingredientId: string;
     supplierId?: string | null;

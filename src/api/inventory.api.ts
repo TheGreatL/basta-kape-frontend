@@ -14,6 +14,8 @@ import type {
     IGetInventoryLevelsParams,
     IDelivery,
     IGetDeliveriesParams,
+    IStockTransaction,
+    IGetStockTransactionsParams,
     ICreateDeliveryPayload,
     IUpdateDeliveryPayload,
     IAdjustment,
@@ -217,6 +219,28 @@ export const getDeliveries = async (params: IGetDeliveriesParams): Promise<IPagi
         throw new ApiError('Failed to fetch supplier deliveries log', response.status, errorData);
     }
     const data: IPaginatedResult<IDelivery> = await response.json();
+    return data;
+};
+
+// =============================================================================
+// Stock Transactions Audit Ledger
+// =============================================================================
+export const getStockTransactions = async (params: IGetStockTransactionsParams): Promise<IPaginatedResult<IStockTransaction>> => {
+    const query = new URLSearchParams();
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    if (params.search) query.set('search', params.search);
+    if (params.type) query.set('type', params.type);
+    if (params.ingredientId) query.set('ingredientId', params.ingredientId);
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
+
+    const response = await api.get(`/inventory/transactions?${query.toString()}`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError('Failed to fetch stock transactions log', response.status, errorData);
+    }
+    const data: IPaginatedResult<IStockTransaction> = await response.json();
     return data;
 };
 

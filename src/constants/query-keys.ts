@@ -56,6 +56,7 @@ const QUERY_KEY = {
         LEVELS_LIST: 'inventory:levels_list',
         LEVEL_DETAILS: 'inventory:level_details',
         DELIVERIES_LIST: 'inventory:deliveries_list',
+        TRANSACTIONS_LIST: 'inventory:transactions_list',
         ADJUSTMENTS_LIST: 'inventory:adjustments_list',
         FORECAST: 'inventory:forecast',
         DASHBOARD_OVERVIEW: 'inventory:dashboard_overview',
