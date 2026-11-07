@@ -46,8 +46,10 @@ export default function InventoryTransactionPage() {
     }, [search]);
 
     React.useEffect(() => {
-        setSearch({ search: debouncedSearch, page: 1 });
-    }, [debouncedSearch]);
+        if (debouncedSearch !== (search || '')) {
+            setSearch({ search: debouncedSearch, page: 1 });
+        }
+    }, [debouncedSearch, search]);
 
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [deliveryOpen, setDeliveryOpen] = React.useState(false);

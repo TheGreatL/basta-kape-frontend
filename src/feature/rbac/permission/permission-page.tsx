@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Shield } from 'lucide-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import PermissionTable from './permission-table.tsx';
@@ -9,13 +10,20 @@ export default function PermissionPage() {
     const pageSize = searchParams.pageSize;
     const search = searchParams.search;
 
-    const setSearch = (updates: Record<string, any>) => {
-        navigate({
-            to: '/admin/permissions',
-            search: { page, pageSize, search, ...updates },
-            replace: true
-        });
-    };
+    const setSearch = React.useCallback(
+        (updates: Record<string, any>) => {
+            navigate({
+                to: '/admin/permissions',
+                search: (prev: any) => ({ ...prev, ...updates }),
+                replace: true
+            });
+        },
+        [navigate]
+    );
+
+    const handlePaginationChange = React.useCallback((p: number, ps: number) => setSearch({ page: p, pageSize: ps }), [setSearch]);
+
+    const handleSearchChange = React.useCallback((s: string) => setSearch({ search: s, page: 1 }), [setSearch]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -34,8 +42,8 @@ export default function PermissionPage() {
                 page={page}
                 pageSize={pageSize}
                 search={search}
-                onPaginationChange={(p, ps) => setSearch({ page: p, pageSize: ps })}
-                onSearchChange={(s) => setSearch({ search: s, page: 1 })}
+                onPaginationChange={handlePaginationChange}
+                onSearchChange={handleSearchChange}
             />
         </div>
     );

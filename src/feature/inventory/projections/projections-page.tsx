@@ -53,8 +53,10 @@ export default function ProjectionsPage() {
     }, [search]);
 
     React.useEffect(() => {
-        setSearch({ search: debouncedSearch, page: 1 });
-    }, [debouncedSearch]);
+        if (debouncedSearch !== (search || '')) {
+            setSearch({ search: debouncedSearch, page: 1 });
+        }
+    }, [debouncedSearch, search]);
 
     const handleStatusFilterChange = (newStatus: 'all' | 'ready' | 'low' | 'out' | 'no_recipe') => {
         setStatusFilter(newStatus);

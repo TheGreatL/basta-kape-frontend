@@ -73,8 +73,10 @@ export default function ProductsPage() {
     }, [search]);
 
     React.useEffect(() => {
-        setSearchParams({ search: debouncedSearch, page: 1 });
-    }, [debouncedSearch]);
+        if (debouncedSearch !== (search || '')) {
+            setSearchParams({ search: debouncedSearch, page: 1 });
+        }
+    }, [debouncedSearch, search]);
 
     // Delete Confirmation states
     const [productToDelete, setProductToDelete] = React.useState<IProduct | null>(null);

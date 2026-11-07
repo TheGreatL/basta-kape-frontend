@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Shield, Plus } from 'lucide-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Button } from '#/components/ui/button.tsx';
@@ -12,11 +13,20 @@ export default function RoleListPage() {
     const searchVal = searchParams?.search;
     const status = searchParams?.status;
 
-    const setSearch = (updates: Record<string, any>) => {
-        navigate({
-            search: { ...searchParams, ...updates }
-        });
-    };
+    const setSearch = React.useCallback(
+        (updates: Record<string, any>) => {
+            navigate({
+                search: (prev: any) => ({ ...prev, ...updates })
+            });
+        },
+        [navigate]
+    );
+
+    const handlePaginationChange = React.useCallback((p: number, ps: number) => setSearch({ page: p, pageSize: ps }), [setSearch]);
+
+    const handleSearchChange = React.useCallback((s: string) => setSearch({ search: s, page: 1 }), [setSearch]);
+
+    const handleStatusChange = React.useCallback((st: string) => setSearch({ status: st, page: 1 }), [setSearch]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -47,9 +57,9 @@ export default function RoleListPage() {
                 pageSize={pageSize || 10}
                 search={searchVal || ''}
                 status={status || 'active'}
-                onPaginationChange={(p, ps) => setSearch({ page: p, pageSize: ps })}
-                onSearchChange={(s) => setSearch({ search: s, page: 1 })}
-                onStatusChange={(st) => setSearch({ status: st, page: 1 })}
+                onPaginationChange={handlePaginationChange}
+                onSearchChange={handleSearchChange}
+                onStatusChange={handleStatusChange}
             />
         </div>
     );

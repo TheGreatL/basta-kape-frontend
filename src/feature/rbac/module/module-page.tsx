@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Shield } from 'lucide-react';
 import ModuleTable from './module-table.tsx';
 import { Route } from '#/routes/admin/(rbac)/modules.tsx';
@@ -10,12 +11,19 @@ export default function ModulePage() {
     const pageSize = searchParams.pageSize;
     const search = searchParams.search;
 
-    const setSearch = (updates: Record<string, any>) => {
-        navigate({
-            search: (prev) => ({ ...prev, ...updates }),
-            replace: true
-        });
-    };
+    const setSearch = React.useCallback(
+        (updates: Record<string, any>) => {
+            navigate({
+                search: (prev) => ({ ...prev, ...updates }),
+                replace: true
+            });
+        },
+        [navigate]
+    );
+
+    const handlePaginationChange = React.useCallback((p: number, ps: number) => setSearch({ page: p, pageSize: ps }), [setSearch]);
+
+    const handleSearchChange = React.useCallback((s: string) => setSearch({ search: s, page: 1 }), [setSearch]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -36,8 +44,8 @@ export default function ModulePage() {
                 page={page}
                 pageSize={pageSize}
                 search={search}
-                onPaginationChange={(p, ps) => setSearch({ page: p, pageSize: ps })}
-                onSearchChange={(s) => setSearch({ search: s, page: 1 })}
+                onPaginationChange={handlePaginationChange}
+                onSearchChange={handleSearchChange}
             />
         </div>
     );
