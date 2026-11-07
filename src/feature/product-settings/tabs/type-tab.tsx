@@ -57,8 +57,10 @@ export default function TypeTab({ page, pageSize, search, status, onPaginationCh
     }, [search]);
 
     React.useEffect(() => {
-        onSearchChange(debouncedSearch);
-    }, [debouncedSearch, onSearchChange]);
+        if (debouncedSearch !== search) {
+            onSearchChange(debouncedSearch);
+        }
+    }, [debouncedSearch, search, onSearchChange]);
 
     // Dialog States
     const [actionType, setActionType] = React.useState<'create' | 'edit' | 'view' | null>(null);

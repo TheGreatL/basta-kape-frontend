@@ -1,4 +1,5 @@
-import { Settings, Folder, LayoutGrid, Sparkles } from 'lucide-react';
+import * as React from 'react';
+import { Folder, LayoutGrid, Sparkles } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { Route } from '#/routes/admin/products/settings.tsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
@@ -12,11 +13,36 @@ export default function ProductSettingsPage() {
     const { tab, cPage, cPageSize, cSearch, cStatus, cProductTypeId, tPage, tPageSize, tSearch, tStatus, aPage, aPageSize, aSearch, aStatus } =
         Route.useSearch();
 
-    const setSearch = (updates: Record<string, any>) => {
-        navigate({
-            search: (prev: any) => ({ ...prev, ...updates })
-        });
-    };
+    const setSearch = React.useCallback(
+        (updates: Record<string, any>) => {
+            navigate({
+                search: (prev: any) => ({ ...prev, ...updates })
+            });
+        },
+        [navigate]
+    );
+
+    const handleCategoryPaginationChange = React.useCallback(
+        (page: number, pageSize: number) => setSearch({ cPage: page, cPageSize: pageSize }),
+        [setSearch]
+    );
+    const handleCategorySearchChange = React.useCallback((search: string) => setSearch({ cSearch: search, cPage: 1 }), [setSearch]);
+    const handleCategoryStatusChange = React.useCallback((status: 'active' | 'archive') => setSearch({ cStatus: status, cPage: 1 }), [setSearch]);
+    const handleCategoryProductTypeChange = React.useCallback((id: string) => setSearch({ cProductTypeId: id, cPage: 1 }), [setSearch]);
+
+    const handleTypePaginationChange = React.useCallback(
+        (page: number, pageSize: number) => setSearch({ tPage: page, tPageSize: pageSize }),
+        [setSearch]
+    );
+    const handleTypeSearchChange = React.useCallback((search: string) => setSearch({ tSearch: search, tPage: 1 }), [setSearch]);
+    const handleTypeStatusChange = React.useCallback((status: 'active' | 'archive') => setSearch({ tStatus: status, tPage: 1 }), [setSearch]);
+
+    const handleAttributePaginationChange = React.useCallback(
+        (page: number, pageSize: number) => setSearch({ aPage: page, aPageSize: pageSize }),
+        [setSearch]
+    );
+    const handleAttributeSearchChange = React.useCallback((search: string) => setSearch({ aSearch: search, aPage: 1 }), [setSearch]);
+    const handleAttributeStatusChange = React.useCallback((status: 'active' | 'archive') => setSearch({ aStatus: status, aPage: 1 }), [setSearch]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -55,10 +81,10 @@ export default function ProductSettingsPage() {
                         search={cSearch}
                         status={cStatus}
                         productTypeId={cProductTypeId}
-                        onPaginationChange={(page, pageSize) => setSearch({ cPage: page, cPageSize: pageSize })}
-                        onSearchChange={(search) => setSearch({ cSearch: search, cPage: 1 })}
-                        onStatusChange={(status) => setSearch({ cStatus: status, cPage: 1 })}
-                        onProductTypeChange={(id) => setSearch({ cProductTypeId: id, cPage: 1 })}
+                        onPaginationChange={handleCategoryPaginationChange}
+                        onSearchChange={handleCategorySearchChange}
+                        onStatusChange={handleCategoryStatusChange}
+                        onProductTypeChange={handleCategoryProductTypeChange}
                     />
                 </TabsContent>
 
@@ -69,9 +95,9 @@ export default function ProductSettingsPage() {
                         pageSize={tPageSize}
                         search={tSearch}
                         status={tStatus}
-                        onPaginationChange={(page, pageSize) => setSearch({ tPage: page, tPageSize: pageSize })}
-                        onSearchChange={(search) => setSearch({ tSearch: search, tPage: 1 })}
-                        onStatusChange={(status) => setSearch({ tStatus: status, tPage: 1 })}
+                        onPaginationChange={handleTypePaginationChange}
+                        onSearchChange={handleTypeSearchChange}
+                        onStatusChange={handleTypeStatusChange}
                     />
                 </TabsContent>
 
@@ -82,9 +108,9 @@ export default function ProductSettingsPage() {
                         pageSize={aPageSize}
                         search={aSearch}
                         status={aStatus}
-                        onPaginationChange={(page, pageSize) => setSearch({ aPage: page, aPageSize: pageSize })}
-                        onSearchChange={(search) => setSearch({ aSearch: search, aPage: 1 })}
-                        onStatusChange={(status) => setSearch({ aStatus: status, aPage: 1 })}
+                        onPaginationChange={handleAttributePaginationChange}
+                        onSearchChange={handleAttributeSearchChange}
+                        onStatusChange={handleAttributeStatusChange}
                     />
                 </TabsContent>
             </Tabs>

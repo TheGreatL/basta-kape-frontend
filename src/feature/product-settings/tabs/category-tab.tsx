@@ -67,8 +67,10 @@ export default function CategoryTab({
     }, [search]);
 
     React.useEffect(() => {
-        onSearchChange(debouncedSearch);
-    }, [debouncedSearch, onSearchChange]);
+        if (debouncedSearch !== search) {
+            onSearchChange(debouncedSearch);
+        }
+    }, [debouncedSearch, search, onSearchChange]);
 
     // Fetch Product Types for filter dropdown
     const { data: typesData } = useQuery({
