@@ -3,6 +3,38 @@ import { ApiError } from '../utils/error-handler';
 
 export type PaymentMethod = 'CASH' | 'GCASH';
 
+export interface ITransactionOrderItemModifier {
+    id: string;
+    modifierOptionId: string;
+    price: number;
+    modifierOption: {
+        id: string;
+        name: string;
+    };
+}
+
+export interface ITransactionOrderItem {
+    id: string;
+    productVariantId: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    notes?: string | null;
+    variant: {
+        id: string;
+        sku?: string | null;
+        price: number;
+        product: {
+            id: string;
+            name: string;
+            photo?: string | null;
+            description?: string | null;
+        };
+        attributes?: any[] | null;
+    };
+    modifiers: ITransactionOrderItemModifier[];
+}
+
 export interface ITransaction {
     id: string;
     orderId: string;
@@ -26,6 +58,7 @@ export interface ITransaction {
         cashierSessionId: string | null;
         referenceNumber?: string | null;
         createdAt?: string;
+        items?: ITransactionOrderItem[];
     };
 }
 

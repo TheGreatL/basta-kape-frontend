@@ -2,12 +2,28 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { History, Search, X, Calendar as CalendarIcon, Smartphone, XCircle, Clock, Eye, Upload, ImageIcon, User, PhilippinePeso } from 'lucide-react';
+import {
+    History,
+    Search,
+    X,
+    Calendar as CalendarIcon,
+    Smartphone,
+    XCircle,
+    Clock,
+    Eye,
+    Upload,
+    ImageIcon,
+    User,
+    PhilippinePeso,
+    Coffee,
+    ShoppingBag
+} from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { toast } from 'sonner';
 
 import { Route } from '#/routes/admin/transactions.tsx';
 import { getTransactions, updateTransactionReceipt, uploadImageFile } from '#/api/transactions.api.ts';
+import { getOrderById } from '#/api/orders.api.ts';
 import { getErrorMessage } from '#/utils/error-handler.ts';
 import DataTable from '#/components/data-table/data-table.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
@@ -21,9 +37,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover.tsx';
 import { Calendar } from '#/components/ui/calendar.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
+import { Spinner } from '#/components/ui/spinner.tsx';
 
 import type { ITransaction } from '#/api/transactions.api.ts';
-import { getFileUrl, getFrontendReference } from '#/utils/helper';
+import { getFileUrl, getFrontendReference, formatCurrency, getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 
 export default function TransactionsPage() {
@@ -40,6 +57,15 @@ export default function TransactionsPage() {
     const [isUploadPending, setIsUploadPending] = React.useState(false);
     const [viewingFileUrl, setViewingFileUrl] = React.useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const { data: orderDetails, isLoading: isOrderDetailsLoading } = useQuery({
+        queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, selectedTx?.order.id],
+        queryFn: () => getOrderById(selectedTx!.order.id),
+        enabled: !!selectedTx?.order.id && (!selectedTx.order.items || selectedTx.order.items.length === 0)
+    });
+
+    const displayItems = selectedTx?.order.items && selectedTx.order.items.length > 0 ? selectedTx.order.items : orderDetails?.items || [];
+    const isLoadingItems = (!selectedTx?.order.items || selectedTx.order.items.length === 0) && isOrderDetailsLoading;
 
     React.useEffect(() => {
         setManualRefNumber('');
@@ -401,7 +427,7 @@ export default function TransactionsPage() {
 
             {/* Transaction Inspection Dialog */}
             <Dialog open={!!selectedTx} onOpenChange={(open) => !open && setSelectedTx(null)}>
-                <DialogContent className="max-w-md w-full rounded-2xl">
+                <DialogContent className="max-w-lg w-full rounded-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="font-bold text-foreground flex items-center gap-2">
                             <History className="size-5 text-primary" />
@@ -556,6 +582,104 @@ export default function TransactionsPage() {
                                                 <p className="text-xs text-muted-foreground">Must be exactly 13 numeric digits</p>
                                             </div>
                                         )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Ordered Items Breakdown */}
+                            <div className="space-y-2 pt-2 border-t border-border/30">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5 uppercase tracking-wider">
+                                        <ShoppingBag className="size-3.5 text-primary" />
+                                        Ordered Items{' '}
+                                        {displayItems.length > 0
+                                            ? `(${displayItems.reduce((acc: number, it: any) => acc + (it.quantity || 1), 0)})`
+                                            : ''}
+                                    </span>
+                                    {displayItems.length > 0 && (
+                                        <span className="text-2xs text-muted-foreground font-medium">
+                                            {displayItems.length} {displayItems.length === 1 ? 'item' : 'items'}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {isLoadingItems ? (
+                                    <div className="p-4 border border-border/40 rounded-xl bg-muted/10 flex items-center justify-center gap-2 text-muted-foreground text-xs">
+                                        <Spinner className="size-4" />
+                                        <span>Loading ordered items...</span>
+                                    </div>
+                                ) : displayItems.length === 0 ? (
+                                    <div className="p-3 border border-border/40 rounded-xl bg-muted/10 text-center text-xs text-muted-foreground">
+                                        No order items available.
+                                    </div>
+                                ) : (
+                                    <div className="border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20 bg-background/30">
+                                        {displayItems.map((item: any) => {
+                                            const variantAttributes = item.variant?.attributes
+                                                ?.map((attr: any) => attr.attributeValue?.value)
+                                                .filter(Boolean)
+                                                .join(' / ');
+
+                                            return (
+                                                <div key={item.id} className="p-3 flex items-start justify-between gap-3">
+                                                    <div className="flex items-start gap-3 min-w-0">
+                                                        <div className="size-10 rounded-lg overflow-hidden bg-muted border border-border/60 shrink-0 flex items-center justify-center">
+                                                            {item.variant?.product?.photo ? (
+                                                                <img
+                                                                    src={getProductPhotoUrl(item.variant.product.photo)}
+                                                                    alt={item.variant.product.name}
+                                                                    onError={handleProductImageError}
+                                                                    className="size-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <Coffee className="size-4 text-muted-foreground/40" />
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0 space-y-0.5">
+                                                            <div className="font-bold text-foreground/90 leading-snug text-xs">
+                                                                {item.variant?.product?.name || 'Item'}
+                                                                <span className="text-muted-foreground font-semibold ml-1.5">x{item.quantity}</span>
+                                                            </div>
+
+                                                            {variantAttributes && (
+                                                                <span className="text-2xs text-muted-foreground font-medium block">
+                                                                    {variantAttributes}
+                                                                </span>
+                                                            )}
+
+                                                            <span className="text-2xs text-muted-foreground font-medium block">
+                                                                Base: {formatCurrency(item.unitPrice)}
+                                                            </span>
+
+                                                            {/* Modifiers badges */}
+                                                            {item.modifiers && item.modifiers.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1 pt-0.5">
+                                                                    {item.modifiers.map((mod: any) => (
+                                                                        <Badge
+                                                                            key={mod.id || mod.modifierOptionId}
+                                                                            variant="outline"
+                                                                            className="text-2xs font-semibold bg-muted/20 py-0 px-1.5 text-muted-foreground border-border/50"
+                                                                        >
+                                                                            +{mod.modifierOption?.name || 'Option'} ({formatCurrency(mod.price)})
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Item Notes */}
+                                                            {item.notes && (
+                                                                <span className="text-2xs text-amber-600 font-semibold italic block pt-0.5">
+                                                                    Note: "{item.notes}"
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <span className="font-bold text-foreground/90 text-xs shrink-0">
+                                                        {formatCurrency(item.totalPrice)}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
