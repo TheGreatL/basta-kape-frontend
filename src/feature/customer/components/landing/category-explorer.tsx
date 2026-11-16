@@ -121,7 +121,7 @@ export default function CategoryExplorer() {
 
                                         <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                                             <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                                                View Drinks
+                                                View
                                             </span>
                                             <span className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                                 <ArrowUpRight className="size-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
