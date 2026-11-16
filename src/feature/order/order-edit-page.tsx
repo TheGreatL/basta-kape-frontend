@@ -964,7 +964,7 @@ export default function OrderEditPage() {
                                                 className="w-full h-10 gap-1.5 text-xs bg-primary text-primary-foreground font-semibold shadow-xs hover:shadow-md transition-all rounded-xl"
                                             >
                                                 <CreditCard className="size-4" />
-                                                Collect Payment
+                                                Verify Payment
                                             </Button>
                                         </div>
                                     </div>

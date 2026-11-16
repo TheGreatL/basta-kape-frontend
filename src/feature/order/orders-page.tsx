@@ -351,10 +351,10 @@ export default function OrdersPage() {
                                         size="sm"
                                         onClick={() => setPaymentOrder(order)}
                                         className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-primary text-primary-foreground shadow-3xs hover:shadow-xs rounded-lg"
-                                        title="Collect Payment"
+                                        title="Verify Payment"
                                     >
                                         <CreditCard className="size-3.5 shrink-0" />
-                                        <span>Collect Payment</span>
+                                        <span>Verify Payment</span>
                                     </Button>
                                 </RequirePermission>
                             )}
