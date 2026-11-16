@@ -26,6 +26,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/component
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#/components/ui/dialog.tsx';
 import { getAttributeValuesList } from '#/api/product-settings.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
+import { cn } from '#/lib/utils.ts';
 import type { IAttribute } from '#/feature/product-settings/product-settings-types.ts';
 import type { ILocalRecipe } from '../../products.types';
 
@@ -58,8 +59,8 @@ interface EditVariantsTabProps {
     setActiveAttributes: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
     selectedValuesMap: Record<string, Array<{ id: string; value: string }>>;
     setSelectedValuesMap: React.Dispatch<React.SetStateAction<Record<string, Array<{ id: string; value: string }>>>>;
-    defaultPrice: number;
-    setDefaultPrice: (val: number) => void;
+    defaultPrice: string | number;
+    setDefaultPrice: (val: string) => void;
     onGenerateMatrix: () => void;
     // Bulk actions
     bulkPriceInput: string;
@@ -89,6 +90,36 @@ export default function EditVariantsTab({
 }: EditVariantsTabProps) {
     const [isMatrixOpen, setIsMatrixOpen] = React.useState(false);
     const [editingRowIdx, setEditingRowIdx] = React.useState<number | null>(null);
+    const priceInputRef = React.useRef<HTMLInputElement>(null);
+
+    const isPriceNegative = React.useMemo(() => {
+        const trimmed = String(defaultPrice).trim();
+        if (!trimmed) return false;
+        const num = Number(trimmed);
+        return !isNaN(num) && num < 0;
+    }, [defaultPrice]);
+
+    const handleGenerateMatrix = () => {
+        const trimmedPrice = String(defaultPrice).trim();
+        if (trimmedPrice === '') {
+            toast.error('Price Required', {
+                description: 'Please enter a default price before generating variant combinations.'
+            });
+            priceInputRef.current?.focus();
+            return;
+        }
+
+        const numericPrice = Number(trimmedPrice);
+        if (isNaN(numericPrice) || numericPrice < 0) {
+            toast.error('Invalid Price', {
+                description: 'Price cannot be less than 0. Please enter 0 or a positive amount.'
+            });
+            priceInputRef.current?.focus();
+            return;
+        }
+
+        onGenerateMatrix();
+    };
 
     // Track duplicate combination row indices
     const duplicateRowIndices = React.useMemo(() => {
@@ -451,19 +482,47 @@ export default function EditVariantsTab({
 
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/20">
                         <div className="flex items-center gap-3">
-                            <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-muted-foreground uppercase block">Default Price</span>
-                                <Input
-                                    type="number"
-                                    value={defaultPrice || ''}
-                                    onChange={(e) => setDefaultPrice(parseFloat(e.target.value) || 0)}
-                                    className="h-8 text-xs w-[110px] bg-background/50"
-                                    placeholder="₱0.00"
-                                />
+                            <div className="space-y-1">
+                                <label
+                                    htmlFor="matrix-default-price"
+                                    className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1"
+                                >
+                                    Default Price <span className="text-destructive">*</span>
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">₱</span>
+                                    <Input
+                                        id="matrix-default-price"
+                                        ref={priceInputRef}
+                                        type="number"
+                                        required
+                                        min="0"
+                                        step="0.01"
+                                        value={defaultPrice}
+                                        onChange={(e) => setDefaultPrice(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleGenerateMatrix();
+                                            }
+                                        }}
+                                        className={cn(
+                                            'h-8 text-xs w-[120px] pl-6 bg-background/50 font-bold',
+                                            isPriceNegative && 'border-destructive focus-visible:ring-destructive text-destructive'
+                                        )}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                {isPriceNegative && <p className="text-[11px] text-destructive font-semibold">Price cannot be less than 0</p>}
                             </div>
                         </div>
 
-                        <Button type="button" onClick={onGenerateMatrix} className="h-8 px-3 text-xs font-semibold gap-1.5 shadow-2xs">
+                        <Button
+                            type="button"
+                            onClick={handleGenerateMatrix}
+                            disabled={isPriceNegative}
+                            className="h-8 px-3 text-xs font-semibold gap-1.5 shadow-2xs"
+                        >
                             <Sparkles className="size-3.5" /> Generate Combinations
                         </Button>
                     </div>

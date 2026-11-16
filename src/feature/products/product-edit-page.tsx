@@ -72,7 +72,7 @@ export default function ProductEditPage() {
     // Matrix generator states
     const [activeAttributes, setActiveAttributes] = React.useState<Record<string, boolean>>({});
     const [selectedValuesMap, setSelectedValuesMap] = React.useState<Record<string, Array<{ id: string; value: string }>>>({});
-    const [defaultPrice, setDefaultPrice] = React.useState<number>(0);
+    const [defaultPrice, setDefaultPrice] = React.useState<string>('');
 
     // Bulk action states
     const [bulkPriceInput, setBulkPriceInput] = React.useState<string>('');
@@ -350,6 +350,22 @@ export default function ProductEditPage() {
 
     // Cartesian Product Permutations Generator
     const generateMatrix = () => {
+        const trimmedPrice = String(defaultPrice).trim();
+        if (trimmedPrice === '') {
+            toast.error('Price Required', {
+                description: 'Please enter a default price before generating variant combinations.'
+            });
+            return;
+        }
+
+        const numericPrice = Number(trimmedPrice);
+        if (isNaN(numericPrice) || numericPrice < 0) {
+            toast.error('Invalid Price', {
+                description: 'Price cannot be less than 0. Please enter 0 or a positive amount.'
+            });
+            return;
+        }
+
         const selectedArrays: Array<Array<{ id: string; value: string }>> = [];
 
         attributesData?.data.forEach((attr: IAttribute) => {
@@ -391,7 +407,7 @@ export default function ProductEditPage() {
             newVariants.push({
                 tempId: crypto.randomUUID(),
                 sku: null,
-                price: defaultPrice,
+                price: numericPrice,
                 attributeValueIds,
                 attributeValueLabels,
                 recipeConfigured: false
