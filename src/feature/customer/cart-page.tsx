@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ShoppingCart, Trash2 } from 'lucide-react';
+import { ShoppingCart, Trash2, AlertTriangle } from 'lucide-react';
+import { useQueries } from '@tanstack/react-query';
 import { useCart } from './use-cart.ts';
 import { useAuth } from '#/context/AuthContext.tsx';
 import { useCheckoutStore } from '#/store/checkout-store.ts';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { toast } from 'sonner';
+import { getMenuProductById } from '#/api/menu.api.ts';
+import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ICartItemResponse, ICartModifierResponse } from './customer.types.ts';
 import {
     AlertDialog,
@@ -56,6 +59,41 @@ export default function CartPage() {
     };
 
     const items = cart?.items || [];
+
+    const [isCheckingStock, setIsCheckingStock] = useState(false);
+
+    // Collect unique product IDs from cart items to fetch live stock
+    const uniqueProductIds = useMemo(() => {
+        return Array.from(new Set(items.map((item: ICartItemResponse) => item.productVariant.product.id).filter(Boolean)));
+    }, [items]);
+
+    // Live queries for all products in cart to get real-time stock
+    const productStockQueries = useQueries({
+        queries: uniqueProductIds.map((productId) => ({
+            queryKey: [QUERY_KEY.MENU.PRODUCT_DETAILS, productId],
+            queryFn: () => getMenuProductById(productId),
+            staleTime: 15 * 1000,
+            refetchOnWindowFocus: true
+        }))
+    });
+
+    // Map of variantId -> maxProduceable
+    const liveStockMap = useMemo(() => {
+        const map = new Map<string, number | 'Unlimited' | null>();
+        productStockQueries.forEach((q) => {
+            if (q.data?.variants) {
+                q.data.variants.forEach((v) => {
+                    map.set(v.id, v.maxProduceable ?? null);
+                });
+            }
+        });
+        return map;
+    }, [productStockQueries]);
+
+    // Helper: get stock for a given cart item
+    const getItemStock = (item: ICartItemResponse): number | 'Unlimited' | null => {
+        return liveStockMap.get(item.productVariantId) ?? item.productVariant.maxProduceable ?? null;
+    };
 
     // Sync selection state when items change
     useEffect(() => {
@@ -134,35 +172,57 @@ export default function CartPage() {
         return sum + (item.unitPrice + modifierPrice) * item.quantity;
     }, 0);
 
-    const handleQuantityChange = async (item: ICartItemResponse, newQuantity: number) => {
-        if (newQuantity <= 0) {
-            setItemToDelete(item);
-        } else {
-            await updateItem({ cartItemId: item.id, quantity: newQuantity });
-        }
+    // Sum total selected quantities per variant
+    const selectedQtyByVariant = useMemo(() => {
+        const map = new Map<string, number>();
+        selectedItems.forEach((item: ICartItemResponse) => {
+            map.set(item.productVariantId, (map.get(item.productVariantId) || 0) + item.quantity);
+        });
+        return map;
+    }, [selectedItems]);
+
+    // Check if an item exceeds available stock
+    const isItemStockExceeded = (item: ICartItemResponse): boolean => {
+        const stock = getItemStock(item);
+        if (stock === null || stock === 'Unlimited') return false;
+        const totalVariantQty = selectedQtyByVariant.get(item.productVariantId) || item.quantity;
+        return item.quantity > stock || totalVariantQty > stock;
     };
 
-    const handleCheckout = () => {
-        if (selectedItems.length === 0) {
-            toast.error('Selection Required', { description: 'Please select at least one item to checkout.' });
-            return;
-        }
+    // Calculate all stock issues among selected items
+    const stockIssues = useMemo(() => {
+        const issues: Array<{ item: ICartItemResponse; reason: 'OUT_OF_STOCK' | 'EXCEEDS_STOCK'; available: number }> = [];
 
-        const checkoutModifiers: Record<string, { ids: string[]; price: number; names: string[] } | undefined> = {};
         selectedItems.forEach((item: ICartItemResponse) => {
-            const mods = selectedModifiers[item.id];
-            if (mods) {
-                checkoutModifiers[item.id] = mods;
+            const stock = getItemStock(item);
+            if (stock === 0) {
+                issues.push({ item, reason: 'OUT_OF_STOCK', available: 0 });
+            } else if (typeof stock === 'number') {
+                const totalVariantQty = selectedQtyByVariant.get(item.productVariantId) || item.quantity;
+                if (item.quantity > stock || totalVariantQty > stock) {
+                    issues.push({ item, reason: 'EXCEEDS_STOCK', available: stock });
+                }
             }
         });
 
-        useCheckoutStore.getState().setCheckoutState(
-            selectedItems.map((item: ICartItemResponse) => item.id),
-            true,
-            checkoutModifiers
-        );
+        return issues;
+    }, [selectedItems, liveStockMap, selectedQtyByVariant]);
 
-        navigate({ to: '/checkout' });
+    const hasStockIssues = stockIssues.length > 0;
+
+    const handleQuantityChange = async (item: ICartItemResponse, newQuantity: number) => {
+        if (newQuantity <= 0) {
+            setItemToDelete(item);
+            return;
+        }
+        const stock = getItemStock(item);
+        if (typeof stock === 'number' && newQuantity > stock) {
+            toast.warning('Maximum Stock Reached', {
+                description: `Only ${stock} unit(s) of ${item.productVariant.product.name} are available.`
+            });
+            return;
+        }
+        await updateItem({ cartItemId: item.id, quantity: newQuantity });
     };
 
     // Helper: format variant attribute values (e.g. Size: Large)
@@ -173,6 +233,83 @@ export default function CartPage() {
             return 'Regular';
         }
         return attributes.map((attr) => attr.attributeValue.value).join(' / ');
+    };
+
+    const handleCheckout = async () => {
+        if (selectedItems.length === 0) {
+            toast.error('Selection Required', { description: 'Please select at least one item to checkout.' });
+            return;
+        }
+
+        setIsCheckingStock(true);
+        try {
+            // Fetch freshest live stock for all selected products before navigating
+            const selectedProductIds = Array.from(new Set(selectedItems.map((item: ICartItemResponse) => item.productVariant.product.id)));
+            const freshProducts = await Promise.all(selectedProductIds.map((id) => getMenuProductById(id).catch(() => null)));
+
+            const freshStockMap = new Map<string, number | 'Unlimited' | null>();
+            freshProducts.forEach((p) => {
+                if (p?.variants) {
+                    p.variants.forEach((v) => {
+                        freshStockMap.set(v.id, v.maxProduceable ?? null);
+                    });
+                }
+            });
+
+            // Group total requested quantities by variant
+            const selectedByVariant = new Map<string, { totalQty: number; name: string; variantLabel: string; stock: number | 'Unlimited' | null }>();
+            for (const item of selectedItems) {
+                const vId = item.productVariantId;
+                const stock = freshStockMap.get(vId) ?? getItemStock(item);
+                const current = selectedByVariant.get(vId) || {
+                    totalQty: 0,
+                    name: item.productVariant.product.name,
+                    variantLabel: getVariantLabel(item),
+                    stock
+                };
+                current.totalQty += item.quantity;
+                selectedByVariant.set(vId, current);
+            }
+
+            // Verify variant stock availability
+            for (const [, info] of selectedByVariant.entries()) {
+                if (info.stock === 0) {
+                    toast.error('Item Out of Stock', {
+                        description: `"${info.name} (${info.variantLabel})" is currently out of stock. Please remove it from your selection to proceed.`
+                    });
+                    return;
+                }
+
+                if (typeof info.stock === 'number' && info.totalQty > info.stock) {
+                    toast.error('Insufficient Stock', {
+                        description: `Only ${info.stock} unit(s) available for "${info.name} (${info.variantLabel})", but you have selected ${info.totalQty}. Please reduce the quantity.`
+                    });
+                    return;
+                }
+            }
+
+            const checkoutModifiers: Record<string, { ids: string[]; price: number; names: string[] } | undefined> = {};
+            selectedItems.forEach((item: ICartItemResponse) => {
+                const mods = selectedModifiers[item.id];
+                if (mods) {
+                    checkoutModifiers[item.id] = mods;
+                }
+            });
+
+            useCheckoutStore.getState().setCheckoutState(
+                selectedItems.map((item: ICartItemResponse) => item.id),
+                true,
+                checkoutModifiers
+            );
+
+            navigate({ to: '/checkout' });
+        } catch {
+            toast.error('Verification Error', {
+                description: 'Could not verify live stock levels. Please check your connection and try again.'
+            });
+        } finally {
+            setIsCheckingStock(false);
+        }
     };
 
     if (!user) {
@@ -256,6 +393,19 @@ export default function CartPage() {
                 </Button>
             </div>
 
+            {/* Live Inventory Warning Banner */}
+            {hasStockIssues && (
+                <div className="flex items-center gap-3 p-4 rounded-2xl border border-destructive/40 bg-destructive/10 text-destructive mb-6 shadow-2xs">
+                    <AlertTriangle className="size-5 shrink-0" />
+                    <div className="text-xs sm:text-sm font-semibold">
+                        <span>Some selected items exceed our current inventory or are out of stock.</span>
+                        <span className="block font-normal text-xs text-destructive/80 mt-0.5">
+                            Please adjust item quantities or unselect unavailable items before proceeding to checkout.
+                        </span>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Cart Items List */}
                 <div
@@ -271,12 +421,19 @@ export default function CartPage() {
                             onRemoveClick={setItemToDelete}
                             selectedModifierIds={selectedModifiers[item.id]?.ids || []}
                             onModifiersChange={(ids, groups) => handleModifiersChange(item.id, ids, groups)}
+                            stock={getItemStock(item)}
+                            isStockExceeded={isItemStockExceeded(item)}
                         />
                     ))}
                 </div>
 
                 {/* Summary Panel */}
-                <CartSummary totalAmount={selectedTotalAmount} onCheckout={handleCheckout} disabled={isUpdating || isRemoving || isClearing} />
+                <CartSummary
+                    totalAmount={selectedTotalAmount}
+                    onCheckout={handleCheckout}
+                    disabled={isUpdating || isRemoving || isClearing || isCheckingStock}
+                    hasStockIssues={hasStockIssues}
+                />
             </div>
 
             {/* Premium Confirm Deletion Dialog */}

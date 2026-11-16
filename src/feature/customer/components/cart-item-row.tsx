@@ -1,10 +1,9 @@
-import { formatCurrency } from '#/utils/helper.ts';
-import { Trash2, Plus, Minus, Coffee } from 'lucide-react';
+import { formatCurrency, getFileUrl, handleProductImageError } from '#/utils/helper.ts';
+import { Trash2, Plus, Minus, Coffee, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '#/components/ui/button.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { getFileUrl, handleProductImageError } from '#/utils/helper';
 import { getModifierGroups } from '#/api/modifiers.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import type { ICartItemResponse } from '../customer.types.ts';
@@ -17,6 +16,8 @@ interface CartItemRowProps {
     onRemoveClick: (item: ICartItemResponse) => void;
     selectedModifierIds: string[];
     onModifiersChange: (selectedIds: string[], groups: any[]) => void;
+    stock?: number | 'Unlimited' | null;
+    isStockExceeded?: boolean;
 }
 
 export default function CartItemRow({
@@ -26,7 +27,9 @@ export default function CartItemRow({
     onQuantityChange,
     onRemoveClick,
     selectedModifierIds,
-    onModifiersChange
+    onModifiersChange,
+    stock,
+    isStockExceeded = false
 }: CartItemRowProps) {
     const product = item.productVariant.product;
 
@@ -52,24 +55,39 @@ export default function CartItemRow({
     const variantLabel =
         item.productVariant.attributes.length === 0 ? 'Regular' : item.productVariant.attributes.map((attr) => attr.attributeValue.value).join(' / ');
 
+    const isOutOfStock = stock === 0;
+
     return (
-        <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-card hover:shadow-xs transition-shadow">
+        <div
+            className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                isOutOfStock || isStockExceeded
+                    ? 'border-destructive/60 bg-destructive/5 hover:bg-destructive/10'
+                    : 'border-border/40 bg-card hover:shadow-xs'
+            }`}
+        >
             {/* Selection Checkbox */}
             <div className="flex items-center justify-center shrink-0">
                 <Checkbox checked={isSelected} onCheckedChange={onToggleSelect} aria-label={`Select ${product.name}`} />
             </div>
 
             {/* Photo */}
-            <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center shrink-0">
+            <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted border border-border flex items-center justify-center shrink-0 relative">
                 {product.photo ? (
                     <img
                         src={getFileUrl(product.photo)}
                         alt={product.name}
                         onError={handleProductImageError}
-                        className="h-full w-full object-cover"
+                        className={`h-full w-full object-cover ${isOutOfStock ? 'grayscale opacity-60' : ''}`}
                     />
                 ) : (
                     <Coffee className="size-8 text-muted-foreground/40" />
+                )}
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                        <span className="text-[10px] font-black uppercase text-destructive tracking-tight px-1 text-center leading-none">
+                            Out of Stock
+                        </span>
+                    </div>
                 )}
             </div>
 
@@ -78,6 +96,24 @@ export default function CartItemRow({
                 <div className="text-xs font-bold text-primary uppercase">{product.category?.name || 'Beverage'}</div>
                 <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5">{product.name || 'Unknown Item'}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{variantLabel}</p>
+
+                {/* Live Stock Level Indicator */}
+                {isOutOfStock ? (
+                    <div className="text-xs font-bold text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="size-3.5 shrink-0" />
+                        Out of stock
+                    </div>
+                ) : isStockExceeded ? (
+                    <div className="text-xs font-bold text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="size-3.5 shrink-0" />
+                        Selected quantity exceeds inventory (Only {stock} available)
+                    </div>
+                ) : typeof stock === 'number' && stock <= 10 ? (
+                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1">Only {stock} left in stock</div>
+                ) : typeof stock === 'number' ? (
+                    <div className="text-xs text-muted-foreground mt-1">{stock} available</div>
+                ) : null}
+
                 <div className="text-xs font-semibold text-foreground mt-1 sm:hidden">{formatCurrency(item.unitPrice + modifiersPrice)}</div>
                 {item.notes && (
                     <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium mt-1.5 inline-block italic">
@@ -94,12 +130,18 @@ export default function CartItemRow({
                                 <div className="flex flex-wrap gap-1.5">
                                     {group.options.map((opt: any) => {
                                         const isChecked = selectedModifierIds.includes(opt.id);
+                                        const isModifierOos = opt.maxProduceable === 0;
                                         return (
                                             <Button
                                                 key={opt.id}
                                                 type="button"
                                                 variant={isChecked ? 'default' : 'outline'}
+                                                disabled={isModifierOos}
                                                 onClick={() => {
+                                                    if (isModifierOos) {
+                                                        toast.warning(`${opt.name} is currently out of stock.`);
+                                                        return;
+                                                    }
                                                     const groupOptionIds = group.options.map((o: any) => o.id);
                                                     const maxSelect = group.maxSelect || 1;
                                                     const isRequired = group.isRequired || false;
@@ -128,9 +170,11 @@ export default function CartItemRow({
                                                     }
                                                     onModifiersChange(nextIds, modifierGroups);
                                                 }}
-                                                className="h-6 text-xs font-semibold py-0 px-2 rounded-md transition-all shadow-3xs"
+                                                className={`h-6 text-xs font-semibold py-0 px-2 rounded-md transition-all shadow-3xs ${
+                                                    isModifierOos ? 'opacity-40 cursor-not-allowed line-through' : ''
+                                                }`}
                                             >
-                                                {opt.name} (+{formatCurrency(opt.price)})
+                                                {opt.name} (+{formatCurrency(opt.price)}){isModifierOos && ' (OOS)'}
                                             </Button>
                                         );
                                     })}
@@ -151,8 +195,24 @@ export default function CartItemRow({
                     <Button variant="ghost" size="sm" onClick={() => onQuantityChange(item, item.quantity - 1)} className="h-7 w-7 rounded-md p-0">
                         <Minus className="size-3" />
                     </Button>
-                    <span className="w-6 text-center text-xs font-bold text-foreground">{item.quantity}</span>
-                    <Button variant="ghost" size="sm" onClick={() => onQuantityChange(item, item.quantity + 1)} className="h-7 w-7 rounded-md p-0">
+                    <span
+                        className={`w-6 text-center text-xs font-bold ${isStockExceeded || isOutOfStock ? 'text-destructive font-black' : 'text-foreground'}`}
+                    >
+                        {item.quantity}
+                    </span>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isOutOfStock || (typeof stock === 'number' && item.quantity >= stock)}
+                        onClick={() => {
+                            if (typeof stock === 'number' && item.quantity >= stock) {
+                                toast.warning(`Cannot exceed available stock (${stock} units)`);
+                                return;
+                            }
+                            onQuantityChange(item, item.quantity + 1);
+                        }}
+                        className="h-7 w-7 rounded-md p-0 disabled:opacity-40"
+                    >
                         <Plus className="size-3" />
                     </Button>
                 </div>

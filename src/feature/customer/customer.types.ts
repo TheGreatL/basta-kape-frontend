@@ -109,6 +109,7 @@ export interface IProductVariantInfo {
     price: number;
     product: IProductInfo;
     attributes: IProductVariantAttributeInfo[];
+    maxProduceable?: number | 'Unlimited' | null;
 }
 
 export interface ICartModifierResponse {
