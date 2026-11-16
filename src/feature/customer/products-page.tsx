@@ -14,7 +14,12 @@ import ProductCard from './components/product-card.tsx';
 export default function ProductsPage() {
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 300);
-    const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
+    const [selectedTypeId, setSelectedTypeId] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('productTypeId');
+        }
+        return null;
+    });
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const limit = 8;
