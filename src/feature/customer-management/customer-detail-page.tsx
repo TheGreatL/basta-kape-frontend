@@ -4,7 +4,7 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { User, Calendar, ShieldAlert, ArrowLeft, Phone, Mail, Hash, KeyRound } from 'lucide-react';
+import { User, Calendar, ShieldAlert, ArrowLeft, Phone, Mail, Hash, KeyRound, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { getCustomerById, updateCustomer, adminResetCustomerPassword } from '#/api/customer.api.ts';
@@ -23,6 +23,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Input } from '#/components/ui/input.tsx';
+import { Textarea } from '#/components/ui/textarea.tsx';
 
 type EditCustomerFormValues = TUpdateCustomerSchema;
 
@@ -52,7 +53,8 @@ export default function CustomerDetailPage() {
             firstName: '',
             lastName: '',
             middleName: '',
-            phoneNumber: ''
+            phoneNumber: '',
+            deliveryAddress: ''
         }
     });
 
@@ -64,7 +66,8 @@ export default function CustomerDetailPage() {
                 firstName: customerDetails.user.firstName,
                 lastName: customerDetails.user.lastName,
                 middleName: customerDetails.user.middleName || '',
-                phoneNumber: customerDetails.user.phoneNumber || ''
+                phoneNumber: customerDetails.user.phoneNumber || '',
+                deliveryAddress: customerDetails.deliveryAddress || ''
             });
         }
     }, [customerDetails, form]);
@@ -100,7 +103,8 @@ export default function CustomerDetailPage() {
                 firstName: values.firstName,
                 lastName: values.lastName,
                 middleName: values.middleName || null,
-                phoneNumber: values.phoneNumber || null
+                phoneNumber: values.phoneNumber || null,
+                deliveryAddress: values.deliveryAddress ? values.deliveryAddress.trim() : null
             }
         });
     };
@@ -322,6 +326,29 @@ export default function CustomerDetailPage() {
                                                         {...field}
                                                         value={field.value || ''}
                                                         className="h-9 bg-background/50"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="deliveryAddress"
+                                        render={({ field }) => (
+                                            <FormItem className="sm:col-span-2">
+                                                <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
+                                                    <MapPin className="size-3.5 text-muted-foreground" />
+                                                    Delivery Address (Optional)
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="House/Unit #, Street, Barangay, City, Landmark..."
+                                                        disabled={!hasUpdatePermission}
+                                                        maxLength={1000}
+                                                        {...field}
+                                                        value={field.value || ''}
+                                                        className="bg-background/50 text-xs resize-none h-20 rounded-xl"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
