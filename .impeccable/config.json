@@ -1,3 +1,6 @@
 {
-    "buildPath": "code"
+    "buildPath": "code",
+    "hook": {
+        "enabled": true
+    }
 }

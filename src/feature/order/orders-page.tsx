@@ -39,6 +39,7 @@ import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
 import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
 import ProcessPaymentDialog from '#/feature/order/components/process-payment-dialog.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
+import AssignCourierDialog from '#/feature/order/components/assign-courier-dialog.tsx';
 import { useDebounce } from '#/hooks/use-debounce.ts';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -66,6 +67,8 @@ export default function OrdersPage() {
     const [voidOrderId, setVoidOrderId] = React.useState<string | null>(null);
     const [voidOrderNumber, setVoidOrderNumber] = React.useState<string | null>(null);
     const [paymentOrder, setPaymentOrder] = React.useState<IOrder | null>(null);
+    const [assignCourierOrder, setAssignCourierOrder] = React.useState<IOrder | null>(null);
+    const [isAssignCourierOpen, setIsAssignCourierOpen] = React.useState(false);
 
     // Mutation: Update Status
     const updateStatusMutation = useMutation({
@@ -374,6 +377,24 @@ export default function OrdersPage() {
                                 </RequirePermission>
                             )}
 
+                            {order.orderType === 'DELIVERY' && (order.status === 'PREPARING' || order.status === 'READY') && (
+                                <RequirePermission module="Orders Management" action="update">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setAssignCourierOrder(order);
+                                            setIsAssignCourierOpen(true);
+                                        }}
+                                        className="h-8 px-2.5 gap-1.5 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/5 rounded-lg"
+                                        title={order.riderName ? 'Edit Courier' : 'Assign Courier'}
+                                    >
+                                        <Truck className="size-3.5 shrink-0" />
+                                        <span>{order.riderName ? 'Edit Courier' : 'Assign Courier'}</span>
+                                    </Button>
+                                </RequirePermission>
+                            )}
+
                             {order.status === 'PREPARING' && (
                                 <RequirePermission module="Order Queue" action="update">
                                     <Button
@@ -402,7 +423,7 @@ export default function OrdersPage() {
                                             className="h-8 px-2.5 gap-1.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white shadow-3xs hover:shadow-xs rounded-lg"
                                             title={
                                                 !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
-                                                    ? 'Waiting for customer to submit courier details'
+                                                    ? 'Assign courier details before dispatching'
                                                     : 'Hand over to Courier (Mark Dispatched)'
                                             }
                                         >
@@ -677,6 +698,16 @@ export default function OrdersPage() {
 
             {/* Process Payment Dialog */}
             <ProcessPaymentDialog open={!!paymentOrder} onOpenChange={(open) => !open && setPaymentOrder(null)} order={paymentOrder} />
+
+            {/* Assign Courier Dialog */}
+            <AssignCourierDialog
+                open={isAssignCourierOpen}
+                onOpenChange={setIsAssignCourierOpen}
+                order={assignCourierOrder}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDERS_LIST] });
+                }}
+            />
         </div>
     );
 }

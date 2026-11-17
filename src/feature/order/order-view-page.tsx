@@ -14,7 +14,8 @@ import {
     Eye,
     Coffee,
     Truck,
-    ExternalLink
+    ExternalLink,
+    MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '#/lib/utils.ts';
@@ -279,49 +280,114 @@ export default function OrderViewPage() {
                             </div>
                         </div>
 
-                        {/* Courier / Rider Details for Delivery Orders */}
+                        {/* Delivery Destination & Courier Details for Delivery Orders */}
                         {orderDetails.orderType === 'DELIVERY' && (
-                            <div className="border border-primary/20 bg-primary/5 p-4 rounded-xl space-y-3">
-                                <div className="flex items-center gap-1.5">
-                                    <Truck className="size-4 text-primary" />
-                                    <h4 className="font-bold text-foreground uppercase text-xs">Courier / Rider Details</h4>
-                                </div>
-                                {orderDetails.riderName || orderDetails.riderPlate || orderDetails.riderVehicle || orderDetails.trackingLink ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                            <div className="space-y-3">
+                                {/* Delivery Destination Card */}
+                                <div className="border border-primary/20 bg-primary/5 p-4 rounded-xl space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                            <MapPin className="size-4 text-primary" />
+                                            <h4 className="font-bold text-foreground uppercase text-xs">Delivery Destination</h4>
+                                        </div>
+                                        {orderDetails.deliveryDistanceKm != null && (
+                                            <Badge variant="outline" className="text-2xs font-bold border-primary/30 text-primary">
+                                                {orderDetails.deliveryDistanceKm} km
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                                         <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
-                                            <span className="text-muted-foreground font-semibold block text-[11px]">Rider Name</span>
-                                            <span className="font-bold text-foreground">{orderDetails.riderName || '—'}</span>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">Delivery Address</span>
+                                                {orderDetails.deliveryAddress && (
+                                                    <CopyButton value={orderDetails.deliveryAddress} title="Copy Address" />
+                                                )}
+                                            </div>
+                                            <p className="font-bold text-foreground mt-0.5 leading-snug">{orderDetails.deliveryAddress || '—'}</p>
                                         </div>
                                         <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
-                                            <span className="text-muted-foreground font-semibold block text-[11px]">Plate Number</span>
-                                            <span className="font-bold text-foreground font-mono uppercase">{orderDetails.riderPlate || '—'}</span>
-                                        </div>
-                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
-                                            <span className="text-muted-foreground font-semibold block text-[11px]">Vehicle</span>
-                                            <span className="font-bold text-foreground">{orderDetails.riderVehicle || '—'}</span>
-                                        </div>
-                                        <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
-                                            <span className="text-muted-foreground font-semibold block text-[11px]">Tracking Link</span>
-                                            {orderDetails.trackingLink ? (
-                                                <a
-                                                    href={orderDetails.trackingLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 font-bold text-primary hover:underline break-all"
-                                                >
-                                                    <span className="truncate max-w-[140px]">{orderDetails.trackingLink}</span>
-                                                    <ExternalLink className="size-3 shrink-0" />
-                                                </a>
-                                            ) : (
-                                                <span className="font-bold text-foreground">—</span>
-                                            )}
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">GPS Coordinates</span>
+                                                {orderDetails.deliveryLatitude != null && orderDetails.deliveryLongitude != null && (
+                                                    <div className="flex items-center gap-1">
+                                                        <a
+                                                            href={`https://www.google.com/maps/search/?api=1&query=${orderDetails.deliveryLatitude},${orderDetails.deliveryLongitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-primary hover:text-primary/80 transition-colors inline-flex items-center text-[11px] font-semibold gap-0.5"
+                                                            title="Open in Google Maps"
+                                                        >
+                                                            Maps <ExternalLink className="size-3" />
+                                                        </a>
+                                                        <CopyButton
+                                                            value={`${orderDetails.deliveryLatitude}, ${orderDetails.deliveryLongitude}`}
+                                                            title="Copy Coordinates"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="font-mono font-bold text-foreground mt-0.5">
+                                                {orderDetails.deliveryLatitude != null && orderDetails.deliveryLongitude != null
+                                                    ? `${orderDetails.deliveryLatitude.toFixed(6)}, ${orderDetails.deliveryLongitude.toFixed(6)}`
+                                                    : '—'}
+                                            </p>
                                         </div>
                                     </div>
-                                ) : (
-                                    <p className="text-xs text-muted-foreground italic">
-                                        Awaiting courier details from customer (customer submits once order is Ready for Pickup).
-                                    </p>
-                                )}
+                                    <div className="flex items-center justify-between pt-1 border-t border-border/20 text-xs">
+                                        <span className="text-muted-foreground font-medium">Collected Shipping Fee:</span>
+                                        <span className="font-bold text-primary">{formatCurrency(orderDetails.deliveryFee ?? 0)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Courier / Rider Details */}
+                                <div className="border border-border/60 bg-card p-4 rounded-xl space-y-3">
+                                    <div className="flex items-center gap-1.5">
+                                        <Truck className="size-4 text-primary" />
+                                        <h4 className="font-bold text-foreground uppercase text-xs">Courier / Rider Details</h4>
+                                    </div>
+                                    {orderDetails.riderName || orderDetails.riderPlate || orderDetails.riderVehicle || orderDetails.trackingLink ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                            <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">Rider Name</span>
+                                                <span className="font-bold text-foreground">{orderDetails.riderName || '—'}</span>
+                                            </div>
+                                            <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">Plate Number</span>
+                                                <span className="font-bold text-foreground font-mono uppercase">
+                                                    {orderDetails.riderPlate || '—'}
+                                                </span>
+                                            </div>
+                                            <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">Vehicle</span>
+                                                <span className="font-bold text-foreground">{orderDetails.riderVehicle || '—'}</span>
+                                            </div>
+                                            <div className="p-2.5 rounded-lg bg-background/80 border border-border/40">
+                                                <span className="text-muted-foreground font-semibold block text-[11px]">Tracking Link</span>
+                                                {orderDetails.trackingLink ? (
+                                                    <div className="flex items-center justify-between gap-1 mt-0.5">
+                                                        <a
+                                                            href={orderDetails.trackingLink}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1 font-bold text-primary hover:underline break-all truncate max-w-[130px]"
+                                                        >
+                                                            <span className="truncate">{orderDetails.trackingLink}</span>
+                                                            <ExternalLink className="size-3 shrink-0" />
+                                                        </a>
+                                                        <CopyButton value={orderDetails.trackingLink} title="Copy Link" />
+                                                    </div>
+                                                ) : (
+                                                    <span className="font-bold text-foreground">—</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground italic">
+                                            No courier assigned yet. Staff can assign courier from Live Order Queue or Orders Management.
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -402,6 +468,13 @@ export default function OrderViewPage() {
                                     <span>Subtotal Amount:</span>
                                     <span className="text-foreground/80 font-semibold">{formatCurrency(orderDetails.subtotal)}</span>
                                 </div>
+
+                                {orderDetails.orderType === 'DELIVERY' && orderDetails.deliveryFee != null && (
+                                    <div className="flex justify-between text-muted-foreground">
+                                        <span>Shipping Fee:</span>
+                                        <span className="text-foreground/80 font-semibold">{formatCurrency(orderDetails.deliveryFee)}</span>
+                                    </div>
+                                )}
 
                                 <div className="flex flex-col gap-1.5 text-muted-foreground border-b border-dashed border-border/20 pb-2">
                                     <div className="flex justify-between">

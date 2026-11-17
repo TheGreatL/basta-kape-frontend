@@ -14,6 +14,7 @@ import { Badge } from '#/components/ui/badge.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import VoidOrderDialog from '#/feature/order/components/void-order-dialog.tsx';
+import AssignCourierDialog from '#/feature/order/components/assign-courier-dialog.tsx';
 import { CopyButton } from '#/components/ui/copy-button.tsx';
 import { RequirePermission } from '#/components/rbac/require-permission.tsx';
 import { formatDuration, intervalToDuration } from 'date-fns';
@@ -26,6 +27,10 @@ export default function OrderQueuePage() {
     // Void dialog states
     const [voidOrderId, setVoidOrderId] = React.useState<string | null>(null);
     const [voidOrderNumber, setVoidOrderNumber] = React.useState<string | null>(null);
+
+    // Assign courier dialog states
+    const [assignCourierOrder, setAssignCourierOrder] = React.useState<IOrder | null>(null);
+    const [isAssignCourierOpen, setIsAssignCourierOpen] = React.useState(false);
 
     // Timer state to force refresh the elapsed minutes ticker every 30 seconds
     const [, setTicker] = React.useState(0);
@@ -155,7 +160,9 @@ export default function OrderQueuePage() {
                                 variant="outline"
                                 className={`text-xs font-bold py-0 px-1.5 leading-none uppercase ${getOrderTypeBadgeColor(order.orderType)}`}
                             >
-                                {order.orderType.replace('_', ' ')}
+                                {order.orderType === 'DELIVERY' && order.deliveryDistanceKm
+                                    ? `🛵 Delivery (${order.deliveryDistanceKm.toFixed(1)} km)`
+                                    : order.orderType.replace('_', ' ')}
                             </Badge>
                             {order.buzzerId && (
                                 <Badge
@@ -184,13 +191,25 @@ export default function OrderQueuePage() {
 
                     {/* Courier / Rider Details (for Delivery orders) */}
                     {order.orderType === 'DELIVERY' && (
-                        <div className="text-xs bg-primary/5 border border-primary/15 p-2.5 rounded-lg space-y-1">
-                            <div className="font-bold text-primary flex items-center gap-1 text-[11px] uppercase">
-                                <Truck className="size-3 shrink-0" />
-                                Courier Details
+                        <div className="text-xs bg-primary/5 border border-primary/15 p-2.5 rounded-lg space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <div className="font-bold text-primary flex items-center gap-1 text-[11px] uppercase">
+                                    <Truck className="size-3 shrink-0" />
+                                    Delivery Details
+                                </div>
+                                {order.deliveryDistanceKm && (
+                                    <span className="text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10">
+                                        {order.deliveryDistanceKm.toFixed(1)} km
+                                    </span>
+                                )}
                             </div>
+
+                            {order.deliveryAddress && (
+                                <p className="text-[11px] text-foreground font-medium line-clamp-1">📍 {order.deliveryAddress}</p>
+                            )}
+
                             {order.riderName || order.riderPlate || order.riderVehicle || order.trackingLink ? (
-                                <div className="space-y-0.5 text-[11px] text-foreground/90">
+                                <div className="space-y-0.5 text-[11px] text-foreground/90 border-t border-primary/10 pt-1">
                                     <div>
                                         <span className="text-muted-foreground font-semibold">Rider:</span>{' '}
                                         <span className="font-bold">{order.riderName || '—'}</span>
@@ -214,9 +233,7 @@ export default function OrderQueuePage() {
                                 </div>
                             ) : (
                                 <p className="text-[11px] text-muted-foreground italic">
-                                    {order.status === 'READY'
-                                        ? 'Awaiting rider submission from customer...'
-                                        : 'Customer will submit rider details once Ready for Pickup.'}
+                                    No courier assigned yet. Book courier and enter rider details.
                                 </p>
                             )}
                         </div>
@@ -291,37 +308,69 @@ export default function OrderQueuePage() {
 
                     {order.status === 'PREPARING' && (
                         <RequirePermission module="Order Queue" action="update">
-                            <Button
-                                size="sm"
-                                disabled={updateStatusMutation.isPending}
-                                onClick={() => handleTransition(order.id, 'READY')}
-                                className="h-8.5 flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
-                            >
-                                <Check className="size-3.5 stroke-[2.5] shrink-0" />
-                                Ready
-                            </Button>
+                            <div className="flex items-center gap-1.5 flex-1">
+                                {order.orderType === 'DELIVERY' && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setAssignCourierOrder(order);
+                                            setIsAssignCourierOpen(true);
+                                        }}
+                                        className="h-8.5 px-2.5 gap-1.5 border-primary/40 text-primary hover:bg-primary/5 font-semibold text-xs rounded-lg"
+                                    >
+                                        <Truck className="size-3.5 shrink-0" />
+                                        {order.riderName ? 'Edit Courier' : 'Assign Courier'}
+                                    </Button>
+                                )}
+                                <Button
+                                    size="sm"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={() => handleTransition(order.id, 'READY')}
+                                    className="h-8.5 flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                                >
+                                    <Check className="size-3.5 stroke-[2.5] shrink-0" />
+                                    Ready
+                                </Button>
+                            </div>
                         </RequirePermission>
                     )}
 
                     {order.status === 'READY' &&
                         (order.orderType === 'DELIVERY' ? (
-                            <Button
-                                size="sm"
-                                disabled={
-                                    updateStatusMutation.isPending ||
-                                    !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
-                                }
-                                title={
-                                    !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
-                                        ? 'Waiting for customer to submit courier details'
-                                        : 'Hand over to Courier (Mark Dispatched)'
-                                }
-                                onClick={() => handleTransition(order.id, 'DISPATCHED')}
-                                className="h-8.5 flex-1 gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
-                            >
-                                <Truck className="size-3.5 shrink-0" />
-                                Dispatch
-                            </Button>
+                            <RequirePermission module="Order Queue" action="update">
+                                <div className="flex items-center gap-1.5 flex-1">
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setAssignCourierOrder(order);
+                                            setIsAssignCourierOpen(true);
+                                        }}
+                                        className="h-8.5 px-2.5 gap-1.5 border-primary/40 text-primary hover:bg-primary/5 font-semibold text-xs rounded-lg"
+                                    >
+                                        <Truck className="size-3.5 shrink-0" />
+                                        {order.riderName ? 'Edit Courier' : 'Assign Courier'}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        disabled={
+                                            updateStatusMutation.isPending ||
+                                            !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                        }
+                                        title={
+                                            !(order.riderName && order.riderPlate && order.riderVehicle && order.trackingLink)
+                                                ? 'Assign courier details before dispatching'
+                                                : 'Hand over to Courier (Mark Dispatched)'
+                                        }
+                                        onClick={() => handleTransition(order.id, 'DISPATCHED')}
+                                        className="h-8.5 flex-1 gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-3xs hover:shadow-xs transition-shadow"
+                                    >
+                                        <Truck className="size-3.5 shrink-0" />
+                                        Dispatch
+                                    </Button>
+                                </div>
+                            </RequirePermission>
                         ) : (
                             <RequirePermission module="Sales Management" action="create">
                                 <Button
@@ -495,6 +544,16 @@ export default function OrderQueuePage() {
                 onOpenChange={(open) => !open && setVoidOrderId(null)}
                 orderId={voidOrderId}
                 orderNumber={voidOrderNumber}
+            />
+
+            {/* Assign Courier Dialog */}
+            <AssignCourierDialog
+                open={isAssignCourierOpen}
+                onOpenChange={setIsAssignCourierOpen}
+                order={assignCourierOrder}
+                onSuccess={() => {
+                    refetch();
+                }}
             />
         </div>
     );
