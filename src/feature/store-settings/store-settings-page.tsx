@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Store, Clock, MapPin, Phone, Save, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Store, Clock, MapPin, Phone, Save, RotateCcw, ShieldAlert, Truck, Navigation } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '#/components/ui/tabs.tsx';
 import DiscountManager from './components/discount-manager.tsx';
 
@@ -46,7 +46,13 @@ const storeSettingsSchema = z.object({
         .max(5, 'Max 5 characters')
         .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'),
     vatRate: z.number().min(0, 'VAT rate must be non-negative'),
-    serviceCharge: z.number().min(0, 'Service charge must be non-negative')
+    serviceCharge: z.number().min(0, 'Service charge must be non-negative'),
+    deliveryBaseFare: z.number().min(0, 'Base fare must be non-negative'),
+    deliveryBaseDistanceKm: z.number().min(0, 'Base distance must be non-negative'),
+    deliveryRatePerKm: z.number().min(0, 'Rate per km must be non-negative'),
+    deliveryMaxDistanceKm: z.number().min(0.5, 'Max distance must be at least 0.5 km'),
+    storeLatitude: z.number(),
+    storeLongitude: z.number()
 });
 
 type StoreSettingsFormValues = z.infer<typeof storeSettingsSchema>;
@@ -75,7 +81,13 @@ export default function StoreSettingsPage() {
             openingTime: '07:00',
             closingTime: '21:00',
             vatRate: 12.0,
-            serviceCharge: 0.0
+            serviceCharge: 0.0,
+            deliveryBaseFare: 49.0,
+            deliveryBaseDistanceKm: 2.0,
+            deliveryRatePerKm: 10.0,
+            deliveryMaxDistanceKm: 10.0,
+            storeLatitude: 14.6288,
+            storeLongitude: 121.0422
         }
     });
 
@@ -89,7 +101,13 @@ export default function StoreSettingsPage() {
                 openingTime: settings.openingTime,
                 closingTime: settings.closingTime,
                 vatRate: settings.vatRate,
-                serviceCharge: settings.serviceCharge
+                serviceCharge: settings.serviceCharge,
+                deliveryBaseFare: settings.deliveryBaseFare,
+                deliveryBaseDistanceKm: settings.deliveryBaseDistanceKm,
+                deliveryRatePerKm: settings.deliveryRatePerKm,
+                deliveryMaxDistanceKm: settings.deliveryMaxDistanceKm,
+                storeLatitude: settings.storeLatitude,
+                storeLongitude: settings.storeLongitude
             });
         }
     }, [settings, form]);
@@ -314,7 +332,167 @@ export default function StoreSettingsPage() {
                                         </CardContent>
                                     </Card>
 
-                                    {/* Card 3: Billing & Taxes (Commented out for now as tax/service charges are not utilized) */}
+                                    {/* Card 3: Delivery & Shipping Rates */}
+                                    <Card className="shadow-xs border-border/60 bg-card/40">
+                                        <CardHeader className="border-b border-border/40 pb-4">
+                                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                                <Truck className="size-5 text-primary" />
+                                                Delivery & Shipping Rates
+                                            </CardTitle>
+                                            <CardDescription className="text-xs">
+                                                Configure distance-based delivery rates and maximum delivery scope.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4 pt-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="deliveryBaseFare"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80">
+                                                                Base Fare (₱) <span className="text-rose-500">*</span>
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.5"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="deliveryBaseDistanceKm"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80">
+                                                                Base Distance (km) <span className="text-rose-500">*</span>
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.1"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="deliveryRatePerKm"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80">
+                                                                Rate per Extra km (₱) <span className="text-rose-500">*</span>
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.5"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="deliveryMaxDistanceKm"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80">
+                                                                Max Radius (km) <span className="text-rose-500">*</span>
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.5"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4 pt-1">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="storeLatitude"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1">
+                                                                <Navigation className="size-3 text-muted-foreground" />
+                                                                Store Latitude
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.0001"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50 text-xs"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="storeLongitude"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1">
+                                                                <Navigation className="size-3 text-muted-foreground" />
+                                                                Store Longitude
+                                                            </FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.0001"
+                                                                    disabled={!canUpdate}
+                                                                    value={field.value}
+                                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                    className="h-9 bg-background/50 text-xs"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Card 4: Billing & Taxes (Commented out for now as tax/service charges are not utilized) */}
                                     {/* <Card className="shadow-xs border-border/60 bg-card/40">
                                         <CardHeader className="border-b border-border/40 pb-4">
                                             <CardTitle className="text-lg font-bold flex items-center gap-2">

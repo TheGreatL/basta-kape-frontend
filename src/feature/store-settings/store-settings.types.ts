@@ -7,6 +7,12 @@ export interface IStoreSetting {
     closingTime: string;
     vatRate: number;
     serviceCharge: number;
+    deliveryBaseFare: number;
+    deliveryBaseDistanceKm: number;
+    deliveryRatePerKm: number;
+    deliveryMaxDistanceKm: number;
+    storeLatitude: number;
+    storeLongitude: number;
     updatedAt: string;
 }
 
@@ -18,6 +24,12 @@ export interface ICreateStoreSetting {
     closingTime: string;
     vatRate?: number;
     serviceCharge?: number;
+    deliveryBaseFare?: number;
+    deliveryBaseDistanceKm?: number;
+    deliveryRatePerKm?: number;
+    deliveryMaxDistanceKm?: number;
+    storeLatitude?: number;
+    storeLongitude?: number;
 }
 
 export interface IUpdateStoreSetting {
@@ -28,4 +40,10 @@ export interface IUpdateStoreSetting {
     closingTime?: string;
     vatRate?: number;
     serviceCharge?: number;
+    deliveryBaseFare?: number;
+    deliveryBaseDistanceKm?: number;
+    deliveryRatePerKm?: number;
+    deliveryMaxDistanceKm?: number;
+    storeLatitude?: number;
+    storeLongitude?: number;
 }
