@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Mail, Phone, Calendar } from 'lucide-react';
+import { Mail, Phone, Calendar, MapPin } from 'lucide-react';
 
 interface ProfileCardProps {
     firstName: string;
@@ -7,10 +7,11 @@ interface ProfileCardProps {
     username: string;
     email: string;
     phoneNumber?: string | null;
+    deliveryAddress?: string | null;
     createdAt: string;
 }
 
-export default function ProfileCard({ firstName, lastName, username, email, phoneNumber, createdAt }: ProfileCardProps) {
+export default function ProfileCard({ firstName, lastName, username, email, phoneNumber, deliveryAddress, createdAt }: ProfileCardProps) {
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
 
     return (
@@ -30,6 +31,12 @@ export default function ProfileCard({ firstName, lastName, username, email, phon
                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                         <Phone className="size-4 text-primary shrink-0" />
                         <span>{phoneNumber}</span>
+                    </div>
+                )}
+                {deliveryAddress && (
+                    <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                        <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
+                        <span className="leading-relaxed text-left">{deliveryAddress}</span>
                     </div>
                 )}
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">

@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, MapPin } from 'lucide-react';
 import { Input } from '#/components/ui/input.tsx';
+import { Textarea } from '#/components/ui/textarea.tsx';
 import { Button } from '#/components/ui/button.tsx';
 
 interface EditProfileFormProps {
@@ -12,6 +13,8 @@ interface EditProfileFormProps {
     setMiddleName: (val: string) => void;
     phoneNumber: string;
     setPhoneNumber: (val: string) => void;
+    deliveryAddress: string;
+    setDeliveryAddress: (val: string) => void;
     username: string;
     setUsername: (val: string) => void;
     email: string;
@@ -29,6 +32,8 @@ export default function EditProfileForm({
     setMiddleName,
     phoneNumber,
     setPhoneNumber,
+    deliveryAddress,
+    setDeliveryAddress,
     username,
     setUsername,
     email,
@@ -92,6 +97,21 @@ export default function EditProfileForm({
                         className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm"
                     />
                 </div>
+            </div>
+
+            <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5" htmlFor="deliveryAddress">
+                    <MapPin className="size-3.5 text-muted-foreground" />
+                    Default Delivery Address (Optional)
+                </label>
+                <Textarea
+                    id="deliveryAddress"
+                    value={deliveryAddress}
+                    placeholder="Enter your default delivery address (House/Unit #, Street, Barangay, City, Landmark)..."
+                    maxLength={1000}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    className="rounded-xl bg-muted/20 border-border/60 focus-visible:ring-primary/20 text-sm resize-none h-20"
+                />
             </div>
 
             <h3 className="text-base font-bold text-foreground border-t border-border/30 pt-6 mt-6">Account Settings</h3>

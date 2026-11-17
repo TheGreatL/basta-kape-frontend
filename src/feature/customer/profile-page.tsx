@@ -22,6 +22,7 @@ export default function ProfilePage() {
     const [lastName, setLastName] = useState('');
     const [middleName, setMiddleName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
 
@@ -32,6 +33,7 @@ export default function ProfilePage() {
             setLastName(customer.user.lastName || '');
             setMiddleName(customer.user.middleName || '');
             setPhoneNumber(customer.user.phoneNumber || '');
+            setDeliveryAddress(customer.deliveryAddress || '');
             setEmail(customer.user.email || '');
             setUsername(customer.user.username || '');
         }
@@ -44,6 +46,7 @@ export default function ProfilePage() {
             lastName: string;
             middleName?: string | null;
             phoneNumber?: string | null;
+            deliveryAddress?: string | null;
             email: string;
             username: string;
         }) => {
@@ -75,6 +78,7 @@ export default function ProfilePage() {
                 lastName,
                 middleName: middleName.trim() || null,
                 phoneNumber: phoneNumber.trim() || null,
+                deliveryAddress: deliveryAddress.trim() || null,
                 email,
                 username
             });
@@ -129,6 +133,7 @@ export default function ProfilePage() {
                         username={username}
                         email={email}
                         phoneNumber={phoneNumber}
+                        deliveryAddress={deliveryAddress}
                         createdAt={customer.createdAt}
                     />
                 </div>
@@ -144,6 +149,8 @@ export default function ProfilePage() {
                         setMiddleName={setMiddleName}
                         phoneNumber={phoneNumber}
                         setPhoneNumber={setPhoneNumber}
+                        deliveryAddress={deliveryAddress}
+                        setDeliveryAddress={setDeliveryAddress}
                         username={username}
                         setUsername={setUsername}
                         email={email}
