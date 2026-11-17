@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { UserPlus, ArrowLeft } from 'lucide-react';
+import { UserPlus, ArrowLeft, MapPin } from 'lucide-react';
 
 import { createCustomer } from '#/api/customer.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
@@ -12,6 +12,7 @@ import { createCustomerSchema } from './customer.schema.ts';
 
 import { Button } from '#/components/ui/button.tsx';
 import { Input } from '#/components/ui/input.tsx';
+import { Textarea } from '#/components/ui/textarea.tsx';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form.tsx';
 import { Spinner } from '#/components/ui/spinner.tsx';
 
@@ -28,7 +29,8 @@ export default function CustomerCreatePage() {
             firstName: '',
             lastName: '',
             middleName: '',
-            phoneNumber: ''
+            phoneNumber: '',
+            deliveryAddress: ''
         }
     });
 
@@ -56,7 +58,8 @@ export default function CustomerCreatePage() {
             firstName: values.firstName,
             lastName: values.lastName,
             middleName: values.middleName || null,
-            phoneNumber: values.phoneNumber || null
+            phoneNumber: values.phoneNumber || null,
+            deliveryAddress: values.deliveryAddress ? values.deliveryAddress.trim() : null
         });
     };
 
@@ -147,6 +150,28 @@ export default function CustomerCreatePage() {
                                                     {...field}
                                                     value={field.value || ''}
                                                     className="h-9 bg-background/50"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="deliveryAddress"
+                                    render={({ field }) => (
+                                        <FormItem className="sm:col-span-2">
+                                            <FormLabel className="font-semibold text-foreground/80 flex items-center gap-1.5">
+                                                <MapPin className="size-3.5 text-muted-foreground" />
+                                                Delivery Address (Optional)
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="House/Unit #, Street, Barangay, City, Landmark..."
+                                                    maxLength={1000}
+                                                    {...field}
+                                                    value={field.value || ''}
+                                                    className="bg-background/50 text-xs resize-none h-20 rounded-xl"
                                                 />
                                             </FormControl>
                                             <FormMessage />
