@@ -378,4 +378,45 @@ describe('CartPage - Inventory & Live Stock Validation', () => {
         fireEvent.click(plusButton!);
         expect(mockUpdateItem).not.toHaveBeenCalled();
     });
+
+    it('allows deducting quantity when current item quantity exceeds available stock', async () => {
+        // Item 2 has quantity 5, but stock is 2
+        const itemExceedingStock = { ...mockCartItem2, quantity: 5 };
+
+        vi.spyOn(useCartHook, 'useCart').mockReturnValue({
+            cart: {
+                items: [itemExceedingStock],
+                totalAmount: 600
+            },
+            customer: { id: 'cust-1' } as any,
+            isLoading: false,
+            updateItem: mockUpdateItem,
+            removeItem: mockRemoveItem,
+            clearCart: mockClearCart,
+            isClearing: false,
+            isUpdating: false,
+            isRemoving: false
+        });
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.getAllByText('Butter Croissant').length).toBeGreaterThan(0);
+        });
+
+        // Click minus button to reduce quantity from 5 to 4
+        const minusButton = screen.getAllByRole('button').find((btn) => btn.querySelector('.lucide-minus'));
+        expect(minusButton).toBeDefined();
+
+        fireEvent.click(minusButton!);
+
+        // Should successfully call updateItem with quantity 4 even though 4 is still > stock (2)
+        await waitFor(() => {
+            expect(mockUpdateItem).toHaveBeenCalledWith({
+                cartItemId: 'cart-item-2',
+                quantity: 4
+            });
+            expect(toast.warning).not.toHaveBeenCalled();
+        });
+    });
 });

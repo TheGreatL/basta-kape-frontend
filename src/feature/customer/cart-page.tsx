@@ -216,7 +216,9 @@ export default function CartPage() {
             return;
         }
         const stock = getItemStock(item);
-        if (typeof stock === 'number' && newQuantity > stock) {
+        // Only block if INCREASING quantity beyond available stock.
+        // If current quantity already exceeds stock, allow user to deduct/reduce quantity.
+        if (newQuantity > item.quantity && typeof stock === 'number' && newQuantity > stock) {
             toast.warning('Maximum Stock Reached', {
                 description: `Only ${stock} unit(s) of ${item.productVariant.product.name} are available.`
             });
