@@ -388,6 +388,11 @@ describe('Delivery Order Frontend Tests', () => {
                 netTotal: 150,
                 customerId: 'cust-1',
                 customerName: 'Maria Santos',
+                deliveryAddress: 'Unit 4B, 123 Katipunan Ave, Quezon City',
+                deliveryDistanceKm: 3.2,
+                deliveryFee: 69,
+                deliveryLatitude: 14.634,
+                deliveryLongitude: 121.074,
                 riderName: 'Juan Dela Cruz',
                 riderPlate: 'ABC 1234',
                 riderVehicle: 'Car',
@@ -423,6 +428,10 @@ describe('Delivery Order Frontend Tests', () => {
                 expect(screen.getByText('Ready for Pickup')).toBeTruthy();
             });
 
+            expect(screen.getByText('Delivery Destination')).toBeTruthy();
+            expect(screen.getByText('Unit 4B, 123 Katipunan Ave, Quezon City')).toBeTruthy();
+            expect(screen.getAllByText(/3.2 km/).length).toBeGreaterThan(0);
+            expect(screen.getAllByText(/₱69.00/).length).toBeGreaterThan(0);
             expect(screen.getByText('Courier / Rider Details')).toBeTruthy();
             expect(screen.getByText('Juan Dela Cruz')).toBeTruthy();
             expect(screen.getByText('ABC 1234')).toBeTruthy();
