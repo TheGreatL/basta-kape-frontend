@@ -18,7 +18,8 @@ import {
     Wallet,
     Smartphone,
     Upload,
-    Trash2
+    Trash2,
+    AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,6 +41,8 @@ import { getErrorMessage } from '#/utils/error-handler.ts';
 import type { TOrderType, IOrder } from '#/feature/order/order.types.ts';
 import type { ICartItemResponse } from '#/feature/customer/customer.types.ts';
 import CustomerCheckoutSuccessDialog from './components/customer-checkout-success-dialog.tsx';
+import DeliveryMapPinPicker from './components/delivery-map-pin-picker.tsx';
+import { useStoreSettings } from '#/hooks/use-store-settings.ts';
 
 const diningOptions = [
     {
@@ -83,6 +86,13 @@ export default function CheckoutPage() {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'GCASH'>('CASH');
     const [referenceNumber, setReferenceNumber] = useState('');
+
+    // Delivery states
+    const { settings: storeSettings } = useStoreSettings();
+    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [deliveryLatitude, setDeliveryLatitude] = useState<number | null>(null);
+    const [deliveryLongitude, setDeliveryLongitude] = useState<number | null>(null);
+    const [deliveryDistanceKm, setDeliveryDistanceKm] = useState<number | null>(null);
 
     const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [receiptPreview, setReceiptPreview] = useState<string>('');
@@ -209,6 +219,31 @@ export default function CheckoutPage() {
         }, 0);
     }, [checkoutItems, selectedModifiers, isDirectCheckout, directCheckoutItem]);
 
+    // Pre-populate customer delivery address if available
+    useEffect(() => {
+        if (customer?.deliveryAddress && !deliveryAddress.trim()) {
+            setDeliveryAddress(customer.deliveryAddress);
+        }
+    }, [customer, deliveryAddress]);
+
+    // Dynamic delivery validation and shipping fee calculation
+    const isDeliveryOutOfScope = useMemo(() => {
+        if (orderType !== 'DELIVERY' || deliveryDistanceKm === null) return false;
+        const maxDist = storeSettings.deliveryMaxDistanceKm;
+        return deliveryDistanceKm > maxDist;
+    }, [orderType, deliveryDistanceKm, storeSettings.deliveryMaxDistanceKm]);
+
+    const shippingFee = useMemo(() => {
+        if (orderType !== 'DELIVERY' || deliveryDistanceKm === null) return 0;
+        const baseFare = storeSettings.deliveryBaseFare;
+        const baseKm = storeSettings.deliveryBaseDistanceKm;
+        const ratePerKm = storeSettings.deliveryRatePerKm;
+        const extraKm = Math.max(0, Math.ceil(deliveryDistanceKm - baseKm));
+        return baseFare + extraKm * ratePerKm;
+    }, [orderType, deliveryDistanceKm, storeSettings]);
+
+    const grandTotal = subtotal + (orderType === 'DELIVERY' ? shippingFee : 0);
+
     // Format attributes label (e.g. Size: Large)
     const getVariantLabel = (item: ICartItemResponse) => {
         const attributes = item.productVariant.attributes;
@@ -240,6 +275,33 @@ export default function CheckoutPage() {
                 description: `Cash payment is not permitted for ${orderType === 'DELIVERY' ? 'Delivery' : 'Take Out'} orders. Please select GCash.`
             });
             return;
+        }
+
+        if (orderType === 'DELIVERY') {
+            if (!deliveryAddress.trim() || deliveryAddress.trim().length < 5) {
+                toast.error('Delivery Address Required', {
+                    description: 'Please enter a complete delivery address (at least 5 characters).'
+                });
+                return;
+            }
+            if (deliveryLatitude === null || deliveryLongitude === null || deliveryDistanceKm === null) {
+                toast.error('Delivery Pin Required', {
+                    description: 'Please drop a pin on the map to determine your delivery location.'
+                });
+                return;
+            }
+            if (isDeliveryOutOfScope) {
+                toast.error('Out of Delivery Range', {
+                    description: `Selected address is out of scope for delivery (${deliveryDistanceKm.toFixed(1)} km). Max delivery range is ${storeSettings.deliveryMaxDistanceKm.toFixed(1)} km.`
+                });
+                return;
+            }
+            if (!phoneNumber.trim()) {
+                toast.error('Contact Phone Required', {
+                    description: 'Please provide a contact phone number for the delivery courier.'
+                });
+                return;
+            }
         }
 
         setIsSubmitting(true);
@@ -276,6 +338,11 @@ export default function CheckoutPage() {
                 paymentMethod: paymentMethod,
                 paymentReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : null,
                 paymentProofPhoto: paymentMethod !== 'CASH' ? uploadedUrl : null,
+                deliveryFee: orderType === 'DELIVERY' ? shippingFee : null,
+                deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress.trim() : null,
+                deliveryLatitude: orderType === 'DELIVERY' ? deliveryLatitude : null,
+                deliveryLongitude: orderType === 'DELIVERY' ? deliveryLongitude : null,
+                deliveryDistanceKm: orderType === 'DELIVERY' ? deliveryDistanceKm : null,
                 items: checkoutItems.map((item) => ({
                     productVariantId: item.productVariantId,
                     quantity: item.quantity,
@@ -399,10 +466,9 @@ export default function CheckoutPage() {
                             <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground leading-relaxed flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <Truck className="size-4 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                    <span className="font-bold text-foreground block mb-0.5">Self-Booked Courier Delivery</span>
-                                    Once your order reaches <strong>Ready for Pickup</strong> status, please book your preferred 3rd-party courier and
-                                    submit the rider details (Rider Name, Plate Number, Vehicle, and Tracking Link URL) on your{' '}
-                                    <strong>Order Tracking</strong> page.
+                                    <span className="font-bold text-foreground block mb-0.5">We Book The Courier For You</span>
+                                    Pin your drop-off location and provide complete address details below. Our staff will calculate your delivery fee,
+                                    prepare your items, and book a trusted courier directly to your doorstep.
                                 </div>
                             </div>
                         )}
@@ -460,6 +526,43 @@ export default function CheckoutPage() {
                                 className="bg-background/50 text-xs resize-none rounded-xl h-24"
                             />
                         </div>
+
+                        {/* Delivery Map & Address Section */}
+                        {orderType === 'DELIVERY' && (
+                            <div className="space-y-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <DeliveryMapPinPicker
+                                    storeLat={storeSettings.storeLatitude}
+                                    storeLng={storeSettings.storeLongitude}
+                                    storeName={storeSettings.storeName}
+                                    storeAddress={storeSettings.address}
+                                    initialLat={deliveryLatitude}
+                                    initialLng={deliveryLongitude}
+                                    distanceKm={deliveryDistanceKm}
+                                    maxDistanceKm={storeSettings.deliveryMaxDistanceKm}
+                                    onLocationSelect={(loc) => {
+                                        setDeliveryLatitude(loc.lat);
+                                        setDeliveryLongitude(loc.lng);
+                                        setDeliveryDistanceKm(loc.distanceKm);
+                                        if (loc.address && !deliveryAddress.trim()) {
+                                            setDeliveryAddress(loc.address);
+                                        }
+                                    }}
+                                />
+
+                                <div className="space-y-1.5">
+                                    <label className="font-bold text-foreground/80 block text-xs">
+                                        Complete Delivery Address <span className="text-rose-500">*</span>
+                                    </label>
+                                    <Textarea
+                                        placeholder="Enter your full delivery address (House/Unit #, Street name, Barangay, City, Landmark)..."
+                                        value={deliveryAddress}
+                                        onChange={(e) => setDeliveryAddress(e.target.value)}
+                                        className="bg-background/50 text-xs resize-none rounded-xl h-20"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Card 3: Select Payment Method */}
@@ -611,7 +714,7 @@ export default function CheckoutPage() {
                             <div className="p-4 rounded-xl border border-border/60 bg-muted/20 text-xs text-muted-foreground leading-relaxed animate-in fade-in duration-200">
                                 {orderType === 'DELIVERY' ? (
                                     <span>
-                                        Please prepare the exact amount of <strong>{formatCurrency(subtotal)}</strong> for Cash on Delivery (COD).
+                                        Please prepare the exact amount of <strong>{formatCurrency(grandTotal)}</strong> for Cash on Delivery (COD).
                                     </span>
                                 ) : (
                                     <span>
@@ -734,9 +837,25 @@ export default function CheckoutPage() {
                                 <span>Subtotal</span>
                                 <span className="font-bold text-foreground">{formatCurrency(subtotal)}</span>
                             </div>
+
+                            {orderType === 'DELIVERY' && (
+                                <div className="flex justify-between text-muted-foreground animate-in fade-in">
+                                    <span className="flex items-center gap-1.5">
+                                        <Truck className="size-3.5 text-primary" />
+                                        Shipping Fee
+                                        {deliveryDistanceKm !== null && (
+                                            <span className="text-[11px] text-muted-foreground/80">({deliveryDistanceKm.toFixed(1)} km)</span>
+                                        )}
+                                    </span>
+                                    <span className="font-bold text-foreground">
+                                        {deliveryDistanceKm !== null ? formatCurrency(shippingFee) : 'Pin required'}
+                                    </span>
+                                </div>
+                            )}
+
                             <div className="border-t border-dashed border-border/40 pt-3 flex justify-between text-sm font-bold">
                                 <span className="text-foreground">Total Amount Due</span>
-                                <span className="text-primary font-bold">{formatCurrency(subtotal)}</span>
+                                <span className="text-primary font-bold">{formatCurrency(grandTotal)}</span>
                             </div>
                             <div className="flex justify-between text-xs font-semibold text-muted-foreground pt-1">
                                 <span>Selected Payment</span>
@@ -746,6 +865,17 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
+                        {/* Out of Scope Warning banner */}
+                        {orderType === 'DELIVERY' && isDeliveryOutOfScope && (
+                            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-400 text-xs font-medium flex items-center gap-2 animate-in fade-in">
+                                <AlertTriangle className="size-4 shrink-0 text-rose-600" />
+                                <span>
+                                    Selected address is {deliveryDistanceKm?.toFixed(1)} km away and is out of scope for delivery (limit:{' '}
+                                    {storeSettings.deliveryMaxDistanceKm.toFixed(1)} km).
+                                </span>
+                            </div>
+                        )}
+
                         {/* Checkout Actions */}
                         <div className="pt-2 space-y-2">
                             <Button
@@ -754,7 +884,15 @@ export default function CheckoutPage() {
                                     isSubmitting ||
                                     isUploading ||
                                     checkoutItems.length === 0 ||
-                                    (paymentMethod === 'GCASH' && (referenceNumber.length !== 13 || !receiptFile))
+                                    (paymentMethod === 'GCASH' && (referenceNumber.length !== 13 || !receiptFile)) ||
+                                    (orderType === 'DELIVERY' &&
+                                        (!deliveryAddress.trim() ||
+                                            deliveryAddress.trim().length < 5 ||
+                                            deliveryLatitude === null ||
+                                            deliveryLongitude === null ||
+                                            deliveryDistanceKm === null ||
+                                            isDeliveryOutOfScope ||
+                                            !phoneNumber.trim()))
                                 }
                                 className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-all"
                             >

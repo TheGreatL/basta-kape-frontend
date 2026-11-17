@@ -216,7 +216,7 @@ describe('Delivery Order Frontend Tests', () => {
     });
 
     describe('Customer CheckoutPage - Delivery Mode', () => {
-        it('removes Delivery Address input, shows courier notice, switches to GCash, and disables Cash when Delivery is selected', async () => {
+        it('renders Delivery Address input, shows staff courier notice, switches to GCash, and disables Cash when Delivery is selected', async () => {
             const queryClient = new QueryClient({
                 defaultOptions: { queries: { retry: false } }
             });
@@ -230,11 +230,11 @@ describe('Delivery Order Frontend Tests', () => {
             const deliveryButton = screen.getByRole('button', { name: /Delivery/i });
             fireEvent.click(deliveryButton);
 
-            // Delivery Address input should NOT exist
-            expect(screen.queryByPlaceholderText(/House\/Unit #, Street name/i)).toBeNull();
+            // Delivery Address input should exist
+            expect(screen.getByPlaceholderText(/Enter your full delivery address/i)).toBeTruthy();
 
-            // Self-Booked Courier Delivery notice should be visible
-            expect(screen.getByText(/Self-Booked Courier Delivery/i)).toBeTruthy();
+            // We Book The Courier For You notice should be visible
+            expect(screen.getByText(/We Book The Courier For You/i)).toBeTruthy();
 
             // Cash button should be disabled for Delivery and GCash details should be active
             expect(screen.getByText(/\(Disabled for Delivery\)/i)).toBeTruthy();

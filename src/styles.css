@@ -3,6 +3,7 @@
 @plugin '@tailwindcss/typography';
 
 @import 'tw-animate-css';
+@import 'leaflet/dist/leaflet.css';
 
 @import 'tailwindcss';
 

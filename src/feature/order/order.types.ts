@@ -82,6 +82,11 @@ export interface IOrder {
     riderPlate?: string | null;
     riderVehicle?: TRiderVehicle | string | null;
     trackingLink?: string | null;
+    deliveryFee?: number | null;
+    deliveryAddress?: string | null;
+    deliveryLatitude?: number | null;
+    deliveryLongitude?: number | null;
+    deliveryDistanceKm?: number | null;
     cashierSessionId: string | null;
     createdAt: string;
     updatedAt: string;
@@ -105,6 +110,11 @@ export interface ICreateOrderPayload {
     riderPlate?: string | null;
     riderVehicle?: TRiderVehicle | null;
     trackingLink?: string | null;
+    deliveryFee?: number | null;
+    deliveryAddress?: string | null;
+    deliveryLatitude?: number | null;
+    deliveryLongitude?: number | null;
+    deliveryDistanceKm?: number | null;
     paymentMethod?: 'CASH' | 'GCASH' | null;
     paymentReferenceNumber?: string | null;
     paymentProofPhoto?: string | null;
