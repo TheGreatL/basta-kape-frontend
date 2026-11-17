@@ -167,7 +167,13 @@ export default function DeliveryMapPinPicker({
             // Fetch suggested address via Nominatim
             try {
                 const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-                const addressRes = await fetch(nominatimUrl);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 6000);
+                const addressRes = await fetch(nominatimUrl, {
+                    headers: { Accept: 'application/json' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 if (addressRes.ok) {
                     const addrData = await addressRes.json();
                     if (addrData.display_name) {
@@ -176,6 +182,10 @@ export default function DeliveryMapPinPicker({
                 }
             } catch {
                 // Ignore address fetch errors
+            }
+
+            if (!suggestedAddress) {
+                suggestedAddress = `Pinned Location (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
             }
 
             setIsCalculating(false);

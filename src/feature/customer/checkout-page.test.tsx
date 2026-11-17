@@ -234,6 +234,39 @@ describe('Customer CheckoutPage - Staff-Booked Delivery Flow', () => {
         expect((submitButton as HTMLButtonElement).disabled).toBe(true);
     });
 
+    it('updates delivery address textarea whenever the pinned location changes', async () => {
+        const queryClient = new QueryClient({
+            defaultOptions: { queries: { retry: false } }
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <CheckoutPage />
+            </QueryClientProvider>
+        );
+
+        const deliveryButton = screen.getByRole('button', { name: /Delivery/i });
+        fireEvent.click(deliveryButton);
+
+        const textarea = screen.getByPlaceholderText(/Enter your full delivery address/i);
+
+        // Click first pin
+        const pinInRange = screen.getByTestId('mock-pin-in-range');
+        fireEvent.click(pinInRange);
+
+        await waitFor(() => {
+            expect(textarea.value).toBe('45 Tomas Morato Ave, Quezon City');
+        });
+
+        // Click second pin to change location - textarea must update to new location
+        const pinOutOfRange = screen.getByTestId('mock-pin-out-of-range');
+        fireEvent.click(pinOutOfRange);
+
+        await waitFor(() => {
+            expect(textarea.value).toBe('Far Away Location, Outside Radius');
+        });
+    });
+
     it('submits deliveryAddress, coordinates, distance, and fee when placing a valid delivery order', async () => {
         const queryClient = new QueryClient({
             defaultOptions: { queries: { retry: false } }
@@ -295,7 +328,7 @@ describe('Customer CheckoutPage - Staff-Booked Delivery Flow', () => {
                 '/orders',
                 expect.objectContaining({
                     orderType: 'DELIVERY',
-                    deliveryAddress: '123 Main St, Barangay Central, Quezon City',
+                    deliveryAddress: '45 Tomas Morato Ave, Quezon City',
                     deliveryLatitude: 14.64,
                     deliveryLongitude: 121.05,
                     deliveryDistanceKm: 3.2,

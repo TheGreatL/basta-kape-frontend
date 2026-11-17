@@ -543,7 +543,7 @@ export default function CheckoutPage() {
                                         setDeliveryLatitude(loc.lat);
                                         setDeliveryLongitude(loc.lng);
                                         setDeliveryDistanceKm(loc.distanceKm);
-                                        if (loc.address && !deliveryAddress.trim()) {
+                                        if (loc.address) {
                                             setDeliveryAddress(loc.address);
                                         }
                                     }}
