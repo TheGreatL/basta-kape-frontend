@@ -242,8 +242,8 @@ describe('Delivery Order Frontend Tests', () => {
         });
     });
 
-    describe('Customer OrderDetailsPage - Delivery Lifecycle & Courier Submission', () => {
-        it('displays Ready for Pickup and Dispatched steps and allows customer to submit courier details when status is READY', async () => {
+    describe('Customer OrderDetailsPage - Delivery Lifecycle & Tracking', () => {
+        it('displays Ready for Pickup and Dispatched steps with pending courier booking notice when status is READY', async () => {
             const mockReadyDeliveryOrder = {
                 id: 'order-deliv-1',
                 queueNumber: '#005',
@@ -259,6 +259,9 @@ describe('Delivery Order Frontend Tests', () => {
                 netTotal: 150,
                 customerId: 'cust-1',
                 customerName: 'Maria Santos',
+                deliveryAddress: '50 K-1st, Quezon City',
+                deliveryDistanceKm: 3.2,
+                deliveryFee: 69,
                 riderName: null,
                 riderPlate: null,
                 riderVehicle: null,
@@ -278,17 +281,6 @@ describe('Delivery Order Frontend Tests', () => {
                 json: async () => mockReadyDeliveryOrder
             } as Response);
 
-            vi.mocked(api.patch).mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    ...mockReadyDeliveryOrder,
-                    riderName: 'Pedro Penduko',
-                    riderPlate: 'XYZ 9876',
-                    riderVehicle: 'Motorcycle',
-                    trackingLink: 'https://lalamove.com/track/xyz'
-                })
-            } as Response);
-
             const queryClient = new QueryClient({
                 defaultOptions: { queries: { retry: false } }
             });
@@ -306,31 +298,11 @@ describe('Delivery Order Frontend Tests', () => {
             // Dispatched step should be in the stepper for DELIVERY orders
             expect(screen.getByText('Dispatched')).toBeTruthy();
 
-            // Indicators that customer needs to input courier details should be visible
-            expect(screen.getByText('Action Required: Input Courier Details')).toBeTruthy();
-            expect(screen.getByText('Courier Details Required Before Dispatch')).toBeTruthy();
-            expect(screen.getByText('Input Required')).toBeTruthy();
+            // Staff booking notice should be visible
+            expect(screen.getByText(/Our staff will book your courier upon preparation/i)).toBeTruthy();
 
-            // Courier form inputs should be rendered when status is READY
-            const riderNameInput = screen.getByPlaceholderText('e.g. Juan Dela Cruz');
-            const plateInput = screen.getByPlaceholderText('e.g. ABC 1234');
-            const trackingInput = screen.getByPlaceholderText('https://...');
-
-            fireEvent.change(riderNameInput, { target: { value: 'Pedro Penduko' } });
-            fireEvent.change(plateInput, { target: { value: 'XYZ 9876' } });
-            fireEvent.change(trackingInput, { target: { value: 'https://lalamove.com/track/xyz' } });
-
-            const submitButton = screen.getByRole('button', { name: /Submit Courier Details/i });
-            fireEvent.click(submitButton);
-
-            await waitFor(() => {
-                expect(api.patch).toHaveBeenCalledWith('/orders/order-deliv-1/courier', {
-                    riderName: 'Pedro Penduko',
-                    riderPlate: 'XYZ 9876',
-                    riderVehicle: 'Motorcycle',
-                    trackingLink: 'https://lalamove.com/track/xyz'
-                });
-            });
+            // Customer courier form inputs should NOT exist
+            expect(screen.queryByPlaceholderText('e.g. Juan Dela Cruz')).toBeNull();
         });
 
         it('allows customer to trigger complete order when status is DISPATCHED', async () => {

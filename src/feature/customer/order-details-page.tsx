@@ -1,6 +1,5 @@
 import { formatCurrency } from '#/utils/helper.ts';
-import { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -24,20 +23,17 @@ import {
     Eye,
     Truck,
     ExternalLink,
-    Pencil
+    MapPin
 } from 'lucide-react';
 
-import { getOrderById, updateOrderCourier, completeDeliveryOrder } from '#/api/orders.api.ts';
+import { getOrderById, completeDeliveryOrder } from '#/api/orders.api.ts';
 import QUERY_KEY from '#/constants/query-keys.ts';
 import { Button } from '#/components/ui/button.tsx';
-import { Input } from '#/components/ui/input.tsx';
 import { Badge } from '#/components/ui/badge.tsx';
 import { Separator } from '#/components/ui/separator.tsx';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select.tsx';
 import { getFileUrl, getFrontendReference, getProductPhotoUrl, handleProductImageError } from '#/utils/helper';
 import { getErrorMessage } from '#/utils/error-handler.ts';
-import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment, TRiderVehicle } from '#/feature/order/order.types.ts';
-import { RIDER_VEHICLES } from '#/feature/order/order.types.ts';
+import type { IOrderStatusHistory, IOrderItemModifier, IOrderItem, TOrderStatus, IOrderPayment } from '#/feature/order/order.types.ts';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '#/components/ui/dropdown-menu.tsx';
 import { downloadReceiptPdf, getReceiptPdfBlobUrl } from '#/utils/receipt.ts';
 import FileViewerDialog from '#/components/ui/file-viewer-dialog.tsx';
@@ -50,12 +46,6 @@ export default function OrderDetailsPage() {
     const queryClient = useQueryClient();
     const [viewingFileUrl, setViewingFileUrl] = useState<string | null>(null);
     const [viewingFileName, setViewingFileName] = useState<string | undefined>(undefined);
-
-    const [riderName, setRiderName] = useState('');
-    const [riderPlate, setRiderPlate] = useState('');
-    const [riderVehicle, setRiderVehicle] = useState<TRiderVehicle>('Motorcycle');
-    const [trackingLink, setTrackingLink] = useState('');
-    const [isEditingCourier, setIsEditingCourier] = useState(false);
 
     // Fetch order details with 5-second polling interval for real-time tracking
     const {
@@ -70,41 +60,6 @@ export default function OrderDetailsPage() {
     });
 
     const hasCourierDetails = Boolean(order?.riderName || order?.riderPlate || order?.riderVehicle || order?.trackingLink);
-
-    useEffect(() => {
-        if (order) {
-            setRiderName((prev) => prev || order.riderName || '');
-            setRiderPlate((prev) => prev || order.riderPlate || '');
-            if (order.riderVehicle && RIDER_VEHICLES.includes(order.riderVehicle as TRiderVehicle)) {
-                setRiderVehicle(order.riderVehicle as TRiderVehicle);
-            }
-            setTrackingLink((prev) => prev || order.trackingLink || '');
-        }
-    }, [order]);
-
-    const courierMutation = useMutation({
-        mutationFn: (payload: { riderName: string; riderPlate: string; riderVehicle: TRiderVehicle; trackingLink: string }) =>
-            updateOrderCourier(id, payload),
-        onSuccess: (updatedOrder) => {
-            toast.success('Courier Details Submitted', {
-                description: 'Your rider details have been shared with the store.'
-            });
-            setRiderName(updatedOrder.riderName || '');
-            setRiderPlate(updatedOrder.riderPlate || '');
-            if (updatedOrder.riderVehicle && RIDER_VEHICLES.includes(updatedOrder.riderVehicle as TRiderVehicle)) {
-                setRiderVehicle(updatedOrder.riderVehicle as TRiderVehicle);
-            }
-            setTrackingLink(updatedOrder.trackingLink || '');
-            setIsEditingCourier(false);
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.ORDERS.ORDER_DETAILS, id] });
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.CUSTOMERS.ORDERS] });
-        },
-        onError: (err) => {
-            toast.error('Failed to submit courier details', {
-                description: getErrorMessage(err)
-            });
-        }
-    });
 
     const completeOrderMutation = useMutation({
         mutationFn: () => completeDeliveryOrder(id),
@@ -121,30 +76,6 @@ export default function OrderDetailsPage() {
             });
         }
     });
-
-    const handleCourierSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        if (!riderName.trim() || !riderPlate.trim() || !trackingLink.trim()) {
-            toast.error('Incomplete Courier Details', {
-                description: 'Please fill in all rider fields including a valid tracking link URL.'
-            });
-            return;
-        }
-        try {
-            new URL(trackingLink.trim());
-        } catch {
-            toast.error('Invalid Tracking Link URL', {
-                description: 'Please enter a valid URL starting with http:// or https://.'
-            });
-            return;
-        }
-        courierMutation.mutate({
-            riderName: riderName.trim(),
-            riderPlate: riderPlate.trim(),
-            riderVehicle,
-            trackingLink: trackingLink.trim()
-        });
-    };
 
     if (isLoading) {
         return (
@@ -350,33 +281,8 @@ export default function OrderDetailsPage() {
                             {getStatusIcon(order.status)}
                             <h2 className="text-xl font-bold text-foreground ">{getStatusText(order.status)}</h2>
                         </div>
-                        {order.orderType === 'DELIVERY' && order.status === 'READY' && !hasCourierDetails && (
-                            <Badge
-                                variant="outline"
-                                className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 font-bold text-xs px-3 py-1 rounded-full gap-1.5 animate-pulse"
-                            >
-                                <AlertCircle className="size-3.5 shrink-0" />
-                                Action Required: Input Courier Details
-                            </Badge>
-                        )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-6">{getStatusDescription(order.status)}</p>
-
-                    {order.orderType === 'DELIVERY' && order.status === 'READY' && !hasCourierDetails && (
-                        <div className="mb-8 flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300">
-                            <AlertCircle className="size-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 animate-bounce" />
-                            <div className="text-xs space-y-1 leading-relaxed">
-                                <span className="font-bold text-sm block text-amber-900 dark:text-amber-200">
-                                    Courier Details Required Before Dispatch
-                                </span>
-                                <span>
-                                    Your order is ready for pickup, but you haven&apos;t submitted your courier details yet. Please book a rider and
-                                    fill out the <strong>Courier / Rider Details</strong> form below so our staff can hand over and dispatch your
-                                    order.
-                                </span>
-                            </div>
-                        </div>
-                    )}
 
                     {order.orderType === 'DELIVERY' && order.status === 'DISPATCHED' && (
                         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-300">
@@ -490,191 +396,99 @@ export default function OrderDetailsPage() {
                     )}
                 </div>
 
+                {/* Delivery Destination Card */}
+                {order.orderType === 'DELIVERY' && !isCancelled && (
+                    <div className="p-6 rounded-2xl border border-border/40 bg-card shadow-sm space-y-4">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="size-5 text-primary" />
+                            <h2 className="text-lg font-bold text-foreground">Delivery Destination</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-muted/20 border border-border/40 text-xs">
+                            <div className="md:col-span-2 space-y-1">
+                                <span className="text-muted-foreground font-semibold block text-[11px] uppercase">Delivery Address</span>
+                                <p className="font-bold text-foreground leading-relaxed">{order.deliveryAddress || 'Address not specified'}</p>
+                            </div>
+                            <div className="space-y-1 md:border-l md:border-border/40 md:pl-4">
+                                <div className="flex justify-between py-0.5">
+                                    <span className="text-muted-foreground font-semibold">Distance:</span>
+                                    <span className="font-bold text-foreground">
+                                        {order.deliveryDistanceKm ? `${order.deliveryDistanceKm.toFixed(1)} km` : '—'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between py-0.5">
+                                    <span className="text-muted-foreground font-semibold">Shipping Fee:</span>
+                                    <span className="font-bold text-primary">{order.deliveryFee ? formatCurrency(order.deliveryFee) : '—'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Courier / Rider Details Card for Delivery Orders */}
                 {order.orderType === 'DELIVERY' && !isCancelled && (
-                    <div
-                        className={`p-6 rounded-2xl border bg-card shadow-sm space-y-4 transition-all ${
-                            order.status === 'READY' && !hasCourierDetails ? 'border-amber-500/50 ring-2 ring-amber-500/15' : 'border-border/40'
-                        }`}
-                    >
+                    <div className="p-6 rounded-2xl border border-border/40 bg-card shadow-sm space-y-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                                 <Truck className="size-5 text-primary" />
                                 <h2 className="text-lg font-bold text-foreground">Courier / Rider Details</h2>
-                                {order.status === 'READY' && !hasCourierDetails && (
-                                    <Badge
-                                        variant="outline"
-                                        className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 font-bold text-2xs px-2.5 py-0.5 rounded-full gap-1"
-                                    >
-                                        <span className="size-1.5 rounded-full bg-amber-500 animate-ping" />
-                                        Input Required
-                                    </Badge>
-                                )}
                                 {hasCourierDetails && (
                                     <Badge
                                         variant="outline"
                                         className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold text-2xs px-2.5 py-0.5 rounded-full gap-1"
                                     >
                                         <CheckCircle2 className="size-3 shrink-0" />
-                                        Submitted
+                                        Courier Assigned
                                     </Badge>
                                 )}
                             </div>
-                            {order.status === 'READY' && hasCourierDetails && !isEditingCourier && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                        setRiderName(order.riderName || '');
-                                        setRiderPlate(order.riderPlate || '');
-                                        if (order.riderVehicle && RIDER_VEHICLES.includes(order.riderVehicle as TRiderVehicle)) {
-                                            setRiderVehicle(order.riderVehicle as TRiderVehicle);
-                                        }
-                                        setTrackingLink(order.trackingLink || '');
-                                        setIsEditingCourier(true);
-                                    }}
-                                    className="h-8 px-3 text-xs font-bold gap-1.5 rounded-xl"
-                                >
-                                    <Pencil className="size-3.5" />
-                                    Update Rider Details
-                                </Button>
-                            )}
                         </div>
 
-                        {order.status === 'READY' && (!hasCourierDetails || isEditingCourier) ? (
-                            <form onSubmit={handleCourierSubmit} className="space-y-4 pt-1">
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Your order is <strong>Ready for Pickup</strong>! Please book your preferred courier and provide the rider details
-                                    below so our staff can verify and hand over your order.
-                                </p>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground/80 block">
-                                            Rider Name <span className="text-rose-500">*</span>
-                                        </label>
-                                        <Input
-                                            placeholder="e.g. Juan Dela Cruz"
-                                            value={riderName}
-                                            onChange={(e) => setRiderName(e.target.value)}
-                                            maxLength={100}
-                                            className="h-10 text-xs rounded-xl bg-background/50 border-border/60"
-                                            required
-                                        />
+                        {hasCourierDetails ? (
+                            <div className="space-y-4 pt-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                    <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
+                                        <span className="text-muted-foreground font-semibold block text-[11px] uppercase">Rider Name</span>
+                                        <span className="font-bold text-foreground text-sm">{order.riderName || '—'}</span>
                                     </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground/80 block">
-                                            Plate Number <span className="text-rose-500">*</span>
-                                        </label>
-                                        <Input
-                                            placeholder="e.g. ABC 1234"
-                                            value={riderPlate}
-                                            onChange={(e) => setRiderPlate(e.target.value)}
-                                            maxLength={50}
-                                            className="h-10 text-xs rounded-xl bg-background/50 border-border/60 font-mono uppercase"
-                                            required
-                                        />
+                                    <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
+                                        <span className="text-muted-foreground font-semibold block text-[11px] uppercase">Plate Number</span>
+                                        <span className="font-bold text-foreground font-mono text-sm uppercase">{order.riderPlate || '—'}</span>
                                     </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground/80 block">
-                                            Vehicle <span className="text-rose-500">*</span>
-                                        </label>
-                                        <Select value={riderVehicle} onValueChange={(v) => setRiderVehicle(v as TRiderVehicle)}>
-                                            <SelectTrigger className="h-10 text-xs rounded-xl bg-background/50 border-border/60">
-                                                <SelectValue placeholder="Select vehicle type" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl">
-                                                {RIDER_VEHICLES.map((vehicle) => (
-                                                    <SelectItem key={vehicle} value={vehicle} className="text-xs">
-                                                        {vehicle}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-foreground/80 block">
-                                            Tracking Link URL <span className="text-rose-500">*</span>
-                                        </label>
-                                        <Input
-                                            type="url"
-                                            placeholder="https://..."
-                                            value={trackingLink}
-                                            onChange={(e) => setTrackingLink(e.target.value)}
-                                            maxLength={1000}
-                                            className="h-10 text-xs rounded-xl bg-background/50 border-border/60"
-                                            required
-                                        />
+                                    <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
+                                        <span className="text-muted-foreground font-semibold block text-[11px] uppercase">Vehicle</span>
+                                        <span className="font-bold text-foreground text-sm">{order.riderVehicle || '—'}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-2">
-                                    {hasCourierDetails && isEditingCourier && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setIsEditingCourier(false)}
-                                            disabled={courierMutation.isPending}
-                                            className="h-9 px-4 text-xs font-bold rounded-xl"
-                                        >
-                                            Cancel
-                                        </Button>
-                                    )}
-                                    <Button type="submit" disabled={courierMutation.isPending} className="h-9 px-5 text-xs font-bold rounded-xl">
-                                        {courierMutation.isPending ? (
-                                            <>
-                                                <Loader2 className="size-3.5 animate-spin mr-1.5" />
-                                                Submitting...
-                                            </>
-                                        ) : (
-                                            'Submit Courier Details'
-                                        )}
-                                    </Button>
-                                </div>
-                            </form>
-                        ) : hasCourierDetails ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
-                                <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
-                                    <span className="text-muted-foreground font-semibold block">Rider Name</span>
-                                    <span className="font-bold text-foreground text-sm">{order.riderName || '—'}</span>
-                                </div>
-                                <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
-                                    <span className="text-muted-foreground font-semibold block">Plate Number</span>
-                                    <span className="font-bold text-foreground font-mono text-sm uppercase">{order.riderPlate || '—'}</span>
-                                </div>
-                                <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
-                                    <span className="text-muted-foreground font-semibold block">Vehicle</span>
-                                    <span className="font-bold text-foreground text-sm">{order.riderVehicle || '—'}</span>
-                                </div>
-                                <div className="p-3.5 rounded-xl border border-border/40 bg-muted/10 space-y-1">
-                                    <span className="text-muted-foreground font-semibold block">Tracking Link</span>
-                                    {order.trackingLink ? (
+                                {order.trackingLink && (
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs">
+                                        <div className="space-y-0.5">
+                                            <span className="font-bold text-blue-900 dark:text-blue-200 block text-xs">
+                                                Live Courier Tracking Active
+                                            </span>
+                                            <span className="text-muted-foreground text-[11px]">
+                                                Follow your rider&apos;s real-time journey on the courier platform.
+                                            </span>
+                                        </div>
                                         <a
                                             href={order.trackingLink}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 font-bold text-primary hover:underline break-all"
+                                            className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs hover:shadow-md transition-all shrink-0"
                                         >
-                                            <span className="truncate max-w-[220px]">{order.trackingLink}</span>
-                                            <ExternalLink className="size-3.5 shrink-0" />
+                                            <ExternalLink className="size-3.5" />
+                                            Track Courier
                                         </a>
-                                    ) : (
-                                        <span className="font-bold text-foreground">—</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 text-xs text-muted-foreground leading-relaxed flex items-start gap-2.5">
+                            <div className="p-4 rounded-xl bg-muted/20 border border-dashed border-border/60 text-xs text-muted-foreground flex items-start gap-2.5">
                                 <Clock className="size-4 text-primary shrink-0 mt-0.5" />
-                                <span>
-                                    Once your order status reaches <strong>Ready for Pickup</strong>, you will be able to book your courier and submit
-                                    the rider details (Rider Name, Plate Number, Vehicle, and Tracking Link URL) here.
-                                </span>
+                                <div>
+                                    <span className="font-bold text-foreground block mb-0.5">Courier Booking In Progress</span>
+                                    <span>Our staff will book your courier upon preparation. You can track your rider here once dispatched.</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -754,6 +568,19 @@ export default function OrderDetailsPage() {
                             <span className="text-muted-foreground">Subtotal</span>
                             <span className="font-medium text-foreground">{formatCurrency(order.subtotal)}</span>
                         </div>
+
+                        {order.orderType === 'DELIVERY' && order.deliveryFee ? (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground flex items-center gap-1.5">
+                                    <Truck className="size-3.5 text-primary" />
+                                    Shipping Fee
+                                    {order.deliveryDistanceKm ? (
+                                        <span className="text-xs text-muted-foreground">({order.deliveryDistanceKm.toFixed(1)} km)</span>
+                                    ) : null}
+                                </span>
+                                <span className="font-medium text-foreground">{formatCurrency(order.deliveryFee)}</span>
+                            </div>
+                        ) : null}
 
                         {order.discountAmount > 0 && (
                             <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
