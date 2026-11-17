@@ -21,6 +21,7 @@ export const registerSchema = z
         middleName: z.string().max(100, 'Middle name must not exceed 100 characters').optional(),
         lastName: z.string().min(2, 'Last name is required').max(100, 'Last name must not exceed 100 characters'),
         phoneNumber: z.string().max(11, 'Phone number must not exceed 11 digits').optional(),
+        deliveryAddress: z.string().max(1000, 'Delivery address must not exceed 1000 characters').optional().default(''),
         otp: z.string().max(6, 'OTP must be 6 digits').optional()
     })
     .refine((data) => data.password === data.confirmPassword, {

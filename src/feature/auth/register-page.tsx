@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, ArrowLeft, Key } from 'lucide-react';
+import { Eye, EyeOff, Mail, ArrowLeft, Key, MapPin } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/utils/error-handler';
@@ -17,6 +17,7 @@ import logo from '@/assets/logo.png';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui/input-otp';
@@ -42,7 +43,8 @@ export default function RegisterPage() {
             firstName: '',
             middleName: '',
             lastName: '',
-            phoneNumber: ''
+            phoneNumber: '',
+            deliveryAddress: ''
         }
     });
 
@@ -118,8 +120,9 @@ export default function RegisterPage() {
         const formData = form.getValues();
         registerMutation.mutate({
             ...formData,
+            deliveryAddress: formData.deliveryAddress ? formData.deliveryAddress.trim() : null,
             otp
-        });
+        } as any);
     };
 
     const handleResendOtp = () => {
@@ -245,6 +248,29 @@ export default function RegisterPage() {
                                                 )}
                                             />
                                         </div>
+
+                                        <FormField
+                                            control={form.control}
+                                            name="deliveryAddress"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-foreground/80 flex items-center gap-1.5">
+                                                        <MapPin className="size-3.5 text-muted-foreground" />
+                                                        Delivery Address (Optional)
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Textarea
+                                                            className="bg-background text-sm resize-none h-20 rounded-xl"
+                                                            placeholder="House/Unit #, Street, Barangay, City, Landmark..."
+                                                            maxLength={1000}
+                                                            {...field}
+                                                            value={field.value || ''}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
                                         <FormField
                                             control={form.control}
