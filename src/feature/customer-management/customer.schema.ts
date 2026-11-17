@@ -18,7 +18,8 @@ export const createCustomerSchema = z.object({
     firstName: z.string().min(2, 'First name must be at least 2 characters').max(100, 'First name must not exceed 100 characters'),
     lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100, 'Last name must not exceed 100 characters'),
     middleName: z.string().max(100, 'Middle name must not exceed 100 characters').default(''),
-    phoneNumber: z.string().max(11, 'Phone number must not exceed 11 characters').default('')
+    phoneNumber: z.string().max(11, 'Phone number must not exceed 11 characters').default(''),
+    deliveryAddress: z.string().max(1000, 'Delivery address must not exceed 1000 characters').optional().default('')
 });
 
 export type TCreateCustomerSchema = z.infer<typeof createCustomerSchema>;
@@ -34,7 +35,8 @@ export const updateCustomerSchema = z.object({
     firstName: z.string().min(2, 'First name must be at least 2 characters').max(100, 'First name must not exceed 100 characters'),
     lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100, 'Last name must not exceed 100 characters'),
     middleName: z.string().max(100, 'Middle name must not exceed 100 characters'),
-    phoneNumber: z.string().max(11, 'Phone number must not exceed 11 characters')
+    phoneNumber: z.string().max(11, 'Phone number must not exceed 11 characters'),
+    deliveryAddress: z.string().max(1000, 'Delivery address must not exceed 1000 characters').optional().default('')
 });
 
 export type TUpdateCustomerSchema = z.infer<typeof updateCustomerSchema>;

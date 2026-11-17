@@ -12,6 +12,7 @@ export interface ICreateCustomer {
     lastName: string;
     middleName?: string | null;
     phoneNumber?: string | null;
+    deliveryAddress?: string | null;
 }
 
 export interface IUpdateCustomer {
@@ -21,6 +22,7 @@ export interface IUpdateCustomer {
     lastName?: string;
     middleName?: string | null;
     phoneNumber?: string | null;
+    deliveryAddress?: string | null;
 }
 
 export interface IGetCustomerListQuery extends IPaginationParams {
@@ -45,6 +47,7 @@ export interface ICustomerUser {
 export interface ICustomerResponse {
     id: string;
     userId: string;
+    deliveryAddress?: string | null;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
