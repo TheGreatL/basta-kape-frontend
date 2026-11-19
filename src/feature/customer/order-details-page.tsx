@@ -373,11 +373,6 @@ export default function OrderDetailsPage() {
                                             <span className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-foreground'}`}>
                                                 {getStatusText(status)}
                                             </span>
-                                            {isActive && (
-                                                <span className="text-xs text-primary/80 font-bold uppercase  animate-pulse block mt-0.5">
-                                                    Current Status
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
                                 );
