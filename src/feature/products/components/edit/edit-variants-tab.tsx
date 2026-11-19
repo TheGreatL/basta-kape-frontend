@@ -92,11 +92,11 @@ export default function EditVariantsTab({
     const [editingRowIdx, setEditingRowIdx] = React.useState<number | null>(null);
     const priceInputRef = React.useRef<HTMLInputElement>(null);
 
-    const isPriceNegative = React.useMemo(() => {
+    const isPriceInvalid = React.useMemo(() => {
         const trimmed = String(defaultPrice).trim();
         if (!trimmed) return false;
         const num = Number(trimmed);
-        return !isNaN(num) && num < 0;
+        return isNaN(num) || num <= 0;
     }, [defaultPrice]);
 
     const handleGenerateMatrix = () => {
@@ -110,9 +110,9 @@ export default function EditVariantsTab({
         }
 
         const numericPrice = Number(trimmedPrice);
-        if (isNaN(numericPrice) || numericPrice < 0) {
+        if (isNaN(numericPrice) || numericPrice <= 0) {
             toast.error('Invalid Price', {
-                description: 'Price cannot be less than 0. Please enter 0 or a positive amount.'
+                description: 'Price must be greater than 0.'
             });
             priceInputRef.current?.focus();
             return;
@@ -151,6 +151,24 @@ export default function EditVariantsTab({
         return invalid;
     }, [gridVariants]);
 
+    // Track rows with invalid prices (0 or negative)
+    const invalidPriceRowIndices = React.useMemo(() => {
+        const invalid = new Set<number>();
+        gridVariants.forEach((row, i) => {
+            if (!Number.isFinite(row.price) || row.price <= 0) {
+                invalid.add(i);
+            }
+        });
+        return invalid;
+    }, [gridVariants]);
+
+    const isBulkPriceInvalid = React.useMemo(() => {
+        const trimmed = bulkPriceInput.trim();
+        if (!trimmed) return false;
+        const num = Number(trimmed);
+        return Number.isNaN(num) || num <= 0;
+    }, [bulkPriceInput]);
+
     return (
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-2xs space-y-6">
             {/* Header & Quick Action */}
@@ -169,7 +187,7 @@ export default function EditVariantsTab({
                     <Button
                         type="button"
                         onClick={onSaveVariants}
-                        disabled={isSaving || duplicateRowIndices.size > 0 || invalidRowIndices.size > 0}
+                        disabled={isSaving || duplicateRowIndices.size > 0 || invalidRowIndices.size > 0 || invalidPriceRowIndices.size > 0}
                         className="h-9 px-4 text-xs font-bold gap-1.5 shadow-sm"
                     >
                         {isSaving ? (
@@ -206,6 +224,13 @@ export default function EditVariantsTab({
                 </div>
             )}
 
+            {invalidPriceRowIndices.size > 0 && (
+                <div className="bg-rose-50 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50 p-3 rounded-xl flex items-center gap-2.5 text-xs text-rose-700 dark:text-rose-400 font-semibold shadow-2xs">
+                    <AlertTriangle className="size-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <span>Every variant must have a price greater than 0 before saving.</span>
+                </div>
+            )}
+
             {/* Active Variants Table */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -216,12 +241,24 @@ export default function EditVariantsTab({
                         <div className="flex items-center gap-1">
                             <Input
                                 type="number"
+                                min="0.01"
+                                step="0.01"
                                 placeholder="Bulk Price"
                                 value={bulkPriceInput}
                                 onChange={(e) => setBulkPriceInput(e.target.value)}
-                                className="h-7 text-xs w-[90px] bg-background/50"
+                                className={cn(
+                                    'h-7 text-xs w-[90px] bg-background/50',
+                                    isBulkPriceInvalid && 'border-destructive focus-visible:ring-destructive text-destructive'
+                                )}
                             />
-                            <Button type="button" variant="outline" size="xs" onClick={onApplyBulkPrice} className="h-7 text-xs">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="xs"
+                                onClick={onApplyBulkPrice}
+                                disabled={isBulkPriceInvalid}
+                                className="h-7 text-xs"
+                            >
                                 Apply All
                             </Button>
                         </div>
@@ -319,18 +356,32 @@ export default function EditVariantsTab({
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <div className="relative">
-                                                    <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">₱</span>
-                                                    <Input
-                                                        type="number"
-                                                        value={row.price || ''}
-                                                        onChange={(e) => {
-                                                            const val = parseFloat(e.target.value) || 0;
-                                                            setGridVariants((prev) => prev.map((r, i) => (i === idx ? { ...r, price: val } : r)));
-                                                        }}
-                                                        placeholder="0.00"
-                                                        className="h-8 text-xs font-bold pl-6 bg-background/50"
-                                                    />
+                                                <div className="space-y-0.5">
+                                                    <div className="relative">
+                                                        <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">₱</span>
+                                                        <Input
+                                                            type="number"
+                                                            min="0.01"
+                                                            step="0.01"
+                                                            value={row.price === 0 ? '' : row.price}
+                                                            onChange={(e) => {
+                                                                const raw = e.target.value;
+                                                                const val = raw === '' ? 0 : parseFloat(raw);
+                                                                setGridVariants((prev) =>
+                                                                    prev.map((r, i) => (i === idx ? { ...r, price: Number.isNaN(val) ? 0 : val } : r))
+                                                                );
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className={cn(
+                                                                'h-8 text-xs font-bold pl-6 bg-background/50',
+                                                                invalidPriceRowIndices.has(idx) &&
+                                                                    'border-destructive focus-visible:ring-destructive text-destructive'
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    {invalidPriceRowIndices.has(idx) && (
+                                                        <p className="text-[10px] text-destructive font-semibold">Must be &gt; 0</p>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-center">
@@ -496,7 +547,7 @@ export default function EditVariantsTab({
                                         ref={priceInputRef}
                                         type="number"
                                         required
-                                        min="0"
+                                        min="0.01"
                                         step="0.01"
                                         value={defaultPrice}
                                         onChange={(e) => setDefaultPrice(e.target.value)}
@@ -508,19 +559,19 @@ export default function EditVariantsTab({
                                         }}
                                         className={cn(
                                             'h-8 text-xs w-[120px] pl-6 bg-background/50 font-bold',
-                                            isPriceNegative && 'border-destructive focus-visible:ring-destructive text-destructive'
+                                            isPriceInvalid && 'border-destructive focus-visible:ring-destructive text-destructive'
                                         )}
                                         placeholder="0.00"
                                     />
                                 </div>
-                                {isPriceNegative && <p className="text-[11px] text-destructive font-semibold">Price cannot be less than 0</p>}
+                                {isPriceInvalid && <p className="text-[11px] text-destructive font-semibold">Price must be greater than 0</p>}
                             </div>
                         </div>
 
                         <Button
                             type="button"
                             onClick={handleGenerateMatrix}
-                            disabled={isPriceNegative}
+                            disabled={isPriceInvalid}
                             className="h-8 px-3 text-xs font-semibold gap-1.5 shadow-2xs"
                         >
                             <Sparkles className="size-3.5" /> Generate Combinations

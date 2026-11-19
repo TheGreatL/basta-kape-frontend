@@ -205,6 +205,13 @@ export default function ProductCreatePage() {
     });
 
     const onSubmit = (values: ProductFormValues) => {
+        if (localVariants.some((v) => !Number.isFinite(v.price) || v.price <= 0)) {
+            setActiveTab('variants');
+            toast.error('Invalid Variant Price', {
+                description: 'Every variant must have a price greater than 0.'
+            });
+            return;
+        }
         saveMutation.mutate(values);
     };
 

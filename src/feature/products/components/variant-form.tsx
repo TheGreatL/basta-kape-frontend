@@ -27,9 +27,16 @@ export function VariantForm({
     isPending = false,
     submitLabel = 'Add Variant'
 }: VariantFormProps) {
-    const [price, setPrice] = React.useState(initialPrice);
+    const [priceInput, setPriceInput] = React.useState(initialPrice > 0 ? String(initialPrice) : '');
     // Maps attributeId -> attributeValueId
     const [selectedValues, setSelectedValues] = React.useState<Record<string, string>>({});
+
+    const isPriceInvalid = React.useMemo(() => {
+        const trimmed = priceInput.trim();
+        if (!trimmed) return false;
+        const num = Number(trimmed);
+        return Number.isNaN(num) || num <= 0;
+    }, [priceInput]);
 
     // Fetch active attributes
     const { data: attributesData, isLoading: isAttributesLoading } = useQuery({
@@ -39,6 +46,14 @@ export function VariantForm({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const trimmedPrice = priceInput.trim();
+        const numericPrice = Number(trimmedPrice);
+        if (trimmedPrice === '' || Number.isNaN(numericPrice) || numericPrice <= 0) {
+            toast.error('Invalid Price', {
+                description: 'Variant price must be greater than 0.'
+            });
+            return;
+        }
         // Collect all non-empty selected value IDs
         const attributeValueIds = Object.values(selectedValues).filter(Boolean);
         if (attributeValueIds.length === 0) {
@@ -49,7 +64,7 @@ export function VariantForm({
         }
         onSubmit({
             sku: null,
-            price: Number(price) || 0,
+            price: numericPrice,
             attributeValueIds
         });
     };
@@ -65,15 +80,16 @@ export function VariantForm({
                     </Label>
                     <Input
                         type="number"
-                        min="0"
+                        min="0.01"
                         step="0.01"
                         placeholder="0.00"
-                        value={price}
-                        onChange={(e) => setPrice(Number(e.target.value) || 0)}
-                        className="h-8 text-xs bg-background"
+                        value={priceInput}
+                        onChange={(e) => setPriceInput(e.target.value)}
+                        className={`h-8 text-xs bg-background ${isPriceInvalid ? 'border-destructive focus-visible:ring-destructive text-destructive' : ''}`}
                         required
                         disabled={isPending}
                     />
+                    {isPriceInvalid && <p className="text-[11px] text-destructive font-semibold">Price must be greater than 0</p>}
                 </div>
             </div>
 

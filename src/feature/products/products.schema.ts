@@ -14,7 +14,7 @@ export type TProductSchema = z.infer<typeof productSchema>;
 
 export const productVariantSchema = z.object({
     sku: z.string().min(2, 'SKU must be at least 2 characters').max(50, 'SKU must not exceed 50 characters').or(z.literal('')).optional().nullable(),
-    price: z.number().min(0, 'Price must be a positive number or zero'),
+    price: z.number().gt(0, 'Price must be greater than 0'),
     attributeValueIds: z.array(z.string().max(100, 'Attribute value ID must not exceed 100 characters')).optional().default([])
 });
 

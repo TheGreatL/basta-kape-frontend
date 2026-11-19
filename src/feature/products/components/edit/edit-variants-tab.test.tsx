@@ -69,7 +69,7 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         );
     };
 
-    it('marks the price input as required with min="0" and shows the required indicator', () => {
+    it('marks the price input as required with min="0.01" and shows the required indicator', () => {
         renderComponent();
 
         const trigger = screen.getByText('Advanced Variant Matrix Generator');
@@ -81,7 +81,7 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         const input = screen.getByPlaceholderText('0.00');
         expect(input).toBeDefined();
         expect(input.hasAttribute('required')).toBe(true);
-        expect(input.getAttribute('min')).toBe('0');
+        expect(input.getAttribute('min')).toBe('0.01');
         expect(input.getAttribute('type')).toBe('number');
     });
 
@@ -111,7 +111,7 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         const trigger = screen.getByText('Advanced Variant Matrix Generator');
         fireEvent.click(trigger);
 
-        expect(screen.getByText('Price cannot be less than 0')).toBeDefined();
+        expect(screen.getByText('Price must be greater than 0')).toBeDefined();
 
         const generateBtn = screen.getByRole('button', { name: /Generate Combinations/i });
         expect(generateBtn.hasAttribute('disabled')).toBe(true);
@@ -120,20 +120,20 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         expect(onGenerateMatrix).not.toHaveBeenCalled();
     });
 
-    it('allows matrix generation when price is 0', () => {
+    it('blocks matrix generation, displays error message, and disables button when price is 0', () => {
         const onGenerateMatrix = vi.fn();
         renderComponent({ defaultPrice: '0', onGenerateMatrix });
 
         const trigger = screen.getByText('Advanced Variant Matrix Generator');
         fireEvent.click(trigger);
 
-        expect(screen.queryByText('Price cannot be less than 0')).toBeNull();
+        expect(screen.getByText('Price must be greater than 0')).toBeDefined();
 
         const generateBtn = screen.getByRole('button', { name: /Generate Combinations/i });
-        expect(generateBtn.hasAttribute('disabled')).toBe(false);
+        expect(generateBtn.hasAttribute('disabled')).toBe(true);
 
         fireEvent.click(generateBtn);
-        expect(onGenerateMatrix).toHaveBeenCalledTimes(1);
+        expect(onGenerateMatrix).not.toHaveBeenCalled();
     });
 
     it('allows matrix generation when price is a positive number (e.g. 120)', () => {
@@ -143,13 +143,34 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         const trigger = screen.getByText('Advanced Variant Matrix Generator');
         fireEvent.click(trigger);
 
-        expect(screen.queryByText('Price cannot be less than 0')).toBeNull();
+        expect(screen.queryByText('Price must be greater than 0')).toBeNull();
 
         const generateBtn = screen.getByRole('button', { name: /Generate Combinations/i });
         expect(generateBtn.hasAttribute('disabled')).toBe(false);
 
         fireEvent.click(generateBtn);
         expect(onGenerateMatrix).toHaveBeenCalledTimes(1);
+    });
+
+    it('disables Save Variants Matrix when any variant row has a price of 0 or below', () => {
+        const onSaveVariants = vi.fn();
+        renderComponent({
+            onSaveVariants,
+            gridVariants: [
+                {
+                    tempId: 'var-1',
+                    sku: 'LATTE-REG',
+                    price: 0,
+                    attributeValueIds: ['val-1'],
+                    attributeValueLabels: ['Regular'],
+                    recipeConfigured: false
+                }
+            ]
+        });
+
+        expect(screen.getByText('Every variant must have a price greater than 0 before saving.')).toBeDefined();
+        const saveBtn = screen.getByRole('button', { name: /Save Variants Matrix/i });
+        expect(saveBtn.hasAttribute('disabled')).toBe(true);
     });
 
     it('triggers validation when pressing Enter inside the price input', () => {

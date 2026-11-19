@@ -359,9 +359,9 @@ export default function ProductEditPage() {
         }
 
         const numericPrice = Number(trimmedPrice);
-        if (isNaN(numericPrice) || numericPrice < 0) {
+        if (isNaN(numericPrice) || numericPrice <= 0) {
             toast.error('Invalid Price', {
-                description: 'Price cannot be less than 0. Please enter 0 or a positive amount.'
+                description: 'Price must be greater than 0.'
             });
             return;
         }
@@ -603,6 +603,13 @@ export default function ProductEditPage() {
                                 return;
                             }
 
+                            if (gridVariants.some((v) => !Number.isFinite(v.price) || v.price <= 0)) {
+                                toast.error('Cannot Save Variants', {
+                                    description: 'Every variant must have a price greater than 0.'
+                                });
+                                return;
+                            }
+
                             syncVariantsMutation.mutate({ variants: gridVariantsWithSkus });
                         }}
                         isSaving={syncVariantsMutation.isPending}
@@ -626,11 +633,15 @@ export default function ProductEditPage() {
                         setBulkPriceInput={setBulkPriceInput}
                         onApplyBulkPrice={() => {
                             const priceNum = parseFloat(bulkPriceInput);
-                            if (!isNaN(priceNum)) {
-                                setGridVariants((prev) => prev.map((v) => ({ ...v, price: priceNum })));
-                                setBulkPriceInput('');
-                                toast.success('Prices Updated', { description: `Updated price to ₱${priceNum.toFixed(2)} for all variants.` });
+                            if (isNaN(priceNum) || priceNum <= 0) {
+                                toast.error('Invalid Price', {
+                                    description: 'Bulk price must be greater than 0.'
+                                });
+                                return;
                             }
+                            setGridVariants((prev) => prev.map((v) => ({ ...v, price: priceNum })));
+                            setBulkPriceInput('');
+                            toast.success('Prices Updated', { description: `Updated price to ₱${priceNum.toFixed(2)} for all variants.` });
                         }}
                     />
                 </TabsContent>
