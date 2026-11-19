@@ -241,8 +241,8 @@ export default function EditVariantsTab({
                         <div className="flex items-center gap-1">
                             <Input
                                 type="number"
-                                min="0.01"
-                                step="0.01"
+                                min="1"
+                                step="1"
                                 placeholder="Bulk Price"
                                 value={bulkPriceInput}
                                 onChange={(e) => setBulkPriceInput(e.target.value)}
@@ -361,8 +361,8 @@ export default function EditVariantsTab({
                                                         <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">₱</span>
                                                         <Input
                                                             type="number"
-                                                            min="0.01"
-                                                            step="0.01"
+                                                            min="1"
+                                                            step="1"
                                                             value={row.price === 0 ? '' : row.price}
                                                             onChange={(e) => {
                                                                 const raw = e.target.value;
@@ -547,8 +547,8 @@ export default function EditVariantsTab({
                                         ref={priceInputRef}
                                         type="number"
                                         required
-                                        min="0.01"
-                                        step="0.01"
+                                        min="1"
+                                        step="1"
                                         value={defaultPrice}
                                         onChange={(e) => setDefaultPrice(e.target.value)}
                                         onKeyDown={(e) => {

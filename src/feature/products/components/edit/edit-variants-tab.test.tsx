@@ -69,7 +69,7 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         );
     };
 
-    it('marks the price input as required with min="0.01" and shows the required indicator', () => {
+    it('marks the price input as required with min="1" and step="1" and shows the required indicator', () => {
         renderComponent();
 
         const trigger = screen.getByText('Advanced Variant Matrix Generator');
@@ -81,7 +81,8 @@ describe('EditVariantsTab - Advanced Variant Matrix Generator Price Validation',
         const input = screen.getByPlaceholderText('0.00');
         expect(input).toBeDefined();
         expect(input.hasAttribute('required')).toBe(true);
-        expect(input.getAttribute('min')).toBe('0.01');
+        expect(input.getAttribute('min')).toBe('1');
+        expect(input.getAttribute('step')).toBe('1');
         expect(input.getAttribute('type')).toBe('number');
     });
 

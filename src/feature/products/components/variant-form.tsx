@@ -80,8 +80,8 @@ export function VariantForm({
                     </Label>
                     <Input
                         type="number"
-                        min="0.01"
-                        step="0.01"
+                        min="1"
+                        step="1"
                         placeholder="0.00"
                         value={priceInput}
                         onChange={(e) => setPriceInput(e.target.value)}
