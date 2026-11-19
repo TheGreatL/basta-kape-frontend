@@ -338,7 +338,7 @@ export default function CheckoutPage() {
                 paymentMethod: paymentMethod,
                 paymentReferenceNumber: paymentMethod !== 'CASH' ? referenceNumber.trim() : null,
                 paymentProofPhoto: paymentMethod !== 'CASH' ? uploadedUrl : null,
-                deliveryFee: orderType === 'DELIVERY' ? shippingFee : null,
+                deliveryFee: orderType === 'DELIVERY' ? shippingFee : 0,
                 deliveryAddress: orderType === 'DELIVERY' ? deliveryAddress.trim() : null,
                 deliveryLatitude: orderType === 'DELIVERY' ? deliveryLatitude : null,
                 deliveryLongitude: orderType === 'DELIVERY' ? deliveryLongitude : null,
